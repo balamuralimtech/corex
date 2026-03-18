@@ -1,0 +1,343 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">Dashboard</ui:define>
+
+    <ui:define name="content">
+        <f:event listener="#{homePageBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:form id="dashboardFormId">
+            <div class="col-12">
+                <p:breadCrumb>
+                    <p:menuitem url="#" icon="pi pi-home"/>
+                    <p:menuitem value="#{msg['homeLabel']}" url="#"/>
+                    <p:menuitem value="#{msg['dashboardLabel']}" url="#"/>
+                </p:breadCrumb>
+                <p:remoteCommand name="callInitializeMethod"
+                                 action="#{homePageBean.refreshForm}"
+                                 update="dashboardFormId">
+                </p:remoteCommand>
+                <h3>#{msg['refreshInText']}: <span id="countdownDisplay">60</span> seconds</h3>
+            </div>
+            <div class="dashboard grid">
+
+                <div class="col-6">
+                    <figure class="highcharts-figure">
+                        <div id="usercontainer"></div>
+                    </figure>
+
+                    <!-- JavaScript to Initialize Highcharts -->
+                    <h:outputScript>
+                        Highcharts.chart('usercontainer', {
+                        chart: {
+                        type: 'pie',
+                        options3d: {
+                        enabled: true,
+                        alpha: 45,
+                        beta: 0
+                        }
+                        },
+                        title: {
+                        text: 'Users Current Status',
+                        align: 'left'
+                        },
+                        accessibility: {
+                        point: {
+                        valueSuffix: '%'
+                        }
+                        },
+                        tooltip: {
+                        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+                        },
+                        plotOptions: {
+                        pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        depth: 35,
+                        dataLabels: {
+                        enabled: true,
+                        format: '{point.name}: {point.y}'
+                        }
+                        }
+                        },
+                        series: [{
+                        type: 'pie',
+                        name: 'Users Status',
+                        data: [
+                        ['Users Logged In', #{homePageBean.coreDashboardTO.usersLoggedInCount}],
+                        ['Users Logged Out', #{homePageBean.coreDashboardTO.usersLoggedOutCount}],
+                        ['Users Never Logged In', #{homePageBean.coreDashboardTO.usersNeverLoggedinCount}]
+                        ]
+                        }]
+                        });
+                    </h:outputScript>
+                </div>
+                <div class="col-6">
+                    <figure class="highcharts-figure">
+                        <div id="rolecontainer"></div>
+                    </figure>
+
+                    <!-- JavaScript to Initialize Highcharts -->
+                    <h:outputScript>
+                        Highcharts.chart('rolecontainer', {
+                        chart: {
+                        plotBackgroundColor: null,
+                        plotBorderWidth: 0,
+                        plotShadow: false
+                        },
+                        title: {
+                        text: 'Roles Usage Status',
+                        align: 'center',
+                        verticalAlign: 'middle',
+                        y: 60,
+                        style: {
+                        fontSize: '1.1em'
+                        }
+                        },
+                        tooltip: {
+                        pointFormat: '{series.name}: {series.y}'
+                        },
+                        accessibility: {
+                        point: {
+                        valueSuffix: '%'
+                        }
+                        },
+                        plotOptions: {
+                        pie: {
+                        dataLabels: {
+                        enabled: true,
+                        format: '{point.name}: {point.y}',
+                        distance: -50,
+                        style: {
+                        fontWeight: 'bold',
+                        color: 'white'
+                        }
+                        },
+                        startAngle: -90,
+                        endAngle: 90,
+                        center: ['50%', '75%'],
+                        size: '110%'
+                        }
+                        },
+                        series: [{
+                        type: 'pie',
+                        name: 'Browser share',
+                        innerSize: '50%',
+                        data: [
+                        ['Roles Used', #{homePageBean.coreDashboardTO.rolesUsedCount}],
+                        ['Roles Unused', #{homePageBean.coreDashboardTO.rolesNotUsedCount}]
+                        ]
+                        }]
+                        });
+                    </h:outputScript>
+                </div>
+                <div class="col-12">
+                    <figure class="highcharts-figure">
+                        <div id="useractivitycontainer"></div>
+                    </figure>
+                    <h:outputScript>
+                        // Set up the chart
+                        var chart = new Highcharts.Chart({
+                        chart: {
+                        renderTo: 'useractivitycontainer',
+                        type: 'column',
+                        options3d: {
+                        enabled: true,
+                        alpha: 0,
+                        beta: 0,
+                        depth: 100,
+                        viewDistance: 30
+                        }
+                        },
+                        xAxis: {
+                        type: 'category'
+                        },
+                        yAxis: {
+                        title: {
+                        enabled: false
+                        }
+                        },
+                        tooltip: {
+                        headerFormat: '<b>{point.key}</b><br/>',
+                        pointFormat: 'Activity: {point.y}'
+                        },
+                        title: {
+                        text: 'Overall User Activity Status',
+                        align: 'left'
+                        },
+                        subtitle: {
+                        text: 'Status',
+                        align: 'left'
+                        },
+                        legend: {
+                        enabled: false
+                        },
+                        plotOptions: {
+                        column: {
+                        depth: 25
+                        }
+                        },
+                        series: [{
+                        data: [
+                        ['Login', #{homePageBean.coreDashboardTO.loginCount}],
+                        ['Logout', #{homePageBean.coreDashboardTO.logoutCount}],
+                        ['Add', #{homePageBean.coreDashboardTO.addCount}],
+                        ['Edit', #{homePageBean.coreDashboardTO.updateCount}],
+                        ['Delete', #{homePageBean.coreDashboardTO.deleteCount}]
+                        ],
+                        colorByPoint: true
+                        }]
+                        });
+                    </h:outputScript>
+                </div>
+                <div class="col-12 md:col-6 lg:col-3">
+                    <div class="widget-overview overview-box-1">
+                        <div class="overview-box-title">
+                            <i class="pi pi-building"/>
+                            <span>#{msg['organizationLabel']}</span>
+                        </div>
+                        <div class="overview-box-count">#{homePageBean.coreDashboardTO.organizationCount}</div>
+                    </div>
+                </div>
+                <div class="col-12 md:col-6 lg:col-3">
+                    <div class="widget-overview overview-box-2">
+                        <div class="overview-box-title">
+                            <i class="pi pi-map-marker"/>
+                            <span>#{msg['branchLabel']}</span>
+                        </div>
+                        <div class="overview-box-count">#{homePageBean.coreDashboardTO.branchCount}</div>
+                    </div>
+                </div>
+                <div class="col-12 md:col-6 lg:col-3">
+                    <div class="widget-overview overview-box-3">
+                        <div class="overview-box-title">
+                            <i class="pi pi-id-card"/>
+                            <span>#{msg['designationLabel']}</span>
+                        </div>
+                        <div class="overview-box-count">#{homePageBean.coreDashboardTO.designationCount}</div>
+                    </div>
+                </div>
+                <div class="col-12 md:col-6 lg:col-3">
+                    <div class="widget-overview overview-box-4">
+                        <div class="overview-box-title">
+                            <i class="pi pi-sitemap"/>
+                            <span>#{msg['departmentLabel']}</span>
+                        </div>
+                        <div class="overview-box-count">#{homePageBean.coreDashboardTO.departmentCount}</div>
+                    </div>
+                </div>
+
+                <div class="col-12 lg:col-4">
+                    <div class="widget-graph">
+                        <div class="grid">
+                            <div class="col-4">
+                                <span class="graph-title">#{msg['userManagementLabel']}</span>
+                                <span class="graph-value">#{homePageBean.coreDashboardTO.userCount}</span>
+                            </div>
+                            <div class="col-8">
+                                <p:graphicImage name="images/dashboard/graph-1.svg" library="avalon-layout"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 lg:col-4">
+                    <div class="widget-graph">
+                        <div class="grid">
+                            <div class="col-4">
+                                <span class="graph-title">#{msg['roleLabel']}</span>
+                                <span class="graph-value">#{homePageBean.coreDashboardTO.roleCount}</span>
+                            </div>
+                            <div class="col-8">
+                                <p:graphicImage name="images/dashboard/graph-2.svg" library="avalon-layout"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 lg:col-4">
+                    <div class="widget-graph">
+                        <div class="grid">
+                            <div class="col-4">
+                                <span class="graph-title">#{msg['userActivityLabel']}</span>
+                                <span class="graph-value">#{homePageBean.coreDashboardTO.userActivityCount}</span>
+                            </div>
+                            <div class="col-8">
+                                <p:graphicImage name="images/dashboard/graph-3.svg" library="avalon-layout"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 lg:col-6">
+                    <div class="card widget-sale-table">
+                        <h5>Global Data</h5>
+                        <table>
+                            <thead>
+                            <tr>
+                                <th></th>
+                                <th></th>
+                                <th>Total</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>#{msg['countryLabel']}</td>
+                                <td>#{homePageBean.coreDashboardTO.countryCount}</td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>#{msg['stateLabel']}</td>
+                                <td>#{homePageBean.coreDashboardTO.stateCount}</td>
+                            </tr>
+                            <tr>
+                                <td>3</td>
+                                <td>#{msg['cityLabel']}</td>
+                                <td>#{homePageBean.coreDashboardTO.cityCount}</td>
+                            </tr>
+                            <tr>
+                                <td>4</td>
+                                <td>#{msg['currenciesLabel']}</td>
+                                <td>#{homePageBean.coreDashboardTO.currencyCount}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+            <script type="text/javascript">
+                //<![CDATA[
+                // JavaScript countdown function
+                var countdownTime = 60;
+                var countdownInterval;
+
+                function startCountdown() {
+                    console.log('Starting countdown!');
+                    countdownTime = 60; // Reset countdown to 60 seconds
+                    document.getElementById('countdownDisplay').innerText = countdownTime;
+                    countdownInterval = setInterval(updateCountdown, 1000); // Update every 1 second
+                }
+
+                function updateCountdown() {
+                    if (countdownTime > 0) {
+                        countdownTime--; // Decrement countdown time by 1
+                        document.getElementById('countdownDisplay').innerText = countdownTime; // Update display
+                    } else {
+                        clearInterval(countdownInterval);
+                        callInitializeMethod(); // Clear interval when reaching 0
+                        startCountdown(); // Restart countdown
+                    }
+                }
+
+                // Automatically start countdown when page reloads
+                window.onload = function () {
+                    startCountdown();
+                };
+                //]]>
+            </script>
+        </h:form>
+    </ui:define>
+</ui:composition>

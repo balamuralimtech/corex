@@ -1,0 +1,142 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">Bank Details</ui:define>
+    <ui:define name="head">
+        <h:outputStylesheet name="css/flags/flags.css" library="demo" />
+    </ui:define>
+
+    <ui:define name="content">
+        <f:event listener="#{bankDetailsBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:form id="form">
+            <div class="col-12">
+                <p:breadCrumb>
+                    <p:menuitem url="#" icon="pi pi-home" />
+                    <p:menuitem value="System Management" url="#" />
+                    <p:menuitem value="#{msg['bankDetailsLabel']}" url="#" />
+                </p:breadCrumb>
+            </div>
+            <div class="grid crud-demo">
+                <div class="col-12">
+                    <p:outputPanel class="card" id="bankDetailsMainPanelId">
+                        <p:growl id="messages" showDetail="true" />
+
+                        <p:toolbar styleClass="mb-4">
+                            <p:toolbarGroup>
+                                <p:commandButton value="#{msg['newLabel']}" icon="pi pi-plus"
+                                                 actionListener="#{bankDetailsBean.addButtonAction}"
+                                                 update="@([id$=addEditBAPanelId])" process="@([id$=addEditBAPanelId]) @this"
+                                                 oncomplete="PF('manageBDDialog').show()"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+                                <p:spacer width="5"/>
+                                <p:autoComplete id="searchorglist" dropdown="true" value="#{bankDetailsBean.searchBDOrganizationName}"
+                                                completeMethod="#{bankDetailsBean.completeOrganization}"
+                                                scrollHeight="250">
+
+                                    <p:ajax event="itemSelect" listener="#{bankDetailsBean.onOrganizationSelect}"/>
+                                </p:autoComplete>
+                                <p:spacer width="5"/>
+                                <p:commandButton value="#{msg['fetchBankDetailsLabel']}" icon="pi pi-search"
+                                                 action="#{bankDetailsBean.searchButtonAction}"
+                                                 update="@([id$=bankDetailstMainPanelId])" process="@this"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+                                <h:outputLabel value="#{msg['noOfRecordsLabel']}" rendered="#{bankDetailsBean.datatableRendered}"/>
+                                <h:outputText value="#{bankDetailsBean.recordsCount}" rendered="#{bankDetailsBean.datatableRendered}"/>
+                            </p:toolbarGroup>
+                            <p:toolbarGroup align="right">
+                                <p:commandButton value="#{msg['exportLabel']}" icon="pi pi-upload" styleClass="ui-button-help"
+                                                 rendered="#{bankDetailsBean.datatableRendered}">
+                                    <p:dataExporter type="pdf" target="bankDetailsDatatableId" fileName="#{msg['bankDetailsLabel']}"/>
+                                </p:commandButton>
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <p:outputPanel id="datatablePanelId" rendered="#{bankDetailsBean.datatableRendered}">
+                            <p:dataTable id="bankDetailsDatatableId" widgetVar="tACDataTable" var="bankDetails" value="#{bankDetailsBean.bankDetailsList}" reflow="true" styleClass="commoncrud-table"
+                                         rowKey="#{bankDetails.id}" paginator="true" rows="10"  paginatorPosition="bottom">
+                                <f:facet name="header">
+                                    <div class="products-table-header">
+                                        <span style="font-weight: bold">#{msg['searchBankDetailsLabel']}</span>
+
+                                        <span class="filter-container ui-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <p:inputText id="globalFilter" onkeyup="PF('tACDataTable').filter()" placeholder="#{msg['searchLabel']}" />
+                                        </span>
+                                    </div>
+                                </f:facet>
+
+                                <p:column headerText="Id" sortBy="#{bankDetails.id}" filterBy="#{bankDetails.id}">
+                                    <h:outputText value="#{bankDetails.id}" />
+                                </p:column>
+
+                                <p:column headerText="#{msg['organizationNameLabel']}" sortBy="#{bankDetails.organization.organizationName}" filterBy="#{bankDetails.organization.organizationName}">
+                                    <h:outputText value="#{bankDetails.organization.organizationName}" />
+                                </p:column>
+                                <p:column headerText="Bank Details" sortBy="#{bankDetails.bankAccountDetails}" filterBy="#{bankDetails.bankAccountDetails}">
+                                    <h:outputText value="#{bankDetails.bankAccountDetails}" />
+                                </p:column>
+
+
+                                <p:column exportable="false">
+                                    <p:commandButton icon="pi pi-pencil" update=":form:addEditBAPanelId" oncomplete="PF('manageBDDialog').show()"
+                                                     action="#{bankDetailsBean.confirmEditButtonAction}"
+                                                     styleClass="edit-button rounded-button ui-button-success" process="@this">
+                                        <f:setPropertyActionListener value="#{bankDetails}" target="#{bankDetailsBean.selectedBankDetails}" />
+                                    </p:commandButton>
+                                    <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash" process="@this" oncomplete="PF('deleteTACDialog').show()" >
+                                        <f:setPropertyActionListener value="#{bankDetails}" target="#{bankDetailsBean.selectedBankDetails}" />
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </p:outputPanel>
+
+                        <p:dialog header="#{msg['bankDetailsLabel']}" showEffect="fade" modal="true" widgetVar="manageBDDialog" responsive="true">
+                            <p:outputPanel id="addEditBAPanelId" class="ui-fluid">
+                                <p:outputPanel>
+
+                                    <div class="field">
+                                        <p:outputLabel for="orglist">#{msg['organizationNameLabel']}</p:outputLabel>
+                                        <p:autoComplete id="orglist" dropdown="true" value="#{bankDetailsBean.bDOrganizationName}"
+                                                        completeMethod="#{bankDetailsBean.completeOrganization}"
+                                                        scrollHeight="250">
+                                            <p:ajax event="itemSelect" listener="#{bankDetailsBean.onOrganizationSelect}"/>
+                                        </p:autoComplete>
+
+
+                                    </div>
+
+                                    <div class="field">
+                                        <p:outputLabel for="bankAccountDetails">Bank Account Details</p:outputLabel>
+                                        <p:inputTextarea id="bankAccountDetails" value="#{bankDetailsBean.bankAccountDetails}" />
+                                    </div>
+
+                                </p:outputPanel>
+                            </p:outputPanel>
+
+                            <f:facet name="footer">
+                                <p:commandButton value="#{msg['saveLabel']}" icon="pi pi-check" actionListener="#{bankDetailsBean.saveBankDetails}" update="addEditBAPanelId" process="addEditBAPanelId @this" />
+                                <p:commandButton value="#{msg['cancelLabel']}" icon="pi pi-times" onclick="PF('manageBDDialog').hide()" class="ui-button-secondary" />
+                            </f:facet>
+                        </p:dialog>
+
+                        <p:confirmDialog widgetVar="deleteTACDialog" showEffect="fade" width="300" message="Delete The Terms and Conditions?" header="#{msg['confirmLabel']}" severity="warn">
+                            <p:commandButton value="#{msg['yesLabel']}" icon="pi pi-check" actionListener="#{bankDetailsBean.confirmDeleteBankDetails()}" process="@this" oncomplete="PF('deleteTACDialog').hide()"/>
+                            <p:commandButton value="#{msg['noLabel']}" type="button" styleClass="ui-button-secondary" icon="pi pi-times" onclick="PF('deleteTACDialog').hide()" />
+                        </p:confirmDialog>
+
+                        <p:confirmDialog global="true" showEffect="fade" width="300">
+                            <p:commandButton value="#{msg['yesLabel']}" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
+                            <p:commandButton value="#{msg['noLabel']}" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times" />
+                        </p:confirmDialog>
+                    </p:outputPanel>
+                </div>
+            </div>
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>

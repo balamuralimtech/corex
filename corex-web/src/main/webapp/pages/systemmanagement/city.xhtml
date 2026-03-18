@@ -1,0 +1,174 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">#{msg['cityLabel']}</ui:define>
+    <ui:define name="head">
+        <h:outputStylesheet name="css/flags/flags.css" library="demo" />
+    </ui:define>
+
+    <ui:define name="content">
+        <f:event listener="#{cityBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:form id="form">
+            <div class="col-12">
+                <p:breadCrumb>
+                    <p:menuitem url="#" icon="pi pi-home" />
+                    <p:menuitem value="#{msg['systemManagementLabel']}" url="#" />
+                    <p:menuitem value="#{msg['cityLabel']}" url="#" />
+                </p:breadCrumb>
+            </div>
+            <div class="grid crud-demo">
+                <div class="col-12">
+                    <p:outputPanel class="card" id="cityMainPanelId">
+                        <p:growl id="messages" showDetail="true" />
+
+                        <p:toolbar styleClass="mb-4">
+                            <p:toolbarGroup>
+                                <p:commandButton value="#{msg['newLabel']}" icon="pi pi-plus"
+                                                 actionListener="#{cityBean.addButtonAction}" 
+                                                 update="@([id$=addEditCityPanelId])" process="@([id$=addEditCityPanelId]) @this" 
+                                                 oncomplete="PF('manageCityDialog').show()"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+                                <p:outputLabel for="@next" value="#{msg['countryLabel']}*"/>
+                                <p:autoComplete id="searchCountrylist"
+                                                dropdown="true"
+                                                value="#{cityBean.searchCountry}"
+                                                completeMethod="#{cityBean.completeCountry}"
+                                                accesskey=" " scrollHeight="250">
+                                    <p:ajax event="itemSelect" listener="#{cityBean.onCountrySelect}" update="searchStatelist"/>
+                                </p:autoComplete>
+                                <p:spacer width="5"/>
+                                <p:outputLabel for="@next" value="#{msg['stateLabel']}*"/>
+                                <p:autoComplete id="searchStatelist"
+                                                dropdown="true"
+                                                value="#{cityBean.searchState}"
+                                                completeMethod="#{cityBean.completeState}"
+                                                accesskey=" " scrollHeight="250">
+                                    <p:ajax event="itemSelect" listener="#{cityBean.onCountrySelect}" update="@([id$=cityMainPanelId])"/>
+                                </p:autoComplete>
+                                <p:spacer width="5"/>
+                                <p:commandButton value="#{msg['fetchCitiesLabel']}" icon="pi pi-search"
+                                                 action="#{cityBean.searchButtonAction}" 
+                                                 update="@([id$=cityMainPanelId])" process="@this" 
+                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+
+                                <h:outputLabel value="#{msg['noOfRecordsLabel']}" rendered="#{cityBean.datatableRendered}"/>
+                                <h:outputText value="#{cityBean.recordsCount}" rendered="#{cityBean.datatableRendered}"/>
+                            </p:toolbarGroup>
+                            <p:toolbarGroup align="right">
+                                <p:commandButton Addvalue="#{msg['exportLabel']}" icon="pi pi-upload" styleClass="ui-button-help"
+                                                 rendered="#{cityBean.datatableRendered}">
+                                    <p:dataExporter type="pdf" target="cityDataTableId" fileName="#{msg['cityLabel']}"/>
+                                </p:commandButton>
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <p:outputPanel id="datatablePanelId" rendered="#{cityBean.datatableRendered}">
+                            <p:dataTable id="cityDataTableId" widgetVar="cityDataTable" var="city" value="#{cityBean.citiesList}" 
+                                         reflow="true" styleClass="commoncrud-table"
+                                         rowKey="#{city.id}" paginator="true" rows="10"  paginatorPosition="bottom">
+                                <f:facet name="header">
+                                    <div class="products-table-header">
+                                        <span style="font-weight: bold">#{msg['searchCityLabel']}</span>
+
+                                        <span class="filter-container ui-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <p:inputText id="globalFilter" onkeyup="PF('cityDataTable').filter()" placeholder="#{msg['searchLabel']}" />
+                                        </span>
+                                    </div>
+                                </f:facet>
+
+                                <p:column headerText="#{msg['cityNameLabel']}" sortBy="#{city.name}" filterBy="#{city.name}">
+                                    <h:outputText value="#{city.name}" />
+                                </p:column>
+                               <p:column headerText="#{msg['stateLabel']}" sortBy="#{city.state.name}" filterBy="#{city.state.name}" exportable="false">
+                                    <h:outputText value="#{city.state.name}" />
+                                                                 </p:column>
+                                <p:column headerText="#{msg['flagLabel']}" sortBy="#{city.country.name}" filterBy="#{city.country.name}" exportable="false">
+                                <span class="flag flag-#{city.country.iso2.toLowerCase()}" style="width: 30px; height: 20px"/>
+                                </p:column>
+                                <p:column headerText="#{msg['countryLabel']}" sortBy="#{city.country.name}" filterBy="#{city.country.name}" exportable="false">
+                                    <h:outputText value="#{city.country.name}" />
+
+                                </p:column>
+
+                                <p:column headerText="#{msg['latitudeLabel']}" sortBy="#{city.latitude}" filterBy="#{city.latitude}" >
+                                    <h:outputText value="#{city.latitude}" />
+                                </p:column>
+                                <p:column headerText="#{msg['longitudeLabel']}" sortBy="#{city.longitude}" filterBy="#{city.longitude}">
+                                    <h:outputText value="#{city.longitude}" />
+                                </p:column>
+
+
+                                <p:column exportable="false">
+                                    <p:commandButton icon="pi pi-pencil" update=":form:addEditCityPanelId" oncomplete="PF('manageCityDialog').show()"
+                                                     action="#{cityBean.confirmEditButtonAction}"
+                                                     styleClass="edit-button rounded-button ui-button-success" process="@this">
+                                        <f:setPropertyActionListener value="#{city}" target="#{cityBean.selectedCity}" />
+                                    </p:commandButton>
+                                    <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash" process="@this" oncomplete="PF('deleteCityDialog').show()" >
+                                        <f:setPropertyActionListener value="#{city}" target="#{cityBean.selectedCity}" />
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </p:outputPanel>
+
+                        <p:dialog header="#{msg['cityDetailsLabel']}"
+                                  showEffect="fade" 
+                                  modal="true" 
+                                  widgetVar="manageCityDialog" 
+                                  responsive="true"
+                                  width="85%">
+
+                            <p:panelGrid id="addEditCityPanelId"
+                                         columns="4"
+                                         columnClasses="ui-grid-col-2,ui-grid-col-4,ui-grid-col-2,ui-grid-col-4"
+                                         layout="grid"
+                                         styleClass="ui-panelgrid-blank ui-fluid"
+                                         style="border:0px none; background-color:transparent;">
+                                <p:outputLabel for="@next" value="#{msg['cityNameLabel']}"/>
+                                <p:inputText id="name" value="#{cityBean.name}"/>
+
+                                <p:outputLabel for="@next" value="#{msg['stateLabel']}"/>
+                                <p:autoComplete id="statelist" 
+                                                dropdown="true"         
+                                                value="#{cityBean.state}"
+                                                completeMethod="#{cityBean.completeState(query)}" 
+                                                scrollHeight="250"/>
+                                <p:outputLabel for="@next" value="#{msg['countryLabel']}"/>
+                                <p:autoComplete id="countrylist" 
+                                                dropdown="true"         
+                                                value="#{cityBean.country}"
+                                                completeMethod="#{cityBean.completeCountry(query)}" 
+                                                scrollHeight="250"/>
+                                                          
+
+                            </p:panelGrid>
+                              <f:facet name="footer">
+                                  <center>
+                                      <p:commandButton value="#{msg['saveLabel']}" icon="pi pi-check" actionListener="#{cityBean.saveCity()}" update="addEditCityPanelId" process="addEditCityPanelId @this"  />
+                                    <p:commandButton value="#{msg['cancelLabel']}" icon="pi pi-times" onclick="PF('manageCityDialog').hide()" class="ui-button-secondary"  />
+                                    </center>                               
+                              </f:facet>
+                        </p:dialog> 
+
+                        <p:confirmDialog widgetVar="deleteCityDialog" showEffect="fade" width="300" message="#{msg['deleteTheCityLabel']}?" header="#{msg['confirmLabel']}" severity="warn">
+                            <p:commandButton value="#{msg['yesLabel']}" icon="pi pi-check" actionListener="#{cityBean.confirmDeleteCity()}" process="@this" oncomplete="PF('deleteCityDialog').hide()"/>
+                            <p:commandButton value="#{msg['noLabel']}" type="button" styleClass="ui-button-secondary" icon="pi pi-times" onclick="PF('deleteCityDialog').hide()" />
+                        </p:confirmDialog>
+
+                        <p:confirmDialog global="true" showEffect="fade" width="300">
+                            <p:commandButton value="#{msg['yesLabel']}" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
+                            <p:commandButton value="#{msg['noLabel']}" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times" />
+                        </p:confirmDialog>
+                    </p:outputPanel>
+                </div>
+            </div>
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>

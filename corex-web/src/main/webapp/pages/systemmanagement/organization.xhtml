@@ -1,0 +1,194 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">#{msg['organizationLabel']}</ui:define>
+    <ui:define name="head">
+        <h:outputStylesheet name="css/flags/flags.css" library="demo" />
+    </ui:define>
+
+    <ui:define name="content">
+        <f:event listener="#{organizationBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:form id="form">
+            <div class="col-12">
+                <p:breadCrumb>
+                    <p:menuitem url="#" icon="pi pi-home" />
+                    <p:menuitem value="#{msg['systemManagementLabel']}" url="#" />
+                    <p:menuitem value="#{msg['organizationLabel']}" url="#" />
+                </p:breadCrumb>
+            </div>
+            <div class="grid crud-demo">
+                <div class="col-12">
+                    <p:outputPanel class="card" id="orgMainPanelId">
+                        <p:growl id="messages" showDetail="true" />
+
+                        <p:toolbar styleClass="mb-4">
+                            <p:toolbarGroup>
+                                <p:commandButton value="#{msg['newLabel']}" icon="pi pi-plus"
+                                                 actionListener="#{organizationBean.addButtonAction}" 
+                                                 update="@([id$=addEditOrgPanelId])" process="@([id$=addEditOrgPanelId]) @this" 
+                                                 oncomplete="PF('manageOrgDialog').show()"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+                                <p:commandButton value="#{msg['fetchOrganizationsLabel']}" icon="pi pi-search"
+                                                 action="#{organizationBean.searchButtonAction}" 
+                                                 update="@([id$=orgMainPanelId])" process="@this" 
+                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+
+                                <h:outputLabel value="#{msg['noOfRecordsLabel']}: " rendered="#{organizationBean.datatableRendered}"/>
+                                <h:outputText value="#{organizationBean.recordsCount}" rendered="#{organizationBean.datatableRendered}"/>
+                            </p:toolbarGroup>
+                            <p:toolbarGroup align="right">
+                                <p:commandButton value="#{msg['exportLabel']}" icon="pi pi-upload" styleClass="ui-button-help"
+                                                 rendered="#{organizationBean.datatableRendered}">
+                                    <p:dataExporter type="pdf" target="orgDataTableId" fileName="#{msg['organizationLabel']}"/>
+                                </p:commandButton>
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <p:outputPanel id="datatablePanelId" rendered="#{organizationBean.datatableRendered}">
+                            <p:dataTable id="orgDataTableId" widgetVar="dataTableOrg" var="organization" value="#{organizationBean.organizationList}" 
+                                         reflow="true" styleClass="commoncrud-table"
+                                         rowKey="#{organization.id}" paginator="true" rows="10"  paginatorPosition="bottom">
+                                <f:facet name="header">
+                                    <div class="products-table-header">
+                                        <span style="font-weight: bold">#{msg['searchOrganizationLabel']}</span>
+
+                                        <span class="filter-container ui-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <p:inputText id="globalFilter" onkeyup="PF('dataTableOrg').filter()" placeholder="#{msg['searchLabel']}" />
+                                        </span>
+                                    </div>
+                                </f:facet>
+
+                                <p:column headerText="#{msg['organizationIdLabel']}" sortBy="#{organization.id}" filterBy="#{organization.id}">
+                                    <h:outputText value="#{organization.id}" />
+                                </p:column>
+                                <p:column headerText="#{msg['organizationLabel']}" sortBy="#{organization.organizationName}" filterBy="#{organization.organizationName}">
+                                    <h:outputText value="#{organization.organizationName}" />
+                                </p:column>
+                                <p:column headerText="#{msg['flagLabel']}" exportable="false">
+                                    <span class="flag flag-#{organization.country.iso2.toLowerCase()}" style="width: 30px; height: 20px"/>
+                                </p:column>
+                                <p:column headerText="#{msg['countryLabel']}" sortBy="#{organization.country.name}" filterBy="#{organization.country.name}">
+                                    <h:outputText value="#{organization.country.name}" />
+                                </p:column>
+                                <p:column headerText="#{msg['stateLabel']}" sortBy="#{organization.state}" filterBy="#{organization.state}">
+                                    <h:outputText value="#{organization.state}" />
+                                </p:column>
+                                <p:column headerText="#{msg['cityLabel']}" sortBy="#{organization.city}" filterBy="#{organization.city}">
+                                    <h:outputText value="#{organization.city}" />
+                                </p:column>
+                                <p:column headerText="#{msg['phoneNumberLabel']}" sortBy="#{organization.phoneNumber}" filterBy="#{organization.phoneNumber}">
+                                    <h:outputText value="#{organization.phoneNumber}" />
+                                </p:column>
+                                <p:column headerText="#{msg['websiteLabel']}" sortBy="#{organization.website}" filterBy="#{organization.website}">
+                                    <h:outputText value="#{organization.website}" />
+                                </p:column>
+
+                                <p:column exportable="false">
+                                    <p:commandButton icon="pi pi-pencil" update=":form:addEditOrgPanelId" oncomplete="PF('manageOrgDialog').show()"
+                                                     action="#{organizationBean.confirmEditButtonAction}"
+                                                     styleClass="edit-button rounded-button ui-button-success" process="@this">
+                                        <f:setPropertyActionListener value="#{organization}" target="#{organizationBean.selectedOrganization}" />
+                                    </p:commandButton>
+                                    <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash" process="@this" oncomplete="PF('deleteOrgDialog').show()" >
+                                        <f:setPropertyActionListener value="#{organization}" target="#{organizationBean.selectedOrganization}" />
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </p:outputPanel>
+
+                        <p:dialog header="#{msg['organizationDetailsLabel']}" showEffect="fade" modal="true" widgetVar="manageOrgDialog" responsive="true">
+                            <p:outputPanel id="addEditOrgPanelId" class="ui-fluid">
+                                <p:outputPanel>
+                                    <div class="field">
+                                        <p:outputLabel for="@next" value="#{msg['organizationNameLabel']}"/>
+                                        <p:inputText id="name" value="#{organizationBean.organizationName}" />
+                                    </div>
+                                    <div class="field">
+                                        <p:outputLabel for="@next" value="#{msg['countryLabel']}*"/>
+                                        <p:autoComplete id="countrylist" dropdown="true" value="#{organizationBean.organizationCountry}"
+                                                        completeMethod="#{organizationBean.completeCountry}" 
+                                                        scrollHeight="250">
+                                            <p:ajax event="itemSelect" listener="#{organizationBean.onOrgSelect}" update="statelist"/>
+                                        </p:autoComplete>
+                                    </div>
+                                    <p:outputLabel for="@next" value="#{msg['stateLabel']}"/>
+                                    <p:autoComplete id="statelist"
+                                                    dropdown="true"
+                                                    value="#{organizationBean.organizationState}"
+                                                    completeMethod="#{organizationBean.completeState}"
+                                                    accesskey=" " scrollHeight="250">
+                                        <p:ajax event="itemSelect" listener="#{organizationBean.onOrgSelect}" update="citylist"/>
+                                    </p:autoComplete>
+
+                                    <p:outputLabel for="@next" value="#{msg['cityLabel']}"/>
+                                    <p:autoComplete id="citylist"
+                                                    dropdown="true"
+                                                    value="#{organizationBean.organizationCity}"
+                                                    completeMethod="#{organizationBean.completeCity}"
+                                                    accesskey=" " scrollHeight="250"/>
+
+                                    <div class="field">
+                                        <p:outputLabel for="phonenumber">#{msg['phoneNumberLabel']}</p:outputLabel>
+                                        <p:inputText id="phonenumber" value="#{organizationBean.organizationPhoneNumber}" />
+                                    </div>
+                                    <div class="field">
+                                        <p:outputLabel for="website">#{msg['websiteLabel']}</p:outputLabel>
+                                        <p:inputText id="website" value="#{organizationBean.organizationWebsite}" />
+                                    </div>
+                                    <div class="field">
+
+                                        <p:fileUpload mode="advanced"
+                                                      auto="false"
+                                                      multiple="false"
+                                                      update="messages cropperPanel"
+                                                      listener="#{organizationBean.handleFileUpload}"
+                                                      sizeLimit="102400"
+                                                      accept=".gif,.jpeg,.jpg,.png"/>
+
+                                        <p:outputPanel id="cropperPanel">
+
+                                            <h:panelGrid columns="1" rendered="#{not empty organizationBean.image}">
+
+                                                <h:panelGrid columns="2" cellpadding="7">
+
+                                                    <p:outputPanel id="cropped">
+                                                        <p:graphicImage cache="false"
+                                                                        rendered="#{not empty organizationBean.image}"
+                                                                        value="#{organizationBean.image}"/>
+                                                    </p:outputPanel>
+
+                                                </h:panelGrid>
+
+                                            </h:panelGrid>
+                                        </p:outputPanel>
+                                    </div>
+
+                                </p:outputPanel>
+                            </p:outputPanel>
+
+                            <f:facet name="footer">
+                                <p:commandButton value="#{msg['saveLabel']}" icon="pi pi-check" actionListener="#{organizationBean.saveOrganization}" update="addEditOrgPanelId" process="addEditOrgPanelId @this" />
+                                <p:commandButton value="#{msg['cancelLabel']}" icon="pi pi-times" onclick="PF('manageOrgDialog').hide()" class="ui-button-secondary" />
+                            </f:facet>
+                        </p:dialog> 
+
+                        <p:confirmDialog widgetVar="deleteOrgDialog" showEffect="fade" width="300" message="#{msg['deleteTheOrganizationLabel']}?" header="#{msg['confirmLabel']}" severity="warn">
+                            <p:commandButton value="#{msg['yesLabel']}" icon="pi pi-check" actionListener="#{organizationBean.confirmDeleteOrganization}" process="@this" oncomplete="PF('deleteOrgDialog').hide()"/>
+                            <p:commandButton value="#{msg['noLabel']}" type="button" styleClass="ui-button-secondary" icon="pi pi-times" onclick="PF('deleteOrgDialog').hide()" />
+                        </p:confirmDialog>
+
+                        <p:confirmDialog global="true" showEffect="fade" width="300">
+                            <p:commandButton value="#{msg['yesLabel']}" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
+                            <p:commandButton value="#{msg['noLabel']}" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times" />
+                        </p:confirmDialog>
+                    </p:outputPanel>
+                </div>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

@@ -1,0 +1,209 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">#{msg['branchLabel']}</ui:define>
+    <ui:define name="head">
+        <h:outputStylesheet name="css/flags/flags.css" library="demo"/>
+    </ui:define>
+
+    <ui:define name="content">
+        <f:event listener="#{branchBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:form id="form">
+            <div class="col-12">
+                <p:breadCrumb>
+                    <p:menuitem url="#" icon="pi pi-home"/>
+                    <p:menuitem value="#{msg['systemManagementLabel']}" url="#"/>
+                    <p:menuitem value="#{msg['branchLabel']}" url="#"/>
+                </p:breadCrumb>
+            </div>
+            <div class="grid crud-demo">
+                <div class="col-12">
+                    <p:outputPanel class="card" id="branchMainPanelId">
+                        <p:growl id="messages" showDetail="true"/>
+
+                        <p:toolbar styleClass="mb-4">
+                            <p:toolbarGroup>
+                                <p:commandButton value="#{msg['newLabel']}" icon="pi pi-plus"
+                                                 actionListener="#{branchBean.addButtonAction}"
+                                                 update="@([id$=addEditBranchPanelId])"
+                                                 process="@([id$=addEditBranchPanelId]) @this"
+                                                 oncomplete="PF('manageBranchDialog').show()"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem"/>
+
+                                <p:commandButton value="#{msg['fetchBranchesLabel']}" icon="pi pi-search"
+                                                 action="#{branchBean.searchButtonAction}"
+                                                 update="@([id$=branchMainPanelId])" process="@this"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem"/>
+
+                                <h:outputLabel value="#{msg['noOfRecordsLabel']}:" rendered="#{branchBean.datatableRendered}"/>
+                                <h:outputText value="#{branchBean.recordsCount}"
+                                              rendered="#{branchBean.datatableRendered}"/>
+                            </p:toolbarGroup>
+                            <p:toolbarGroup align="right">
+                                <p:commandButton value="#{msg['exportLabel']}" icon="pi pi-upload" styleClass="ui-button-help"
+                                                 rendered="#{branchBean.datatableRendered}">
+                                    <p:dataExporter type="pdf" target="branchDataTableId" fileName="#{msg['branchesLabel']}"/>
+                                </p:commandButton>
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <p:outputPanel id="datatablePanelId" rendered="#{branchBean.datatableRendered}">
+                            <p:dataTable id="branchDataTableId" widgetVar="branchDataTable" var="branch"
+                                         value="#{branchBean.branchesList}"
+                                         reflow="true" styleClass="commoncrud-table"
+                                         rowKey="#{branch.id}" paginator="true" rows="10" paginatorPosition="bottom">
+                                <f:facet name="header">
+                                    <div class="products-table-header">
+                                        <span style="font-weight: bold">#{msg['searchBranchLabel']}</span>
+
+                                        <span class="filter-container ui-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <p:inputText id="globalFilter" onkeyup="PF('branchDataTable').filter()"
+                                                         placeholder="#{msg['searchLabel']}"/>
+                                        </span>
+                                    </div>
+                                </f:facet>
+
+                                <p:column headerText="#{msg['branchIdLabel']}" sortBy="#{branch.id}" filterBy="#{branch.id}">
+                                    <h:outputText value="#{branch.id}"/>
+                                </p:column>
+                                <p:column headerText="#{msg['branchNameLabel']}" sortBy="#{branch.branchName}"
+                                          filterBy="#{branch.branchName}">
+                                    <h:outputText value="#{branch.branchName}"/>
+                                </p:column>
+                                <p:column headerText="#{msg['organizationNameLabel']}"
+                                          sortBy="#{branch.organization.organizationName}"
+                                          filterBy="#{branch.organization.organizationName}">
+                                    <h:outputText value="#{branch.organization.organizationName}"/>
+                                </p:column>
+                                <p:column headerText="#{msg['flagLabel']}" exportable="false">
+                                    <span class="flag flag-#{branch.country.iso2.toLowerCase()}"
+                                          style="width: 30px; height: 20px"/>
+                                </p:column>
+                                <p:column headerText="#{msg['countryLabel']}" sortBy="#{branch.country.name}"
+                                          filterBy="#{branch.country.name}">
+                                    <h:outputText value="#{branch.country.name}"/>
+                                </p:column>
+                                <p:column headerText="#{msg['stateLabel']}" sortBy="#{branch.state}" filterBy="#{branch.state}">
+                                    <h:outputText value="#{branch.state}"/>
+                                </p:column>
+                                <p:column headerText="#{msg['cityLabel']}" sortBy="#{branch.city}" filterBy="#{branch.city}">
+                                    <h:outputText value="#{branch.city}"/>
+                                </p:column>
+                                <p:column headerText="#{msg['phoneNumberLabel']}" sortBy="#{branch.phoneNumber}"
+                                          filterBy="#{branch.phoneNumber}">
+                                    <h:outputText value="#{branch.phoneNumber}"/>
+                                </p:column>
+                                <p:column headerText="#{msg['emailIDLabel']}" sortBy="#{branch.email}" filterBy="#{branch.email}">
+                                    <h:outputText value="#{branch.email}"/>
+                                </p:column>
+
+                                <p:column exportable="false">
+                                    <p:commandButton icon="pi pi-pencil" update=":form:addEditBranchPanelId"
+                                                     oncomplete="PF('manageBranchDialog').show()"
+                                                     action="#{branchBean.confirmEditButtonAction}"
+                                                     styleClass="edit-button rounded-button ui-button-success"
+                                                     process="@this">
+                                        <f:setPropertyActionListener value="#{branch}"
+                                                                     target="#{branchBean.selectedBranch}"/>
+                                    </p:commandButton>
+                                    <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash"
+                                                     process="@this" oncomplete="PF('deleteBranchDialog').show()">
+                                        <f:setPropertyActionListener value="#{branch}"
+                                                                     target="#{branchBean.selectedBranch}"/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </p:outputPanel>
+
+                        <p:dialog header="#{msg['branchDetailsLabel']}" showEffect="fade" modal="true" widgetVar="manageBranchDialog"
+                                  responsive="true">
+                            <p:outputPanel id="addEditBranchPanelId" class="ui-fluid">
+                                <p:outputPanel>
+                                    <div class="field">
+                                        <p:outputLabel for="branchName">#{msg['branchNameLabel']}</p:outputLabel>
+                                        <p:inputText id="branchName" value="#{branchBean.branchName}"/>
+                                    </div>
+                                    <div class="field">
+                                        <p:outputLabel for="orglist">#{msg['organizationNameLabel']}</p:outputLabel>
+                                        <p:autoComplete id="orglist" dropdown="true"
+                                                        value="#{branchBean.branchOrganizationName}"
+                                                        completeMethod="#{branchBean.completeOrganization}"
+                                                        scrollHeight="250"/>
+                                    </div>
+                                    <div class="field">
+                                        <p:outputLabel for="countrylist">#{msg['countryLabel']}</p:outputLabel>
+                                        <p:autoComplete id="countrylist" dropdown="true"
+                                                        value="#{branchBean.branchCountry}"
+                                                        completeMethod="#{branchBean.completeCountry}"
+                                                        scrollHeight="250">
+                                            <p:ajax event="itemSelect" listener="#{branchBean.onOrgSelect}" update="statelist"/>
+                                        </p:autoComplete>
+                                    </div>
+                                    <div class="field">
+                                        <p:outputLabel for="statelist">#{msg['stateLabel']}</p:outputLabel>
+                                        <p:autoComplete id="statelist"
+                                                        dropdown="true"
+                                                        value="#{branchBean.branchState}"
+                                                        completeMethod="#{branchBean.completeState}"
+                                                        accesskey=" " scrollHeight="250">
+                                            <p:ajax event="itemSelect" listener="#{branchBean.onOrgSelect}" update="citylist"/>
+                                        </p:autoComplete>
+                                    </div>
+                                    <div class="field">
+                                        <p:outputLabel for="citylist">#{msg['cityLabel']}</p:outputLabel>
+                                        <p:autoComplete id="citylist"
+                                                        dropdown="true"
+                                                        value="#{branchBean.branchCity}"
+                                                        completeMethod="#{branchBean.completeCity}"
+                                                        accesskey=" " scrollHeight="250"/>
+                                    </div>
+                                    <div class="field">
+                                        <p:outputLabel for="phonenumber">#{msg['phoneNumberLabel']}</p:outputLabel>
+                                        <p:inputText id="phonenumber" value="#{branchBean.branchPhoneNumber}"/>
+                                    </div>
+                                    <div class="field">
+                                        <p:outputLabel for="email">#{msg['emailIDLabel']}</p:outputLabel>
+                                        <p:inputText id="email" value="#{branchBean.branchEmail}"/>
+                                    </div>
+
+                                </p:outputPanel>
+                            </p:outputPanel>
+
+                            <f:facet name="footer">
+                                <p:commandButton value="#{msg['saveLabel']}" icon="pi pi-check"
+                                                 actionListener="#{branchBean.saveBranch}" update="addEditBranchPanelId"
+                                                 process="addEditBranchPanelId @this"/>
+                                <p:commandButton value="#{msg['cancelLabel']}" icon="pi pi-times"
+                                                 onclick="PF('manageBranchDialog').hide()" class="ui-button-secondary"/>
+                            </f:facet>
+                        </p:dialog>
+
+                        <p:confirmDialog widgetVar="deleteBranchDialog" showEffect="fade" width="300"
+                                         message="#{msg['deleteTheBranchLabel']}?" header="#{msg['confirmLabel']}" severity="warn">
+                            <p:commandButton value="#{msg['yesLabel']}" icon="pi pi-check"
+                                             actionListener="#{branchBean.confirmDeleteBranch}" process="@this"
+                                             oncomplete="PF('deleteBranchDialog').hide()"/>
+                            <p:commandButton value="#{msg['noLabel']}" type="button" styleClass="ui-button-secondary"
+                                             icon="pi pi-times" onclick="PF('deleteBranchDialog').hide()"/>
+                        </p:confirmDialog>
+
+                        <p:confirmDialog global="true" showEffect="fade" width="300">
+                            <p:commandButton value="#{msg['yesLabel']}" type="button" styleClass="ui-confirmdialog-yes"
+                                             icon="pi pi-check"/>
+                            <p:commandButton value="#{msg['noLabel']}" type="button"
+                                             styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times"/>
+                        </p:confirmDialog>
+                    </p:outputPanel>
+                </div>
+            </div>
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>
+

@@ -1,0 +1,88 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">Modules Role Definition</ui:define>
+    <ui:define name="head">
+        <h:outputStylesheet name="css/flags/flags.css" library="demo" />
+    </ui:define>
+
+    <ui:define name="content">
+        <f:event listener="#{modulesRolePrivilegeDefinitionBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:form id="form">
+            <div class="col-12">
+                <p:breadCrumb>
+                    <p:menuitem url="#" icon="pi pi-home" />
+                    <p:menuitem value="User Management" url="#" />
+                    <p:menuitem value="Modules Role Definition" url="#" />
+                </p:breadCrumb>
+            </div>
+            <div class="grid crud-demo">
+                <div class="col-12">
+                    <p:outputPanel class="card" id="roleAddEditPanelId">
+                        <p:growl id="messages" showDetail="true" />
+
+                        <p:toolbar styleClass="mb-4"  rendered="#{modulesRolePrivilegeDefinitionBean.isDataAvailable}">
+                            <p:toolbarGroup>
+                                <p:commandButton value="Edit" icon="pi pi-pencil" 
+                                                 update="@([id$=roleAddEditPanelId])" process="@([id$=roleAddEditPanelId]) @this"
+                                                 actionListener="#{modulesRolePrivilegeDefinitionBean.editButtonAction}"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+                                <p:commandButton value="Delete Definition" icon="pi pi-trash" 
+                                                 oncomplete="PF('deleteDefinitionDialog').show()"
+                                                 styleClass="ui-button-danger" style="margin-right: .5rem" />
+
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <ui:repeat var="module" value="#{modulesRolePrivilegeDefinitionBean.roleModuleList}">
+                            <p:fieldset legend="#{module.module}">
+                                <p:dataTable var="submodule" value="#{module.roleSubModuleBean}"                                                >
+                                    <p:column headerText="Sub Modules" style="width: 15%;">
+                                        <h:outputText value="#{submodule.subModule}"/>
+                                    </p:column>
+                                    <p:column headerText="Privileges" style="width: 85%;">
+                                        <p:selectManyCheckbox id="lineDirectione" value="#{submodule.selectedPrivilegeList}" 
+                                                              disabled="#{modulesRolePrivilegeDefinitionBean.disableTabPanel}"
+                                                              layout="lineDirection">
+                                            <f:selectItems value="#{submodule.rolePrivilegeBeanList}" var="privilege" itemLabel="#{privilege}" itemValue="#{privilege}"
+                                                           itemDisabled="#{privilege eq modulesRolePrivilegeDefinitionBean.viewPrivilegeValue}"/>
+                                        </p:selectManyCheckbox>
+                                    </p:column>
+                                </p:dataTable>
+                            </p:fieldset>
+                            <p:spacer height="5"/>
+                        </ui:repeat>
+                        <p:toolbar styleClass="mb-4">
+                            <p:toolbarGroup align="right">
+                                <p:commandButton value="Save/Update" icon="pi pi-check" 
+                                                 update="@([id$=roleAddEditPanelId])"
+                                                 action="#{modulesRolePrivilegeDefinitionBean.saveRoleDefinition}"
+                                                 disabled="#{modulesRolePrivilegeDefinitionBean.disableTabPanel}"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+                                <p:commandButton value="Cancel" icon="pi pi-times" 
+                                                 update="@([id$=roleAddEditPanelId])" process="@([id$=roleAddEditPanelId]) @this"
+                                                 disabled="#{modulesRolePrivilegeDefinitionBean.disableTabPanel}"
+                                                 actionListener="#{modulesRolePrivilegeDefinitionBean.initializePageAttributes}"
+                                                 styleClass="ui-button-danger" style="margin-right: .5rem" />
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <p:confirmDialog widgetVar="deleteDefinitionDialog" showEffect="fade" width="300" message="Delete the entire Modules Role Definition?" header="Confirm" severity="warn">
+                            <p:commandButton value="Yes" icon="pi pi-check" action="#{modulesRolePrivilegeDefinitionBean.deleteButtonAction}" 
+                                             update="@([id$=roleAddEditPanelId])" process="@([id$=roleAddEditPanelId]) @this"
+                                             oncomplete="PF('deleteDefinitionDialog').hide()" />
+                            <p:commandButton value="No" type="button" styleClass="ui-button-secondary" icon="pi pi-times" onclick="PF('deleteDefinitionDialog').hide()" />
+                        </p:confirmDialog>
+
+                    </p:outputPanel>
+                </div>
+            </div>
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>

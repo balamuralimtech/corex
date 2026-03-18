@@ -1,0 +1,46 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">Database</ui:define>
+
+    <ui:define name="content">
+        <f:event listener="#{databaseDetailsBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:form id="form">
+            <div class="col-12">
+                <p:breadCrumb>
+                    <p:menuitem url="#" icon="pi pi-home" />
+                    <p:menuitem value="Server and DB" url="#" />
+                    <p:menuitem value="Database" url="#" />
+                </p:breadCrumb>
+            </div>
+            <div class="grid">
+                <div class="col-12">
+                    <div class="card ui-fluid">
+                        <h5>Database Details</h5>
+                        <div class="field">
+                            <p:outputLabel for="url">URL</p:outputLabel>
+                            <p:inputText id="url" value="#{databaseDetailsBean.jdbcUrl}" disabled="true" />
+                        </div>
+                        <div class="field">
+                            <p:outputLabel for="jdbcUsername">Username</p:outputLabel>
+                            <p:inputText id="jdbcUsername" value="#{databaseDetailsBean.jdbcUsername}" disabled="true"/>
+                        </div>
+                        <div class="field">
+                            <p:outputLabel for="jdbcProductName">Product Name</p:outputLabel>
+                            <p:inputText id="jdbcProductName" value="#{databaseDetailsBean.jdbcProductName}" disabled="true"/>
+                        </div>
+                        <div class="field">
+                            <p:outputLabel for="jdbcProductVersion">Product Version</p:outputLabel>
+                            <p:inputText id="jdbcProductVersion" value="#{databaseDetailsBean.jdbcProductVersion}" disabled="true"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </h:form>
+    </ui:define>
+
+</ui:composition>

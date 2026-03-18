@@ -1,0 +1,202 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">#{msg['countryLabel']}</ui:define>
+    <ui:define name="head">
+        <h:outputStylesheet name="css/flags/flags.css" library="demo" />
+    </ui:define>
+
+    <ui:define name="content">
+        <f:event listener="#{countryBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:form id="form">
+            <div class="col-12">
+                <p:breadCrumb>
+                    <p:menuitem url="#" icon="pi pi-home" />
+                    <p:menuitem value="#{msg['systemManagementLabel']}" url="#" />
+                    <p:menuitem value="#{msg['countryLabel']}" url="#" />
+                </p:breadCrumb>
+            </div>
+            <div class="grid crud-demo">
+                <div class="col-12">
+                    <p:outputPanel class="card" id="countryMainPanelId">
+                        <p:growl id="messages" showDetail="true" />
+
+                        <p:toolbar styleClass="mb-4">
+                            <p:toolbarGroup>
+                                <p:commandButton value="#{msg['newLabel']}" icon="pi pi-plus"
+                                                 actionListener="#{countryBean.addButtonAction}"
+                                                 update="@([id$=addEditCountPanelId])" process="@([id$=addEditCountPanelId]) @this"
+                                                 oncomplete="PF('ManageCountDialog').show()"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+                                <p:commandButton value="#{msg['fetchCountriesLabel']}" icon="pi pi-search"
+                                                 action="#{countryBean.searchButtonAction}"
+                                                 update="@([id$=countryMainPanelId])" process="@this"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+
+                                <h:outputLabel value="#{msg['noOfRecordsLabel']}:" rendered="#{countryBean.datatableRendered}"/>
+                                <h:outputText value="#{countryBean.recordsCount}" rendered="#{countryBean.datatableRendered}"/>
+                            </p:toolbarGroup>
+                            <p:toolbarGroup align="right">
+                                <p:commandButton value="#{msg['exportLabel']}" icon="pi pi-upload" styleClass="ui-button-help"
+                                                 rendered="#{countryBean.datatableRendered}">
+                                    <p:dataExporter type="pdf" target="countryDataTableId" fileName="#{msg['countryLabel']}"/>
+                                </p:commandButton>
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <p:outputPanel id="datatablePanelId" rendered="#{countryBean.datatableRendered}">
+                            <p:dataTable id="countryDataTableId" widgetVar="countDataTable" var="country" value="#{countryBean.countriesList}"
+                                         reflow="true" styleClass="commoncrud-table"
+                                         rowKey="#{country.id}" paginator="true" rows="10"  paginatorPosition="bottom">
+                                <f:facet name="header">
+                                    <div class="products-table-header">
+                                        <span style="font-weight: bold">#{msg['searchCountryLabel']}</span>
+
+                                        <span class="filter-container ui-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <p:inputText id="globalFilter" onkeyup="PF('countDataTable').filter()" placeholder="#{msg['searchLabel']}" />
+                                        </span>
+                                    </div>
+                                </f:facet>
+
+                                <p:column headerText="#{msg['countryIdLabel']}" sortBy="#{country.id}" filterBy="#{country.id}">
+                                    <h:outputText value="#{country.id}" />
+                                </p:column>
+                                <p:column headerText="#{msg['countryNameLabel']}" sortBy="#{country.name}" filterBy="#{country.name}">
+                                    <h:outputText value="#{country.name}" />
+                                </p:column>
+                                <p:column headerText="#{msg['flagLabel']}" sortBy="#{country.name}" filterBy="#{country.name}" exportable="false">
+                                    <span class="flag flag-#{country.iso2.toLowerCase()}" style="width: 30px; height: 20px"/>
+                                </p:column>
+                                <p:column headerText="#{msg['isoCode2Label']}" sortBy="#{country.iso2}" filterBy="#{country.iso2}" >
+                                    <h:outputText value="#{country.iso2}" />
+                                </p:column>
+                                <p:column headerText="#{msg['isoCode3Label']}" sortBy="#{country.iso3}" filterBy="#{country.iso3}">
+                                    <h:outputText value="#{country.iso3}" />
+                                </p:column>
+                                <p:column headerText="#{msg['capitalLabel']}" sortBy="#{country.capital}" filterBy="#{country.capital}">
+                                    <h:outputText value="#{country.capital}" />
+                                </p:column>
+                                <p:column headerText="#{msg['currencySymbolLabel']}" sortBy="#{country.currencySymbol}" filterBy="#{country.currencySymbol}">
+                                    <h:outputText value="#{country.currencySymbol}" />
+                                </p:column>
+                                <p:column headerText="#{msg['regionLabel']}" sortBy="#{country.region}" filterBy="#{country.region}">
+                                    <h:outputText value="#{country.region}" />
+                                </p:column>
+
+                                <p:column exportable="false">
+                                    <p:commandButton icon="pi pi-pencil" update=":form:addEditCountPanelId" oncomplete="PF('ManageCountDialog').show()"
+                                                     action="#{countryBean.confirmEditButtonAction}"
+                                                     styleClass="edit-button rounded-button ui-button-success" process="@this">
+                                        <f:setPropertyActionListener value="#{country}" target="#{countryBean.selectedCountry}" />
+                                    </p:commandButton>
+                                    <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash" process="@this" oncomplete="PF('deleteCountDialog').show()" >
+                                        <f:setPropertyActionListener value="#{country}" target="#{countryBean.selectedCountry}" />
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </p:outputPanel>
+
+                        <p:dialog header="#{msg['countryDetailsLabel']}"
+                                  showEffect="fade"
+                                  modal="true"
+                                  widgetVar="ManageCountDialog"
+                                  responsive="true"
+                                  width="85%">
+
+                            <p:panelGrid id="addEditCountPanelId"
+                                         columns="4"
+                                         columnClasses="ui-grid-col-2,ui-grid-col-4,ui-grid-col-2,ui-grid-col-4"
+                                         layout="grid"
+                                         styleClass="ui-panelgrid-blank ui-fluid"
+                                         style="border:0px none; background-color:transparent;">
+                                <p:outputLabel for="@next" value="#{msg['countryNameLabel']}"/>
+                                <p:inputText id="name" value="#{countryBean.name}"/>
+
+                                <p:outputLabel for="@next" value="#{msg['regionLabel']}"/>
+                                <p:autoComplete id="regionlist"
+                                                dropdown="true"
+                                                value="#{countryBean.region}"
+                                                completeMethod="#{countryBean.completeRegion}"
+                                                scrollHeight="250"/>
+
+                                <p:outputLabel for="@next" value="#{msg['subregionLabel']}"/>
+                                <p:autoComplete id="subregionlist"
+                                                dropdown="true"
+                                                value="#{countryBean.subregion}"
+                                                completeMethod="#{countryBean.completeSubregion}"
+                                                accesskey=" " scrollHeight="250"/>
+
+
+                                <p:outputLabel for="@next" value="#{msg['isoCode3Label']}"/>
+                                <p:inputText id="iso3" value="#{countryBean.iso3}" />
+
+                                <p:outputLabel for="@next" value="#{msg['isoCode2Label']}"/>
+                                <p:inputText id="iso2" value="#{countryBean.iso2}"/>
+
+                                <p:outputLabel for="@next" value="#{msg['numericCodeLabel']}"/>
+                                <p:inputText id="numericCode" value="#{countryBean.numericCode}"/>
+
+                                <p:outputLabel for="@next" value="#{msg['phoneCodeLabel']}"/>
+                                <p:inputText id="phonecode" value="#{countryBean.phonecode}" />
+
+                                <p:outputLabel for="@next" value="#{msg['capitalLabel']}"/>
+                                <p:inputText id="capital" value="#{countryBean.capital}" />
+
+                                <p:outputLabel for="@next" value="#{msg['currencyLabel']}"/>
+                                <p:inputText id="currency" value="#{countryBean.currency}" />
+
+                                <p:outputLabel for="@next" value="#{msg['currencyNameLabel']}"/>
+                                <p:inputText id="currencyName" value="#{countryBean.currencyName}" />
+
+                                <p:outputLabel for="@next" value="#{msg['currencySymbolLabel']}"/>
+                                <p:inputText id="currencySymbol" value="#{countryBean.currencySymbol}" />
+
+                                <p:outputLabel for="@next" value="#{msg['tldLabel']}"/>
+                                <p:inputText id="tld" value="#{countryBean.tld}" />
+
+                                <p:outputLabel for="@next" value="#{msg['nativeNameLabel']}"/>
+                                <p:inputText id="nativeName" value="#{countryBean.nativeName}" />
+
+                                <p:outputLabel for="@next" value="#{msg['nationalityLabel']}"/>
+                                <p:inputText id="nationality" value="#{countryBean.nationality}" />
+
+                                <p:outputLabel for="@next" value="#{msg['timezonesLabel']}"/>
+                                <p:inputText id="timezones" value="#{countryBean.timezones}" />
+
+
+                                <p:outputLabel for="@next" value="#{msg['translationsLabel']}"/>
+                                <p:inputText id="translations" value="#{countryBean.translations}"  style="width: 100%" />
+
+
+
+                            </p:panelGrid>
+                            <f:facet name="footer">
+                                <center>
+                                    <p:commandButton value="#{msg['saveLabel']}" icon="pi pi-check" actionListener="#{countryBean.saveCountry}" update="addEditCountPanelId" process="addEditCountPanelId @this"  />
+                                    <p:commandButton value="#{msg['cancelLabel']}" icon="pi pi-times" onclick="PF('ManageCountDialog').hide()" class="ui-button-secondary"  />
+                                </center>
+                            </f:facet>
+                        </p:dialog>
+
+                        <p:confirmDialog widgetVar="deleteCountDialog" showEffect="fade" width="300" message="#{msg['deleteTheCountryLabel']}?" header="#{msg['confirmLabel']}" severity="warn">
+                            <p:commandButton value="#{msg['yesLabel']}" icon="pi pi-check" actionListener="#{countryBean.confirmDeleteCountry}" process="@this" oncomplete="PF('deleteCountDialog').hide()"/>
+                            <p:commandButton value="#{msg['noLabel']}" type="button" styleClass="ui-button-secondary" icon="pi pi-times" onclick="PF('deleteCountDialog').hide()" />
+                        </p:confirmDialog>
+
+                        <p:confirmDialog global="true" showEffect="fade" width="300">
+                            <p:commandButton value="#{msg['yesLabel']}" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
+                            <p:commandButton value="#{msg['noLabel']}" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times" />
+                        </p:confirmDialog>
+                    </p:outputPanel>
+                </div>
+            </div>
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>

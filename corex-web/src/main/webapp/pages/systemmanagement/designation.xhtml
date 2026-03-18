@@ -1,0 +1,126 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">#{msg['designationLabel']}</ui:define>
+    <ui:define name="head">
+        <h:outputStylesheet name="css/flags/flags.css" library="demo" />
+    </ui:define>
+
+    <ui:define name="content">
+        <f:event listener="#{designationBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:form id="form">
+            <div class="col-12">
+                <p:breadCrumb>
+                    <p:menuitem url="#" icon="pi pi-home" />
+                    <p:menuitem value="#{msg['systemManagementLabel']}" url="#" />
+                    <p:menuitem value="#{msg['designationLabel']}" url="#" />
+                </p:breadCrumb>
+            </div>
+            <div class="grid crud-demo">
+                <div class="col-12">
+                    <p:outputPanel class="card" id="designationMainPanelId">
+                        <p:growl id="messages" showDetail="true" />
+
+                        <p:toolbar styleClass="mb-4">
+                            <p:toolbarGroup>
+                                <p:commandButton value="#{msg['newLabel']}" icon="pi pi-plus"
+                                                 actionListener="#{designationBean.addButtonAction}"
+                                                 update="@([id$=addEditDesigPanelId])" process="@([id$=addEditDesigPanelId]) @this"
+                                                 oncomplete="PF('manageDesigDialog').show()"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+                                <p:commandButton value="#{msg['fetchCountriesLabel']}" icon="pi pi-search"
+                                                 action="#{designationBean.searchButtonAction}"
+                                                 update="@([id$=designationMainPanelId])" process="@this"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+                                <h:outputLabel value="#{msg['noOfRecordsLabel']}:" rendered="#{designationBean.datatableRendered}"/>
+                                <h:outputText value="#{designationBean.recordsCount}" rendered="#{designationBean.datatableRendered}"/>
+                            </p:toolbarGroup>
+                            <p:toolbarGroup align="right">
+                                <p:commandButton value="#{msg['exportLabel']}" icon="pi pi-upload" styleClass="ui-button-help" ajax="false">
+                                    <p:dataExporter type="pdf" target="desigDataTableId" fileName="#{msg['designationLabel']}"/>
+                                </p:commandButton>
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <p:outputPanel id="datatablePanelId" rendered="#{designationBean.datatableRendered}">
+                            <p:dataTable id="desigDataTableId" widgetVar="desigDataTable" var="designation" value="#{designationBean.designationList}" reflow="true" styleClass="commoncrud-table"
+                                         rowKey="#{designation.id}" paginator="true" rows="10"  paginatorPosition="bottom">
+                                <f:facet name="header">
+                                    <div class="products-table-header">
+                                        <span style="font-weight: bold">#{msg['searchDesignationLabel']}</span>
+
+                                        <span class="filter-container ui-input-icon-left">
+                                        <i class="pi pi-search"></i>
+                                        <p:inputText id="globalFilter" onkeyup="PF('desigDataTable').filter()" placeholder="#{msg['searchLabel']}" />
+                                    </span>
+                                    </div>
+                                </f:facet>
+
+                                <p:column headerText="#{msg['designationIdLabel']}" sortBy="#{designation.id}" filterBy="#{designation.id}">
+                                    <h:outputText value="#{designation.id}" />
+                                </p:column>
+                                <p:column headerText="#{msg['designationNameLabel']}" sortBy="#{designation.designationName}" filterBy="#{designation.designationName}">
+                                    <h:outputText value="#{designation.designationName}" />
+                                </p:column>
+                                <p:column headerText="#{msg['organizationNameLabel']}" sortBy="#{designation.organization.organizationName}" filterBy="#{designation.organization.organizationName}">
+                                    <h:outputText value="#{designation.organization.organizationName}" />
+                                </p:column>
+
+                                <p:column exportable="false">
+                                    <p:commandButton icon="pi pi-pencil" update=":form:addEditDesigPanelId" oncomplete="PF('manageDesigDialog').show()"
+                                                     action="#{designationBean.confirmEditButtonAction}"
+                                                     styleClass="edit-button rounded-button ui-button-success" process="@this">
+                                        <f:setPropertyActionListener value="#{designation}" target="#{designationBean.selectedDesignation}" />
+                                    </p:commandButton>
+                                    <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash" process="@this" oncomplete="PF('deleteDesigDialog').show()" >
+                                        <f:setPropertyActionListener value="#{designation}" target="#{designationBean.selectedDesignation}" />
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </p:outputPanel>
+
+                        <p:dialog header="#{msg['designationDetailsLabel']}" showEffect="fade" modal="true" widgetVar="manageDesigDialog" responsive="true">
+                            <p:outputPanel id="addEditDesigPanelId" class="ui-fluid">
+                                <p:outputPanel>
+                                    <div class="field">
+                                        <p:outputLabel for="desigName">#{msg['designationNameLabel']}</p:outputLabel>
+                                        <p:inputText id="desigName" value="#{designationBean.designationName}" />
+                                    </div>
+                                    <div class="field">
+                                        <p:outputLabel for="orglist">#{msg['organizationNameLabel']}</p:outputLabel>
+                                        <p:autoComplete id="orglist" dropdown="true" value="#{designationBean.designationOrganizationName}"
+                                                        completeMethod="#{designationBean.completeOrganization}"
+                                                        scrollHeight="250"/>
+                                    </div>
+
+
+                                </p:outputPanel>
+                            </p:outputPanel>
+
+                            <f:facet name="footer">
+                                <p:commandButton value="#{msg['saveLabel']}" icon="pi pi-check" actionListener="#{designationBean.saveDesignation}" update="addEditDesigPanelId" process="addEditDesigPanelId @this" />
+                                <p:commandButton value="#{msg['cancelLabel']}" icon="pi pi-times" onclick="PF('manageDesigDialog').hide()" class="ui-button-secondary" />
+                            </f:facet>
+                        </p:dialog>
+
+                        <p:confirmDialog widgetVar="deleteDesigDialog" showEffect="fade" width="300" message="#{msg['deleteTheDesignationLabel']}?" header="#{msg['confirmLabel']}" severity="warn">
+                            <p:commandButton value="#{msg['yesLabel']}" icon="pi pi-check" actionListener="#{designationBean.confirmDeleteDesignation}" process="@this" oncomplete="PF('deleteDesigDialog').hide()"/>
+                            <p:commandButton value="#{msg['noLabel']}" type="button" styleClass="ui-button-secondary" icon="pi pi-times" onclick="PF('deleteDesigDialog').hide()" />
+                        </p:confirmDialog>
+
+                        <p:confirmDialog global="true" showEffect="fade" width="300">
+                            <p:commandButton value="#{msg['yesLabel']}" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
+                            <p:commandButton value="#{msg['noLabel']}" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times" />
+                        </p:confirmDialog>
+                    </p:outputPanel>
+                </div>
+            </div>
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>

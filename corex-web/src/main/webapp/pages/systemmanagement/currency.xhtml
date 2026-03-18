@@ -1,0 +1,132 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">#{msg['currencyLabel']}</ui:define>
+    <ui:define name="head">
+        <h:outputStylesheet name="css/flags/flags.css" library="demo" />
+    </ui:define>
+
+    <ui:define name="content">
+        <f:event listener="#{currencyDetailsBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:form id="form">
+            <div class="col-12">
+                <p:breadCrumb>
+                    <p:menuitem url="#" icon="pi pi-home" />
+                    <p:menuitem value="#{msg['systemManagementLabel']}" url="#" />
+                    <p:menuitem value="#{msg['currencyLabel']}" url="#" />
+                </p:breadCrumb>
+            </div>
+            <div class="grid crud-demo">
+                <div class="col-12">
+                    <p:outputPanel class="card" id="currencyMainPanelId">
+                        <p:growl id="messages" showDetail="true" />
+
+                        <p:toolbar styleClass="mb-4">
+                            <p:toolbarGroup>
+                                <p:commandButton value="#{msg['newLabel']}" icon="pi pi-plus"
+                                                 actionListener="#{currencyDetailsBean.addButtonAction}" 
+                                                 update="@([id$=addEditCurrPanelId])" process="@([id$=addEditCurrPanelId]) @this" 
+                                                 oncomplete="PF('manageCurrDialog').show()"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+                                <p:commandButton value="#{msg['fetchCurrenciesLabel']}" icon="pi pi-search"
+                                                 action="#{currencyDetailsBean.searchButtonAction}" 
+                                                 update="@([id$=currencyMainPanelId])" process="@this" 
+                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+
+                                <h:outputLabel value="#{msg['noOfRecordsLabel']}:" rendered="#{currencyDetailsBean.datatableRendered}"/>
+                                <h:outputText value="#{currencyDetailsBean.recordsCount}" rendered="#{currencyDetailsBean.datatableRendered}"/>
+                            </p:toolbarGroup>
+                            <p:toolbarGroup align="right">
+                                <p:commandButton value="#{msg['exportLabel']}" icon="pi pi-upload" styleClass="ui-button-help"
+                                                 rendered="#{currencyDetailsBean.datatableRendered}">
+                                    <p:dataExporter type="pdf" target="currDataTableId" fileName="#{msg['currencyLabel']}"/>
+                                </p:commandButton>
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <p:outputPanel id="datatablePanelId" rendered="#{currencyDetailsBean.datatableRendered}">
+                            <p:dataTable id="currDataTableId" widgetVar="CurrDataTable" var="curr" value="#{currencyDetailsBean.currenciesList}" 
+                                         reflow="true" styleClass="commoncrud-table"
+                                         rowKey="#{curr.currencyId}" paginator="true" rows="10"  paginatorPosition="bottom">
+                                <f:facet name="header">
+                                    <div class="products-table-header">
+                                        <span style="font-weight: bold">#{msg['searchCurrencyLabel']}</span>
+
+                                        <span class="filter-container ui-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <p:inputText id="globalFilter" onkeyup="PF('CurrDataTable').filter()" placeholder="#{msg['searchLabel']}" />
+                                        </span>
+                                    </div>
+                                </f:facet>
+
+                                <p:column headerText="#{msg['currencyIdLabel']}" sortBy="#{curr.currencyId}" filterBy="#{curr.currencyId}">
+                                    <h:outputText value="#{curr.currencyId}" />
+                                </p:column>
+                                <p:column headerText="#{msg['currencyNameLabel']}" sortBy="#{curr.currencyName}" filterBy="#{curr.currencyName}">
+                                    <h:outputText value="#{curr.currencyName}" />
+                                </p:column>
+                                <p:column headerText="#{msg['currencyCodeLabel']}" sortBy="#{curr.currencyCode}" filterBy="#{curr.currencyCode}">
+                                    <h:outputText value="#{curr.currencyCode}" />
+                                </p:column>
+                                <p:column headerText="#{msg['currencySymbolLabel']}" sortBy="#{curr.symbol}" filterBy="#{curr.symbol}">
+                                    <h:outputText value="#{curr.symbol}" />
+                                </p:column>
+
+                                <p:column exportable="false">
+                                    <p:commandButton icon="pi pi-pencil" update=":form:addEditCurrPanelId" oncomplete="PF('manageCurrDialog').show()"
+                                                     action="#{currencyDetailsBean.confirmEditButtonAction}"
+                                                     styleClass="edit-button rounded-button ui-button-success" process="@this">
+                                        <f:setPropertyActionListener value="#{curr}" target="#{currencyDetailsBean.selectedCurrencyDetails}" />
+                                    </p:commandButton>
+                                    <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash" process="@this" oncomplete="PF('deleteCurrDialog').show()" >
+                                        <f:setPropertyActionListener value="#{curr}" target="#{currencyDetailsBean.selectedCurrencyDetails}" />
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </p:outputPanel>
+
+                        <p:dialog header="#{msg['currencyDetailsLabel']}" showEffect="fade" modal="true" widgetVar="manageCurrDialog" responsive="true">
+                            <p:outputPanel id="addEditCurrPanelId" class="ui-fluid">
+                                <p:outputPanel>
+                                    <div class="field">
+                                        <p:outputLabel for="name">#{msg['currencyNameLabel']}</p:outputLabel>
+                                        <p:inputText id="name" value="#{currencyDetailsBean.currencyName}" />
+                                    </div>
+                                    <div class="field">
+                                        <p:outputLabel for="currencyCode">#{msg['currencyCodeLabel']}</p:outputLabel>
+                                        <p:inputText id="currencyCode" value="#{currencyDetailsBean.currencyCode}" />
+                                    </div>
+                                    <div class="field">
+                                        <p:outputLabel for="currencySymbol">#{msg['currencySymbolLabel']}</p:outputLabel>
+                                        <p:inputText id="currencySymbol" value="#{currencyDetailsBean.symbol}" />
+                                    </div>
+                                </p:outputPanel>
+                            </p:outputPanel>
+
+                            <f:facet name="footer">
+                                <p:commandButton value="#{msg['saveLabel']}" icon="pi pi-check" actionListener="#{currencyDetailsBean.saveCurrency}" update="addEditCurrPanelId" process="addEditCurrPanelId @this" />
+                                <p:commandButton value="#{msg['cancelLabel']}" icon="pi pi-times" onclick="PF('manageCurrDialog').hide()" class="ui-button-secondary" />
+                            </f:facet>
+                        </p:dialog> 
+
+                        <p:confirmDialog widgetVar="deleteCurrDialog" showEffect="fade" width="300" message="#{msg[deleteTheCurrencyLabel]}?" header="#{msg['confirmLabel']}" severity="warn">
+                            <p:commandButton value="#{msg['yesLabel']}" icon="pi pi-check" actionListener="#{currencyDetailsBean.confirmDeleteCurrency}" process="@this" oncomplete="PF('deleteCurrDialog').hide()"/>
+                            <p:commandButton value="#{msg['noLabel']}" type="button" styleClass="ui-button-secondary" icon="pi pi-times" onclick="PF('deleteCurrDialog').hide()" />
+                        </p:confirmDialog>
+
+                        <p:confirmDialog global="true" showEffect="fade" width="300">
+                            <p:commandButton value="#{msg['yesLabel']}" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
+                            <p:commandButton value="#{msg['noLabel']}" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times" />
+                        </p:confirmDialog>
+                    </p:outputPanel>
+                </div>
+            </div>
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>

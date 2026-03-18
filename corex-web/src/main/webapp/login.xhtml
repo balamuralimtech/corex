@@ -1,0 +1,166 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <title>CareX</title>
+        <link rel="shortcut icon" href="#{request.contextPath}/resources/demo/images/coretix/coretixfavicon.png" type="image/x-icon" />
+        <h:outputStylesheet name="css/bootstrap.min.css" library="avalon-layout"/>
+        <h:outputStylesheet name="css/bootstrap-icons.css" library="avalon-layout"/>
+        <h:outputStylesheet name="css/templatemo-festava-live.css" library="avalon-layout"/>
+        <style>
+            body, html {
+                height: 100%;
+                margin: 0;
+                font-family: 'Arial', sans-serif;
+            }
+
+            /* Centered login panel */
+            .login-panel {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 400px;
+                padding: 30px;
+                background-color: rgba(255, 255, 255, 1);
+                box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+                text-align: center;
+            }
+
+            /* Title styling */
+            h2 {
+                font-size: 24px;
+                margin-bottom: 20px;
+                color: #333;
+                font-weight: bold;
+            }
+
+            /* Input field styling */
+            .login-panel input {
+                width: 100%;
+                padding: 15px;
+                margin: 10px 0;
+                box-sizing: border-box;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                font-size: 14px;
+            }
+
+            /* Checkbox and Forgot Password link container */
+            .login-panel .options {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+                font-size: 14px;
+            }
+
+            .login-panel .checkbox-container {
+                display: flex;
+                align-items: center;
+            }
+
+            .login-panel .checkbox-container input[type="checkbox"] {
+                margin-right: 8px;
+            }
+
+            .login-panel a {
+                color: #007bff;
+                text-decoration: none;
+            }
+
+            .login-panel a:hover {
+                text-decoration: underline;
+            }
+
+            /* Footer text styling */
+            .login-panel .footer-text {
+                font-size: 12px;
+                color: #666;
+                margin-top: 20px;
+            }
+
+            .login-panel .footer-text strong {
+                font-weight: bold;
+            }
+
+            /* Icon styling (optional, can use a logo here) */
+            .login-panel .footer-icon {
+                display: block;
+                margin: 10px auto 0;
+            }
+
+            #logo {
+                position: absolute;
+                top: 32px;
+                left: 50px;
+                width: 210px;
+                height: auto;
+            }
+
+            #organizationlogo{
+                position: absolute;
+                top: 32px;
+                right: 50px;
+                height: auto;
+            }
+        </style>
+    </h:head>
+
+    <h:body>
+        <nav class="navbar navbar-expand-lg">
+            <div class="container">
+                <a class="navbar-brand">
+                    <p:graphicImage id="logo" name="images/logo-dark.png" library="avalon-layout" style="width:160px"/>
+                </a>
+
+                <a class="navbar-brand">
+                    <!--<p:graphicImage id="organizationlogo" name="images/logo-sm.jpg" library="avalon-layout"/>-->
+
+                </a>
+            </div>
+        </nav>
+        <!-- Centered login panel -->
+        <div class="login-panel">
+
+            <h2>Sign In</h2>
+            <f:event listener="#{loginBean.initializePageAttributes}" type="preRenderComponent"/>
+            <h:form id="form">
+
+                <p:growl id="messages" showDetail="true" />
+                <!-- Email field -->
+                <p:inputText id="email"  value="#{loginBean.username}" placeholder="Username" />
+
+                <!-- Password field -->
+                <p:password id="password"  placeholder="Password" value="#{loginBean.password}" />
+
+                <!-- Remember me and Forgot Password link -->
+                <div class="options">
+                    <div class="checkbox-container" style="display: none">
+                        <h:selectBooleanCheckbox id="rememberMe" />
+                        <label for="rememberMe" style="text-wrap: nowrap;">Remember me</label>
+                    </div>
+                    <p:link outcome="/pages/home/homePage">Forget Password?</p:link>
+                </div>
+
+                <!-- Sign In button -->
+                <p:commandButton value="Sign In" icon="pi pi-sign-in"
+                                 action="#{loginBean.login}"
+                                 style="width: 100%;"
+                                 styleClass="ui-button-raised mr-2 mb-2"
+                                 update="@this"/>
+
+                <!--<p:button outcome="/pages/home/homePage" value="Sign In" icon="pi pi-sign-in" />-->
+                <!-- Footer text -->
+                <div class="footer-text">
+                    <p>© CoreX Logic. <h:outputText value="#{loginBean.year}"/> </p>
+                </div>
+            </h:form>
+        </div>
+    </h:body>
+    <h:outputStylesheet name="css/layout-#{guestPreferences.layout}.css" library="avalon-layout" />
+    <h:outputStylesheet name="css/demo.css" library="demo" />
+</html>

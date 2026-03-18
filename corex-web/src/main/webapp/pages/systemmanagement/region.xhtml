@@ -1,0 +1,119 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">#{msg['regionLabel']}</ui:define>
+    <ui:define name="head">
+        <h:outputStylesheet name="css/flags/flags.css" library="demo" />
+    </ui:define>
+
+    <ui:define name="content">
+        <f:event listener="#{regionBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:form id="form">
+            <div class="col-12">
+                <p:breadCrumb>
+                    <p:menuitem url="#" icon="pi pi-home" />
+                    <p:menuitem value="#{msg['systemManagementLabel']}" url="#" />
+                    <p:menuitem value="#{msg['regionLabel']}" url="#" />
+                </p:breadCrumb>
+            </div>
+            <div class="grid crud-demo">
+                <div class="col-12">
+                    <p:outputPanel class="card" id="regionMainPanelId">
+                        <p:growl id="messages" showDetail="true" />
+
+                        <p:toolbar styleClass="mb-4">
+                            <p:toolbarGroup>
+                                <p:commandButton value="#{msg['newLabel']}" icon="pi pi-plus"
+                                                 actionListener="#{regionBean.addButtonAction}"
+                                                 update="@([id$=addEditRegPanelId])" process="@([id$=addEditRegPanelId]) @this"
+                                                 oncomplete="PF('manageRegionDialog').show()"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+                                <p:commandButton value="#{msg['fetchRegionsLabel']}" icon="pi pi-search"
+                                                 action="#{regionBean.searchButtonAction}"
+                                                 update="@([id$=regionMainPanelId])" process="@this"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+
+                                <h:outputLabel value="#{msg['noOfRecordsLabel']}:" rendered="#{regionBean.datatableRendered}"/>
+                                <h:outputText value="#{regionBean.recordsCount}" rendered="#{regionBean.datatableRendered}"/>
+                            </p:toolbarGroup>
+                            <p:toolbarGroup align="right">
+                                <p:commandButton value="#{msg['exportLabel']}" icon="pi pi-upload" styleClass="ui-button-help"
+                                                 rendered="#{regionBean.datatableRendered}">
+                                    <p:dataExporter type="pdf" target="regDataTableId" fileName="#{msg['regionLabel']}"/>
+                                </p:commandButton>
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <p:outputPanel id="datatablePanelId" rendered="#{regionBean.datatableRendered}">
+                            <p:dataTable id="regDataTableId" widgetVar="regDataTable" var="region" value="#{regionBean.regionList}"
+                                         reflow="true" styleClass="commoncrud-table"
+                                         rowKey="#{region.id}" paginator="true" rows="10"  paginatorPosition="bottom">
+                                <f:facet name="header">
+                                    <div class="products-table-header">
+                                        <span style="font-weight: bold">#{msg['searchRegionLabel']}</span>
+
+                                        <span class="filter-container ui-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <p:inputText id="globalFilter" onkeyup="PF('regDataTable').filter()" placeholder="#{msg['searchLabel']}" />
+                                        </span>
+                                    </div>
+                                </f:facet>
+
+                                <p:column headerText="#{msg['regionIdLabel']}" sortBy="#{region.id}" filterBy="#{region.id}">
+                                    <h:outputText value="#{region.id}" />
+                                </p:column>
+                                <p:column headerText="#{msg['regionNameLabel']}" sortBy="#{region.name}" filterBy="#{region.name}">
+                                    <h:outputText value="#{region.name}" />
+                                </p:column>
+
+                                <p:column exportable="false">
+                                    <p:commandButton icon="pi pi-pencil" update=":form:addEditRegPanelId" oncomplete="PF('manageRegionDialog').show()"
+                                                     action="#{regionBean.confirmEditButtonAction}"
+                                                     styleClass="edit-button rounded-button ui-button-success" process="@this">
+                                        <f:setPropertyActionListener value="#{region}" target="#{regionBean.selectedRegion}" />
+                                    </p:commandButton>
+                                    <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash" process="@this" oncomplete="PF('deleteRegDialog').show()" >
+                                        <f:setPropertyActionListener value="#{region}" target="#{regionBean.selectedRegion}" />
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </p:outputPanel>
+
+                        <p:dialog header="#{msg['regionDetailsLabel']}" showEffect="fade" modal="true" widgetVar="manageRegionDialog" responsive="true">
+                            <p:outputPanel id="addEditRegPanelId" class="ui-fluid">
+                                <p:outputPanel>
+                                    <div class="field">
+                                        <p:outputLabel for="name">#{msg['regionNameLabel']}</p:outputLabel>
+                                        <p:inputText id="name" value="#{regionBean.regionName}" />
+                                    </div>
+
+                                </p:outputPanel>
+                            </p:outputPanel>
+
+                            <f:facet name="footer">
+                                <p:commandButton value="#{msg['saveLabel']}" icon="pi pi-check" actionListener="#{regionBean.saveRegion}" update="addEditRegPanelId" process="addEditRegPanelId @this" />
+                                <p:commandButton value="#{msg['cancelLabel']}" icon="pi pi-times" onclick="PF('manageRegionDialog').hide()" class="ui-button-secondary" />
+                            </f:facet>
+                        </p:dialog>
+
+                        <p:confirmDialog widgetVar="deleteRegDialog" showEffect="fade" width="300" message="#{msg['deleteTheRegionLabel']}?" header="#{msg['confirmLabel']}" severity="warn">
+                            <p:commandButton value="#{msg['yesLabel']}" icon="pi pi-check" actionListener="#{regionBean.confirmDeleteRegion}" process="@this" oncomplete="PF('deleteRegDialog').hide()"/>
+                            <p:commandButton value="#{msg['noLabel']}" type="button" styleClass="ui-button-secondary" icon="pi pi-times" onclick="PF('deleteRegDialog').hide()" />
+                        </p:confirmDialog>
+
+                        <p:confirmDialog global="true" showEffect="fade" width="300">
+                            <p:commandButton value="#{msg['yesLabel']}" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
+                            <p:commandButton value="#{msg['noLabel']}" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times" />
+                        </p:confirmDialog>
+                    </p:outputPanel>
+                </div>
+            </div>
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>

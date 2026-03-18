@@ -1,0 +1,164 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">#{msg['notificationSettingsLabel']}</ui:define>
+    <ui:define name="head">
+        <h:outputStylesheet name="css/flags/flags.css" library="demo" />
+    </ui:define>
+
+    <ui:define name="content">
+        <f:event listener="#{notificationSettingBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:form id="form">
+            <div class="col-12">
+                <p:breadCrumb>
+                    <p:menuitem url="#" icon="pi pi-home" />
+                    <p:menuitem value="#{msg['systemManagementLabel']}" url="#" />
+                    <p:menuitem value="#{msg['notificationSettingsLabel']}" url="#" />
+                </p:breadCrumb>
+            </div>
+            <div class="grid crud-demo">
+                <div class="col-12">
+                    <p:outputPanel class="card" id="notificationSettingMainPanelId">
+                        <p:growl id="messages" showDetail="true" />
+
+                        <p:toolbar styleClass="mb-4">
+                            <p:toolbarGroup>
+                                <p:commandButton value="#{msg['newLabel']}" icon="pi pi-plus"
+                                                 actionListener="#{notificationSettingBean.addButtonAction}" 
+                                                 update="@([id$=addEditNotifPanelId])" process="@([id$=addEditNotifPanelId]) @this" 
+                                                 oncomplete="PF('manageNotifDialog').show()"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+                                <p:commandButton value="#{msg['fetchNotificationSettingLabel']}" icon="pi pi-search"
+                                                 action="#{notificationSettingBean.searchButtonAction}" 
+                                                 update="@([id$=notificationSettingMainPanelId])" process="@this" 
+                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+
+                                <h:outputLabel value="#{msg['noOfRecordsLabel']}:" rendered="#{notificationSettingBean.datatableRendered}"/>
+                                <h:outputText value="#{notificationSettingBean.recordsCount}" rendered="#{notificationSettingBean.datatableRendered}"/>
+                            </p:toolbarGroup>
+                            <p:toolbarGroup align="right">
+                                <p:commandButton value="#{msg['exportLabel']}" icon="pi pi-upload" styleClass="ui-button-help"
+                                                 rendered="#{notificationSettingBean.datatableRendered}">
+                                    <p:dataExporter type="pdf" target="notifDataTableId" fileName="#{msg['notificationSettingsLabel']}"/>
+                                </p:commandButton>
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <p:outputPanel id="datatablePanelId" rendered="#{notificationSettingBean.datatableRendered}">
+                            <p:dataTable id="notifDataTableId" widgetVar="notifDataTable" var="notificationSetting" value="#{notificationSettingBean.notificationSettingsList}" 
+                                         reflow="true" styleClass="commoncrud-table"
+                                         rowKey="#{notificationSetting.id}" paginator="true" rows="10"  paginatorPosition="bottom">
+                                <f:facet name="header">
+                                    <div class="products-table-header">
+                                        <span style="font-weight: bold">#{msg['searchNotificationSettingLabel']}</span>
+
+                                        <span class="filter-container ui-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <p:inputText id="globalFilter" onkeyup="PF('notifDataTable').filter()" placeholder="#{msg['searchLabel']}" />
+                                        </span>
+                                    </div>
+                                </f:facet>
+
+                                <p:column headerText="#{msg['idLabel']}" sortBy="#{notificationSetting.id}" filterBy="#{notificationSetting.id}">
+                                    <h:outputText value="#{notificationSetting.id}" />
+                                </p:column>
+                                <p:column headerText="#{msg['emailIDLabel']}" sortBy="#{notificationSetting.emailId}" filterBy="#{notificationSetting.emailId}">
+                                    <h:outputText value="#{notificationSetting.emailId}" />
+                                </p:column>
+
+                                <p:column headerText="#{msg['passwordLabel']}" sortBy="#{notificationSetting.password}" filterBy="#{notificationSetting.password}">
+                                    <h:outputText value="#{notificationSetting.password}" />
+                                </p:column>
+
+                                <p:column headerText="#{msg['organizationLabel']}" sortBy="#{notificationSetting.organization.organizationName}" filterBy="#{notificationSetting.organization.organizationName}">
+                                    <h:outputText value="#{notificationSetting.organization.organizationName}" />
+                                </p:column>
+
+                                <p:column headerText="#{msg['smtpAuthLabel']}" sortBy="#{notificationSetting.smtpAuth}" filterBy="#{notificationSetting.smtpAuth}" exportable="false">
+                                    <h:outputText value="#{notificationSetting.smtpAuth}" />
+                                </p:column>
+                                <p:column headerText="#{msg['smtpStarttlsEnableLabel']}" sortBy="#{notificationSetting.smtpStarttlsEnable}" filterBy="#{notificationSetting.smtpStarttlsEnable}" exportable="false">
+                                    <h:outputText value="#{notificationSetting.smtpStarttlsEnable}" />
+                                </p:column>
+                                <p:column headerText="#{msg['smtpHostLabel']}" sortBy="#{notificationSetting.smtpHost}" filterBy="#{notificationSetting.smtpHost}" exportable="false">
+                                    <h:outputText value="#{notificationSetting.smtpHost}" />
+                                </p:column>
+                                <p:column headerText="#{msg['smtpPortLabel']}" sortBy="#{notificationSetting.smtpPort}" filterBy="#{notificationSetting.smtpPort}" exportable="false">
+                                    <h:outputText value="#{notificationSetting.smtpPort}" />
+                                </p:column>
+
+                                <p:column exportable="false">
+                                    <p:commandButton icon="pi pi-pencil" update=":form:addEditNotifPanelId" oncomplete="PF('manageNotifDialog').show()"
+                                                     action="#{notificationSettingBean.confirmEditButtonAction}"
+                                                     styleClass="edit-button rounded-button ui-button-success" process="@this">
+                                        <f:setPropertyActionListener value="#{notificationSetting}" target="#{notificationSettingBean.selectedNotificationSetting}" />
+                                    </p:commandButton>
+                                    <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash" process="@this" oncomplete="PF('deleteNotifDialog').show()" >
+                                        <f:setPropertyActionListener value="#{notificationSetting}" target="#{notificationSettingBean.selectedNotificationSetting}" />
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </p:outputPanel>
+
+                        <p:dialog header="#{msg['notificationSettingDetailsLabel']}"
+                                  showEffect="fade" 
+                                  modal="true" 
+                                  widgetVar="manageNotifDialog" 
+                                  responsive="true"
+                                  width="85%">
+
+                            <p:panelGrid id="addEditNotifPanelId"
+                                         columns="4"
+                                         columnClasses="ui-grid-col-2,ui-grid-col-4,ui-grid-col-2,ui-grid-col-4"
+                                         layout="grid"
+                                         styleClass="ui-panelgrid-blank ui-fluid"
+                                         style="border:0px none; background-color:transparent;">
+
+                                <p:outputLabel for="orglist">Organization Name</p:outputLabel>
+                                <p:autoComplete id="orglist" 
+                                                dropdown="true" 
+                                                value="#{notificationSettingBean.organizationName}"
+                                                completeMethod="#{notificationSettingBean.completeOrganization}" 
+                                                scrollHeight="250"/>
+
+                                <p:outputLabel for="@next" value="#{msg['emailIDLabel']}"/>
+                                <p:inputText id="UserId" value="#{notificationSettingBean.emailId}"/>
+                                <p:outputLabel for="@next" value="#{msg['passwordLabel']}"/>
+                                <p:inputText id="Password" value="#{notificationSettingBean.password}"/>
+                                <p:outputLabel for="@next" value="#{msg['smtpAuthLabel']}"/>
+                                <p:inputText id="smtpAuth" value="#{notificationSettingBean.smtpAuth}"/>
+                                <p:outputLabel for="@next" value="#{msg['smtpAuthLabel']}"/>
+                                <p:inputText id="smtpStarttlsEnable" value="#{notificationSettingBean.smtpStarttlsEnable}"/>
+                                <p:outputLabel for="@next" value="#{msg['smtpHostLabel']}"/>
+                                <p:inputText id="smtpHost" value="#{notificationSettingBean.smtpHost}"/>
+                                <p:outputLabel for="@next" value="#{msg['smtpPortLabel']}"/>
+                                <p:inputText id="smtpPort" value="#{notificationSettingBean.smtpPort}"/>
+
+                            </p:panelGrid>
+                            <f:facet name="footer">
+                                <center>
+                                    <p:commandButton value="#{msg['saveLabel']}" icon="pi pi-check" actionListener="#{notificationSettingBean.saveNotificationSetting()}" update="addEditNotifPanelId" process="addEditNotifPanelId @this"  />
+                                    <p:commandButton value="#{msg['cancelLabel']}" icon="pi pi-times" onclick="PF('manageNotifDialog').hide()" class="ui-button-secondary"  />
+                                </center>                               
+                            </f:facet>
+                        </p:dialog> 
+
+                        <p:confirmDialog widgetVar="deleteNotifDialog" showEffect="fade" width="300" message="#{msg['deleteTheNotificationSettingLabel']}?" header="#{msg['confirmLabel']}" severity="warn">
+                            <p:commandButton value="#{msg['yesLabel']}" icon="pi pi-check" actionListener="#{notificationSettingBean.confirmDeleteNotificationSetting}" process="@this" oncomplete="PF('deleteNotifDialog').hide()"/>
+                            <p:commandButton value="#{msg['noLabel']}" type="button" styleClass="ui-button-secondary" icon="pi pi-times" onclick="PF('deleteNotifDialog').hide()" />
+                        </p:confirmDialog>
+
+                        <p:confirmDialog global="true" showEffect="fade" width="300">
+                            <p:commandButton value="#{msg['yesLabel']}" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
+                            <p:commandButton value="#{msg['noLabel']}" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times" />
+                        </p:confirmDialog>
+                    </p:outputPanel>
+                </div>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

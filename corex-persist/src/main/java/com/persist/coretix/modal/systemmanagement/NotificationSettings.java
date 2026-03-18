@@ -1,0 +1,140 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.persist.coretix.modal.systemmanagement;
+import java.io.Serializable;
+import java.sql.Timestamp;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+
+/**
+ *
+ * @author Pragadeesh
+ */
+
+@Entity
+@Table(name = "NotificationSettings")
+public class NotificationSettings implements Serializable {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    @ManyToOne
+    @JoinColumn(name = "organization_id", nullable = false)
+    private Organizations organization;
+
+    @Column(name = "email_Id", nullable = false, length = 255)
+    private String emailId;
+
+    @Column(name = "password", nullable = false, length = 255)
+    private String password;
+
+    @Column(name = "smtpAuth", nullable = false)
+    private boolean smtpAuth;
+
+    @Column(name = "smtpStarttlsEnable", nullable = false)
+    private boolean smtpStarttlsEnable;
+
+    @Column(name = "smtpHost", nullable = false, length = 255)
+    private String smtpHost;
+
+    @Column(name = "smtpPort", nullable = false, length = 10)
+    private String smtpPort;
+
+    @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", updatable = false)
+    private Timestamp createdAt;
+
+    @Column(name = "updated_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
+    private Timestamp updatedAt;
+
+    // Getters and Setters
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public Organizations getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(Organizations organization) {
+        this.organization = organization;
+    }
+
+    public String getEmailId() {
+        return emailId;
+    }
+
+    public void setEmailId(String emailId) {
+        this.emailId = emailId;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public boolean isSmtpAuth() {
+        return smtpAuth;
+    }
+
+    public void setSmtpAuth(boolean smtpAuth) {
+        this.smtpAuth = smtpAuth;
+    }
+
+    public boolean isSmtpStarttlsEnable() {
+        return smtpStarttlsEnable;
+    }
+
+    public void setSmtpStarttlsEnable(boolean smtpStarttlsEnable) {
+        this.smtpStarttlsEnable = smtpStarttlsEnable;
+    }
+
+    public String getSmtpHost() {
+        return smtpHost;
+    }
+
+    public void setSmtpHost(String smtpHost) {
+        this.smtpHost = smtpHost;
+    }
+
+    public String getSmtpPort() {
+        return smtpPort;
+    }
+
+    public void setSmtpPort(String smtpPort) {
+        this.smtpPort = smtpPort;
+    }
+
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Timestamp getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Timestamp updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+}

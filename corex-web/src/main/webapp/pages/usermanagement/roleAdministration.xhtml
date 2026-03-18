@@ -1,0 +1,198 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">Role Administration</ui:define>
+    <ui:define name="head">
+        <h:outputStylesheet name="css/flags/flags.css" library="demo" />
+    </ui:define>
+
+    <ui:define name="content">
+        <f:event listener="#{roleAdministrationBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:form id="form">
+            <div class="col-12">
+                <p:breadCrumb>
+                    <p:menuitem url="#" icon="pi pi-home" />
+                    <p:menuitem value="User Management" url="#" />
+                    <p:menuitem value="Role Administration" url="#" />
+                </p:breadCrumb>
+            </div>
+            <div class="grid crud-demo">
+                <div class="col-12">
+                    <p:outputPanel class="card" id="orgMainPanelId">
+                        <p:growl id="messages" showDetail="true" />
+
+                        <p:toolbar styleClass="mb-4">
+                            <p:toolbarGroup>
+                                <p:commandButton value="New" icon="pi pi-plus" 
+                                                 actionListener="#{roleAdministrationBean.addButtonAction}" 
+                                                 update="@([id$=addEditOrgPanelId])" process="@([id$=addEditOrgPanelId]) @this" 
+                                                 oncomplete="PF('manageOrgDialog').show()"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+                                <p:commandButton value="Fetch Roles" icon="pi pi-search" 
+                                                 action="#{roleAdministrationBean.searchButtonAction}" 
+                                                 update="@([id$=orgMainPanelId])" process="@this" 
+                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+
+                                <h:outputLabel value="Number of Records: " rendered="#{roleAdministrationBean.datatableRendered}"/>
+                                <h:outputText value="#{roleAdministrationBean.recordsCount}" rendered="#{roleAdministrationBean.datatableRendered}"/>
+                            </p:toolbarGroup>
+                            <p:toolbarGroup align="right">
+                                <p:commandButton value="Export" icon="pi pi-upload" styleClass="ui-button-help"
+                                                 rendered="#{roleAdministrationBean.datatableRendered}">
+                                    <p:dataExporter type="pdf" target="orgDataTableId" fileName="Roles"/>
+                                </p:commandButton>
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <p:outputPanel id="datatablePanelId" rendered="#{roleAdministrationBean.datatableRendered}">
+                            <figure class="highcharts-figure">
+                                <div id="container"></div>
+                            </figure>
+
+                            <!-- JavaScript to Initialize Highcharts -->
+                            <h:outputScript>
+                                Highcharts.chart('container', {
+                                chart: {
+                                plotBackgroundColor: null,
+                                plotBorderWidth: 0,
+                                plotShadow: false
+                                },
+                                title: {
+                                text: 'Roles Usage Status',
+                                align: 'center',
+                                verticalAlign: 'middle',
+                                y: 60,
+                                style: {
+                                fontSize: '1.1em'
+                                }
+                                },
+                                tooltip: {
+                                pointFormat: '{series.name}: {series.y}'
+                                },
+                                accessibility: {
+                                point: {
+                                valueSuffix: '%'
+                                }
+                                },
+                                plotOptions: {
+                                pie: {
+                                dataLabels: {
+                                enabled: true,
+                                format: '{point.name}: {point.y}',
+                                distance: -50,
+                                style: {
+                                fontWeight: 'bold',
+                                color: 'white'
+                                }
+                                },
+                                startAngle: -90,
+                                endAngle: 90,
+                                center: ['50%', '75%'],
+                                size: '110%'
+                                }
+                                },
+                                series: [{
+                                type: 'pie',
+                                name: 'Browser share',
+                                innerSize: '50%',
+                                data: [
+                                ['Roles Used', #{roleAdministrationBean.rolesUsedCount}],
+                                ['Roles Unused', #{roleAdministrationBean.rolesNotUsedCount}]
+                                ]
+                                }]
+                                });
+                            </h:outputScript>
+
+
+                            <p:dataTable id="orgDataTableId" widgetVar="dataTableOrg" var="role" value="#{roleAdministrationBean.rolesList}"
+                                         reflow="true" styleClass="commoncrud-table"
+                                         rowKey="#{role.id}" paginator="true" rows="10"  paginatorPosition="bottom">
+                                <f:facet name="header">
+                                    <div class="products-table-header">
+                                        <span style="font-weight: bold">Search Role</span>
+
+                                        <span class="filter-container ui-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <p:inputText id="globalFilter" onkeyup="PF('dataTableOrg').filter()" placeholder="Search" />
+                                        </span>
+                                    </div>
+                                </f:facet>
+
+                                <p:column headerText="Role Id" sortBy="#{role.id}" filterBy="#{role.id}">
+                                    <h:outputText value="#{role.id}" />
+                                </p:column>
+                                <p:column headerText="Role Name" sortBy="#{role.roleName}" filterBy="#{role.roleName}">
+                                    <h:outputText value="#{role.roleName}" />
+                                </p:column>
+
+
+                                <p:column exportable="false">
+                                    <p:commandButton icon="pi pi-pencil" oncomplete="PF('manageOrgDialog').show()"
+                                                     action="#{roleAdministrationBean.confirmEditButtonAction}"
+                                                     styleClass="edit-button rounded-button ui-button-success"
+                                                     update="@([id$=addEditOrgPanelId])" process="@([id$=addEditOrgPanelId]) @this" >
+                                        <f:setPropertyActionListener value="#{role}" target="#{roleAdministrationBean.selectedRole}" />
+                                    </p:commandButton>
+                                    <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash" process="@this" oncomplete="PF('deleteOrgDialog').show()" >
+                                        <f:setPropertyActionListener value="#{role}" target="#{roleAdministrationBean.selectedRole}" />
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </p:outputPanel>
+
+                        <p:dialog header="Role Details" showEffect="fade" modal="true" widgetVar="manageOrgDialog" responsive="true" 
+                                  width="85%">
+                            <p:outputPanel id="addEditOrgPanelId" class="ui-fluid" style="height: 600px; overflow-y: auto;">
+                                <p:panelGrid columns="2" layout="flex"
+                                             columnClasses="col-12 md:col-3 xl:col-2, col-12 md:col-9 xl:col-4"
+                                             contentStyleClass="align-items-baseline ui-fluid">
+                                    <p:outputLabel for="text1" value="Role name :"/>
+                                    <p:inputText id="text1" value="#{roleAdministrationBean.roleName}"/>
+                                </p:panelGrid>
+                                <p:spacer height="4"/>
+                                <ui:repeat var="module" value="#{roleAdministrationBean.roleModuleList}">
+                                    <p:fieldset legend="#{module.module}">
+                                        <p:dataTable var="submodule" value="#{module.roleSubModuleBean}"                                                >
+                                            <p:column headerText="Sub Modules" style="width: 15%;">
+                                                <h:outputText value="#{submodule.subModule}"/>
+                                            </p:column>
+                                            <p:column headerText="Privileges" style="width: 85%;">
+                                                <p:selectManyCheckbox id="lineDirectione" value="#{submodule.selectedPrivilegeList}" 
+                                                                      layout="lineDirection">
+                                                    <f:selectItems value="#{submodule.rolePrivilegeBeanList}" var="privilege" 
+                                                                   itemLabel="#{privilege}" itemValue="#{privilege}"/>
+                                                </p:selectManyCheckbox>
+                                            </p:column>
+                                        </p:dataTable>
+                                    </p:fieldset>
+                                    <p:spacer height="5"/>
+                                </ui:repeat>
+                            </p:outputPanel>
+
+                            <f:facet name="footer">
+                                <p:commandButton value="Save" icon="pi pi-check" actionListener="#{roleAdministrationBean.saveRole}" update="addEditOrgPanelId" process="addEditOrgPanelId @this" />
+                                <p:commandButton value="Cancel" icon="pi pi-times" onclick="PF('manageOrgDialog').hide()" class="ui-button-secondary" />
+                            </f:facet>
+                        </p:dialog> 
+
+                        <p:confirmDialog widgetVar="deleteOrgDialog" showEffect="fade" width="300" message="Delete the Role?" header="Confirm" severity="warn">
+                            <p:commandButton value="Yes" icon="pi pi-check" actionListener="#{roleAdministrationBean.confirmDeleteRole}" process="@this" oncomplete="PF('deleteOrgDialog').hide()"/>
+                            <p:commandButton value="No" type="button" styleClass="ui-button-secondary" icon="pi pi-times" onclick="PF('deleteOrgDialog').hide()" />
+                        </p:confirmDialog>
+
+                        <p:confirmDialog global="true" showEffect="fade" width="300">
+                            <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
+                            <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times" />
+                        </p:confirmDialog>
+                    </p:outputPanel>
+                </div>
+            </div>
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>

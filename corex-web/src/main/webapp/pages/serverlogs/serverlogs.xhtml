@@ -1,0 +1,79 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">Server Logs</ui:define>
+
+    <ui:define name="content">
+        <h:body>
+            <f:event listener="#{logViewerBean.initializePageAttributes}" type="preRenderComponent"/>
+            <h:form id="appserverlogFormId">
+                <div class="col-12">
+                    <p:breadCrumb>
+                        <p:menuitem url="#" icon="pi pi-home"/>
+                        <p:menuitem value="Server and DB" url="#"/>
+                        <p:menuitem value="Server Logs" url="#"/>
+                    </p:breadCrumb>
+                </div>
+                <p:panel id="appserverlogMainPanelId" styleClass="card">
+
+                    <p:commandButton id="refreshButtonId"
+                                     value="Refresh"
+                                     icon="pi pi-refresh"
+                                     update="@([id$=appserverlogMainPanelId]),@([id$=logDialog])"
+                                     action="#{logViewerBean.refreshButtonAction}"/>
+
+
+                    <!-- Button to open the selected log file in a dialog -->
+                    <p:commandButton id="loadLogButtonId"
+                                     value="Open Log File"
+                                     disabled="#{empty logViewerBean.selectedNode or logViewerBean.selectedNode.type ne 'file'}"
+                                     oncomplete="PF('logDialog').show()"
+                                     update="@([id$=logDialog])"
+                                     action="#{logViewerBean.loadSelectedLogFile}"/>
+
+                    <!-- Button to download the selected log file-->
+                    <p:commandButton id="downloadFileId" value="Download Selected File"
+                                     disabled="#{empty logViewerBean.selectedNode or logViewerBean.selectedNode.type ne 'file'}"
+                                     icon="pi pi-download">
+                        <p:fileDownload value="#{logViewerBean.fileToDownload}"/>
+                    </p:commandButton>
+
+                    <!-- Button to download all log files as a ZIP and Disabled before logs folder has to be given permission (future work)-->
+                    <p:commandButton id="downloadZipId"
+                                     value="Download All Files as ZIP"
+                                     disabled="true"
+                                     icon="pi pi-download">
+                        <p:fileDownload value="#{logViewerBean.zipToDownload}"/>
+                    </p:commandButton>
+
+                    <!-- Tree component to display log files and folders -->
+                    <p:tree value="#{logViewerBean.root}" var="node" selectionMode="single"
+                            selection="#{logViewerBean.selectedNode}" style="margin-bottom:20px;">
+                        <p:ajax event="select" update="@([id$=loadLogButtonId]), @([id$=downloadFileId])"
+                                listener="#{logViewerBean.selectionChanged}"/>
+                        <p:treeNode type="folder">
+                            <h:outputText value="#{node}"/>
+                        </p:treeNode>
+                        <p:treeNode type="file">
+                            <h:outputText value="#{node}"/>
+                        </p:treeNode>
+                    </p:tree>
+
+
+                </p:panel>
+
+                <!-- Dialog to display the selected log file's content -->
+                <p:dialog header="Log File: #{logViewerBean.selectedFileName}" widgetVar="logDialog" modal="true"
+                          height="500" width="1200" id="logDialog">
+                    <h:outputText value="#{logViewerBean.selectedFileContent}" escape="false"
+                                  style="white-space: pre-wrap;" id="logContent"/>
+                </p:dialog>
+            </h:form>
+        </h:body>
+    </ui:define>
+
+</ui:composition>

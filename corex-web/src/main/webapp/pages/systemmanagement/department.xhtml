@@ -1,0 +1,142 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">#{msg['departmentLabel']}</ui:define>
+    <ui:define name="head">
+        <h:outputStylesheet name="css/flags/flags.css" library="demo" />
+    </ui:define>
+
+    <ui:define name="content">
+        <f:event listener="#{departmentBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:form id="form">
+            <div class="col-12">
+                <p:breadCrumb>
+                    <p:menuitem url="#" icon="pi pi-home" />
+                    <p:menuitem value="#{msg['systemManagementLabel']}" url="#" />
+                    <p:menuitem value="#{msg['departmentLabel']}" url="#" />
+                </p:breadCrumb>
+            </div>
+            <div class="grid crud-demo">
+                <div class="col-12">
+                    <p:outputPanel class="card" id="departmentMainPanelId">
+                        <p:growl id="messages" showDetail="true" />
+
+                        <p:toolbar styleClass="mb-4">
+                            <p:toolbarGroup>
+                                <p:commandButton value="#{msg['newLabel']}" icon="pi pi-plus"
+                                                 actionListener="#{departmentBean.addButtonAction}"
+                                                 update="@([id$=addEditDeptPanelId])" process="@([id$=addEditDeptPanelId]) @this"
+                                                 oncomplete="PF('manageDeptDialog').show()"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+                                <p:commandButton value="#{msg['fetchDepartmentsLabel']}" icon="pi pi-search"
+                                                 action="#{departmentBean.searchButtonAction}"
+                                                 update="@([id$=departmentMainPanelId])" process="@this"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+                                <h:outputLabel value="#{msg['noOfRecordsLabel']}" rendered="#{departmentBean.datatableRendered}"/>
+                                <h:outputText value="#{departmentBean.recordsCount}" rendered="#{departmentBean.datatableRendered}"/>
+                            </p:toolbarGroup>
+                            <p:toolbarGroup align="right">
+                                <p:commandButton value="#{msg['exportLabel']}" icon="pi pi-upload" styleClass="ui-button-help"
+                                                 rendered="#{departmentBean.datatableRendered}">
+                                    <p:dataExporter type="pdf" target="deptDataTableId" fileName="#{msg['departmentLabel']}"/>
+                                </p:commandButton>
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <p:outputPanel id="datatablePanelId" rendered="#{departmentBean.datatableRendered}">
+                            <p:dataTable id="deptDataTableId" widgetVar="deptDataTable" var="department" value="#{departmentBean.departmentList}" reflow="true" styleClass="commoncrud-table"
+                                         rowKey="#{department.id}" paginator="true" rows="10"  paginatorPosition="bottom">
+                                <f:facet name="header">
+                                    <div class="products-table-header">
+                                        <span style="font-weight: bold">#{msg['searchDepartmentLabel']}</span>
+
+                                        <span class="filter-container ui-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <p:inputText id="globalFilter" onkeyup="PF('deptDataTable').filter()" placeholder="#{msg['searchLabel']}" />
+                                        </span>
+                                    </div>
+                                </f:facet>
+
+                                <p:column headerText="#{msg['departmentIdLabel']}" sortBy="#{department.id}" filterBy="#{department.id}">
+                                    <h:outputText value="#{department.id}" />
+                                </p:column>
+                                <p:column headerText="#{msg['departmentNameLabel']}" sortBy="#{department.departmentName}" filterBy="#{department.departmentName}">
+                                    <h:outputText value="#{department.departmentName}" />
+                                </p:column>
+                                <p:column headerText="#{msg['organizationNameLabel']}" sortBy="#{department.organization.organizationName}" filterBy="#{department.organization.organizationName}">
+                                    <h:outputText value="#{department.organization.organizationName}" />
+                                </p:column>
+                                <p:column headerText="#{msg['phoneNumberLabel']}" sortBy="#{department.phoneNumber}" filterBy="#{department.phoneNumber}">
+                                    <h:outputText value="#{department.phoneNumber}" />
+                                </p:column>
+                                <p:column headerText="#{msg['emailIDLabel']}" sortBy="#{department.email}" filterBy="#{department.email}">
+                                    <h:outputText value="#{department.email}" />
+                                </p:column>
+
+                                <p:column exportable="false">
+                                    <p:commandButton icon="pi pi-pencil" update=":form:addEditDeptPanelId" oncomplete="PF('manageDeptDialog').show()"
+                                                     action="#{departmentBean.confirmEditButtonAction}"
+                                                     styleClass="edit-button rounded-button ui-button-success" process="@this">
+                                        <f:setPropertyActionListener value="#{department}" target="#{departmentBean.selectedDepartment}" />
+                                    </p:commandButton>
+                                    <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash" process="@this" oncomplete="PF('deleteDeptDialog').show()" >
+                                        <f:setPropertyActionListener value="#{department}" target="#{departmentBean.selectedDepartment}" />
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </p:outputPanel>
+
+                        <p:dialog header="#{msg['departmentDetailsLabel']}" showEffect="fade" modal="true" widgetVar="manageDeptDialog" responsive="true">
+                            <p:outputPanel id="addEditDeptPanelId" class="ui-fluid">
+                                <p:outputPanel>
+                                    <div class="field">
+                                        <p:outputLabel for="depName">#{msg['departmentNameLabel']}</p:outputLabel>
+                                        <p:inputText id="depName" value="#{departmentBean.departmentName}" />
+                                    </div>
+                                    <div class="field">
+                                        <p:outputLabel for="orglist">#{msg['organizationNameLabel']}</p:outputLabel>
+                                        <p:autoComplete id="orglist" dropdown="true" value="#{departmentBean.departmentOrganizationName}"
+                                                        completeMethod="#{departmentBean.completeOrganization}"
+                                                        scrollHeight="250"/>
+
+                                    </div>
+
+                                    <div class="field">
+                                        <p:outputLabel for="phonenumber">#{msg['phoneNumberLabel']}</p:outputLabel>
+                                        <p:inputText id="phonenumber" value="#{departmentBean.departmentPhoneNumber}" />
+                                    </div>
+                                    <div class="field">
+                                        <p:outputLabel for="email">#{msg['emailIDLabel']}</p:outputLabel>
+                                        <p:inputText id="email" value="#{departmentBean.departmentEmail}" />
+                                    </div>
+
+                                </p:outputPanel>
+                            </p:outputPanel>
+
+                            <f:facet name="footer">
+                                <p:commandButton value="#{msg['saveLabel']}" icon="pi pi-check" actionListener="#{departmentBean.saveDepartment}" update="addEditDeptPanelId" process="addEditDeptPanelId @this" />
+                                <p:commandButton value="#{msg['cancelLabel']}" icon="pi pi-times" onclick="PF('manageDeptDialog').hide()" class="ui-button-secondary" />
+                            </f:facet>
+                        </p:dialog>
+
+                        <p:confirmDialog widgetVar="deleteDeptDialog" showEffect="fade" width="300" message="#{msg['deleteTheDepartmentLabel']}?" header="#{msg['confirmLabel']}" severity="warn">
+                            <p:commandButton value="#{msg['yesLabel']}" icon="pi pi-check" actionListener="#{departmentBean.confirmDeleteDepartment}" process="@this" oncomplete="PF('deleteDeptDialog').hide()"/>
+                            <p:commandButton value="#{msg['noLabel']}" type="button" styleClass="ui-button-secondary" icon="pi pi-times" onclick="PF('deleteDeptDialog').hide()" />
+                        </p:confirmDialog>
+
+                        <p:confirmDialog global="true" showEffect="fade" width="300">
+                            <p:commandButton value="#{msg['yesLabel']}" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
+                            <p:commandButton value="#{msg['noLabel']}" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times" />
+                        </p:confirmDialog>
+                    </p:outputPanel>
+                </div>
+            </div>
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>

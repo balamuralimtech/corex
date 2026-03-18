@@ -1,0 +1,290 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">User Management</ui:define>
+    <ui:define name="head">
+        <h:outputStylesheet name="css/flags/flags.css" library="demo"/>
+    </ui:define>
+
+    <ui:define name="content">
+        <f:event listener="#{userAdministrationBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:form id="userform">
+            <div class="col-12">
+                <p:breadCrumb>
+                    <p:menuitem url="#" icon="pi pi-home"/>
+                    <p:menuitem value="User  Management" url="#"/>
+                    <p:menuitem value="User Administration" url="#"/>
+                </p:breadCrumb>
+            </div>
+            <div class="grid crud-demo">
+                <div class="col-12">
+                    <p:outputPanel class="card" id="usersMainPanelId">
+                        <p:growl id="messages" showDetail="true"/>
+
+                        <p:toolbar styleClass="mb-4">
+                            <p:toolbarGroup>
+                                <p:commandButton value="New" icon="pi pi-plus"
+                                                 actionListener="#{userAdministrationBean.addButtonAction}"
+                                                 update="@([id$=addEditCountPanelId])"
+                                                 process="@([id$=addEditCountPanelId]) @this"
+                                                 oncomplete="PF('ManageUserDialog').show()"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem"/>
+                                <p:commandButton value="Fetch Users" icon="pi pi-search"
+                                                 action="#{userAdministrationBean.searchButtonAction}"
+                                                 update="@([id$=usersMainPanelId])" process="@this"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem"/>
+
+                                <h:outputLabel value="Number of Records: "
+                                               rendered="#{userAdministrationBean.datatableRendered}"/>
+                                <h:outputText value="#{userAdministrationBean.recordsCount}"
+                                              rendered="#{userAdministrationBean.datatableRendered}"/>
+                            </p:toolbarGroup>
+                            <p:toolbarGroup align="right">
+                                <p:commandButton value="Export" icon="pi pi-upload" styleClass="ui-button-help"
+                                                 rendered="#{userAdministrationBean.datatableRendered}">
+                                    <p:dataExporter type="pdf" target="countryDataTableId" fileName="Users"/>
+                                </p:commandButton>
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <p:outputPanel id="datatablePanelId" rendered="#{userAdministrationBean.datatableRendered}">
+                            <figure class="highcharts-figure">
+                                <div id="container"></div>
+                            </figure>
+
+                            <!-- JavaScript to Initialize Highcharts -->
+                            <h:outputScript>
+                                Highcharts.chart('container', {
+                                    chart: {
+                                        type: 'pie',
+                                        options3d: {
+                                            enabled: true,
+                                            alpha: 45,
+                                            beta: 0
+                                        }
+                                    },
+                                    title: {
+                                        text: 'Users Current Status',
+                                        align: 'left'
+                                    },
+                                    accessibility: {
+                                        point: {
+                                            valueSuffix: '%'
+                                        }
+                                    },
+                                    tooltip: {
+                                        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+                                    },
+                                    plotOptions: {
+                                        pie: {
+                                            allowPointSelect: true,
+                                            cursor: 'pointer',
+                                            depth: 35,
+                                            dataLabels: {
+                                                enabled: true,
+                                                format: '{point.name}: {point.y}'
+                                            }
+                                        }
+                                    },
+                                    series: [{
+                                        type: 'pie',
+                                        name: 'Users Status',
+                                        data: [
+                                            ['Users Logged In', #{userAdministrationBean.usersLoggedInCount}],
+                                            ['Users Logged Out', #{userAdministrationBean.usersLoggedOutCount}],
+                                            ['Users Never Logged In', #{userAdministrationBean.usersNeverLoggedinCount}]
+                                        ]
+                                    }]
+                                });
+                            </h:outputScript>
+                            <p:dataTable id="usersDataTableId" widgetVar="countDataTable" var="user"
+                                         value="#{userAdministrationBean.usersList}"
+                                         reflow="true" styleClass="commoncrud-table"
+                                         rowKey="#{user.id}" paginator="true" rows="10" paginatorPosition="bottom">
+                                <f:facet name="header">
+                                    <div class="products-table-header">
+                                        <span style="font-weight: bold">Search Users</span>
+                                        <span class="filter-container ui-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <p:inputText id="globalFilter" onkeyup="PF('countDataTable').filter()"
+                                                         placeholder="Search"/>
+                                        </span>
+                                    </div>
+                                </f:facet>
+
+                                <p:column headerText="userName" sortBy="#{user.userName}" filterBy="#{user.userName}">
+                                    <h:outputText value="#{user.userName}"/>
+                                </p:column>
+                                <p:column headerText="User Login Status">
+                                    <p:tag value="#{user.status == 1 ? 'Logged In' : user.status == 6 ? 'Logged Out' : user.status == 3 ? 'Never Logged In' : 'Unknown'}"
+                                    rounded="true" severity="#{user.status == 1 ? 'success' : user.status == 6 ? 'danger' : user.status == 3 ? 'warning' : 'info'}"/>
+                                </p:column>
+                                <p:column headerText="emailId" sortBy="#{user.emailId}" filterBy="#{user.emailId}">
+                                    <h:outputText value="#{user.emailId}"/>
+                                </p:column>
+                                <p:column headerText="roleName" sortBy="#{user.role.roleName}"
+                                          filterBy="#{user.role.roleName}">
+                                    <h:outputText value="#{user.role.roleName}"/>
+                                </p:column>
+                                <p:column headerText="organization" sortBy="#{user.organization.organizationName}"
+                                          filterBy="#{user.organization.organizationName}">
+                                    <h:outputText value="#{user.organization.organizationName}"/>
+                                </p:column>
+                                <p:column headerText="name" sortBy="#{user.country.name}"
+                                          filterBy="#{user.country.name}">
+                                    <span class="flag flag-#{user.country.iso2.toLowerCase()}"
+                                          style="width: 30px; height: 20px"/>
+                                    <h:outputText value="#{user.country.name}"/>
+                                </p:column>
+
+                                <p:column exportable="false">
+                                    <p:commandButton icon="pi pi-pencil" update="@([id$=usersMainPanelId])"
+                                                     oncomplete="PF('ManageUserDialog').show()"
+                                                     action="#{userAdministrationBean.confirmEditButtonAction}"
+                                                     styleClass="edit-button rounded-button ui-button-success"
+                                                     process="@this">
+                                        <f:setPropertyActionListener value="#{user}"
+                                                                     target="#{userAdministrationBean.selectedUserDetail}"/>
+                                    </p:commandButton>
+                                    <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash"
+                                                     process="@this" oncomplete="PF('deleteCountDialog').show()">
+                                        <f:setPropertyActionListener value="#{user}"
+                                                                     target="#{userAdministrationBean.selectedUserDetail}"/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </p:outputPanel>
+
+                        <p:dialog header="User Details"
+                                  showEffect="fade"
+                                  modal="true"
+                                  widgetVar="ManageUserDialog"
+                                  responsive="true"
+                                  width="85%">
+
+                            <p:panelGrid id="addEditCountPanelId"
+                                         columns="4"
+                                         columnClasses="ui-grid-col-2,ui-grid-col-4,ui-grid-col-2,ui-grid-col-4"
+                                         layout="grid"
+                                         styleClass="ui-panelgrid-blank ui-fluid"
+                                         style="border:0px none; background-color:transparent;">
+                                <p:outputLabel for="@next" value="User Name*"/>
+                                <p:inputText id="name" value="#{userAdministrationBean.userName}"/>
+
+                                <p:outputLabel for="@next" value="Password*"/>
+                                <p:password id="pwd1" value="#{userAdministrationBean.password}" match="pwd2"
+                                            label="Password" required="true" toggleMask="true" redisplay="true"/>
+
+                                <p:outputLabel for="@next" value="Confirm Password*"/>
+                                <p:password id="pwd2" value="#{userAdministrationBean.password}"
+                                            label="Confirm Password" required="true" toggleMask="true"
+                                            redisplay="true"/>
+
+                                <p:outputLabel for="@next" value="Organization*"/>
+                                <p:autoComplete id="orglist"
+                                                dropdown="true"
+                                                value="#{userAdministrationBean.organization}"
+                                                completeMethod="#{userAdministrationBean.completeOrganization}"
+                                                scrollHeight="250">
+                                    <p:ajax event="itemSelect" listener="#{userAdministrationBean.onOrgSelect}"
+                                            update="branchlist"/>
+                                </p:autoComplete>
+
+                                <p:outputLabel for="@next" value="Branch*"/>
+                                <p:autoComplete id="branchlist"
+                                                dropdown="true"
+                                                value="#{userAdministrationBean.branch}"
+                                                completeMethod="#{userAdministrationBean.completeBranch}"
+                                                accesskey=" " scrollHeight="250"/>
+
+                                <p:outputLabel for="@next" value="Role*"/>
+                                <p:autoComplete id="rolelist"
+                                                dropdown="true"
+                                                value="#{userAdministrationBean.role}"
+                                                completeMethod="#{userAdministrationBean.completeRole}"
+                                                accesskey=" " scrollHeight="250"/>
+
+                                <p:outputLabel for="@next" value="Access Right*"/>
+                                <p:autoComplete id="arlist"
+                                                dropdown="true"
+                                                value="#{userAdministrationBean.accessRight}"
+                                                completeMethod="#{userAdministrationBean.completeAccessRight}"
+                                                accesskey=" " scrollHeight="250"/>
+
+                                <p:outputLabel for="@next" value="Country*"/>
+                                <p:autoComplete id="countrylist"
+                                                dropdown="true"
+                                                value="#{userAdministrationBean.country}"
+                                                completeMethod="#{userAdministrationBean.completeCountry}"
+                                                accesskey=" " scrollHeight="250">
+                                    <p:ajax event="itemSelect" listener="#{userAdministrationBean.onOrgSelect}"
+                                            update="statelist"/>
+                                </p:autoComplete>
+
+                                <p:outputLabel for="@next" value="State*"/>
+                                <p:autoComplete id="statelist"
+                                                dropdown="true"
+                                                value="#{userAdministrationBean.state}"
+                                                completeMethod="#{userAdministrationBean.completeState}"
+                                                accesskey=" " scrollHeight="250">
+                                    <p:ajax event="itemSelect" listener="#{userAdministrationBean.onOrgSelect}"
+                                            update="citylist"/>
+                                </p:autoComplete>
+
+                                <p:outputLabel for="@next" value="City*"/>
+                                <p:autoComplete id="citylist"
+                                                dropdown="true"
+                                                value="#{userAdministrationBean.city}"
+                                                completeMethod="#{userAdministrationBean.completeCity}"
+                                                accesskey=" " scrollHeight="250"/>
+
+
+                                <p:outputLabel for="@next" value="Contact*"/>
+                                <p:inputText id="phonecode" value="#{userAdministrationBean.contact}"/>
+
+                                <p:outputLabel for="@next" value="Email*"/>
+                                <p:inputText id="email" value="#{userAdministrationBean.emailId}"/>
+
+                                <p:outputLabel for="@next" value="Address*"/>
+                                <p:inputText id="address" value="#{userAdministrationBean.address}"/>
+
+                            </p:panelGrid>
+                            <f:facet name="footer">
+                                <center>
+                                    <p:commandButton value="Save" icon="pi pi-check"
+                                                     actionListener="#{userAdministrationBean.saveCountry}"
+                                                     update="addEditCountPanelId" process="addEditCountPanelId @this"/>
+                                    <p:commandButton value="Cancel" icon="pi pi-times"
+                                                     onclick="PF('ManageUserDialog').hide()"
+                                                     class="ui-button-secondary"/>
+                                </center>
+                            </f:facet>
+                        </p:dialog>
+
+                        <p:confirmDialog widgetVar="deleteCountDialog" showEffect="fade" width="300"
+                                         message="Delete the Country?" header="Confirm" severity="warn">
+                            <p:commandButton value="Yes" icon="pi pi-check"
+                                             actionListener="#{userAdministrationBean.confirmDeleteCountry}"
+                                             process="@this" oncomplete="PF('deleteCountDialog').hide()"/>
+                            <p:commandButton value="No" type="button" styleClass="ui-button-secondary"
+                                             icon="pi pi-times" onclick="PF('deleteCountDialog').hide()"/>
+                        </p:confirmDialog>
+
+                        <p:confirmDialog global="true" showEffect="fade" width="300">
+                            <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes"
+                                             icon="pi pi-check"/>
+                            <p:commandButton value="No" type="button"
+                                             styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times"/>
+                        </p:confirmDialog>
+                    </p:outputPanel>
+                </div>
+            </div>
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>

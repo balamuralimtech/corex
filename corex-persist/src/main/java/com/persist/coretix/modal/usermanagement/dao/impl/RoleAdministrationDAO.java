@@ -1,0 +1,188 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package com.persist.coretix.modal.usermanagement.dao.impl;
+
+import com.persist.coretix.modal.usermanagement.RolePrivileges;
+import com.persist.coretix.modal.usermanagement.Roles;
+import com.persist.coretix.modal.usermanagement.dao.IRoleAdministrationDAO;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.inject.Inject;
+import javax.inject.Named;
+import org.apache.log4j.Logger;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+
+/**
+ *
+ * @author balamurali
+ */
+@Named
+public class RoleAdministrationDAO implements IRoleAdministrationDAO {
+    
+     private final Logger logger = Logger.getLogger(getClass());
+     
+    @Inject
+    private SessionFactory sessionFactory;
+
+    public SessionFactory getSessionFactory() {
+        return sessionFactory;
+    }
+
+    public void setSessionFactory(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
+    }
+
+    public void addRole (Roles role) {
+        logger.debug("inside dao save organization !!");
+        Session session = getSessionFactory().getCurrentSession();
+        Transaction trans = session.beginTransaction();
+        session.save(role);
+        trans.commit();
+    }
+
+    public void updateRole(Roles role) {
+        logger.debug("inside dao updateOrganization !!");
+        Session session = getSessionFactory().getCurrentSession();
+        Transaction trans = session.beginTransaction();
+        session.update(role);
+        trans.commit();
+    }
+
+    public void deleteRole(Roles role) {
+        logger.debug("inside dao deleteOrganization !!");
+        Session session = getSessionFactory().getCurrentSession();
+        Transaction trans = session.beginTransaction();
+        session.delete(role);
+        trans.commit();
+    }
+
+    public Roles getRole(int id) {
+        Session session = getSessionFactory().getCurrentSession();
+        Transaction trans = session.beginTransaction();
+
+        List<?> list = session
+                .createQuery("from Roles where id=?").setParameter(0, id)
+                .list();
+
+        trans.commit();
+        return (Roles) list.get(0);
+    }
+
+    public List<RolePrivileges> getRolePrivilegesByModuleAndSubModule(int roleId, int moduleId, int subModuleId) {
+
+        logger.debug("inside dao getRolePrivilegesByModuleAndSubModule !!");
+        logger.debug(roleId + ":" + moduleId + ":" + subModuleId);
+        Session session = getSessionFactory().getCurrentSession();
+        Transaction trans = session.beginTransaction();
+
+        List<RolePrivileges> list = session
+                .createQuery("from RolePrivileges where role_id=? and module_id=? and submodule_id=? and is_selected=true").setParameter(0, roleId).setParameter(1, moduleId).setParameter(2, subModuleId)
+                .list();
+
+                trans.commit();
+                return list;
+    }
+
+    public List<Integer> getModulesByRoleId(int roleId) {
+        Session session = getSessionFactory().getCurrentSession();
+        Transaction transaction = null;
+        List<Integer> distinctModules = null;
+
+        try {
+            transaction = session.beginTransaction();
+
+            // HQL Query: Select distinct module IDs by role ID and order them
+            // Correct field name `moduleId` (from entity, not column name)
+            distinctModules = session
+                    .createQuery("SELECT DISTINCT rp.moduleId FROM RolePrivileges rp WHERE rp.roles.id = :roleId and rp.privilegeId = 1 and rp.isSelected = 1 ORDER BY rp.moduleId")
+                    .setParameter("roleId", roleId)
+                    .list();
+
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+        }
+        return distinctModules;
+    }
+
+    public List<Integer> getSubmodulesByRoleandModuleId(int roleId, int moduleId) {
+        Session session = getSessionFactory().getCurrentSession();
+        Transaction transaction = null;
+        List<Integer> distinctSubModules = null;
+
+        try {
+            transaction = session.beginTransaction();
+
+            // HQL Query: Select distinct module IDs by role ID and order them
+            // Correct field name `moduleId` (from entity, not column name)
+            distinctSubModules = session
+                    .createQuery("SELECT DISTINCT rp.submoduleId FROM RolePrivileges rp WHERE rp.roles.id = :roleId and rp.moduleId = :moduleId and rp.privilegeId = 1 and rp.isSelected = 1 ORDER BY rp.submoduleId")
+                    .setParameter("roleId", roleId)
+                    .setParameter("moduleId", moduleId)
+                    .list();
+
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+        }
+        return distinctSubModules;
+    }
+    
+        public Roles getRoleEntityByRoleName(String roleName) {
+        Session session = getSessionFactory().getCurrentSession();
+        Transaction trans = session.beginTransaction();
+
+        List<?> list = session
+                .createQuery("from Roles where role_name=?").setParameter(0, roleName)
+                .list();
+
+        trans.commit();
+        return (Roles) list.get(0);
+    }
+    
+    public List<Roles> getRolesList() {
+        Session session = getSessionFactory().getCurrentSession();
+        Transaction trans = session.beginTransaction();
+
+        @SuppressWarnings("unchecked")
+        List<Roles> list = (List<Roles>) session.createQuery("from Roles").list();
+
+        trans.commit();
+        return list;
+    }
+
+    public Map<String, Integer> getCountOfRolesUsedAndNotUsed() {
+        Session session = getSessionFactory().getCurrentSession();
+        Transaction trans = session.beginTransaction();
+
+        // Query to get the count of distinct roles used in the UserDetails table
+        Long usedRoles = (Long) session.createQuery("select count(distinct role) from UserDetails").uniqueResult();
+
+        // Query to get the total count of roles in the Roles table
+        Long totalRoles = (Long) session.createQuery("select count(*) from Roles").uniqueResult();
+
+        // Calculating roles not used
+        int notUsedRoles = totalRoles.intValue() - usedRoles.intValue();
+
+        // Creating result map
+        Map<String, Integer> result = new HashMap<>();
+        result.put("usedRoles", usedRoles.intValue());
+        result.put("notUsedRoles", notUsedRoles);
+
+        trans.commit();
+        return result;
+    }
+    
+}

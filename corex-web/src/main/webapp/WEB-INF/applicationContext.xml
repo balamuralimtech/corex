@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+
+    <bean id="DataSource"
+              class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="com.mysql.cj.jdbc.Driver" />
+        <property name="url" value="jdbc:mysql://localhost:3306/carex?zeroDateTimeBehavior=convertToNull" /> <!--?zeroDateTimeBehavior=convertToNull-->
+        <property name="username" value="root" />
+        <property name="password" value="Password123" />
+    </bean>
+
+    <!-- Session Factory Declaration -->
+    <bean id="SessionFactory"
+              class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+        <property name="dataSource" ref="DataSource" />
+        <property name="annotatedClasses">
+            <list>
+                                <!-- System Management  Declaration -->
+                <value>com.persist.coretix.modal.systemmanagement.Branches</value>
+                <value>com.persist.coretix.modal.systemmanagement.Departments</value>
+                <value>com.persist.coretix.modal.systemmanagement.Designations</value>
+                <value>com.persist.coretix.modal.systemmanagement.Countries</value>
+                <value>com.persist.coretix.modal.systemmanagement.CurrencyDetails</value>
+                <value>com.persist.coretix.modal.systemmanagement.States</value>
+                <value>com.persist.coretix.modal.systemmanagement.Cities</value>
+                <value>com.persist.coretix.modal.systemmanagement.Regions</value>
+                <value>com.persist.coretix.modal.systemmanagement.Subregions</value>
+                <value>com.persist.coretix.modal.systemmanagement.Organizations</value>
+                <value>com.persist.coretix.modal.systemmanagement.BankDetails</value>
+                <value>com.persist.coretix.modal.systemmanagement.NotificationSettings</value>
+                                <!-- User Management  Declaration -->
+                <value>com.persist.coretix.modal.usermanagement.ModulePrivileges</value>
+                <value>com.persist.coretix.modal.usermanagement.UserActivities</value>
+                <value>com.persist.coretix.modal.usermanagement.Roles</value>
+                <value>com.persist.coretix.modal.usermanagement.RolePrivileges</value>
+                 <value>com.persist.coretix.modal.usermanagement.UserDetails</value>
+                                <!-- Coretix app  Declaration for future use -->
+
+            </list>
+        </property>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+                <prop key="hibernate.show_sql">true</prop>
+                <prop key="hibernate.connection.pool_size">10</prop>
+                <prop key="show_sql">true</prop>
+                <prop key="hibernate.current_session_context_class">thread</prop>
+            </props>
+        </property>
+    </bean>
+
+    <!-- Enable the configuration of transactional behavior based on annotations -->
+    <tx:annotation-driven transaction-manager="txManager" />
+
+    <!-- Transaction Manager is defined -->
+    <bean id="txManager"
+              class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+        <property name="sessionFactory" ref="SessionFactory" />
+    </bean>
+    <context:component-scan base-package="com.persist.coretix, com.web.coretix, com.module.coretix"/>
+
+
+</beans>

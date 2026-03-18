@@ -1,0 +1,192 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">#{msg['stateLabel']}</ui:define>
+    <ui:define name="head">
+        <h:outputStylesheet name="css/flags/flags.css" library="demo"/>
+    </ui:define>
+
+    <ui:define name="content">
+        <f:event listener="#{stateBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:form id="form">
+            <div class="col-12">
+                <p:breadCrumb>
+                    <p:menuitem url="#" icon="pi pi-home"/>
+                    <p:menuitem value="#{msg['systemManagementLabel']}" url="#"/>
+                    <p:menuitem value="#{msg['stateLabel']}" url="#"/>
+                </p:breadCrumb>
+            </div>
+            <div class="grid crud-demo">
+                <div class="col-12">
+                    <p:outputPanel class="card" id="stateMainPanelId">
+                        <p:growl id="messages" showDetail="true"/>
+
+                        <p:toolbar styleClass="mb-4">
+                            <p:toolbarGroup>
+                                <p:commandButton value="#{msg['newLabel']}" icon="pi pi-plus"
+                                                 actionListener="#{stateBean.addButtonAction}"
+                                                 update="@([id$=stateDataTablePanelId])"
+                                                 process="@([id$=stateDataTablePanelId]) @this"
+                                                 oncomplete="PF('manageStateDialog').show()"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem"/>
+                                <p:spacer width="5"/>
+                                <p:outputLabel for="@next" value="#{msg['countryLabel']}*"/>
+                                <p:autoComplete id="searchCountrylist"
+                                                dropdown="true"
+                                                value="#{stateBean.searchCountry}"
+                                                completeMethod="#{stateBean.completeCountry}"
+                                                accesskey=" " scrollHeight="250">
+                                    <p:ajax event="itemSelect" listener="#{stateBean.onCountrySelect}"/>
+                                </p:autoComplete>
+                                <p:spacer width="5"/>
+                                <p:commandButton value="#{msg['fetchStatesLabel']}" icon="pi pi-search"
+                                                 action="#{stateBean.searchButtonAction}"
+                                                 update="@([id$=stateMainPanelId])" process="@this"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem"/>
+                                <p:spacer width="5"/>
+                                <h:outputLabel value="#{msg['noOfRecordsLabel']}:"
+                                               rendered="#{stateBean.datatableRendered}"/>
+                                <h:outputText value="#{stateBean.recordsCount}"
+                                              rendered="#{stateBean.datatableRendered}"/>
+                            </p:toolbarGroup>
+                            <p:toolbarGroup align="right">
+                                <p:commandButton value="#{msg['exportLabel']}" icon="pi pi-upload" styleClass="ui-button-help"
+                                                 rendered="#{stateBean.datatableRendered}">
+                                    <p:dataExporter type="pdf" target="stateDataTableId" fileName="#{msg['stateLabel']}"/>
+                                </p:commandButton>
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <p:outputPanel id="datatablePanelId" rendered="#{stateBean.datatableRendered}">
+                            <p:dataTable id="stateDataTableId" widgetVar="stateDataTable" var="state"
+                                         value="#{stateBean.statesList}"
+                                         reflow="true" styleClass="commoncrud-table"
+                                         rowKey="#{state.id}" paginator="true" rows="10" paginatorPosition="bottom">
+                                <f:facet name="header">
+                                    <div class="products-table-header">
+                                        <span style="font-weight: bold">#{msg['searchStateLabel']}</span>
+
+                                        <span class="filter-container ui-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <p:inputText id="globalFilter" onkeyup="PF('stateDataTable').filter()"
+                                                         placeholder="#{msg['searchLabel']}"/>
+                                        </span>
+                                    </div>
+                                </f:facet>
+
+                                <p:column headerText="#{msg['stateNameLabel']}" sortBy="#{state.name}" filterBy="#{state.name}">
+                                    <h:outputText value="#{state.name}"/>
+                                </p:column>
+                                <p:column headerText="#{msg[flagLabel]}" sortBy="#{state.country.name}"
+                                          filterBy="#{state.country.name}" exportable="false">
+                                    <span class="flag flag-#{state.country.iso2.toLowerCase()}"
+                                          style="width: 30px; height: 20px"/>
+                                </p:column>
+                                <p:column headerText="#{msg['countryLabel']}" sortBy="#{state.country.name}"
+                                          filterBy="#{state.country.name}" exportable="false">
+                                    <h:outputText value="#{state.country.name}"/>
+
+                                </p:column>
+                                <p:column headerText="#{msg['typeLabel']}" sortBy="#{state.type}" filterBy="#{state.type}"
+                                          exportable="false">
+                                    <h:outputText value="#{state.type}"/>
+                                </p:column>
+                                <p:column headerText="#{msg['latitudeLabel']}" sortBy="#{state.latitude}" filterBy="#{state.latitude}">
+                                    <h:outputText value="#{state.latitude}"/>
+                                </p:column>
+                                <p:column headerText="#{msg['longitudeLabel']}" sortBy="#{state.longitude}"
+                                          filterBy="#{state.longitude}">
+                                    <h:outputText value="#{state.longitude}"/>
+                                </p:column>
+
+
+                                <p:column exportable="false">
+                                    <p:commandButton icon="pi pi-pencil" update=":form:stateDataTablePanelId"
+                                                     oncomplete="PF('manageStateDialog').show()"
+                                                     action="#{stateBean.confirmEditButtonAction}"
+                                                     styleClass="edit-button rounded-button ui-button-success"
+                                                     process="@this">
+                                        <f:setPropertyActionListener value="#{state}"
+                                                                     target="#{stateBean.selectedState}"/>
+                                    </p:commandButton>
+                                    <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash"
+                                                     process="@this" oncomplete="PF('deleteStateDialog').show()">
+                                        <f:setPropertyActionListener value="#{state}"
+                                                                     target="#{stateBean.selectedState}"/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </p:outputPanel>
+
+                        <p:dialog header="#{msg['stateDetailsLabel']}"
+                                  showEffect="fade"
+                                  modal="true"
+                                  widgetVar="manageStateDialog"
+                                  responsive="true"
+                                  width="85%">
+
+                            <p:panelGrid id="stateDataTablePanelId"
+                                         columns="4"
+                                         columnClasses="ui-grid-col-2,ui-grid-col-4,ui-grid-col-2,ui-grid-col-4"
+                                         layout="grid"
+                                         styleClass="ui-panelgrid-blank ui-fluid"
+                                         style="border:0px none; background-color:transparent;">
+                                <p:outputLabel for="@next" value="#{msg['stateNameLabel']}"/>
+                                <p:inputText id="name" value="#{stateBean.name}"/>
+
+                                <p:outputLabel for="@next" value="#{msg['countryLabel']}"/>
+                                <p:autoComplete id="countrylist"
+                                                dropdown="true"
+                                                value="#{stateBean.country}"
+                                                completeMethod="#{stateBean.completeCountry}"
+                                                scrollHeight="250"/>
+
+
+                                <p:outputLabel for="@next" value="#{msg['typeLabel']} "/>
+                                <p:inputText id="type" value="#{stateBean.type}"/>
+
+                                <p:outputLabel for="@next" value="#{msg['isoCode2Label']}"/>
+                                <p:inputText id="iso2" value="#{stateBean.iso2}"/>
+
+
+                            </p:panelGrid>
+                            <f:facet name="footer">
+                                <center>
+                                    <p:commandButton value="#{msg['saveLabel']}" icon="pi pi-check"
+                                                     actionListener="#{stateBean.saveState}"
+                                                     update="stateDataTablePanelId"
+                                                     process="stateDataTablePanelId @this"/>
+                                    <p:commandButton value="#{msg['cancelLabel']}" icon="pi pi-times"
+                                                     onclick="PF('manageStateDialog').hide()"
+                                                     class="ui-button-secondary"/>
+                                </center>
+                            </f:facet>
+                        </p:dialog>
+
+                        <p:confirmDialog widgetVar="deleteStateDialog" showEffect="fade" width="300"
+                                         message="#{msg['deleteTheStateLabel']}" header="#{msg['confirmLabel']}" severity="warn">
+                            <p:commandButton value="#{msg['yesLabel']}" icon="pi pi-check"
+                                             actionListener="#{stateBean.confirmDeleteState}" process="@this"
+                                             oncomplete="PF('deleteStateDialog').hide()"/>
+                            <p:commandButton value="#{msg['noLabel']}" type="button" styleClass="ui-button-secondary"
+                                             icon="pi pi-times" onclick="PF('deleteStateDialog').hide()"/>
+                        </p:confirmDialog>
+
+                        <p:confirmDialog global="true" showEffect="fade" width="300">
+                            <p:commandButton value="#{msg['yesLabel']}" type="button" styleClass="ui-confirmdialog-yes"
+                                             icon="pi pi-check"/>
+                            <p:commandButton value="#{msg['noLabel']}" type="button"
+                                             styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times"/>
+                        </p:confirmDialog>
+                    </p:outputPanel>
+                </div>
+            </div>
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>

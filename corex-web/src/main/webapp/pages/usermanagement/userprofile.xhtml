@@ -1,0 +1,103 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">User Profile</ui:define>
+    <ui:define name="head">
+        <h:outputStylesheet name="css/flags/flags.css" library="demo" />
+    </ui:define>
+
+    <ui:define name="content">
+        <f:event listener="#{userProfileBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:form id="userform">
+            <div class="col-12">
+                <p:breadCrumb>
+                    <p:menuitem url="#" icon="pi pi-home" />
+                    <p:menuitem value="#{msg['userManagementLabel']}" url="#" />
+                    <p:menuitem value="#{msg['userProfileLabel']}" url="#" />
+                </p:breadCrumb>
+            </div>
+
+                <div class="card">
+                    <p:panelGrid id="userDetailsPanelId"
+                                 columns="2"
+                                 columnClasses="ui-grid-col-2,ui-grid-col-4"
+                                 layout="grid"
+                                 styleClass="ui-panelgrid-blank ui-fluid"
+                                 style="border:0px none; background-color:transparent;">
+
+                            <p:column>
+                                <h:outputText value="#{msg['usernameLabel']}:" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{userProfileBean.userDetails.userName}" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{msg['roleLabel']}:" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{userProfileBean.userDetails.role.roleName}" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{msg['accessRightLabel']}:" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{userProfileBean.accessRight}"/>
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{msg['organizationLabel']}:" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{userProfileBean.userDetails.organization.organizationName}" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{msg['branchLabel']}:" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{userProfileBean.userDetails.branch.branchName}" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{msg['countryLabel']}:" />
+                            </p:column>
+                            <p:column>
+                                <span class="flag flag-#{userProfileBean.userDetails.country.iso2.toLowerCase()}" style="width: 30px; height: 20px"/>
+                                <h:outputText value="#{userProfileBean.userDetails.country.name}" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{msg['stateLabel']}:" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{userProfileBean.userDetails.state.name}" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{msg['cityLabel']}:" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{userProfileBean.userDetails.city.name}" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{msg['emailIDLabel']}:" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{userProfileBean.userDetails.emailId}" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{msg['contactLabel']}:" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{userProfileBean.userDetails.contact}" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{msg['addressLabel']}:" />
+                            </p:column>
+                            <p:column>
+                                <h:outputText value="#{userProfileBean.userDetails.address}" />
+                            </p:column>
+                    </p:panelGrid>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

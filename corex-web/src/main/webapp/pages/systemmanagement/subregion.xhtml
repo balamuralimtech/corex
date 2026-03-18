@@ -1,0 +1,126 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">#{msg['subregionLabel']}</ui:define>
+    <ui:define name="head">
+        <h:outputStylesheet name="css/flags/flags.css" library="demo" />
+    </ui:define>
+
+    <ui:define name="content">
+        <f:event listener="#{subregionBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:form id="form">
+            <div class="col-12">
+                <p:breadCrumb>
+                    <p:menuitem url="#" icon="pi pi-home" />
+                    <p:menuitem value="#{msg['systemManagementLabel']}" url="#" />
+                    <p:menuitem value="#{msg['subregionLabel']}" url="#" />
+                </p:breadCrumb>
+            </div>
+            <div class="grid crud-demo">
+                <div class="col-12">
+                    <p:outputPanel class="card" id="subregionMainPanelId">
+                        <p:growl id="messages" showDetail="true" />
+
+                        <p:toolbar styleClass="mb-4">
+                            <p:toolbarGroup>
+                                <p:commandButton value="#{msg['newLabel']}" icon="pi pi-plus"
+                                                 actionListener="#{subregionBean.addButtonAction}" 
+                                                 update="@([id$=addEditSubrPanelId])" process="@([id$=addEditSubrPanelId]) @this" 
+                                                 oncomplete="PF('manageSubrDialog').show()"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+                                <p:commandButton value="#{msg['fetchSubregionsLabel']}" icon="pi pi-search"
+                                                 action="#{subregionBean.searchButtonAction}" 
+                                                 update="@([id$=subregionMainPanelId])" process="@this" 
+                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+
+                                <h:outputLabel value="#{msg['noOfRecordsLabel']}:" rendered="#{subregionBean.datatableRendered}"/>
+                                <h:outputText value="#{subregionBean.recordsCount}" rendered="#{subregionBean.datatableRendered}"/>
+                            </p:toolbarGroup>
+                            <p:toolbarGroup align="right">
+                                <p:commandButton value="#{msg['exportLabel']}" icon="pi pi-upload" styleClass="ui-button-help"
+                                                 rendered="#{subregionBean.datatableRendered}">
+                                    <p:dataExporter type="pdf" target="subrDataTableId" fileName="#{msg['subregionLabel']}"/>
+                                </p:commandButton>
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <p:outputPanel id="datatablePanelId" rendered="#{subregionBean.datatableRendered}">
+                            <p:dataTable id="subrDataTableId" widgetVar="subrDataTable" var="subregion" value="#{subregionBean.subregionList}" 
+                                         reflow="true" styleClass="commoncrud-table"
+                                         rowKey="#{subregion.id}" paginator="true" rows="10"  paginatorPosition="bottom">
+                                <f:facet name="header">
+                                    <div class="products-table-header">
+                                        <span style="font-weight: bold">#{msg['searchSubRegionLabel']}</span>
+
+                                        <span class="filter-container ui-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <p:inputText id="globalFilter" onkeyup="PF('subrDataTable').filter()" placeholder="#{msg['searchLabel']}" />
+                                        </span>
+                                    </div>
+                                </f:facet>
+
+                                <p:column headerText="#{msg['subRegionIdLabel']}" sortBy="#{subregion.id}" filterBy="#{subregion.id}">
+                                    <h:outputText value="#{subregion.id}" />
+                                </p:column>
+                                <p:column headerText="#{msg['subRegionNameLabel']}" sortBy="#{subregion.name}" filterBy="#{subregion.name}">
+                                    <h:outputText value="#{subregion.name}" />
+                                </p:column>
+                                <p:column headerText="#{msg['regionNameLabel']}" sortBy="#{subregion.name}" filterBy="#{subregion.name}">
+                                    <h:outputText value="#{subregion.name}" />
+                                </p:column>
+                                <p:column exportable="false">
+                                    <p:commandButton icon="pi pi-pencil" update=":form:addEditSubrPanelId" oncomplete="PF('manageSubrDialog').show()"
+                                                     action="#{subregionBean.confirmEditButtonAction}"
+                                                     styleClass="edit-button rounded-button ui-button-success" process="@this">
+                                        <f:setPropertyActionListener value="#{subregion}" target="#{subregionBean.selectedSubRegion}" />
+                                    </p:commandButton>
+                                    <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash" process="@this" oncomplete="PF('deleteSubrDialog').show()" >
+                                        <f:setPropertyActionListener value="#{subregion}" target="#{subregionBean.selectedSubRegion}" />
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </p:outputPanel>
+
+                        <p:dialog header="#{msg['subRegionDetailsLabel']}" showEffect="fade" modal="true" widgetVar="manageSubrDialog" responsive="true">
+                            <p:outputPanel id="addEditSubrPanelId" class="ui-fluid">
+                                <p:outputPanel>
+                                    <div class="field">
+                                        <p:outputLabel for="name">#{msg['subRegionNameLabel']}</p:outputLabel>
+                                        <p:inputText id="name" value="#{subregionBean.subregionName}" />
+                                    </div>
+                                    <div class="field">
+                                        <p:outputLabel for="regionlist">#{msg['regionLabel']}</p:outputLabel>
+                                        <p:autoComplete id="regionlist" dropdown="true" value="#{subregionBean.regionName}"
+                                                        completeMethod="#{subregionBean.completeRegion}" 
+                                                        scrollHeight="250"/>
+                                    </div>
+                                </p:outputPanel>
+                            </p:outputPanel>
+
+                            <f:facet name="footer">
+                                <p:commandButton value="#{msg['saveLabel']}" icon="pi pi-check" actionListener="#{subregionBean.saveSubregion}" update="addEditSubrPanelId" process="addEditSubrPanelId @this" />
+                                <p:commandButton value="#{msg['cancelLabel']}" icon="pi pi-times" onclick="PF('manageSubrDialog').hide()" class="ui-button-secondary" />
+                            </f:facet>
+                        </p:dialog> 
+
+                        <p:confirmDialog widgetVar="deleteSubrDialog" showEffect="fade" width="300" message="#{msg[subregionLabel]}?" header="#{msg['confirmLabel']}" severity="warn">
+                            <p:commandButton value="#{msg['yesLabel']}" icon="pi pi-check" actionListener="#{subregionBean.confirmDeleteSubregion}" process="@this" oncomplete="PF('deleteSubrDialog').hide()"/>
+                            <p:commandButton value="#{msg['noLabel']}" type="button" styleClass="ui-button-secondary" icon="pi pi-times" onclick="PF('deleteSubrDialog').hide()" />
+                        </p:confirmDialog>
+
+                        <p:confirmDialog global="true" showEffect="fade" width="300">
+                            <p:commandButton value="#{msg['yesLabel']}" type="button" styleClass="ui-confirmdialog-yes" icon="pi pi-check" />
+                            <p:commandButton value="#{msg['noLabel']}" type="button" styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times" />
+                        </p:confirmDialog>
+                    </p:outputPanel>
+                </div>
+            </div>
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>

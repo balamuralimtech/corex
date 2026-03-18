@@ -1,0 +1,125 @@
+<ui:composition
+        xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:f="http://java.sun.com/jsf/core"
+        xmlns:h="http://java.sun.com/jsf/html"
+        xmlns:ui="http://java.sun.com/jsf/facelets"
+        xmlns:p="http://primefaces.org/ui"
+        xmlns:pu="http://primefaces.org/avalon">
+
+    <f:event listener="#{guestPreferences.initializePageAttributes}" type="preRenderComponent"/>
+    <h:form id="menuform">
+        <div class="layout-menu-container #{guestPreferences.menuClass}">
+            <div class="menu-scroll-content">
+                <ui:fragment
+                        rendered="#{guestPreferences.profileMode == 'inline' and guestPreferences.menuLayout != 'menu-layout-static menu-layout-horizontal'}">
+                    <div class="profile">
+                        <a id="profile-options" href="#">
+                            <p:graphicImage name="images/superuser.png" library="avalon-layout"
+                                            styleClass="profile-image"
+                                            style="border: 0 none"/>
+                            <span class="profile-name">#{guestPreferences.userName}</span>
+                            <i class="pi pi-fw pi-chevron-down"/>
+                            <span class="profile-role">#{guestPreferences.role}</span>
+                        </a>
+                    </div>
+                    <ul id="profile-menu" class="layout-menu">
+                        <li role="menuitem">
+                            <a href="#">
+                                <i class="pi pi-fw pi-user"/>
+                                <span>Profile</span>
+                            </a>
+                            <div class="layout-menu-tooltip">
+                                <div class="layout-menu-tooltip-arrow"></div>
+                                <div class="layout-menu-tooltip-text">Profile</div>
+                            </div>
+                        </li>
+                        <li role="menuitem">
+                            <a href="#">
+                                <i class="pi pi-fw pi-lock"/>
+                                <span>Privacy</span>
+                            </a>
+                            <div class="layout-menu-tooltip">
+                                <div class="layout-menu-tooltip-arrow"></div>
+                                <div class="layout-menu-tooltip-text">Privacy</div>
+                            </div>
+                        </li>
+                        <li role="menuitem">
+                            <a href="#">
+                                <i class="pi pi-fw pi-cog"/>
+                                <span>Settings</span>
+                            </a>
+                            <div class="layout-menu-tooltip">
+                                <div class="layout-menu-tooltip-arrow"></div>
+                                <div class="layout-menu-tooltip-text">Settings</div>
+                            </div>
+                        </li>
+                        <li role="menuitem">
+                            <h:commandLink action="#{guestPreferences.logoutAction}"
+                                           title="Logout">
+                                <i class="pi pi-fw pi-sign-out"/>
+                            </h:commandLink>
+                            <div class="layout-menu-tooltip">
+                                <div class="layout-menu-tooltip-arrow"></div>
+                                <div class="layout-menu-tooltip-text">Logout</div>
+                            </div>
+                        </li>
+                    </ul>
+                </ui:fragment>
+
+                <pu:menu widgetVar="avalonMenuWidget" styleClass="layout-main-menu">
+                    <p:submenu id="m_usermanagement" label="#{msg['userManagementLabel']}" icon="pi pi-fw pi-users" rendered="#{guestPreferences.userManagementRendered}">
+                        <p:menuitem id="m_userprofile" value="#{msg['userProfileLabel']}" icon="pi pi-fw pi-user"
+                                    outcome="/pages/usermanagement/userprofile"/>
+                        <p:menuitem id="m_useractivity" value="#{msg['userActivityLabel']}"
+                                    icon="pi pi-fw pi-align-justify" outcome="/pages/usermanagement/useractivity"/>
+                        <p:menuitem id="m_rolemanagement" value="#{msg['modulesRoleDefinitionLabel']}"
+                                    icon="pi pi-fw pi-check-circle"
+                                    outcome="/pages/usermanagement/modulesRoleDefinition"/>
+                        <p:menuitem id="m_roleadministration" value="#{msg['roleAdministrationLabel']}"
+                                    icon="pi pi-fw pi-briefcase" outcome="/pages/usermanagement/roleAdministration"/>
+                        <p:menuitem id="m_changepassword" value="#{msg['changePasswordLabel']}" icon="pi pi-fw pi-key"
+                                    outcome="/pages/usermanagement/changePassword"/>
+                        <p:menuitem id="m_useradministration" value="#{msg['userAdministrationLabel']}"
+                                    icon="pi pi-fw pi-id-card" outcome="/pages/usermanagement/useradministration"/>
+                    </p:submenu>
+                    <p:submenu id="m_systemmanagement" label="#{msg['systemManagementLabel']}" icon="pi pi-fw pi-cog" rendered="#{guestPreferences.systemManagementRendered}">
+                        <p:menuitem id="m_organization" value="#{msg['organizationLabel']}" icon="pi pi-fw pi-building"
+                                    outcome="/pages/systemmanagement/organization"/>
+                        <p:menuitem id="m_branch" value="#{msg['branchLabel']}" icon="pi pi-fw pi-map-marker"
+                                    outcome="/pages/systemmanagement/branch"/>
+                        <p:menuitem id="m_department" value="#{msg['departmentLabel']}" icon="pi pi-fw pi-sitemap"
+                                    outcome="/pages/systemmanagement/department"/>
+                        <p:menuitem id="m_designation" value="#{msg['designationLabel']}" icon="pi pi-fw pi-id-card"
+                                    outcome="/pages/systemmanagement/designation"/>
+                        <p:menuitem id="m_country" value="#{msg['countryLabel']}" icon="pi pi-fw pi-flag"
+                                    outcome="/pages/systemmanagement/country"/>
+                        <p:menuitem id="m_state" value="#{msg['stateLabel']}" icon="pi pi-fw pi-flag"
+                                    outcome="/pages/systemmanagement/state"/>
+                        <p:menuitem id="m_city" value="#{msg['cityLabel']}" icon="pi pi-fw pi-flag"
+                                    outcome="/pages/systemmanagement/city"/>
+                        <p:menuitem id="m_region" value="#{msg['regionLabel']}" icon="pi pi-fw pi-flag"
+                                    outcome="/pages/systemmanagement/region"/>
+                        <p:menuitem id="m_subregion" value="#{msg['subregionLabel']}" icon="pi pi-fw pi-flag"
+                                    outcome="/pages/systemmanagement/subregion"/>
+                        <p:menuitem id="m_currency" value="#{msg['currencyLabel']}" icon="pi pi-fw pi-dollar"
+                                    outcome="/pages/systemmanagement/currency"/>
+                        <p:menuitem id="m_bankdetails" value="Bank Details" icon="pi pi-fw pi-dollar"
+                                    outcome="/pages/systemmanagement/bankdetails"/>
+                        <p:menuitem id="m_notificationsettings" value="#{msg['notificationSettingsLabel']}"
+                                    icon="pi pi-fw pi-at" outcome="/pages/systemmanagement/notificationsettings"/>
+                    </p:submenu>
+                    <p:submenu id="m_license" label="#{msg['licenseLabel']}" icon="pi pi-fw pi-ticket" rendered="#{guestPreferences.licenseRendered}">
+                        <p:menuitem id="m_licensepage" value="#{msg['licenseLabel']}" icon="pi pi-fw pi-file-o"
+                                    outcome="/pages/license/license"/>
+                    </p:submenu>
+                    <p:submenu id="m_serverlogs" label="#{msg['serverAndDBLabel']}" icon="pi pi-fw pi-server" rendered="#{guestPreferences.dbAndServerLogRendered}">
+                        <p:menuitem id="m_serverlogspage" value="#{msg['serverLogsLabel']}" icon="pi pi-fw pi-server"
+                                    outcome="/pages/serverlogs/serverlogs"/>
+                        <p:menuitem id="m_databasedetails" value="#{msg['databaseLabel']}" icon="pi pi-fw pi-server"
+                                    outcome="/pages/serverlogs/databaseDetails"/>
+                    </p:submenu>
+                </pu:menu>
+            </div>
+        </div>
+    </h:form>
+</ui:composition>

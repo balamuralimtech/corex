@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+<f:view contentType="text/html" locale="#{guestPreferences.locale}">
+    <h:head>
+        <meta charset="UTF-8"/>
+        <f:facet name="first">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+            <meta name="apple-mobile-web-app-capable" content="yes" />
+            <meta name="theme-color" content="#{guestPreferences.themeColors[guestPreferences.theme]}" />
+            <link rel="shortcut icon" href="#{request.contextPath}/resources/demo/images/coretix/coretixfavicon.png" type="image/x-icon" />
+        </f:facet>
+        <title><ui:insert name="title">coretix</ui:insert></title>
+        <h:outputScript name="js/prism.js" library="avalon-layout"/>
+        <h:outputScript name="js/layout.js" library="avalon-layout" />
+        <h:outputScript name="highcharts/highcharts.js" library="avalon-layout"/>
+        <h:outputScript name="highcharts/highcharts-3d.js" library="avalon-layout"/>
+        <h:outputScript name="highcharts/modules/exporting.js" library="avalon-layout"/>
+        <h:outputScript name="highcharts/modules/export-data.js" library="avalon-layout"/>
+        <h:outputScript name="highcharts/modules/accessibility.js" library="avalon-layout"/>
+
+        <h:outputScript name="pdfGenerator/jspdf.umd.min.js" library="avalon-layout"/>
+        <h:outputScript name="pdfGenerator/html2canvas.min.js" library="avalon-layout"/>
+        <ui:insert name="head"/>
+        <script type="text/javascript">
+            //<![CDATA[
+            function showProgressBar()
+            {
+                console.log('inside showProgressBar !');
+                var x = document.getElementById("progressBarId");
+                x.style.display = "block";
+            }
+            function hideProgressBar()
+            {
+                console.log('inside hideProgressBar !');
+                var x = document.getElementById("progressBarId");
+                x.style.display = "none";
+            }
+
+            //]]>
+        </script>
+        <style>
+            /*******************
+                Preloader
+                ********************/
+            .preloader {
+                width: 100%;
+                height: 100%;
+                top: 0px;
+                position: fixed;
+                z-index: 99999;
+                background: #fff;
+            }
+            .preloader .cssload-speeding-wheel {
+                position: absolute;
+                top: calc(50% - 3.5px);
+                left: calc(50% - 3.5px);
+            }
+
+            .loader,
+            .loader__figure {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                -webkit-transform: translate(-50%, -50%);
+                -moz-transform: translate(-50%, -50%);
+                -ms-transform: translate(-50%, -50%);
+                -o-transform: translate(-50%, -50%);
+                transform: translate(-50%, -50%);
+            }
+
+            .loader {
+                overflow: visible;
+                padding-top: 2em;
+                height: 0;
+                width: 2em;
+            }
+
+            .loader__figure {
+                height: 0;
+                width: 0;
+                box-sizing: border-box;
+                border: 0 solid #2E8942;
+                border-radius: 50%;
+                -webkit-animation: loader-figure 1.15s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+                -moz-animation: loader-figure 1.15s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+                animation: loader-figure 1.15s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+            }
+
+            .loader__label {
+                float: left;
+                margin-left: 50%;
+                -webkit-transform: translateX(-50%);
+                -moz-transform: translateX(-50%);
+                -ms-transform: translateX(-50%);
+                -o-transform: translateX(-50%);
+                transform: translateX(-50%);
+                margin: 0.5em 0 0 50%;
+                font-size: 0.875em;
+                letter-spacing: 0.1em;
+                line-height: 1.5em;
+                color: #2E8942;
+                white-space: nowrap;
+                -webkit-animation: loader-label 1.15s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+                -moz-animation: loader-label 1.15s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+                animation: loader-label 1.15s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+            }
+
+            @-webkit-keyframes loader-figure {
+                0% {
+                    height: 0;
+                    width: 0;
+                    background-color: #2E8942;
+                }
+                29% {
+                    background-color: #2E8942;
+                }
+                30% {
+                    height: 2em;
+                    width: 2em;
+                    background-color: transparent;
+                    border-width: 1em;
+                    opacity: 1;
+                }
+                100% {
+                    height: 2em;
+                    width: 2em;
+                    border-width: 0;
+                    opacity: 0;
+                    background-color: transparent;
+                }
+            }
+
+            @-moz-keyframes loader-figure {
+                0% {
+                    height: 0;
+                    width: 0;
+                    background-color: #2E8942;
+                }
+                29% {
+                    background-color: #2E8942;
+                }
+                30% {
+                    height: 2em;
+                    width: 2em;
+                    background-color: transparent;
+                    border-width: 1em;
+                    opacity: 1;
+                }
+                100% {
+                    height: 2em;
+                    width: 2em;
+                    border-width: 0;
+                    opacity: 0;
+                    background-color: transparent;
+                }
+            }
+
+            @keyframes loader-figure {
+                0% {
+                    height: 0;
+                    width: 0;
+                    background-color: #2E8942;
+                }
+                29% {
+                    background-color: #2E8942;
+                }
+                30% {
+                    height: 2em;
+                    width: 2em;
+                    background-color: transparent;
+                    border-width: 1em;
+                    opacity: 1;
+                }
+                100% {
+                    height: 2em;
+                    width: 2em;
+                    border-width: 0;
+                    opacity: 0;
+                    background-color: transparent;
+                }
+            }
+
+            @-webkit-keyframes loader-label {
+                0% {
+                    opacity: 0.25;
+                }
+                30% {
+                    opacity: 1;
+                }
+                100% {
+                    opacity: 0.25;
+                }
+            }
+
+            @-moz-keyframes loader-label {
+                0% {
+                    opacity: 0.25;
+                }
+                30% {
+                    opacity: 1;
+                }
+                100% {
+                    opacity: 0.25;
+                }
+            }
+
+            @keyframes loader-label {
+                0% {
+                    opacity: 0.25;
+                }
+                30% {
+                    opacity: 1;
+                }
+                100% {
+                    opacity: 0.25;
+                }
+            }
+            body .ui-breadcrumb{
+                background: none !important;
+                padding: 0rem !important;
+            }
+        </style>
+    </h:head>
+
+    <h:body styleClass="#{guestPreferences.inputStyleClass}">
+        <h:form>
+            <p:growl id="growl" widgetVar="growlWidget" life="3000" />
+            <p:poll interval="5" listener="#{guestPreferences.checkForGrowlMessage}" update="growl" global="false"/>
+        </h:form>
+
+        <!-- Preloader - style you can find in spinners.css -->
+        <div class="preloader" id="progressBarId" style="display: none;background:none;">
+            <div class="loader">
+                <div class="loader__figure"></div>
+                <div class="loader__label">CoreX Loading...</div>
+
+            </div>
+        </div>
+        <div class="layout-wrapper #{guestPreferences.getMenu()}">
+            <p:growl id="mainMessagesGrowlId" showDetail="true"/>
+            <ui:include src="./topbar.xhtml" />
+            <ui:include src="./menu.xhtml" />
+
+            <p:outputPanel id="contentPanelId" class="layout-main">
+                <ui:insert name="content"/>
+            </p:outputPanel>
+
+            <p:outputPanel id="configPanelId" rendered="false">
+            <ui:include src="./config.xhtml"/>
+            </p:outputPanel>
+            <ui:include src="./footer.xhtml" />
+
+        </div>
+        <p:ajaxStatus id="progressWaitStatus" 
+                      onstart="showProgressBar();"
+                      onsuccess="hideProgressBar();"/>
+
+        <h:outputStylesheet name="css/font-awesome.css" library="avalon-layout" />
+        <h:outputStylesheet name="css/primeflex.min.css" library="avalon-layout" />
+        <h:outputStylesheet name="css/primeicons.css" library="avalon-layout" />
+        <h:outputStylesheet name="css/layout-#{guestPreferences.layout}.css" library="avalon-layout" />
+        <h:outputStylesheet name="css/demo.css" library="demo" />
+    </h:body>
+</f:view>
+</html>

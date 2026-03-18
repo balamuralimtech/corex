@@ -1,0 +1,158 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="title">User Activity</ui:define>
+    <ui:define name="head">
+        <h:outputStylesheet name="css/flags/flags.css" library="demo" />
+    </ui:define>
+
+    <ui:define name="content">
+        <f:event listener="#{userActivityBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:form id="form">
+            <div class="col-12">
+                <p:breadCrumb>
+                    <p:menuitem url="#" icon="pi pi-home" />
+                    <p:menuitem value="User Management" url="#" />
+                    <p:menuitem value="User Activity" url="#" />
+                </p:breadCrumb>
+            </div>
+            <div class="grid crud-demo">
+                <div class="col-12">
+                    <p:outputPanel class="card" id="usrActMainPanelId">
+                        <p:growl id="messages" showDetail="true" />
+
+                        <p:toolbar styleClass="mb-4">
+                            <p:toolbarGroup>
+                                <p:commandButton value="Fetch UserActivities" icon="pi pi-search" 
+                                                 action="#{userActivityBean.searchButtonAction}" 
+                                                 update="@([id$=usrActMainPanelId])" process="@this" 
+                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+
+                                <h:outputLabel value="Number of Records: " rendered="#{userActivityBean.datatableRendered}"/>
+                                <h:outputText value="#{userActivityBean.recordsCount}" rendered="#{userActivityBean.datatableRendered}"/>
+                            </p:toolbarGroup>
+                            <p:toolbarGroup align="right">
+                                <p:commandButton value="Export to PDF" icon="pi pi-upload" styleClass="ui-button-help"
+                                                 rendered="#{userActivityBean.datatableRendered}">
+                                    <p:dataExporter type="pdf" target="usrActDataTableId"
+                                                    fileName="useractivities_#{userActivityBean.currentDateTime}"/>
+                                </p:commandButton>
+                                <p:commandButton value="Export to Excel" icon="pi pi-file-excel"
+                                                 styleClass="ui-button-help"
+                                                 rendered="#{userActivityBean.datatableRendered}">
+                                    <p:dataExporter type="xlsx" target="usrActDataTableId"
+                                                    fileName="useractivities_#{userActivityBean.currentDateTime}"/>
+                                </p:commandButton>
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <p:outputPanel id="datatablePanelId" rendered="#{userActivityBean.datatableRendered}">
+                            <figure class="highcharts-figure">
+                                <div id="container"></div>
+                            </figure>
+                            <h:outputScript>
+                                // Set up the chart
+                                var chart = new Highcharts.Chart({
+                                chart: {
+                                renderTo: 'container',
+                                type: 'column',
+                                options3d: {
+                                enabled: true,
+                                alpha: 0,
+                                beta: 0,
+                                depth: 100,
+                                viewDistance: 30
+                                }
+                                },
+                                xAxis: {
+                                type: 'category'
+                                },
+                                yAxis: {
+                                title: {
+                                enabled: false
+                                }
+                                },
+                                tooltip: {
+                                headerFormat: '<b>{point.key}</b><br/>',
+                                pointFormat: 'Activity: {point.y}'
+                                },
+                                title: {
+                                text: 'Overall User Activity Status',
+                                align: 'left'
+                                },
+                                subtitle: {
+                                text: 'Status',
+                                align: 'left'
+                                },
+                                legend: {
+                                enabled: false
+                                },
+                                plotOptions: {
+                                column: {
+                                depth: 25
+                                }
+                                },
+                                series: [{
+                                data: [
+                                ['Login', #{userActivityBean.loginCount}],
+                                ['Logout', #{userActivityBean.logoutCount}],
+                                ['Add', #{userActivityBean.addCount}],
+                                ['Edit', #{userActivityBean.updateCount}],
+                                ['Delete', #{userActivityBean.deleteCount}]
+                                ],
+                                colorByPoint: true
+                                }]
+                                });
+                            </h:outputScript>
+                            <p:dataTable id="usrActDataTableId" widgetVar="dataTableUsrAct" var="userActivity" value="#{userActivityBean.userActivityList}"
+                                         reflow="true" styleClass="commoncrud-table"
+                                         rowKey="#{userActivity.activityId}" paginator="true" rows="10"  paginatorPosition="bottom">
+                                <f:facet name="header">
+                                    <div class="products-table-header">
+                                        <span style="font-weight: bold">Search User Activity</span>
+
+                                        <span class="filter-container ui-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <p:inputText id="globalFilter" onkeyup="PF('dataTableUsrAct').filter()" placeholder="Search" />
+                                        </span>
+                                    </div>
+                                </f:facet>
+                                <p:column headerText="User Id" sortBy="#{userActivity. userName}" filterBy="#{userActivity.userName}">
+                                    <h:outputText value="#{userActivity.userName}" />
+                                </p:column>
+
+                                <p:column headerText="Activity Type" sortBy="#{userActivity.activityType}" filterBy="#{userActivity.activityType}">
+                                    <h:outputText value="#{userActivity.activityType}" />
+                                </p:column>
+                                <p:column headerText="Activity Description" sortBy="#{userActivity.activityDescription}" filterBy="#{userActivity.activityDescription}">
+                                    <h:outputText value="#{userActivity.activityDescription}" />
+                                </p:column>
+                                <p:column headerText="IP Address" sortBy="#{userActivity.ipAddress}" filterBy="#{userActivity.ipAddress}">
+                                    <h:outputText value="#{userActivity.ipAddress}" />
+                                </p:column>
+                                <p:column headerText="Device Info" sortBy="#{userActivity.deviceInfo}" filterBy="#{userActivity.deviceInfo}">
+                                    <h:outputText value="#{userActivity.deviceInfo}" />
+                                </p:column>
+                                <p:column headerText="Browser Info" sortBy="#{userActivity.locationInfo}" filterBy="#{userActivity.locationInfo}">
+                                    <h:outputText value="#{userActivity.locationInfo}" />
+                                </p:column>
+                                <p:column headerText="Created At" sortBy="#{userActivity.createdAt}" filterBy="#{userActivity.createdAt}">
+                                    <h:outputText value="#{userActivity.createdAt}">
+                                        <f:convertDateTime pattern="dd/MM/yyyy hh:mm:ss a"/>
+                                    </h:outputText>
+                                </p:column>
+                               
+                            </p:dataTable>
+                        </p:outputPanel>
+                    </p:outputPanel>
+                </div>
+            </div>
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>
