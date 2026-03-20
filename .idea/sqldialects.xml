@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SqlDialectMappings">
+    <file url="file://$PROJECT_DIR$/corex-db/systemmanagement/Currency Details.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/corex-db/systemmanagement/bankdetails.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/corex-db/systemmanagement/branches.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/corex-db/systemmanagement/departments.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/corex-db/systemmanagement/designations.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/corex-db/systemmanagement/notificationsettings.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/corex-db/systemmanagement/organization.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/corex-db/systemmanagement/world.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/corex-db/usermanagement/UserDetails.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/corex-db/usermanagement/moduleprivileges.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/corex-db/usermanagement/roleadministration.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/corex-db/usermanagement/useractivities.sql" dialect="MySQL" />
+  </component>
+</project>
