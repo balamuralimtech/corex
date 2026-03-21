@@ -334,6 +334,11 @@
 
                 // Automatically start countdown when page reloads
                 window.onload = function () {
+                    // Hide the login loader when homepage is fully loaded
+                    if (sessionStorage.getItem('showingLoader') === 'true') {
+                        sessionStorage.removeItem('showingLoader');
+                    }
+
                     startCountdown();
                 };
                 //]]>

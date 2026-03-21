@@ -107,10 +107,56 @@
                 right: 50px;
                 height: auto;
             }
+
+            /* Loading overlay */
+            #loadingOverlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(255, 255, 255, 0.95);
+                z-index: 9999;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+            }
+
+            #loadingOverlay.active {
+                display: flex;
+            }
+
+            .loader {
+                border: 8px solid #f3f3f3;
+                border-top: 8px solid #007bff;
+                border-radius: 50%;
+                width: 60px;
+                height: 60px;
+                animation: spin 1s linear infinite;
+            }
+
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+
+            .loading-text {
+                margin-top: 20px;
+                font-size: 18px;
+                color: #333;
+                font-weight: 500;
+            }
         </style>
     </h:head>
 
     <h:body>
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay">
+            <div class="loader"></div>
+            <div class="loading-text">Authenticating, please wait...</div>
+        </div>
+
         <nav class="navbar navbar-expand-lg">
             <div class="container">
                 <a class="navbar-brand">
@@ -151,6 +197,7 @@
                                  action="#{loginBean.login}"
                                  style="width: 100%;"
                                  styleClass="ui-button-raised mr-2 mb-2"
+                                 onclick="showLoader()"
                                  update="@this"/>
 
                 <!--<p:button outcome="/pages/home/homePage" value="Sign In" icon="pi pi-sign-in" />-->
@@ -160,6 +207,27 @@
                 </div>
             </h:form>
         </div>
+
+        <script type="text/javascript">
+            //<![CDATA[
+            function showLoader() {
+                // Show loader when sign in button is clicked
+                document.getElementById('loadingOverlay').classList.add('active');
+
+                // Store flag in sessionStorage to persist during page navigation
+                sessionStorage.setItem('showingLoader', 'true');
+            }
+
+            // Check if we're returning from a failed login
+            window.addEventListener('load', function() {
+                // If login failed, hide the loader
+                if (sessionStorage.getItem('showingLoader') === 'true' && window.location.pathname.includes('login')) {
+                    sessionStorage.removeItem('showingLoader');
+                    document.getElementById('loadingOverlay').classList.remove('active');
+                }
+            });
+            //]]>
+        </script>
     </h:body>
     <h:outputStylesheet name="css/layout-#{guestPreferences.layout}.css" library="avalon-layout" />
     <h:outputStylesheet name="css/demo.css" library="demo" />

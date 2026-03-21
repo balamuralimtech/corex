@@ -37,34 +37,8 @@ public class HomePageBean implements Serializable {
     }
 
     public void refreshForm() {
-        // Logic to refresh or reload data can go here
-        logger.debug("Form refreshed at: " + System.currentTimeMillis());
         coreDashboardTO = coreDashboardService.fetchDashboardData();
-        logger.debug("organizationCount: " + coreDashboardTO.getOrganizationCount());
-        logger.debug("branchCount: " + coreDashboardTO.getBranchCount());
-        logger.debug("departmentCount: " + coreDashboardTO.getDepartmentCount());
-        logger.debug("designationCount: " + coreDashboardTO.getDesignationCount());
-        logger.debug("countryCount: " + coreDashboardTO.getCountryCount());
-        logger.debug("stateCount: " + coreDashboardTO.getStateCount());
-        logger.debug("cityCount: " + coreDashboardTO.getCityCount());
-        logger.debug("currencyCount: " + coreDashboardTO.getCurrencyCount());
-        logger.debug("roleCount: " + coreDashboardTO.getRoleCount());
-        logger.debug("userCount: " + coreDashboardTO.getUserCount());
-        logger.debug("userActivityCount: " + coreDashboardTO.getUserActivityCount());
-        logger.debug("Login count"+coreDashboardTO.getLoginCount());
-        logger.debug("LogoutCount "+coreDashboardTO.getLogoutCount());
-        logger.debug("AddCount "+coreDashboardTO.getAddCount());
-        logger.debug("UpdateCount "+coreDashboardTO.getUpdateCount());
-        logger.debug("DeleteCount "+coreDashboardTO.getDeleteCount());
-
-        logger.debug("RolesUsedCount "+coreDashboardTO.getRolesUsedCount());
-        logger.debug("RolesNotUsedCount "+coreDashboardTO.getRolesNotUsedCount());
-
-        logger.debug("UsersNeverLoggedinCount "+coreDashboardTO.getUsersNeverLoggedinCount());
-        logger.debug("UsersLoggedInCount "+coreDashboardTO.getUsersLoggedInCount());
-        logger.debug("UsersLoggedOutCount "+coreDashboardTO.getUsersLoggedOutCount());
-
-
+        logger.info("Dashboard refreshed at: " + System.currentTimeMillis());
     }
 
     public void toggleTimer() {
@@ -73,32 +47,14 @@ public class HomePageBean implements Serializable {
 //    private String memoryJson;
 
     public void initializePageAttributes() {
-        logger.debug("entered into initializePageAttributes !!!");
         resourceBundle = ResourceBundle.getBundle("messages",
                 FacesContext.getCurrentInstance().getViewRoot().getLocale());
 
-        String test = resourceBundle.getString("homeLabel");
-        logger.debug("test: " + test);
-
-        // Create a map to hold the memory data
-        Map<String, Integer> memoryData = new LinkedHashMap<>();
-        memoryData.put("Max Memory", 1820); // In MB
-        memoryData.put("Available Memory", 509); // In MB
-        memoryData.put("Total Memory", 787); // In MB
-
-        refreshForm();
-
-        //PrimeFaces.current().executeScript("startCountdown()");
-//        try {
-//            // Convert the map to JSON using PrimeFaces' JSONObject
-//            JSONObject jsonObject = new JSONObject(memoryData);
-//            memoryJson = jsonObject.toString(); // Convert JSON object to string
-//        } catch (Exception e) {
-//            logger.error("Error while creating JSON: ", e);
-//        }
-//
-//        logger.debug("memoryJson : " + memoryJson);
-        logger.debug("end of initializePageAttributes !!!");
+        // Only load dashboard data if not already loaded (cached in session)
+        if (coreDashboardTO == null) {
+            coreDashboardTO = coreDashboardService.fetchDashboardData();
+            logger.info("Dashboard data loaded");
+        }
     }
 
     public CoreDashboardTO getCoreDashboardTO() {
