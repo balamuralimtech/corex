@@ -67,8 +67,15 @@ public class OrganizationBean extends GenericManagedBean implements Serializable
 
     private boolean isAddOperation;
     private boolean datatableRendered;
-    
+
     private int recordsCount;
+
+    // Field validation flags
+    private boolean nameError = false;
+    private boolean countryError = false;
+    private boolean stateError = false;
+    private boolean cityError = false;
+    private boolean phoneError = false;
 
     private CroppedImage croppedImage;
 
@@ -176,7 +183,16 @@ public class OrganizationBean extends GenericManagedBean implements Serializable
         organizationLogoImageFile = null;
         croppedImage = null;
 
+        // Reset error flags
+        resetErrorFlags();
+    }
 
+    private void resetErrorFlags() {
+        nameError = false;
+        countryError = false;
+        stateError = false;
+        cityError = false;
+        phoneError = false;
     }
 
     public void addButtonAction() {
@@ -283,6 +299,76 @@ public class OrganizationBean extends GenericManagedBean implements Serializable
         logger.debug("organizationWebsite : " + organizationWebsite);
         logger.debug("isAddOperation : " + isAddOperation);
         logger.debug("organizationLogoImageFile: " + organizationLogoImageFile);
+
+        // Reset error flags before validation
+        resetErrorFlags();
+        boolean hasErrors = false;
+        List<String> errorFieldIds = new ArrayList<>();
+
+        // Validation
+        if (organizationName == null || organizationName.trim().isEmpty()) {
+            logger.debug("organizationName is null or empty");
+            nameError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:name");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Organization name is required"));
+        }
+
+        if (organizationCountry == null || organizationCountry.trim().isEmpty()) {
+            logger.debug("organizationCountry is null or empty");
+            countryError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:countrylist");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Country is required"));
+        }
+
+        if (organizationState == null || organizationState.trim().isEmpty()) {
+            logger.debug("organizationState is null or empty");
+            stateError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:statelist");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "State is required"));
+        }
+
+        if (organizationCity == null || organizationCity.trim().isEmpty()) {
+            logger.debug("organizationCity is null or empty");
+            cityError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:citylist");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "City is required"));
+        }
+
+        if (organizationPhoneNumber == null || organizationPhoneNumber.trim().isEmpty()) {
+            logger.debug("organizationPhoneNumber is null or empty");
+            phoneError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:phonenumber");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Phone number is required"));
+        }
+
+        // If there are validation errors, trigger visual effects
+        if (hasErrors) {
+            String fieldIdsJson = String.join(",", errorFieldIds);
+            PrimeFaces.current().executeScript("highlightErrorFields(['" + String.join("','", errorFieldIds) + "']);");
+            return;
+        }
+
+        logger.debug("crossed validation !!!!!!!!!!!");
 
         Organizations org = new Organizations();
 
@@ -497,20 +583,20 @@ public class OrganizationBean extends GenericManagedBean implements Serializable
     }
 
     public StreamedContent getImage() {
-        return DefaultStreamedContent.builder()
-                .contentType(organizationLogoImageFile == null ? null : organizationLogoImageFile.getContentType())
-                .stream(() -> {
-                    if (organizationLogoImageFile == null
-                            || organizationLogoImageFile.getContent() == null
-                            || organizationLogoImageFile.getContent().length == 0) {
-                        return null;
-                    }
+        if (organizationLogoImageFile == null
+                || organizationLogoImageFile.getContent() == null
+                || organizationLogoImageFile.getContent().length == 0) {
+            return null;
+        }
 
+        return DefaultStreamedContent.builder()
+                .contentType(organizationLogoImageFile.getContentType())
+                .stream(() -> {
                     try {
                         return new ByteArrayInputStream(organizationLogoImageFile.getContent());
                     }
                     catch (Exception e) {
-                        e.printStackTrace();
+                        logger.error("Error reading organization logo image", e);
                         return null;
                     }
                 })
@@ -679,5 +765,25 @@ public class OrganizationBean extends GenericManagedBean implements Serializable
         this.recordsCount = recordsCount;
     }
 
+    // Getters for error flags
+    public boolean isNameError() {
+        return nameError;
+    }
+
+    public boolean isCountryError() {
+        return countryError;
+    }
+
+    public boolean isStateError() {
+        return stateError;
+    }
+
+    public boolean isCityError() {
+        return cityError;
+    }
+
+    public boolean isPhoneError() {
+        return phoneError;
+    }
 
 }
