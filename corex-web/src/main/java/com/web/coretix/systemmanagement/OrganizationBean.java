@@ -17,7 +17,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import com.persist.coretix.modal.systemmanagement.States;
-import com.persist.coretix.modal.usermanagement.ModulePrivileges;
 import com.web.coretix.appgeneral.GenericManagedBean;
 import com.web.coretix.constants.*;
 import org.primefaces.PrimeFaces;
@@ -139,7 +138,7 @@ public class OrganizationBean extends GenericManagedBean implements Serializable
     private void fetchRolePrivilegeList()
     {
         logger.debug("entered into fetchRolePrivilegeList !!!");
-        List<RolePrivilegeConstants> privilegeConstantsList = getModulePrivilegeList(AppModule.SYSTEM_MANAGEMENT.getId(), SystemManagementModule.ORGANIZATION.getId());
+        List<RolePrivilegeConstants> privilegeConstantsList = getModulePrivilegeList(CoreAppModule.SYSTEM_MANAGEMENT.getId(), SystemManagementModule.ORGANIZATION.getId());
 
         if (CollectionUtils.isNotEmpty(privilegeConstantsList)) {
 

@@ -98,90 +98,90 @@ public class RoleAdministrationBean implements Serializable {
 
         for (ModulePrivileges modulePrivilege : modulePrivileges) {
 
-            if (AppModule.getById(modulePrivilege.getModuleId()).getValue().equalsIgnoreCase(AppModule.USER_MANAGEMENT.getValue())) {
-                logger.debug("I" + modulePrivilege.getId() + " M : " + AppModule.getById(modulePrivilege.getModuleId()).getValue()
+            if (CoreAppModule.getById(modulePrivilege.getModuleId()).getValue().equalsIgnoreCase(CoreAppModule.USER_MANAGEMENT.getValue())) {
+                logger.debug("I" + modulePrivilege.getId() + " M : " + CoreAppModule.getById(modulePrivilege.getModuleId()).getValue()
                         + " S : " + UserManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue()
                         + " P : " + RolePrivilegeConstants.getById(modulePrivilege.getPrivilegeId()).getValue());
 
-                outerMap.putIfAbsent(AppModule.getById(modulePrivilege.getModuleId()).getValue(), new LinkedHashMap<>());
-                Map<String, List<String>> innerMap = outerMap.get(AppModule.getById(modulePrivilege.getModuleId()).getValue());
+                outerMap.putIfAbsent(CoreAppModule.getById(modulePrivilege.getModuleId()).getValue(), new LinkedHashMap<>());
+                Map<String, List<String>> innerMap = outerMap.get(CoreAppModule.getById(modulePrivilege.getModuleId()).getValue());
                 innerMap.putIfAbsent(UserManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue(), new ArrayList<>());
                 List<String> privilegeList = innerMap.get(UserManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue());
                 if (privilegeList != null) {
                     privilegeList.add(modulePrivilege.getId() + "/" + RolePrivilegeConstants.getById(modulePrivilege.getPrivilegeId()).getValue());
                 }
-            } else if (AppModule.getById(modulePrivilege.getModuleId()).getValue().equalsIgnoreCase(AppModule.SYSTEM_MANAGEMENT.getValue())) {
-                logger.debug("I" + modulePrivilege.getId() + " M : " + AppModule.getById(modulePrivilege.getModuleId()).getValue()
+            } else if (CoreAppModule.getById(modulePrivilege.getModuleId()).getValue().equalsIgnoreCase(CoreAppModule.SYSTEM_MANAGEMENT.getValue())) {
+                logger.debug("I" + modulePrivilege.getId() + " M : " + CoreAppModule.getById(modulePrivilege.getModuleId()).getValue()
                         + " S : " + SystemManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue()
                         + " P : " + RolePrivilegeConstants.getById(modulePrivilege.getPrivilegeId()).getValue());
-                outerMap.putIfAbsent(AppModule.getById(modulePrivilege.getModuleId()).getValue(), new LinkedHashMap<>());
-                Map<String, List<String>> innerMap = outerMap.get(AppModule.getById(modulePrivilege.getModuleId()).getValue());
+                outerMap.putIfAbsent(CoreAppModule.getById(modulePrivilege.getModuleId()).getValue(), new LinkedHashMap<>());
+                Map<String, List<String>> innerMap = outerMap.get(CoreAppModule.getById(modulePrivilege.getModuleId()).getValue());
                 innerMap.putIfAbsent(SystemManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue(), new ArrayList<>());
                 List<String> privilegeList = innerMap.get(SystemManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue());
                 if (privilegeList != null) {
                     privilegeList.add(modulePrivilege.getId() + "/" + RolePrivilegeConstants.getById(modulePrivilege.getPrivilegeId()).getValue());
                 }
-            } else if (AppModule.getById(modulePrivilege.getModuleId()).getValue().equalsIgnoreCase(AppModule.LICENCE.getValue())) {
-                logger.debug("I" + modulePrivilege.getId() + " M : " + AppModule.getById(modulePrivilege.getModuleId()).getValue()
+            } else if (CoreAppModule.getById(modulePrivilege.getModuleId()).getValue().equalsIgnoreCase(CoreAppModule.LICENCE.getValue())) {
+                logger.debug("I" + modulePrivilege.getId() + " M : " + CoreAppModule.getById(modulePrivilege.getModuleId()).getValue()
                         + " S : " + LicenseManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue()
                         + " P : " + RolePrivilegeConstants.getById(modulePrivilege.getPrivilegeId()).getValue());
-                outerMap.putIfAbsent(AppModule.getById(modulePrivilege.getModuleId()).getValue(), new LinkedHashMap<>());
-                Map<String, List<String>> innerMap = outerMap.get(AppModule.getById(modulePrivilege.getModuleId()).getValue());
+                outerMap.putIfAbsent(CoreAppModule.getById(modulePrivilege.getModuleId()).getValue(), new LinkedHashMap<>());
+                Map<String, List<String>> innerMap = outerMap.get(CoreAppModule.getById(modulePrivilege.getModuleId()).getValue());
                 innerMap.putIfAbsent(LicenseManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue(), new ArrayList<>());
                 List<String> privilegeList = innerMap.get(LicenseManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue());
                 if (privilegeList != null) {
                     privilegeList.add(modulePrivilege.getId() + "/" + RolePrivilegeConstants.getById(modulePrivilege.getPrivilegeId()).getValue());
                 }
-            } else if (AppModule.getById(modulePrivilege.getModuleId()).getValue().equalsIgnoreCase(AppModule.SERVER_AND_DB.getValue())) {
-                logger.debug("I" + modulePrivilege.getId() + " M : " + AppModule.getById(modulePrivilege.getModuleId()).getValue()
+            } else if (CoreAppModule.getById(modulePrivilege.getModuleId()).getValue().equalsIgnoreCase(CoreAppModule.SERVER_AND_DB.getValue())) {
+                logger.debug("I" + modulePrivilege.getId() + " M : " + CoreAppModule.getById(modulePrivilege.getModuleId()).getValue()
                         + " S : " + ServerAndDBModule.getById(modulePrivilege.getSubmoduleId()).getValue()
                         + " P : " + RolePrivilegeConstants.getById(modulePrivilege.getPrivilegeId()).getValue());
-                outerMap.putIfAbsent(AppModule.getById(modulePrivilege.getModuleId()).getValue(), new LinkedHashMap<>());
-                Map<String, List<String>> innerMap = outerMap.get(AppModule.getById(modulePrivilege.getModuleId()).getValue());
+                outerMap.putIfAbsent(CoreAppModule.getById(modulePrivilege.getModuleId()).getValue(), new LinkedHashMap<>());
+                Map<String, List<String>> innerMap = outerMap.get(CoreAppModule.getById(modulePrivilege.getModuleId()).getValue());
                 innerMap.putIfAbsent(ServerAndDBModule.getById(modulePrivilege.getSubmoduleId()).getValue(), new ArrayList<>());
                 List<String> privilegeList = innerMap.get(ServerAndDBModule.getById(modulePrivilege.getSubmoduleId()).getValue());
                 if (privilegeList != null) {
                     privilegeList.add(modulePrivilege.getId() + "/" + RolePrivilegeConstants.getById(modulePrivilege.getPrivilegeId()).getValue());
                 }
-            } else if (AppModule.getById(modulePrivilege.getModuleId()).getValue().equalsIgnoreCase(AppModule.CLIENT_MANAGEMENT.getValue())) {
-                logger.debug("I" + modulePrivilege.getId() + " M : " + AppModule.getById(modulePrivilege.getModuleId()).getValue()
+            } else if (CoreAppModule.getById(modulePrivilege.getModuleId()).getValue().equalsIgnoreCase(CoreAppModule.CLIENT_MANAGEMENT.getValue())) {
+                logger.debug("I" + modulePrivilege.getId() + " M : " + CoreAppModule.getById(modulePrivilege.getModuleId()).getValue()
                         + " S : " + ClientManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue()
                         + " P : " + RolePrivilegeConstants.getById(modulePrivilege.getPrivilegeId()).getValue());
-                outerMap.putIfAbsent(AppModule.getById(modulePrivilege.getModuleId()).getValue(), new LinkedHashMap<>());
-                Map<String, List<String>> innerMap = outerMap.get(AppModule.getById(modulePrivilege.getModuleId()).getValue());
+                outerMap.putIfAbsent(CoreAppModule.getById(modulePrivilege.getModuleId()).getValue(), new LinkedHashMap<>());
+                Map<String, List<String>> innerMap = outerMap.get(CoreAppModule.getById(modulePrivilege.getModuleId()).getValue());
                 innerMap.putIfAbsent(ClientManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue(), new ArrayList<>());
                 List<String> privilegeList = innerMap.get(ClientManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue());
                 if (privilegeList != null) {
                     privilegeList.add(modulePrivilege.getId() + "/" + RolePrivilegeConstants.getById(modulePrivilege.getPrivilegeId()).getValue());
                 }
-            } else if (AppModule.getById(modulePrivilege.getModuleId()).getValue().equalsIgnoreCase(AppModule.INVENTORY_MANAGEMENT.getValue())) {
-                logger.debug("I" + modulePrivilege.getId() + " M : " + AppModule.getById(modulePrivilege.getModuleId()).getValue()
+            } else if (CoreAppModule.getById(modulePrivilege.getModuleId()).getValue().equalsIgnoreCase(CoreAppModule.INVENTORY_MANAGEMENT.getValue())) {
+                logger.debug("I" + modulePrivilege.getId() + " M : " + CoreAppModule.getById(modulePrivilege.getModuleId()).getValue()
                         + " S : " + InventoryManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue()
                         + " P : " + RolePrivilegeConstants.getById(modulePrivilege.getPrivilegeId()).getValue());
-                outerMap.putIfAbsent(AppModule.getById(modulePrivilege.getModuleId()).getValue(), new LinkedHashMap<>());
-                Map<String, List<String>> innerMap = outerMap.get(AppModule.getById(modulePrivilege.getModuleId()).getValue());
+                outerMap.putIfAbsent(CoreAppModule.getById(modulePrivilege.getModuleId()).getValue(), new LinkedHashMap<>());
+                Map<String, List<String>> innerMap = outerMap.get(CoreAppModule.getById(modulePrivilege.getModuleId()).getValue());
                 innerMap.putIfAbsent(InventoryManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue(), new ArrayList<>());
                 List<String> privilegeList = innerMap.get(InventoryManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue());
                 if (privilegeList != null) {
                     privilegeList.add(modulePrivilege.getId() + "/" + RolePrivilegeConstants.getById(modulePrivilege.getPrivilegeId()).getValue());
                 }
-            } else if (AppModule.getById(modulePrivilege.getModuleId()).getValue().equalsIgnoreCase(AppModule.QUOTE_MANAGEMENT.getValue())) {
-                logger.debug("I" + modulePrivilege.getId() + " M : " + AppModule.getById(modulePrivilege.getModuleId()).getValue()
+            } else if (CoreAppModule.getById(modulePrivilege.getModuleId()).getValue().equalsIgnoreCase(CoreAppModule.QUOTE_MANAGEMENT.getValue())) {
+                logger.debug("I" + modulePrivilege.getId() + " M : " + CoreAppModule.getById(modulePrivilege.getModuleId()).getValue()
                         + " S : " + QuoteManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue()
                         + " P : " + RolePrivilegeConstants.getById(modulePrivilege.getPrivilegeId()).getValue());
-                outerMap.putIfAbsent(AppModule.getById(modulePrivilege.getModuleId()).getValue(), new LinkedHashMap<>());
-                Map<String, List<String>> innerMap = outerMap.get(AppModule.getById(modulePrivilege.getModuleId()).getValue());
+                outerMap.putIfAbsent(CoreAppModule.getById(modulePrivilege.getModuleId()).getValue(), new LinkedHashMap<>());
+                Map<String, List<String>> innerMap = outerMap.get(CoreAppModule.getById(modulePrivilege.getModuleId()).getValue());
                 innerMap.putIfAbsent(QuoteManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue(), new ArrayList<>());
                 List<String> privilegeList = innerMap.get(QuoteManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue());
                 if (privilegeList != null) {
                     privilegeList.add(modulePrivilege.getId() + "/" + RolePrivilegeConstants.getById(modulePrivilege.getPrivilegeId()).getValue());
                 }
-            } else if (AppModule.getById(modulePrivilege.getModuleId()).getValue().equalsIgnoreCase(AppModule.SHIPMENT_MANAGEMENT.getValue())) {
-                logger.debug("I" + modulePrivilege.getId() + " M : " + AppModule.getById(modulePrivilege.getModuleId()).getValue()
+            } else if (CoreAppModule.getById(modulePrivilege.getModuleId()).getValue().equalsIgnoreCase(CoreAppModule.SHIPMENT_MANAGEMENT.getValue())) {
+                logger.debug("I" + modulePrivilege.getId() + " M : " + CoreAppModule.getById(modulePrivilege.getModuleId()).getValue()
                         + " S : " + ShipmentManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue()
                         + " P : " + RolePrivilegeConstants.getById(modulePrivilege.getPrivilegeId()).getValue());
-                outerMap.putIfAbsent(AppModule.getById(modulePrivilege.getModuleId()).getValue(), new LinkedHashMap<>());
-                Map<String, List<String>> innerMap = outerMap.get(AppModule.getById(modulePrivilege.getModuleId()).getValue());
+                outerMap.putIfAbsent(CoreAppModule.getById(modulePrivilege.getModuleId()).getValue(), new LinkedHashMap<>());
+                Map<String, List<String>> innerMap = outerMap.get(CoreAppModule.getById(modulePrivilege.getModuleId()).getValue());
                 innerMap.putIfAbsent(ShipmentManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue(), new ArrayList<>());
                 List<String> privilegeList = innerMap.get(ShipmentManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue());
                 if (privilegeList != null) {
@@ -227,90 +227,90 @@ public class RoleAdministrationBean implements Serializable {
 
         for (RolePrivileges privileges : rolePrivileges) {
 
-            if (AppModule.getById(privileges.getModuleId()).getValue().equalsIgnoreCase(AppModule.USER_MANAGEMENT.getValue())) {
-                logger.debug("I" + privileges.getId() + " M : " + AppModule.getById(privileges.getModuleId()).getValue()
+            if (CoreAppModule.getById(privileges.getModuleId()).getValue().equalsIgnoreCase(CoreAppModule.USER_MANAGEMENT.getValue())) {
+                logger.debug("I" + privileges.getId() + " M : " + CoreAppModule.getById(privileges.getModuleId()).getValue()
                         + " S : " + UserManagementModule.getById(privileges.getSubmoduleId()).getValue()
                         + " P : " + RolePrivilegeConstants.getById(privileges.getPrivilegeId()).getValue()+" Is : "+privileges.getIsSelected());
 
-                outerMap.putIfAbsent(AppModule.getById(privileges.getModuleId()).getValue(), new LinkedHashMap<>());
-                Map<String, List<String>> innerMap = outerMap.get(AppModule.getById(privileges.getModuleId()).getValue());
+                outerMap.putIfAbsent(CoreAppModule.getById(privileges.getModuleId()).getValue(), new LinkedHashMap<>());
+                Map<String, List<String>> innerMap = outerMap.get(CoreAppModule.getById(privileges.getModuleId()).getValue());
                 innerMap.putIfAbsent(UserManagementModule.getById(privileges.getSubmoduleId()).getValue(), new ArrayList<>());
                 List<String> privilegeList = innerMap.get(UserManagementModule.getById(privileges.getSubmoduleId()).getValue());
                 if (privilegeList != null) {
                     privilegeList.add(RolePrivilegeConstants.getById(privileges.getPrivilegeId()).getValue()+"/"+privileges.getIsSelected());
                 }
-            } else if (AppModule.getById(privileges.getModuleId()).getValue().equalsIgnoreCase(AppModule.SYSTEM_MANAGEMENT.getValue())) {
-                logger.debug("I" + privileges.getId() + " M : " + AppModule.getById(privileges.getModuleId()).getValue()
+            } else if (CoreAppModule.getById(privileges.getModuleId()).getValue().equalsIgnoreCase(CoreAppModule.SYSTEM_MANAGEMENT.getValue())) {
+                logger.debug("I" + privileges.getId() + " M : " + CoreAppModule.getById(privileges.getModuleId()).getValue()
                         + " S : " + SystemManagementModule.getById(privileges.getSubmoduleId()).getValue()
                         + " P : " + RolePrivilegeConstants.getById(privileges.getPrivilegeId()).getValue()+" Is : "+privileges.getIsSelected());
-                outerMap.putIfAbsent(AppModule.getById(privileges.getModuleId()).getValue(), new LinkedHashMap<>());
-                Map<String, List<String>> innerMap = outerMap.get(AppModule.getById(privileges.getModuleId()).getValue());
+                outerMap.putIfAbsent(CoreAppModule.getById(privileges.getModuleId()).getValue(), new LinkedHashMap<>());
+                Map<String, List<String>> innerMap = outerMap.get(CoreAppModule.getById(privileges.getModuleId()).getValue());
                 innerMap.putIfAbsent(SystemManagementModule.getById(privileges.getSubmoduleId()).getValue(), new ArrayList<>());
                 List<String> privilegeList = innerMap.get(SystemManagementModule.getById(privileges.getSubmoduleId()).getValue());
                 if (privilegeList != null) {
                     privilegeList.add(RolePrivilegeConstants.getById(privileges.getPrivilegeId()).getValue()+"/"+privileges.getIsSelected());
                 }
-            } else if (AppModule.getById(privileges.getModuleId()).getValue().equalsIgnoreCase(AppModule.LICENCE.getValue())) {
-                logger.debug("I" + privileges.getId() + " M : " + AppModule.getById(privileges.getModuleId()).getValue()
+            } else if (CoreAppModule.getById(privileges.getModuleId()).getValue().equalsIgnoreCase(CoreAppModule.LICENCE.getValue())) {
+                logger.debug("I" + privileges.getId() + " M : " + CoreAppModule.getById(privileges.getModuleId()).getValue()
                         + " S : " + LicenseManagementModule.getById(privileges.getSubmoduleId()).getValue()
                         + " P : " + RolePrivilegeConstants.getById(privileges.getPrivilegeId()).getValue()+" Is : "+privileges.getIsSelected());
-                outerMap.putIfAbsent(AppModule.getById(privileges.getModuleId()).getValue(), new LinkedHashMap<>());
-                Map<String, List<String>> innerMap = outerMap.get(AppModule.getById(privileges.getModuleId()).getValue());
+                outerMap.putIfAbsent(CoreAppModule.getById(privileges.getModuleId()).getValue(), new LinkedHashMap<>());
+                Map<String, List<String>> innerMap = outerMap.get(CoreAppModule.getById(privileges.getModuleId()).getValue());
                 innerMap.putIfAbsent(LicenseManagementModule.getById(privileges.getSubmoduleId()).getValue(), new ArrayList<>());
                 List<String> privilegeList = innerMap.get(LicenseManagementModule.getById(privileges.getSubmoduleId()).getValue());
                 if (privilegeList != null) {
                     privilegeList.add(RolePrivilegeConstants.getById(privileges.getPrivilegeId()).getValue()+"/"+privileges.getIsSelected());
                 }
-            } else if (AppModule.getById(privileges.getModuleId()).getValue().equalsIgnoreCase(AppModule.SERVER_AND_DB.getValue())) {
-                logger.debug("I" + privileges.getId() + " M : " + AppModule.getById(privileges.getModuleId()).getValue()
+            } else if (CoreAppModule.getById(privileges.getModuleId()).getValue().equalsIgnoreCase(CoreAppModule.SERVER_AND_DB.getValue())) {
+                logger.debug("I" + privileges.getId() + " M : " + CoreAppModule.getById(privileges.getModuleId()).getValue()
                         + " S : " + ServerAndDBModule.getById(privileges.getSubmoduleId()).getValue()
                         + " P : " + RolePrivilegeConstants.getById(privileges.getPrivilegeId()).getValue()+" Is : "+privileges.getIsSelected());
-                outerMap.putIfAbsent(AppModule.getById(privileges.getModuleId()).getValue(), new LinkedHashMap<>());
-                Map<String, List<String>> innerMap = outerMap.get(AppModule.getById(privileges.getModuleId()).getValue());
+                outerMap.putIfAbsent(CoreAppModule.getById(privileges.getModuleId()).getValue(), new LinkedHashMap<>());
+                Map<String, List<String>> innerMap = outerMap.get(CoreAppModule.getById(privileges.getModuleId()).getValue());
                 innerMap.putIfAbsent(ServerAndDBModule.getById(privileges.getSubmoduleId()).getValue(), new ArrayList<>());
                 List<String> privilegeList = innerMap.get(ServerAndDBModule.getById(privileges.getSubmoduleId()).getValue());
                 if (privilegeList != null) {
                     privilegeList.add(RolePrivilegeConstants.getById(privileges.getPrivilegeId()).getValue()+"/"+privileges.getIsSelected());
                 }
-            } else if (AppModule.getById(privileges.getModuleId()).getValue().equalsIgnoreCase(AppModule.CLIENT_MANAGEMENT.getValue())) {
-                logger.debug("I" + privileges.getId() + " M : " + AppModule.getById(privileges.getModuleId()).getValue()
+            } else if (CoreAppModule.getById(privileges.getModuleId()).getValue().equalsIgnoreCase(CoreAppModule.CLIENT_MANAGEMENT.getValue())) {
+                logger.debug("I" + privileges.getId() + " M : " + CoreAppModule.getById(privileges.getModuleId()).getValue()
                         + " S : " + ClientManagementModule.getById(privileges.getSubmoduleId()).getValue()
                         + " P : " + RolePrivilegeConstants.getById(privileges.getPrivilegeId()).getValue());
-                outerMap.putIfAbsent(AppModule.getById(privileges.getModuleId()).getValue(), new LinkedHashMap<>());
-                Map<String, List<String>> innerMap = outerMap.get(AppModule.getById(privileges.getModuleId()).getValue());
+                outerMap.putIfAbsent(CoreAppModule.getById(privileges.getModuleId()).getValue(), new LinkedHashMap<>());
+                Map<String, List<String>> innerMap = outerMap.get(CoreAppModule.getById(privileges.getModuleId()).getValue());
                 innerMap.putIfAbsent(ClientManagementModule.getById(privileges.getSubmoduleId()).getValue(), new ArrayList<>());
                 List<String> privilegeList = innerMap.get(ClientManagementModule.getById(privileges.getSubmoduleId()).getValue());
                 if (privilegeList != null) {
                     privilegeList.add(privileges.getId() + "/" + RolePrivilegeConstants.getById(privileges.getPrivilegeId()).getValue());
                 }
-            } else if (AppModule.getById(privileges.getModuleId()).getValue().equalsIgnoreCase(AppModule.INVENTORY_MANAGEMENT.getValue())) {
-                logger.debug("I" + privileges.getId() + " M : " + AppModule.getById(privileges.getModuleId()).getValue()
+            } else if (CoreAppModule.getById(privileges.getModuleId()).getValue().equalsIgnoreCase(CoreAppModule.INVENTORY_MANAGEMENT.getValue())) {
+                logger.debug("I" + privileges.getId() + " M : " + CoreAppModule.getById(privileges.getModuleId()).getValue()
                         + " S : " + InventoryManagementModule.getById(privileges.getSubmoduleId()).getValue()
                         + " P : " + RolePrivilegeConstants.getById(privileges.getPrivilegeId()).getValue());
-                outerMap.putIfAbsent(AppModule.getById(privileges.getModuleId()).getValue(), new LinkedHashMap<>());
-                Map<String, List<String>> innerMap = outerMap.get(AppModule.getById(privileges.getModuleId()).getValue());
+                outerMap.putIfAbsent(CoreAppModule.getById(privileges.getModuleId()).getValue(), new LinkedHashMap<>());
+                Map<String, List<String>> innerMap = outerMap.get(CoreAppModule.getById(privileges.getModuleId()).getValue());
                 innerMap.putIfAbsent(InventoryManagementModule.getById(privileges.getSubmoduleId()).getValue(), new ArrayList<>());
                 List<String> privilegeList = innerMap.get(InventoryManagementModule.getById(privileges.getSubmoduleId()).getValue());
                 if (privilegeList != null) {
                     privilegeList.add(privileges.getId() + "/" + RolePrivilegeConstants.getById(privileges.getPrivilegeId()).getValue());
                 }
-            } else if (AppModule.getById(privileges.getModuleId()).getValue().equalsIgnoreCase(AppModule.QUOTE_MANAGEMENT.getValue())) {
-                logger.debug("I" + privileges.getId() + " M : " + AppModule.getById(privileges.getModuleId()).getValue()
+            } else if (CoreAppModule.getById(privileges.getModuleId()).getValue().equalsIgnoreCase(CoreAppModule.QUOTE_MANAGEMENT.getValue())) {
+                logger.debug("I" + privileges.getId() + " M : " + CoreAppModule.getById(privileges.getModuleId()).getValue()
                         + " S : " + QuoteManagementModule.getById(privileges.getSubmoduleId()).getValue()
                         + " P : " + RolePrivilegeConstants.getById(privileges.getPrivilegeId()).getValue());
-                outerMap.putIfAbsent(AppModule.getById(privileges.getModuleId()).getValue(), new LinkedHashMap<>());
-                Map<String, List<String>> innerMap = outerMap.get(AppModule.getById(privileges.getModuleId()).getValue());
+                outerMap.putIfAbsent(CoreAppModule.getById(privileges.getModuleId()).getValue(), new LinkedHashMap<>());
+                Map<String, List<String>> innerMap = outerMap.get(CoreAppModule.getById(privileges.getModuleId()).getValue());
                 innerMap.putIfAbsent(QuoteManagementModule.getById(privileges.getSubmoduleId()).getValue(), new ArrayList<>());
                 List<String> privilegeList = innerMap.get(QuoteManagementModule.getById(privileges.getSubmoduleId()).getValue());
                 if (privilegeList != null) {
                     privilegeList.add(privileges.getId() + "/" + RolePrivilegeConstants.getById(privileges.getPrivilegeId()).getValue());
                 }
-            } else if (AppModule.getById(privileges.getModuleId()).getValue().equalsIgnoreCase(AppModule.SHIPMENT_MANAGEMENT.getValue())) {
-                logger.debug("I" + privileges.getId() + " M : " + AppModule.getById(privileges.getModuleId()).getValue()
+            } else if (CoreAppModule.getById(privileges.getModuleId()).getValue().equalsIgnoreCase(CoreAppModule.SHIPMENT_MANAGEMENT.getValue())) {
+                logger.debug("I" + privileges.getId() + " M : " + CoreAppModule.getById(privileges.getModuleId()).getValue()
                         + " S : " + ShipmentManagementModule.getById(privileges.getSubmoduleId()).getValue()
                         + " P : " + RolePrivilegeConstants.getById(privileges.getPrivilegeId()).getValue());
-                outerMap.putIfAbsent(AppModule.getById(privileges.getModuleId()).getValue(), new LinkedHashMap<>());
-                Map<String, List<String>> innerMap = outerMap.get(AppModule.getById(privileges.getModuleId()).getValue());
+                outerMap.putIfAbsent(CoreAppModule.getById(privileges.getModuleId()).getValue(), new LinkedHashMap<>());
+                Map<String, List<String>> innerMap = outerMap.get(CoreAppModule.getById(privileges.getModuleId()).getValue());
                 innerMap.putIfAbsent(ShipmentManagementModule.getById(privileges.getSubmoduleId()).getValue(), new ArrayList<>());
                 List<String> privilegeList = innerMap.get(ShipmentManagementModule.getById(privileges.getSubmoduleId()).getValue());
                 if (privilegeList != null) {
@@ -443,23 +443,23 @@ public class RoleAdministrationBean implements Serializable {
                 for (String privilege : isSelectedRolePrivilegeBeanList) {
                     RolePrivileges rolePrivileges = new RolePrivileges();
                     rolePrivileges.setRoles(role);
-                    rolePrivileges.setModuleId(AppModule.getByValue(roleModuleBean.getModule()).getId());
+                    rolePrivileges.setModuleId(CoreAppModule.getByValue(roleModuleBean.getModule()).getId());
 
-                    if (roleModuleBean.getModule().equalsIgnoreCase(AppModule.USER_MANAGEMENT.getValue())) {
+                    if (roleModuleBean.getModule().equalsIgnoreCase(CoreAppModule.USER_MANAGEMENT.getValue())) {
                         rolePrivileges.setSubmoduleId(UserManagementModule.getByValue(roleSubModuleBean.getSubModule()).getId());
-                    } else if (roleModuleBean.getModule().equalsIgnoreCase(AppModule.SYSTEM_MANAGEMENT.getValue())) {
+                    } else if (roleModuleBean.getModule().equalsIgnoreCase(CoreAppModule.SYSTEM_MANAGEMENT.getValue())) {
                         rolePrivileges.setSubmoduleId(SystemManagementModule.getByValue(roleSubModuleBean.getSubModule()).getId());
-                    } else if (roleModuleBean.getModule().equalsIgnoreCase(AppModule.LICENCE.getValue())) {
+                    } else if (roleModuleBean.getModule().equalsIgnoreCase(CoreAppModule.LICENCE.getValue())) {
                         rolePrivileges.setSubmoduleId(LicenseManagementModule.getByValue(roleSubModuleBean.getSubModule()).getId());
-                    } else if (roleModuleBean.getModule().equalsIgnoreCase(AppModule.SERVER_AND_DB.getValue())) {
+                    } else if (roleModuleBean.getModule().equalsIgnoreCase(CoreAppModule.SERVER_AND_DB.getValue())) {
                         rolePrivileges.setSubmoduleId(ServerAndDBModule.getByValue(roleSubModuleBean.getSubModule()).getId());
-                    }else if (roleModuleBean.getModule().equalsIgnoreCase(AppModule.CLIENT_MANAGEMENT.getValue())) {
+                    }else if (roleModuleBean.getModule().equalsIgnoreCase(CoreAppModule.CLIENT_MANAGEMENT.getValue())) {
                         rolePrivileges.setSubmoduleId(ClientManagementModule.getByValue(roleSubModuleBean.getSubModule()).getId());
-                    }else if (roleModuleBean.getModule().equalsIgnoreCase(AppModule.INVENTORY_MANAGEMENT.getValue())) {
+                    }else if (roleModuleBean.getModule().equalsIgnoreCase(CoreAppModule.INVENTORY_MANAGEMENT.getValue())) {
                         rolePrivileges.setSubmoduleId(InventoryManagementModule.getByValue(roleSubModuleBean.getSubModule()).getId());
-                    }else if (roleModuleBean.getModule().equalsIgnoreCase(AppModule.QUOTE_MANAGEMENT.getValue())) {
+                    }else if (roleModuleBean.getModule().equalsIgnoreCase(CoreAppModule.QUOTE_MANAGEMENT.getValue())) {
                         rolePrivileges.setSubmoduleId(QuoteManagementModule.getByValue(roleSubModuleBean.getSubModule()).getId());
-                    }else if (roleModuleBean.getModule().equalsIgnoreCase(AppModule.SHIPMENT_MANAGEMENT.getValue())) {
+                    }else if (roleModuleBean.getModule().equalsIgnoreCase(CoreAppModule.SHIPMENT_MANAGEMENT.getValue())) {
                         rolePrivileges.setSubmoduleId(ShipmentManagementModule.getByValue(roleSubModuleBean.getSubModule()).getId());
                     }
                     String[] parts = privilege.split("/");

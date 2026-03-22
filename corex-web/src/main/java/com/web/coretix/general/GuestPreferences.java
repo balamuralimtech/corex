@@ -7,7 +7,7 @@ import com.persist.coretix.modal.usermanagement.UserActivities;
 import com.persist.coretix.modal.usermanagement.UserDetails;
 import com.web.coretix.appgeneral.GenericManagedBean;
 import com.web.coretix.constants.LoginConstants;
-import com.web.coretix.constants.AppModule;
+import com.web.coretix.constants.CoreAppModule;
 import com.web.coretix.constants.SessionAttributes;
 import com.web.coretix.constants.UserActivityConstants;
 import org.apache.commons.collections.CollectionUtils;
@@ -183,11 +183,11 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         opConsultationRendered = true;
         clinicManagementRendered = true;
 
-        List<AppModule> modules = getRoleModuleList();
+        List<CoreAppModule> modules = getRoleModuleList();
 
         if (CollectionUtils.isNotEmpty(modules)) {
 
-            for (AppModule module : modules) {
+            for (CoreAppModule module : modules) {
 
                 switch (module) {
                     case USER_MANAGEMENT:
@@ -210,30 +210,6 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
                         getDbAndServerLogPageList();
                         logger.debug("Server and DB available");
                         break;
-                    case CLIENT_MANAGEMENT:
-                        clientManagementRendered = true;
-                        getClientManagementPageList();
-                        logger.debug("Client management available");
-                        break;
-                    case INVENTORY_MANAGEMENT:
-                        inventoryManagementRendered = true;
-                        getInventoryManagementPageList();
-                        logger.debug("Inventory management available");
-                        break;
-                    case QUOTE_MANAGEMENT:
-                        quoteManagementRendered = true;
-                        getQuoteManagementPageList();
-                        logger.debug("Quote management available");
-                        break;
-                    case SHIPMENT_MANAGEMENT:
-                        shippingManagementRendered = true;
-                        getShipmentManagementPageList();
-                        logger.debug("Shipment management available");
-                        break;
-                    case CLINIC_MANAGEMENT:
-                        clinicManagementRendered = true;
-                        logger.debug("Clinic management available");
-                        break;
                     default:
                         logger.error("Unsupported module: " + module);
                         break;
@@ -244,7 +220,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
     private void getUserManagementPageList() {
         logger.debug("getUserManagementPageList");
-        List<Integer> pageList = getSubModuleDetailsByRoleandModuleId(AppModule.USER_MANAGEMENT.getId());
+        List<Integer> pageList = getSubModuleDetailsByRoleandModuleId(CoreAppModule.USER_MANAGEMENT.getId());
 
         if (CollectionUtils.isNotEmpty(pageList)) {
             for (Integer pageId : pageList) {
@@ -256,7 +232,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
     private void getSystemManagementPageList() {
         logger.debug("getSystemManagementPageList");
-        List<Integer> pageList = getSubModuleDetailsByRoleandModuleId(AppModule.SYSTEM_MANAGEMENT.getId());
+        List<Integer> pageList = getSubModuleDetailsByRoleandModuleId(CoreAppModule.SYSTEM_MANAGEMENT.getId());
 
         if (CollectionUtils.isNotEmpty(pageList)) {
             for (Integer pageId : pageList) {
@@ -267,7 +243,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
     private void getLicensePageList() {
         logger.debug("getLicensePageList");
-        List<Integer> pageList = getSubModuleDetailsByRoleandModuleId(AppModule.LICENCE.getId());
+        List<Integer> pageList = getSubModuleDetailsByRoleandModuleId(CoreAppModule.LICENCE.getId());
 
         if (CollectionUtils.isNotEmpty(pageList)) {
             for (Integer pageId : pageList) {
@@ -278,7 +254,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
     private void getDbAndServerLogPageList() {
         logger.debug("getDbAndServerLogPageList");
-        List<Integer> pageList = getSubModuleDetailsByRoleandModuleId(AppModule.SERVER_AND_DB.getId());
+        List<Integer> pageList = getSubModuleDetailsByRoleandModuleId(CoreAppModule.SERVER_AND_DB.getId());
         if (CollectionUtils.isNotEmpty(pageList)) {
             for (Integer pageId : pageList) {
                 logger.debug("getDbAndServerLogPageList : pageId : " + pageId);
@@ -286,47 +262,6 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         }
     }
 
-    private void getClientManagementPageList() {
-        logger.debug("getClientManagementPageList");
-        List<Integer> pageList = getSubModuleDetailsByRoleandModuleId(AppModule.CLIENT_MANAGEMENT.getId());
-
-        if (CollectionUtils.isNotEmpty(pageList)) {
-            for (Integer pageId : pageList) {
-                logger.debug("getClientManagementPageList : pageId : " + pageId);
-            }
-        }
-    }
-
-    private void getInventoryManagementPageList() {
-        logger.debug("getInventoryManagementPageList");
-        List<Integer> pageList = getSubModuleDetailsByRoleandModuleId(AppModule.INVENTORY_MANAGEMENT.getId());
-
-        if (CollectionUtils.isNotEmpty(pageList)) {
-            for (Integer pageId : pageList) {
-                logger.debug("getInventoryManagementPageList : pageId : " + pageId);
-            }
-        }
-    }
-
-    private void getQuoteManagementPageList() {
-        logger.debug("getQuoteManagementPageList");
-        List<Integer> pageList = getSubModuleDetailsByRoleandModuleId(AppModule.QUOTE_MANAGEMENT.getId());
-        if (CollectionUtils.isNotEmpty(pageList)) {
-            for (Integer pageId : pageList) {
-                logger.debug("getQuoteManagementPageList : pageId : " + pageId);
-            }
-        }
-    }
-
-    private void getShipmentManagementPageList() {
-        logger.debug("getShipmentManagementPageList");
-        List<Integer> pageList = getSubModuleDetailsByRoleandModuleId(AppModule.SHIPMENT_MANAGEMENT.getId());
-        if (CollectionUtils.isNotEmpty(pageList)) {
-            for (Integer pageId : pageList) {
-                logger.debug("getShipmentManagementPageList : pageId : " + pageId);
-            }
-        }
-    }
 
     private UserDetails getUserDetailsByUsername(String username) {
         return userAdministrationService.getUserDetailEntityByUserName(username);

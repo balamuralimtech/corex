@@ -13,7 +13,7 @@ import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.servlet.http.HttpSession;
 
-import com.web.coretix.constants.AppModule;
+import com.web.coretix.constants.CoreAppModule;
 import com.web.coretix.constants.RolePrivilegeConstants;
 import com.web.coretix.constants.SessionAttributes;
 import org.apache.commons.collections.CollectionUtils;
@@ -206,15 +206,15 @@ public class GenericManagedBean
         return null;
     }
 
-    public List<AppModule> getRoleModuleList()
+    public List<CoreAppModule> getRoleModuleList()
     {
         logger.debug("[PL] - Generic Managed Bean Role module list");
-        List<AppModule> roleModuleList = new ArrayList<>();
+        List<CoreAppModule> roleModuleList = new ArrayList<>();
         List<Integer> moduleList = roleAdministrationService.getModulesByRoleId(fetchCurrentUserRoleId());
         logger.debug("moduleList : "+moduleList);
         if (CollectionUtils.isNotEmpty(moduleList)){
             for (Integer moduleId : moduleList) {
-                roleModuleList.add(AppModule.getById(moduleId));
+                roleModuleList.add(CoreAppModule.getById(moduleId));
             }
         }
         else {

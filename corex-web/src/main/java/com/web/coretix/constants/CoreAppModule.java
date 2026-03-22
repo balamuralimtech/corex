@@ -1,18 +1,28 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Enum.java to edit this template
+ */
 package com.web.coretix.constants;
+
 
 import java.util.ArrayList;
 import java.util.List;
+/**
+ *
+ * @author balamurali
+ */
+public enum CoreAppModule {
+    USER_MANAGEMENT(1, "User Management"),
+    SYSTEM_MANAGEMENT(2, "System Management"),
+    LICENCE(3, "License"),
+    SERVER_AND_DB(4, "Server and DB");
 
-public enum ClientManagementModule {
-    CLIENT_ADMINISTRATION(1, "Client Administration"),
-    CLIENT_TYPE(2, "Client Type"),
-    CLIENT_HISTORY(3, "Client History");
 
     private final int id;
     private final String value;
 
     // Constructor
-    ClientManagementModule(int id, String value) {
+    CoreAppModule(int id, String value) {
         this.id = id;
         this.value = value;
     }
@@ -28,8 +38,8 @@ public enum ClientManagementModule {
     }
 
     // Method to get enum by id
-    public static ClientManagementModule getById(int id) {
-        for (ClientManagementModule module : values()) {
+    public static CoreAppModule getById(int id) {
+        for (CoreAppModule module : values()) {
             if (module.getId() == id) {
                 return module;
             }
@@ -38,8 +48,8 @@ public enum ClientManagementModule {
     }
 
     // Method to get enum by value
-    public static ClientManagementModule getByValue(String value) {
-        for (ClientManagementModule module : values()) {
+    public static CoreAppModule getByValue(String value) {
+        for (CoreAppModule module : values()) {
             if (module.getValue().equalsIgnoreCase(value)) {
                 return module;
             }
@@ -50,7 +60,7 @@ public enum ClientManagementModule {
     // Method to get all values as a list
     public static List<String> getAllValues() {
         List<String> valuesList = new ArrayList<>();
-        for (ClientManagementModule module : values()) {
+        for (CoreAppModule module : values()) {
             valuesList.add(module.getValue());
         }
         return valuesList;
