@@ -50,12 +50,16 @@ public class DesignationBean implements Serializable {
 
     private String designationName;
     private String designationOrganizationName;
-    
+
     private boolean isAddOperation;
     private boolean datatableRendered;
-    
+
     private int recordsCount;
-    
+
+    // Field validation flags
+    private boolean designationNameError = false;
+    private boolean organizationError = false;
+
     private Designations selectedDesignation = new Designations();
 
     @Inject
@@ -89,6 +93,14 @@ public class DesignationBean implements Serializable {
         logger.debug("entered into resetFields action !!!");
         setDesignationOrganizationName("");
         designationName = "";
+
+        // Reset error flags
+        resetErrorFlags();
+    }
+
+    private void resetErrorFlags() {
+        designationNameError = false;
+        organizationError = false;
     }
 
     public void addButtonAction() {
@@ -130,11 +142,46 @@ public class DesignationBean implements Serializable {
     
 
     public void saveDesignation() {
-        
+
         logger.debug("Inside save designation method ");
-        
         logger.debug("isAddOperation : "+isAddOperation);
-        
+
+        // Reset error flags before validation
+        resetErrorFlags();
+        boolean hasErrors = false;
+        List<String> errorFieldIds = new ArrayList<>();
+
+        // Validation
+        if (designationName == null || designationName.trim().isEmpty()) {
+            logger.debug("designationName is null or empty");
+            designationNameError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:designationname");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Designation name is required"));
+        }
+
+        if (designationOrganizationName == null || designationOrganizationName.trim().isEmpty()) {
+            logger.debug("designationOrganizationName is null or empty");
+            organizationError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:organizationlist");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Organization is required"));
+        }
+
+        // If there are validation errors, trigger visual effects
+        if (hasErrors) {
+            PrimeFaces.current().executeScript("highlightErrorFields(['" + String.join("','", errorFieldIds) + "']);");
+            return;
+        }
+
+        logger.debug("crossed validation !!!!!!!!!!!");
+
         Designations designation = new Designations();
 
         designation.setDesignationName(designationName);
@@ -378,6 +425,15 @@ public class DesignationBean implements Serializable {
      */
     public void setRecordsCount(int recordsCount) {
         this.recordsCount = recordsCount;
+    }
+
+    // Getters for error flags
+    public boolean isDesignationNameError() {
+        return designationNameError;
+    }
+
+    public boolean isOrganizationError() {
+        return organizationError;
     }
 
 }

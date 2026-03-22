@@ -65,6 +65,11 @@ public class CityBean implements Serializable {
     private String searchCountry;
     private String searchState;
 
+    // Field validation flags
+    private boolean nameError = false;
+    private boolean countryError = false;
+    private boolean stateError = false;
+
     @Inject
     private ICountryService countryService;
         @Inject
@@ -103,7 +108,16 @@ public class CityBean implements Serializable {
         setCountryCode("");
         setSearchCountry("");
         setSearchState("");
+
+        // Reset error flags
+        resetErrorFlags();
         logger.debug("end of resetFields action !!!");
+    }
+
+    private void resetErrorFlags() {
+        nameError = false;
+        countryError = false;
+        stateError = false;
     }
 
     public void addButtonAction() {
@@ -201,6 +215,55 @@ public class CityBean implements Serializable {
         logger.debug("cityName : " + name);
         logger.debug("state : " + state);
         logger.debug("country : " + country);
+
+        // Reset error flags before validation
+        resetErrorFlags();
+        boolean hasErrors = false;
+        List<String> errorFieldIds = new ArrayList<>();
+
+        // Validation
+        if (name == null || name.trim().isEmpty()) {
+            logger.debug("name is null or empty");
+            nameError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:name");
+            FacesContext.getCurrentInstance().addMessage("form:dialogMessages",
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "City name is required"));
+        }
+
+        if (country == null || country.trim().isEmpty()) {
+            logger.debug("country is null or empty");
+            countryError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:countrylist");
+            FacesContext.getCurrentInstance().addMessage("form:dialogMessages",
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Country is required"));
+        }
+
+        if (state == null || state.trim().isEmpty()) {
+            logger.debug("state is null or empty");
+            stateError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:statelist");
+            FacesContext.getCurrentInstance().addMessage("form:dialogMessages",
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "State is required"));
+        }
+
+        // If there are validation errors, trigger visual effects
+        if (hasErrors) {
+            String fieldIdsJson = String.join(",", errorFieldIds);
+            PrimeFaces.current().executeScript("highlightErrorFields(['" + String.join("','", errorFieldIds) + "']);");
+            PrimeFaces.current().ajax().update("form:dialogMessages");
+            return;
+        }
+
+        logger.debug("crossed validation !!!!!!!!!!!");
 
         Cities city = new Cities();
         city.setName(getName());
@@ -471,5 +534,18 @@ public class CityBean implements Serializable {
 
     public void setSearchState(String searchState) {
         this.searchState = searchState;
+    }
+
+    // Getters for error flags
+    public boolean isNameError() {
+        return nameError;
+    }
+
+    public boolean isCountryError() {
+        return countryError;
+    }
+
+    public boolean isStateError() {
+        return stateError;
     }
 }

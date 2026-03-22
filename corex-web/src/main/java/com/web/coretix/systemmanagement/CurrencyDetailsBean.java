@@ -53,6 +53,10 @@ public class CurrencyDetailsBean implements Serializable {
     
     private int recordsCount;
 
+    private boolean currencyNameError = false;
+    private boolean currencyCodeError = false;
+    private boolean symbolError = false;
+
     private CurrencyDetails selectedCurrencyDetails = new CurrencyDetails();
 
     @Inject
@@ -85,7 +89,14 @@ public class CurrencyDetailsBean implements Serializable {
         currencyName ="";
         currencyCode ="";
         symbol ="";
-        
+
+        resetErrorFlags();
+    }
+
+    private void resetErrorFlags() {
+        currencyNameError = false;
+        currencyCodeError = false;
+        symbolError = false;
     }
 
     public void addButtonAction() {
@@ -131,6 +142,47 @@ public class CurrencyDetailsBean implements Serializable {
         logger.debug("selectedOrganization.getCode() : " + getSelectedCurrencyDetails().getCurrencyCode());
         logger.debug("selectedOrganization.getSymbol() : " + getSelectedCurrencyDetails().getSymbol());
 
+        resetErrorFlags();
+        boolean hasErrors = false;
+        List<String> errorFieldIds = new ArrayList<>();
+
+        if (currencyName == null || currencyName.trim().isEmpty()) {
+            logger.debug("currencyName is null or empty");
+            currencyNameError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:name");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Currency name is required"));
+        }
+
+        if (currencyCode == null || currencyCode.trim().isEmpty()) {
+            logger.debug("currencyCode is null or empty");
+            currencyCodeError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:currencyCode");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Currency code is required"));
+        }
+
+        if (symbol == null || symbol.trim().isEmpty()) {
+            logger.debug("symbol is null or empty");
+            symbolError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:currencySymbol");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Currency symbol is required"));
+        }
+
+        if (hasErrors) {
+            PrimeFaces.current().executeScript("highlightErrorFields(['" + String.join("','", errorFieldIds) + "']);");
+            return;
+        }
 
         CurrencyDetails currencyDetail = new CurrencyDetails();
 
@@ -373,6 +425,18 @@ public class CurrencyDetailsBean implements Serializable {
      */
     public void setSelectedCurrencyDetails(CurrencyDetails selectedCurrencyDetails) {
         this.selectedCurrencyDetails = selectedCurrencyDetails;
+    }
+
+    public boolean isCurrencyNameError() {
+        return currencyNameError;
+    }
+
+    public boolean isCurrencyCodeError() {
+        return currencyCodeError;
+    }
+
+    public boolean isSymbolError() {
+        return symbolError;
     }
 
 }

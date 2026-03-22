@@ -55,8 +55,15 @@ public class DepartmentBean implements Serializable {
     
     private boolean isAddOperation;
     private boolean datatableRendered;
-    
+
     private int recordsCount;
+
+    // Field validation flags
+    private boolean departmentNameError = false;
+    private boolean organizationError = false;
+    private boolean phoneError = false;
+    private boolean emailError = false;
+
     private Departments selectedDepartment = new Departments();
 
     @Inject
@@ -95,6 +102,16 @@ public class DepartmentBean implements Serializable {
         departmentName = "";
         departmentPhoneNumber = "";
         departmentEmail = "";
+
+        // Reset error flags
+        resetErrorFlags();
+    }
+
+    private void resetErrorFlags() {
+        departmentNameError = false;
+        organizationError = false;
+        phoneError = false;
+        emailError = false;
     }
 
     public void addButtonAction() {
@@ -139,11 +156,68 @@ public class DepartmentBean implements Serializable {
     
 
     public void saveDepartment() {
-        
-        logger.debug("Inside save organization method ");
-        
+
+        logger.debug("Inside save department method ");
         logger.debug("isAddOperation : "+isAddOperation);
-        
+
+        // Reset error flags before validation
+        resetErrorFlags();
+        boolean hasErrors = false;
+        List<String> errorFieldIds = new ArrayList<>();
+
+        // Validation
+        if (departmentName == null || departmentName.trim().isEmpty()) {
+            logger.debug("departmentName is null or empty");
+            departmentNameError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:departmentname");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Department name is required"));
+        }
+
+        if (departmentOrganizationName == null || departmentOrganizationName.trim().isEmpty()) {
+            logger.debug("departmentOrganizationName is null or empty");
+            organizationError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:organizationlist");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Organization is required"));
+        }
+
+        if (departmentPhoneNumber == null || departmentPhoneNumber.trim().isEmpty()) {
+            logger.debug("departmentPhoneNumber is null or empty");
+            phoneError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:phonenumber");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Phone number is required"));
+        }
+
+        if (departmentEmail == null || departmentEmail.trim().isEmpty()) {
+            logger.debug("departmentEmail is null or empty");
+            emailError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:email");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Email is required"));
+        }
+
+        // If there are validation errors, trigger visual effects
+        if (hasErrors) {
+            PrimeFaces.current().executeScript("highlightErrorFields(['" + String.join("','", errorFieldIds) + "']);");
+            return;
+        }
+
+        logger.debug("crossed validation !!!!!!!!!!!");
+
         Departments departments = new Departments();
 
         departments.setDepartmentName(departmentName);
@@ -422,6 +496,23 @@ public class DepartmentBean implements Serializable {
      */
     public void setRecordsCount(int recordsCount) {
         this.recordsCount = recordsCount;
+    }
+
+    // Getters for error flags
+    public boolean isDepartmentNameError() {
+        return departmentNameError;
+    }
+
+    public boolean isOrganizationError() {
+        return organizationError;
+    }
+
+    public boolean isPhoneError() {
+        return phoneError;
+    }
+
+    public boolean isEmailError() {
+        return emailError;
     }
 
 }

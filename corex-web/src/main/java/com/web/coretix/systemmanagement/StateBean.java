@@ -62,6 +62,10 @@ public class StateBean implements Serializable {
     private String iso2;
     private String type;
 
+    // Field validation flags
+    private boolean nameError = false;
+    private boolean countryError = false;
+    private boolean typeError = false;
 
     private String searchCountry;
 
@@ -100,6 +104,15 @@ public class StateBean implements Serializable {
         setIso2("");
         setType("");
         setSearchCountry("");
+
+        // Reset error flags
+        resetErrorFlags();
+    }
+
+    private void resetErrorFlags() {
+        nameError = false;
+        countryError = false;
+        typeError = false;
     }
 
     public void addButtonAction() {
@@ -182,6 +195,54 @@ public class StateBean implements Serializable {
         logger.debug("iso2 : " +iso2);
         logger.debug("type : " +type);
         logger.debug("isAddOperation : " + isIsAddOperation());
+
+        // Reset error flags before validation
+        resetErrorFlags();
+        boolean hasErrors = false;
+        List<String> errorFieldIds = new ArrayList<>();
+
+        // Validation
+        if (name == null || name.trim().isEmpty()) {
+            logger.debug("name is null or empty");
+            nameError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:name");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "State name is required"));
+        }
+
+        if (country == null || country.trim().isEmpty()) {
+            logger.debug("country is null or empty");
+            countryError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:countrylist");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Country is required"));
+        }
+
+        if (type == null || type.trim().isEmpty()) {
+            logger.debug("type is null or empty");
+            typeError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:type");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Type is required"));
+        }
+
+        // If there are validation errors, trigger visual effects
+        if (hasErrors) {
+            String fieldIdsJson = String.join(",", errorFieldIds);
+            PrimeFaces.current().executeScript("highlightErrorFields(['" + String.join("','", errorFieldIds) + "']);");
+            return;
+        }
+
+        logger.debug("crossed validation !!!!!!!!!!!");
 
         States state = new States();
         state.setName(getName());
@@ -438,5 +499,18 @@ public class StateBean implements Serializable {
 
     public void setSearchCountry(String searchCountry) {
         this.searchCountry = searchCountry;
+    }
+
+    // Getters for error flags
+    public boolean isNameError() {
+        return nameError;
+    }
+
+    public boolean isCountryError() {
+        return countryError;
+    }
+
+    public boolean isTypeError() {
+        return typeError;
     }
 }

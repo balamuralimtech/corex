@@ -8,6 +8,92 @@
     <ui:define name="title">#{msg['currencyLabel']}</ui:define>
     <ui:define name="head">
         <h:outputStylesheet name="css/flags/flags.css" library="demo" />
+        <h:outputStylesheet name="css/custom-validation.css" library="demo" />
+        <script type="text/javascript">
+            function highlightErrorFields(fieldIds) {
+                console.log('Highlighting error fields:', fieldIds);
+
+                document.querySelectorAll('.ui-state-error-custom, .shake-animation, .pulse-animation').forEach(function(el) {
+                    el.classList.remove('ui-state-error-custom', 'shake-animation', 'pulse-animation');
+                });
+
+                fieldIds.forEach(function(fieldId) {
+                    console.log('Processing field:', fieldId);
+                    var field = document.getElementById(fieldId);
+                    if (!field) {
+                        console.warn('Field not found:', fieldId);
+                        return;
+                    }
+
+                    field.classList.add('ui-state-error-custom', 'shake-animation', 'pulse-animation');
+
+                    if (field.classList.contains('ui-autocomplete')) {
+                        var input = field.querySelector('.ui-autocomplete-input');
+                        if (input) {
+                            input.classList.add('ui-state-error-custom', 'shake-animation', 'pulse-animation');
+                        }
+                    }
+
+                    if (fieldIds.indexOf(fieldId) === 0) {
+                        field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+
+                    setTimeout(function() {
+                        field.classList.remove('shake-animation', 'pulse-animation');
+                        var input = field.querySelector('.ui-autocomplete-input');
+                        if (input) {
+                            input.classList.remove('shake-animation', 'pulse-animation');
+                        }
+                    }, 2000);
+                });
+            }
+
+            function clearErrorStyles() {
+                document.querySelectorAll('.ui-state-error-custom').forEach(function(el) {
+                    el.classList.remove('ui-state-error-custom');
+                });
+
+                var dialogMessages = document.getElementById('form:dialogMessages');
+                if (dialogMessages) {
+                    var messages = dialogMessages.querySelectorAll('.ui-messages-error, .ui-messages-warn, .ui-messages-info');
+                    messages.forEach(function(msg) {
+                        msg.style.display = 'none';
+                    });
+                }
+
+                var growlMessages = document.getElementById('form:messages');
+                if (growlMessages) {
+                    var msgs = growlMessages.querySelectorAll('.ui-growl-item');
+                    msgs.forEach(function(msg) {
+                        msg.style.display = 'none';
+                    });
+                }
+            }
+
+            function attachClearErrorListeners() {
+                var dialog = document.querySelector('.ui-dialog');
+                if (dialog) {
+                    dialog.addEventListener('click', clearErrorStyles);
+                }
+
+                var formFields = document.querySelectorAll('#form input, #form textarea, #form select, .ui-autocomplete-input');
+                formFields.forEach(function(field) {
+                    field.addEventListener('input', clearErrorStyles);
+                    field.addEventListener('keydown', clearErrorStyles);
+                    field.addEventListener('focus', clearErrorStyles);
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                attachClearErrorListeners();
+            });
+
+            if (typeof PrimeFaces !== 'undefined') {
+                PrimeFaces.ajax.onComplete = function() {
+                    setTimeout(attachClearErrorListeners, 100);
+                };
+            }
+        </script>
     </ui:define>
 
     <ui:define name="content">
@@ -94,21 +180,21 @@
                                 <p:outputPanel>
                                     <div class="field">
                                         <p:outputLabel for="name">#{msg['currencyNameLabel']}</p:outputLabel>
-                                        <p:inputText id="name" value="#{currencyDetailsBean.currencyName}" />
+                                        <p:inputText id="name" value="#{currencyDetailsBean.currencyName}" onfocus="clearErrorStyles()" />
                                     </div>
                                     <div class="field">
                                         <p:outputLabel for="currencyCode">#{msg['currencyCodeLabel']}</p:outputLabel>
-                                        <p:inputText id="currencyCode" value="#{currencyDetailsBean.currencyCode}" />
+                                        <p:inputText id="currencyCode" value="#{currencyDetailsBean.currencyCode}" onfocus="clearErrorStyles()" />
                                     </div>
                                     <div class="field">
                                         <p:outputLabel for="currencySymbol">#{msg['currencySymbolLabel']}</p:outputLabel>
-                                        <p:inputText id="currencySymbol" value="#{currencyDetailsBean.symbol}" />
+                                        <p:inputText id="currencySymbol" value="#{currencyDetailsBean.symbol}" onfocus="clearErrorStyles()" />
                                     </div>
                                 </p:outputPanel>
                             </p:outputPanel>
 
                             <f:facet name="footer">
-                                <p:commandButton value="#{msg['saveLabel']}" icon="pi pi-check" actionListener="#{currencyDetailsBean.saveCurrency}" update="addEditCurrPanelId" process="addEditCurrPanelId @this" />
+                                <p:commandButton value="#{msg['saveLabel']}" icon="pi pi-check" actionListener="#{currencyDetailsBean.saveCurrency}" update="addEditCurrPanelId :form:messages" process="addEditCurrPanelId @this" />
                                 <p:commandButton value="#{msg['cancelLabel']}" icon="pi pi-times" onclick="PF('manageCurrDialog').hide()" class="ui-button-secondary" />
                             </f:facet>
                         </p:dialog> 

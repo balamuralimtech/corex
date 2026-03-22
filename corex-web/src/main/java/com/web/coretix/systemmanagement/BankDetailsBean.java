@@ -59,6 +59,10 @@ public class BankDetailsBean implements Serializable {
     private int recordsCount;
     private BankDetails selectedBankDetails = new BankDetails();
 
+    // Field validation flags
+    private boolean organizationError = false;
+    private boolean bankAccountDetailsError = false;
+
     @Inject
     private IOrganizationService organizationService;
 
@@ -93,6 +97,14 @@ public class BankDetailsBean implements Serializable {
         searchBDOrganizationName="";
 
         bankAccountDetails = "";
+
+        // Reset error flags
+        resetErrorFlags();
+    }
+
+    private void resetErrorFlags() {
+        organizationError = false;
+        bankAccountDetailsError = false;
     }
 
     public void addButtonAction() {
@@ -140,6 +152,43 @@ public class BankDetailsBean implements Serializable {
 
         logger.debug("isAddOperation : "+isAddOperation);
         logger.debug("bankAccountDetails : "+bankAccountDetails);
+
+        // Reset error flags before validation
+        resetErrorFlags();
+        boolean hasErrors = false;
+        List<String> errorFieldIds = new ArrayList<>();
+
+        // Validation
+        if (bDOrganizationName == null || bDOrganizationName.trim().isEmpty()) {
+            logger.debug("bDOrganizationName is null or empty");
+            organizationError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:orglist");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Organization name is required"));
+        }
+
+        if (bankAccountDetails == null || bankAccountDetails.trim().isEmpty()) {
+            logger.debug("bankAccountDetails is null or empty");
+            bankAccountDetailsError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:bankaccountdetails");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Bank account details are required"));
+        }
+
+        // If there are validation errors, trigger visual effects
+        if (hasErrors) {
+            String fieldIdsJson = String.join(",", errorFieldIds);
+            PrimeFaces.current().executeScript("highlightErrorFields(['" + String.join("','", errorFieldIds) + "']);");
+            return;
+        }
+
+        logger.debug("crossed validation !!!!!!!!!!!");
 
         BankDetails bankDetails = new BankDetails();
         bankDetails.setBankAccountDetails(bankAccountDetails);
@@ -413,6 +462,15 @@ public class BankDetailsBean implements Serializable {
 
     public void setSearchBDOrganizationName(String searchBDanizationName) {
         this.searchBDOrganizationName = searchBDanizationName;
+    }
+
+    // Getters for error flags
+    public boolean isOrganizationError() {
+        return organizationError;
+    }
+
+    public boolean isBankAccountDetailsError() {
+        return bankAccountDetailsError;
     }
 }
 

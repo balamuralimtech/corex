@@ -55,6 +55,10 @@ public class SubRegionBean implements Serializable {
 
     private Subregions selectedSubRegion = new Subregions();
 
+    // Field validation flags
+    private boolean nameError = false;
+    private boolean regionError = false;
+
     @Inject
     private IRegionService regionService;
 
@@ -85,6 +89,14 @@ public class SubRegionBean implements Serializable {
         logger.debug("entered into resetFields action !!!");
         subregionName = "";
         regionName = "";
+
+        // Reset error flags
+        resetErrorFlags();
+    }
+
+    private void resetErrorFlags() {
+        nameError = false;
+        regionError = false;
     }
 
     public void addButtonAction() {
@@ -123,6 +135,43 @@ public class SubRegionBean implements Serializable {
 
         logger.debug("Inside saveRegion method ");
         logger.debug("isAddOperation : " + isAddOperation);
+
+        // Reset error flags before validation
+        resetErrorFlags();
+        boolean hasErrors = false;
+        List<String> errorFieldIds = new ArrayList<>();
+
+        // Validation
+        if (subregionName == null || subregionName.trim().isEmpty()) {
+            logger.debug("subregionName is null or empty");
+            nameError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:name");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "SubRegion name is required"));
+        }
+
+        if (regionName == null || regionName.trim().isEmpty()) {
+            logger.debug("regionName is null or empty");
+            regionError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:regionlist");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Region is required"));
+        }
+
+        // If there are validation errors, trigger visual effects
+        if (hasErrors) {
+            String fieldIdsJson = String.join(",", errorFieldIds);
+            PrimeFaces.current().executeScript("highlightErrorFields(['" + String.join("','", errorFieldIds) + "']);");
+            return;
+        }
+
+        logger.debug("crossed validation !!!!!!!!!!!");
 
         Subregions subregion = new Subregions();
 
@@ -358,6 +407,15 @@ public class SubRegionBean implements Serializable {
      */
     public void setSubregionList(List<Subregions> subregionList) {
         this.subregionList = subregionList;
+    }
+
+    // Getters for error flags
+    public boolean isNameError() {
+        return nameError;
+    }
+
+    public boolean isRegionError() {
+        return regionError;
     }
 
 }

@@ -56,6 +56,12 @@ public class NotificationSettingBean implements Serializable {
     private String smtpHost;
     private String smtpPort;
 
+    private boolean organizationError = false;
+    private boolean emailError = false;
+    private boolean passwordError = false;
+    private boolean smtpHostError = false;
+    private boolean smtpPortError = false;
+
     @Inject
     private INotificationSettingService notificationSettingService;
 
@@ -91,6 +97,16 @@ public class NotificationSettingBean implements Serializable {
         setSmtpStarttlsEnable(false);
         setSmtpHost("");
         setSmtpPort("");
+
+        resetErrorFlags();
+    }
+
+    private void resetErrorFlags() {
+        organizationError = false;
+        emailError = false;
+        passwordError = false;
+        smtpHostError = false;
+        smtpPortError = false;
 
     }
 
@@ -187,15 +203,92 @@ public class NotificationSettingBean implements Serializable {
         logger.debug("isSmtpStarttlsEnable : " + isSmtpStarttlsEnable());
         logger.debug("getOrganizationName() : " + getOrganizationName());
 
+        resetErrorFlags();
+        boolean hasErrors = false;
+        List<String> errorFieldIds = new ArrayList<>();
+
+        if (organizationName == null || organizationName.trim().isEmpty()) {
+            logger.debug("organizationName is null or empty");
+            organizationError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:orglist");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Organization is required"));
+        }
+
+        if (emailId == null || emailId.trim().isEmpty()) {
+            logger.debug("emailId is null or empty");
+            emailError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:UserId");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Email ID is required"));
+        }
+
+        if (password == null || password.trim().isEmpty()) {
+            logger.debug("password is null or empty");
+            passwordError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:Password");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Password is required"));
+        }
+
+        if (smtpHost == null || smtpHost.trim().isEmpty()) {
+            logger.debug("smtpHost is null or empty");
+            smtpHostError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:smtpHost");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "SMTP host is required"));
+        }
+
+        if (smtpPort == null || smtpPort.trim().isEmpty()) {
+            logger.debug("smtpPort is null or empty");
+            smtpPortError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:smtpPort");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "SMTP port is required"));
+        }
+
+        Organizations addOrganizations = null;
+        if (!hasErrors) {
+            addOrganizations = getOrganizationsByOrganizationName(getOrganizationName());
+            if (addOrganizations == null) {
+                logger.debug("organization not found for name : " + getOrganizationName());
+                organizationError = true;
+                hasErrors = true;
+                errorFieldIds.add("form:orglist");
+                FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                        resourceBundle.getString("errorLabel"),
+                        "Select a valid organization"));
+            }
+        }
+
+        if (hasErrors) {
+            PrimeFaces.current().executeScript("highlightErrorFields(['" + String.join("','", errorFieldIds) + "']);");
+            return;
+        }
+
         notificationSetting.setEmailId(getEmailId());
         notificationSetting.setPassword(getPassword());
         notificationSetting.setSmtpAuth(isSmtpAuth());
         notificationSetting.setSmtpHost(getSmtpHost());
-        notificationSetting.setSmtpPort(getSmtpHost());
+        notificationSetting.setSmtpPort(getSmtpPort());
         notificationSetting.setSmtpStarttlsEnable(isSmtpStarttlsEnable());
 
-
-        Organizations addOrganizations = getOrganizationsByOrganizationName(getOrganizationName());
         logger.debug("Organization name " + addOrganizations.getOrganizationName());
         if (addOrganizations != null) {
             notificationSetting.setOrganization(addOrganizations);
@@ -447,6 +540,26 @@ public class NotificationSettingBean implements Serializable {
 
     public void setSmtpPort(String smtpPort) {
         this.smtpPort = smtpPort;
+    }
+
+    public boolean isOrganizationError() {
+        return organizationError;
+    }
+
+    public boolean isEmailError() {
+        return emailError;
+    }
+
+    public boolean isPasswordError() {
+        return passwordError;
+    }
+
+    public boolean isSmtpHostError() {
+        return smtpHostError;
+    }
+
+    public boolean isSmtpPortError() {
+        return smtpPortError;
     }
 
 }

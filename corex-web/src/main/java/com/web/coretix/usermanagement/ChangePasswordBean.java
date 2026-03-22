@@ -12,6 +12,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpSession;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 @Named("changePasswordBean")
 @Scope("session")
@@ -26,6 +28,10 @@ public class ChangePasswordBean extends GenericManagedBean implements Serializab
     private String confirmPassword;
     private Integer userId;
 
+    private boolean currentPasswordError = false;
+    private boolean newPasswordError = false;
+    private boolean confirmPasswordError = false;
+
     @Inject
     private IUserAdministrationService userAdministrationService;
 
@@ -37,6 +43,7 @@ public class ChangePasswordBean extends GenericManagedBean implements Serializab
         newPassword = "";
         confirmPassword = "";
         userId = null;
+        resetErrorFlags();
 
 
         FacesContext facesContext = FacesContext.getCurrentInstance();
@@ -53,6 +60,12 @@ public class ChangePasswordBean extends GenericManagedBean implements Serializab
         logger.debug("end of initializePageAttributes !!!");
     }
 
+    private void resetErrorFlags() {
+        currentPasswordError = false;
+        newPasswordError = false;
+        confirmPasswordError = false;
+    }
+
     public String changePassword() {
 
         logger.debug("sessionUsername : " + username);
@@ -60,6 +73,40 @@ public class ChangePasswordBean extends GenericManagedBean implements Serializab
         logger.debug("username : " + username);
         logger.debug("userId : " + userId);
         logger.debug("end of changePassword !!!");
+
+        resetErrorFlags();
+        boolean hasErrors = false;
+        List<String> errorFieldIds = new ArrayList<>();
+
+        if (password == null || password.trim().isEmpty()) {
+            currentPasswordError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:oldPassword");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Current password is required"));
+        }
+
+        if (newPassword == null || newPassword.trim().isEmpty()) {
+            newPasswordError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:newPassword");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "New password is required"));
+        }
+
+        if (confirmPassword == null || confirmPassword.trim().isEmpty()) {
+            confirmPasswordError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:confirmPassword");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Confirm password is required"));
+        }
+
+        if (hasErrors) {
+            org.primefaces.PrimeFaces.current().executeScript(
+                "highlightErrorFields(['" + String.join("','", errorFieldIds) + "']);");
+            return null;
+        }
 
         // Get user details and verify current password using BCrypt
         UserDetails userDetails =
@@ -137,6 +184,18 @@ public class ChangePasswordBean extends GenericManagedBean implements Serializab
 
     public void setConfirmPassword(String confirmPassword) {
         this.confirmPassword = confirmPassword;
+    }
+
+    public boolean isCurrentPasswordError() {
+        return currentPasswordError;
+    }
+
+    public boolean isNewPasswordError() {
+        return newPasswordError;
+    }
+
+    public boolean isConfirmPasswordError() {
+        return confirmPasswordError;
     }
 
 }

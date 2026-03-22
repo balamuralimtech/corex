@@ -72,6 +72,19 @@ public class CountryBean implements Serializable {
     private String timezones;
     private String translations;
 
+    // Field validation flags
+    private boolean nameError = false;
+    private boolean iso2Error = false;
+    private boolean iso3Error = false;
+    private boolean numericCodeError = false;
+    private boolean phonecodeError = false;
+    private boolean capitalError = false;
+    private boolean currencyError = false;
+    private boolean currencyNameError = false;
+    private boolean currencySymbolError = false;
+    private boolean regionError = false;
+    private boolean subregionError = false;
+
     @Inject
     private ICountryService countryService;
 
@@ -142,6 +155,23 @@ public class CountryBean implements Serializable {
         nationality = "";
         timezones = "";
         translations = "";
+
+        // Reset error flags
+        resetErrorFlags();
+    }
+
+    private void resetErrorFlags() {
+        nameError = false;
+        iso2Error = false;
+        iso3Error = false;
+        numericCodeError = false;
+        phonecodeError = false;
+        capitalError = false;
+        currencyError = false;
+        currencyNameError = false;
+        currencySymbolError = false;
+        regionError = false;
+        subregionError = false;
     }
 
     public void addButtonAction() {
@@ -216,8 +246,90 @@ public class CountryBean implements Serializable {
 
     public void saveCountry() {
 
-        logger.debug("Inside save organization method ");
+        logger.debug("Inside save country method ");
         logger.debug("isAddOperation : " + isAddOperation);
+
+        // Reset error flags before validation
+        resetErrorFlags();
+        boolean hasErrors = false;
+        List<String> errorFieldIds = new ArrayList<>();
+
+        // Validation - Required fields: name*, iso2*, iso3*, capital*, region*, subregion*
+        if (name == null || name.trim().isEmpty()) {
+            logger.debug("name is null or empty");
+            nameError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:name");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Country name is required"));
+        }
+
+        if (iso2 == null || iso2.trim().isEmpty()) {
+            logger.debug("iso2 is null or empty");
+            iso2Error = true;
+            hasErrors = true;
+            errorFieldIds.add("form:iso2");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "ISO2 code is required"));
+        }
+
+        if (iso3 == null || iso3.trim().isEmpty()) {
+            logger.debug("iso3 is null or empty");
+            iso3Error = true;
+            hasErrors = true;
+            errorFieldIds.add("form:iso3");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "ISO3 code is required"));
+        }
+
+        if (capital == null || capital.trim().isEmpty()) {
+            logger.debug("capital is null or empty");
+            capitalError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:capital");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Capital is required"));
+        }
+
+        if (region == null || region.trim().isEmpty()) {
+            logger.debug("region is null or empty");
+            regionError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:regionlist");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Region is required"));
+        }
+
+        if (subregion == null || subregion.trim().isEmpty()) {
+            logger.debug("subregion is null or empty");
+            subregionError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:subregionlist");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Subregion is required"));
+        }
+
+        // If there are validation errors, trigger visual effects
+        if (hasErrors) {
+            String fieldIdsJson = String.join(",", errorFieldIds);
+            PrimeFaces.current().executeScript("highlightErrorFields(['" + String.join("','", errorFieldIds) + "']);");
+            return;
+        }
+
+        logger.debug("crossed validation !!!!!!!!!!!");
+
         Countries country = new Countries();
         country.setName(name);
         country.setIso3(iso3);
@@ -651,6 +763,51 @@ public class CountryBean implements Serializable {
      */
     public void setSubregion(String subregion) {
         this.subregion = subregion;
+    }
+
+    // Getters for error flags
+    public boolean isNameError() {
+        return nameError;
+    }
+
+    public boolean isIso2Error() {
+        return iso2Error;
+    }
+
+    public boolean isIso3Error() {
+        return iso3Error;
+    }
+
+    public boolean isNumericCodeError() {
+        return numericCodeError;
+    }
+
+    public boolean isPhonecodeError() {
+        return phonecodeError;
+    }
+
+    public boolean isCapitalError() {
+        return capitalError;
+    }
+
+    public boolean isCurrencyError() {
+        return currencyError;
+    }
+
+    public boolean isCurrencyNameError() {
+        return currencyNameError;
+    }
+
+    public boolean isCurrencySymbolError() {
+        return currencySymbolError;
+    }
+
+    public boolean isRegionError() {
+        return regionError;
+    }
+
+    public boolean isSubregionError() {
+        return subregionError;
     }
 
 }

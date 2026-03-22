@@ -50,6 +50,9 @@ public class RegionBean implements Serializable {
 
     private int recordsCount;
 
+    // Field validation flags
+    private boolean nameError = false;
+
     private Regions selectedRegion = new Regions();
 
 
@@ -79,6 +82,13 @@ public class RegionBean implements Serializable {
     private void resetFields() {
         logger.debug("entered into resetFields action !!!");
         regionName = "";
+
+        // Reset error flags
+        resetErrorFlags();
+    }
+
+    private void resetErrorFlags() {
+        nameError = false;
     }
 
     public void addButtonAction() {
@@ -115,6 +125,32 @@ public class RegionBean implements Serializable {
 
         logger.debug("Inside saveRegion method ");
         logger.debug("isAddOperation : " + isAddOperation);
+
+        // Reset error flags before validation
+        resetErrorFlags();
+        boolean hasErrors = false;
+        List<String> errorFieldIds = new ArrayList<>();
+
+        // Validation
+        if (regionName == null || regionName.trim().isEmpty()) {
+            logger.debug("regionName is null or empty");
+            nameError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:name");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Region name is required"));
+        }
+
+        // If there are validation errors, trigger visual effects
+        if (hasErrors) {
+            String fieldIdsJson = String.join(",", errorFieldIds);
+            PrimeFaces.current().executeScript("highlightErrorFields(['" + String.join("','", errorFieldIds) + "']);");
+            return;
+        }
+
+        logger.debug("crossed validation !!!!!!!!!!!");
 
         Regions region = new Regions();
 
@@ -325,6 +361,11 @@ public class RegionBean implements Serializable {
      */
     public void setRegionList(List<Regions> regionList) {
         this.regionList = regionList;
+    }
+
+    // Getters for error flags
+    public boolean isNameError() {
+        return nameError;
     }
 
 }

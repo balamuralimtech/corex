@@ -8,6 +8,105 @@
     <ui:define name="title">#{msg['countryLabel']}</ui:define>
     <ui:define name="head">
         <h:outputStylesheet name="css/flags/flags.css" library="demo" />
+        <h:outputStylesheet name="css/custom-validation.css" library="demo" />
+        <script type="text/javascript">
+            function highlightErrorFields(fieldIds) {
+                console.log('Highlighting error fields:', fieldIds);
+
+                // Remove existing error styles first
+                document.querySelectorAll('.ui-state-error-custom, .shake-animation, .pulse-animation').forEach(function(el) {
+                    el.classList.remove('ui-state-error-custom', 'shake-animation', 'pulse-animation');
+                });
+
+                // Apply error styles to each field
+                fieldIds.forEach(function(fieldId) {
+                    console.log('Processing field:', fieldId);
+                    var field = document.getElementById(fieldId);
+
+                    if (field) {
+                        // Add error styling
+                        field.classList.add('ui-state-error-custom', 'shake-animation', 'pulse-animation');
+
+                        // For autocomplete components, also style the input inside
+                        if (field.classList.contains('ui-autocomplete')) {
+                            var input = field.querySelector('.ui-autocomplete-input');
+                            if (input) {
+                                input.classList.add('ui-state-error-custom', 'shake-animation', 'pulse-animation');
+                            }
+                        }
+
+                        // Scroll to first error field
+                        if (fieldIds.indexOf(fieldId) === 0) {
+                            field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+
+                        // Remove animation classes after animation completes
+                        setTimeout(function() {
+                            field.classList.remove('shake-animation', 'pulse-animation');
+                            var input = field.querySelector('.ui-autocomplete-input');
+                            if (input) {
+                                input.classList.remove('shake-animation', 'pulse-animation');
+                            }
+                        }, 2000);
+                    } else {
+                        console.warn('Field not found:', fieldId);
+                    }
+                });
+            }
+
+            function clearErrorStyles() {
+                // Clear error styling from all fields
+                document.querySelectorAll('.ui-state-error-custom').forEach(function(el) {
+                    el.classList.remove('ui-state-error-custom');
+                });
+
+                // Clear error messages
+                var dialogMessages = document.getElementById('form:dialogMessages');
+                if (dialogMessages) {
+                    var messages = dialogMessages.querySelectorAll('.ui-messages-error, .ui-messages-warn, .ui-messages-info');
+                    messages.forEach(function(msg) {
+                        msg.style.display = 'none';
+                    });
+                }
+
+                // Clear main growl messages
+                var growlMessages = document.getElementById('form:messages');
+                if (growlMessages) {
+                    var msgs = growlMessages.querySelectorAll('.ui-growl-item');
+                    msgs.forEach(function(msg) {
+                        msg.style.display = 'none';
+                    });
+                }
+            }
+
+            function attachClearErrorListeners() {
+                // Clear errors on any click in the dialog
+                var dialog = document.querySelector('.ui-dialog');
+                if (dialog) {
+                    dialog.addEventListener('click', clearErrorStyles);
+                }
+
+                // Clear errors on any input/typing in form fields
+                var formFields = document.querySelectorAll('#form input, #form textarea, #form select, .ui-autocomplete-input');
+                formFields.forEach(function(field) {
+                    field.addEventListener('input', clearErrorStyles);
+                    field.addEventListener('keydown', clearErrorStyles);
+                    field.addEventListener('focus', clearErrorStyles);
+                });
+            }
+
+            // Attach listeners when page loads
+            document.addEventListener('DOMContentLoaded', function() {
+                attachClearErrorListeners();
+            });
+
+            // Re-attach listeners after AJAX updates (for PrimeFaces)
+            if (typeof PrimeFaces !== 'undefined') {
+                PrimeFaces.ajax.onComplete = function() {
+                    setTimeout(attachClearErrorListeners, 100);
+                };
+            }
+        </script>
     </ui:define>
 
     <ui:define name="content">
@@ -114,70 +213,74 @@
                                          layout="grid"
                                          styleClass="ui-panelgrid-blank ui-fluid"
                                          style="border:0px none; background-color:transparent;">
-                                <p:outputLabel for="@next" value="#{msg['countryNameLabel']}"/>
-                                <p:inputText id="name" value="#{countryBean.name}"/>
 
-                                <p:outputLabel for="@next" value="#{msg['regionLabel']}"/>
+
+                                <p:outputLabel for="@next" value="#{msg['countryNameLabel']}*"/>
+                                <p:inputText id="name" value="#{countryBean.name}" onfocus="clearErrorStyles()"/>
+
+                                <p:outputLabel for="@next" value="#{msg['regionLabel']}*"/>
                                 <p:autoComplete id="regionlist"
                                                 dropdown="true"
                                                 value="#{countryBean.region}"
                                                 completeMethod="#{countryBean.completeRegion}"
-                                                scrollHeight="250"/>
+                                                scrollHeight="250"
+                                                onfocus="clearErrorStyles()"/>
 
-                                <p:outputLabel for="@next" value="#{msg['subregionLabel']}"/>
+                                <p:outputLabel for="@next" value="#{msg['subregionLabel']}*"/>
                                 <p:autoComplete id="subregionlist"
                                                 dropdown="true"
                                                 value="#{countryBean.subregion}"
                                                 completeMethod="#{countryBean.completeSubregion}"
-                                                accesskey=" " scrollHeight="250"/>
+                                                accesskey=" " scrollHeight="250"
+                                                onfocus="clearErrorStyles()"/>
 
 
-                                <p:outputLabel for="@next" value="#{msg['isoCode3Label']}"/>
-                                <p:inputText id="iso3" value="#{countryBean.iso3}" />
+                                <p:outputLabel for="@next" value="#{msg['isoCode3Label']}*"/>
+                                <p:inputText id="iso3" value="#{countryBean.iso3}" onfocus="clearErrorStyles()"/>
 
-                                <p:outputLabel for="@next" value="#{msg['isoCode2Label']}"/>
-                                <p:inputText id="iso2" value="#{countryBean.iso2}"/>
+                                <p:outputLabel for="@next" value="#{msg['isoCode2Label']}*"/>
+                                <p:inputText id="iso2" value="#{countryBean.iso2}" onfocus="clearErrorStyles()"/>
 
                                 <p:outputLabel for="@next" value="#{msg['numericCodeLabel']}"/>
-                                <p:inputText id="numericCode" value="#{countryBean.numericCode}"/>
+                                <p:inputText id="numericcode" value="#{countryBean.numericCode}" onfocus="clearErrorStyles()"/>
 
                                 <p:outputLabel for="@next" value="#{msg['phoneCodeLabel']}"/>
-                                <p:inputText id="phonecode" value="#{countryBean.phonecode}" />
+                                <p:inputText id="phonecode" value="#{countryBean.phonecode}" onfocus="clearErrorStyles()"/>
 
-                                <p:outputLabel for="@next" value="#{msg['capitalLabel']}"/>
-                                <p:inputText id="capital" value="#{countryBean.capital}" />
+                                <p:outputLabel for="@next" value="#{msg['capitalLabel']}*"/>
+                                <p:inputText id="capital" value="#{countryBean.capital}" onfocus="clearErrorStyles()"/>
 
                                 <p:outputLabel for="@next" value="#{msg['currencyLabel']}"/>
-                                <p:inputText id="currency" value="#{countryBean.currency}" />
+                                <p:inputText id="currency" value="#{countryBean.currency}" onfocus="clearErrorStyles()"/>
 
                                 <p:outputLabel for="@next" value="#{msg['currencyNameLabel']}"/>
-                                <p:inputText id="currencyName" value="#{countryBean.currencyName}" />
+                                <p:inputText id="currencyname" value="#{countryBean.currencyName}" onfocus="clearErrorStyles()"/>
 
                                 <p:outputLabel for="@next" value="#{msg['currencySymbolLabel']}"/>
-                                <p:inputText id="currencySymbol" value="#{countryBean.currencySymbol}" />
+                                <p:inputText id="currencysymbol" value="#{countryBean.currencySymbol}" onfocus="clearErrorStyles()"/>
 
                                 <p:outputLabel for="@next" value="#{msg['tldLabel']}"/>
-                                <p:inputText id="tld" value="#{countryBean.tld}" />
+                                <p:inputText id="tld" value="#{countryBean.tld}" onfocus="clearErrorStyles()"/>
 
                                 <p:outputLabel for="@next" value="#{msg['nativeNameLabel']}"/>
-                                <p:inputText id="nativeName" value="#{countryBean.nativeName}" />
+                                <p:inputText id="nativename" value="#{countryBean.nativeName}" onfocus="clearErrorStyles()"/>
 
                                 <p:outputLabel for="@next" value="#{msg['nationalityLabel']}"/>
-                                <p:inputText id="nationality" value="#{countryBean.nationality}" />
+                                <p:inputText id="nationality" value="#{countryBean.nationality}" onfocus="clearErrorStyles()"/>
 
                                 <p:outputLabel for="@next" value="#{msg['timezonesLabel']}"/>
-                                <p:inputText id="timezones" value="#{countryBean.timezones}" />
+                                <p:inputText id="timezones" value="#{countryBean.timezones}" onfocus="clearErrorStyles()"/>
 
 
                                 <p:outputLabel for="@next" value="#{msg['translationsLabel']}"/>
-                                <p:inputText id="translations" value="#{countryBean.translations}"  style="width: 100%" />
+                                <p:inputText id="translations" value="#{countryBean.translations}" style="width: 100%" onfocus="clearErrorStyles()"/>
 
 
 
                             </p:panelGrid>
                             <f:facet name="footer">
                                 <center>
-                                    <p:commandButton value="#{msg['saveLabel']}" icon="pi pi-check" actionListener="#{countryBean.saveCountry}" update="addEditCountPanelId" process="addEditCountPanelId @this"  />
+                                    <p:commandButton value="#{msg['saveLabel']}" icon="pi pi-check" actionListener="#{countryBean.saveCountry}" update="addEditCountPanelId :form:messages" process="addEditCountPanelId @this"  />
                                     <p:commandButton value="#{msg['cancelLabel']}" icon="pi pi-times" onclick="PF('ManageCountDialog').hide()" class="ui-button-secondary"  />
                                 </center>
                             </f:facet>

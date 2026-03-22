@@ -59,6 +59,15 @@ public class BranchBean implements Serializable {
 
     private int recordsCount;
 
+    // Field validation flags
+    private boolean branchNameError = false;
+    private boolean organizationError = false;
+    private boolean countryError = false;
+    private boolean stateError = false;
+    private boolean cityError = false;
+    private boolean phoneError = false;
+    private boolean emailError = false;
+
     private Branches selectedBranch = new Branches();
 
     @Inject
@@ -105,6 +114,19 @@ public class BranchBean implements Serializable {
         branchCity = "";
         branchPhoneNumber = "";
         branchEmail = "";
+
+        // Reset error flags
+        resetErrorFlags();
+    }
+
+    private void resetErrorFlags() {
+        branchNameError = false;
+        organizationError = false;
+        countryError = false;
+        stateError = false;
+        cityError = false;
+        phoneError = false;
+        emailError = false;
     }
 
     public void addButtonAction() {
@@ -176,15 +198,106 @@ public class BranchBean implements Serializable {
 
     public void saveBranch() {
 
-        logger.debug("Inside save organization method ");
+        logger.debug("Inside save branch method ");
         logger.debug("branchName : "+branchName);
         logger.debug("organizationName : "+branchOrganizationName);
         logger.debug("organizationCountry : "+branchCountry);
         logger.debug("organizationState : "+branchState);
         logger.debug("organizationCity : "+branchCity);
         logger.debug("organizationPhoneNumber : "+branchPhoneNumber);
-        logger.debug("organizationWebsite : "+branchEmail);
+        logger.debug("branchEmail : "+branchEmail);
         logger.debug("isAddOperation : "+isAddOperation);
+
+        // Reset error flags before validation
+        resetErrorFlags();
+        boolean hasErrors = false;
+        List<String> errorFieldIds = new ArrayList<>();
+
+        // Validation
+        if (branchName == null || branchName.trim().isEmpty()) {
+            logger.debug("branchName is null or empty");
+            branchNameError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:branchname");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Branch name is required"));
+        }
+
+        if (branchOrganizationName == null || branchOrganizationName.trim().isEmpty()) {
+            logger.debug("branchOrganizationName is null or empty");
+            organizationError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:organizationlist");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Organization is required"));
+        }
+
+        if (branchCountry == null || branchCountry.trim().isEmpty()) {
+            logger.debug("branchCountry is null or empty");
+            countryError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:countrylist");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Country is required"));
+        }
+
+        if (branchState == null || branchState.trim().isEmpty()) {
+            logger.debug("branchState is null or empty");
+            stateError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:statelist");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "State is required"));
+        }
+
+        if (branchCity == null || branchCity.trim().isEmpty()) {
+            logger.debug("branchCity is null or empty");
+            cityError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:citylist");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "City is required"));
+        }
+
+        if (branchPhoneNumber == null || branchPhoneNumber.trim().isEmpty()) {
+            logger.debug("branchPhoneNumber is null or empty");
+            phoneError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:phonenumber");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Phone number is required"));
+        }
+
+        if (branchEmail == null || branchEmail.trim().isEmpty()) {
+            logger.debug("branchEmail is null or empty");
+            emailError = true;
+            hasErrors = true;
+            errorFieldIds.add("form:email");
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Email is required"));
+        }
+
+        // If there are validation errors, trigger visual effects
+        if (hasErrors) {
+            PrimeFaces.current().executeScript("highlightErrorFields(['" + String.join("','", errorFieldIds) + "']);");
+            return;
+        }
+
+        logger.debug("crossed validation !!!!!!!!!!!");
 
         Branches branches = new Branches();
 
@@ -591,6 +704,35 @@ public class BranchBean implements Serializable {
      */
     public void setRecordsCount(int recordsCount) {
         this.recordsCount = recordsCount;
+    }
+
+    // Getters for error flags
+    public boolean isBranchNameError() {
+        return branchNameError;
+    }
+
+    public boolean isOrganizationError() {
+        return organizationError;
+    }
+
+    public boolean isCountryError() {
+        return countryError;
+    }
+
+    public boolean isStateError() {
+        return stateError;
+    }
+
+    public boolean isCityError() {
+        return cityError;
+    }
+
+    public boolean isPhoneError() {
+        return phoneError;
+    }
+
+    public boolean isEmailError() {
+        return emailError;
     }
 
 }
