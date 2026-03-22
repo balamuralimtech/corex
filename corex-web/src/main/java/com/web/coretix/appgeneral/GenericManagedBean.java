@@ -5,12 +5,9 @@ import com.module.coretix.usermanagement.IRoleAdministrationService;
 import com.persist.coretix.modal.usermanagement.RolePrivileges;
 import com.web.coretix.applicationConstants.ApplicationSessionAttributes;
 import java.io.File;
-import java.security.SecureRandom;
 import java.util.*;
-import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
 import javax.el.ELResolver;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
@@ -21,6 +18,7 @@ import com.web.coretix.constants.RolePrivilegeConstants;
 import com.web.coretix.constants.SessionAttributes;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
+import org.mindrot.jbcrypt.BCrypt;
 
 
 /**
@@ -60,53 +58,39 @@ public class GenericManagedBean
         return serverLocation + fileSeparator + "temp";
     }
 
-    // Method to encrypt a plain text
-    public static String encrypt(String plainText, SecretKey secretKey) throws Exception {
-        Cipher cipher = Cipher.getInstance(AES_TRANSFORMATION);
 
-        // Generate a random IV
-        byte[] iv = new byte[IV_LENGTH];
-        SecureRandom random = new SecureRandom();
-        random.nextBytes(iv);
-        IvParameterSpec ivSpec = new IvParameterSpec(iv);
+    // ================== PASSWORD HASHING METHODS (BCrypt) ==================
 
-        // Initialize the cipher in encryption mode
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey, ivSpec);
-
-        // Encrypt the plain text
-        byte[] encryptedBytes = cipher.doFinal(plainText.getBytes("UTF-8"));
-
-        // Combine IV and encrypted message, and Base64 encode
-        byte[] combinedIvAndCipherText = new byte[IV_LENGTH + encryptedBytes.length];
-        System.arraycopy(iv, 0, combinedIvAndCipherText, 0, IV_LENGTH);
-        System.arraycopy(encryptedBytes, 0, combinedIvAndCipherText, IV_LENGTH, encryptedBytes.length);
-
-        return Base64.getEncoder().encodeToString(combinedIvAndCipherText);
+    /**
+     * Hash a password using BCrypt with automatic salt generation.
+     * This is the recommended method for storing passwords securely.
+     *
+     * @param plainTextPassword The plain text password to hash
+     * @return The BCrypt hashed password (includes salt)
+     */
+    public static String hashPassword(String plainTextPassword) {
+        // BCrypt automatically generates a salt and includes it in the hash
+        // The default work factor is 10 (2^10 = 1024 rounds)
+        return BCrypt.hashpw(plainTextPassword, BCrypt.gensalt(12));
     }
 
-    // Method to decrypt an encrypted text
-    public static String decrypt(String encryptedText, SecretKey secretKey) throws Exception {
-        Cipher cipher = Cipher.getInstance(AES_TRANSFORMATION);
-
-        // Decode the Base64 encoded message
-        byte[] combinedIvAndCipherText = Base64.getDecoder().decode(encryptedText);
-
-        // Extract the IV and the encrypted message
-        byte[] iv = new byte[IV_LENGTH];
-        System.arraycopy(combinedIvAndCipherText, 0, iv, 0, IV_LENGTH);
-        IvParameterSpec ivSpec = new IvParameterSpec(iv);
-
-        byte[] cipherText = new byte[combinedIvAndCipherText.length - IV_LENGTH];
-        System.arraycopy(combinedIvAndCipherText, IV_LENGTH, cipherText, 0, cipherText.length);
-
-        // Initialize the cipher in decryption mode
-        cipher.init(Cipher.DECRYPT_MODE, secretKey, ivSpec);
-
-        // Decrypt and return the plain text
-        byte[] decryptedBytes = cipher.doFinal(cipherText);
-        return new String(decryptedBytes, "UTF-8");
+    /**
+     * Verify a plain text password against a BCrypt hashed password.
+     *
+     * @param plainTextPassword The plain text password to verify
+     * @param hashedPassword The BCrypt hashed password from database
+     * @return true if the password matches, false otherwise
+     */
+    public static boolean verifyPassword(String plainTextPassword, String hashedPassword) {
+        try {
+            //return true;
+            return BCrypt.checkpw(plainTextPassword, hashedPassword);
+        } catch (Exception e) {
+            // If hash is invalid or not a BCrypt hash, return false
+            return false;
+        }
     }
-    
+
     /**
      * This method is used to get location (Before download, Temporary files
      * created this location)

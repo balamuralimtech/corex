@@ -57,6 +57,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>0.4</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.primefaces</groupId>
             <artifactId>primefaces</artifactId>
             <version>13.0.0</version>
@@ -219,8 +225,9 @@
             <build>
                 <plugins>
                     <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-assembly-plugin</artifactId>
-                        <version>2.3</version>
+                        <version>3.6.0</version>
                         <executions>
                             <execution>
                                 <id>build-layout</id>
@@ -255,6 +262,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-shade-plugin</artifactId>
+                        <version>3.5.1</version>
                         <configuration>
                             <finalName>${project.name}-theme-${project.version}-jakarta</finalName>
                             <shadedArtifactAttached>false</shadedArtifactAttached>
@@ -290,19 +298,14 @@
                                         <transformer
                                                 implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                                         <transformer
-                                                implementation="io.yupiik.maven.shade.transformer.RelocationTransformer">
-                                            <delegates>
-                                                <transformer
-                                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"/>
-                                                <transformer
-                                                        implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
-                                                    <resource>META-INF/faces-config.xml</resource>
-                                                </transformer>
-                                                <transformer
-                                                        implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
-                                                    <resource>META-INF/primefaces-${project.name}.taglib.xml</resource>
-                                                </transformer>
-                                            </delegates>
+                                                implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"/>
+                                        <transformer
+                                                implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
+                                            <resource>META-INF/faces-config.xml</resource>
+                                        </transformer>
+                                        <transformer
+                                                implementation="org.apache.maven.plugins.shade.resource.XmlAppendingTransformer">
+                                            <resource>META-INF/primefaces-${project.name}.taglib.xml</resource>
                                         </transformer>
                                     </transformers>
                                     <artifactSet>
@@ -383,13 +386,6 @@
                                 </configuration>
                             </execution>
                         </executions>
-                        <dependencies>
-                            <dependency>
-                                <groupId>io.yupiik.maven</groupId>
-                                <artifactId>maven-shade-transformers</artifactId>
-                                <version>0.0.1</version>
-                            </dependency>
-                        </dependencies>
                     </plugin>
                 </plugins>
             </build>

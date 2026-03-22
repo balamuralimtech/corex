@@ -28,7 +28,7 @@ import java.util.Map;
 
 @Named("loginBean")
 @Scope("session")
-public class LoginBean implements Serializable {
+public class LoginBean extends GenericManagedBean implements Serializable  {
 
     private static final long serialVersionUID = 13543439334535435L;
     private final Logger logger = Logger.getLogger(getClass());
@@ -49,15 +49,26 @@ public class LoginBean implements Serializable {
         return "login";
     }
 
-    public String login() {
+    public String login() throws Exception {
         username = username.trim();
         password = password.trim();
 
-        if (StringUtils.isNotEmpty(username) && StringUtils.isNotEmpty(password)) {
-            boolean isUserValid = userAdministrationService.isUserValid(username, password);
+        logger.debug("username : " + username);
+        logger.debug("password : " + password);
 
-            // Cache user details to avoid multiple DB calls
-            UserDetails userDetails = isUserValid ? getUserDetailsByUsername(username) : null;
+        if (StringUtils.isNotEmpty(username) && StringUtils.isNotEmpty(password)) {
+            logger.debug("username and password is not empty");
+
+            // Get user details by username first
+            UserDetails userDetails = getUserDetailsByUsername(username);
+
+            // Verify password using BCrypt
+            boolean isUserValid = false;
+            if (userDetails != null && userDetails.getPassword() != null) {
+                // Verify the entered password against the hashed password from database
+                isUserValid = verifyPassword(password, userDetails.getPassword());
+                logger.debug("Password verification result: " + isUserValid);
+            }
 
             UserActivities userActivities = new UserActivities();
             userActivities.setActivityType(UserActivityConstants.L0GIN.getValue());
@@ -67,6 +78,7 @@ public class LoginBean implements Serializable {
             userActivities.setCreatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
 
             if (isUserValid && userDetails != null) {
+                logger.debug("User login successful !");
                 userActivities.setUserId(userDetails.getUserId());
                 userActivities.setUserName(userDetails.getUserName());
                 userActivities.setActivityDescription(LoginConstants.SUCCESSFUL_LOGIN.getValue());

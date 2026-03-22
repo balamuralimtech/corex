@@ -19,8 +19,6 @@ import com.module.coretix.systemmanagement.IOrganizationService;
 import com.module.coretix.systemmanagement.IStateService;
 import com.module.coretix.usermanagement.IRoleAdministrationService;
 import com.module.coretix.usermanagement.IUserAdministrationService;
-import javax.crypto.SecretKey;
-
 import com.web.coretix.constants.LoginConstants;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
@@ -337,20 +335,14 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
     }
     
 
-    public void saveCountry() {
+    public void saveUserDetails() {
 
         logger.debug("Inside save organization method ");
         logger.debug("isAddOperation : " + isAddOperation);
-        SecretKey secretKey = null;
-        String encryptedPassword = null;
-        try {
-            secretKey = generateSecretKey();
-            logger.debug("password : " + getPassword());
-            encryptedPassword = encrypt(getPassword(), secretKey);
-            logger.debug("password : " + encrypt(getPassword(), secretKey));
-        } catch (Exception e) {
-            logger.debug("Error while creating secret key !");
-        }
+
+        // Hash the password using BCrypt
+        String hashedPassword = hashPassword(getPassword());
+        logger.debug("Password hashed successfully");
 
         logger.debug("userName : " + getUserName());
 
@@ -363,10 +355,10 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         logger.debug("state : " + getState());
         logger.debug("city : " + getCity());
         logger.debug("accessRight : " + getAccessRight());
-        
+
         UserDetails userDetails = new UserDetails();
         userDetails.setUserName(getUserName());
-        userDetails.setPassword(getPassword());
+        userDetails.setPassword(hashedPassword);
         userDetails.setEmailId(getEmailId());
         userDetails.setContact(getContact());
         

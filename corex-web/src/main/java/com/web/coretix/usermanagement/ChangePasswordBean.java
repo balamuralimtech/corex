@@ -1,6 +1,8 @@
 package com.web.coretix.usermanagement;
 
 import com.module.coretix.usermanagement.IUserAdministrationService;
+import com.persist.coretix.modal.usermanagement.UserDetails;
+import com.web.coretix.appgeneral.GenericManagedBean;
 import org.apache.log4j.Logger;
 import org.springframework.context.annotation.Scope;
 
@@ -13,7 +15,7 @@ import java.io.Serializable;
 
 @Named("changePasswordBean")
 @Scope("session")
-public class ChangePasswordBean implements Serializable {
+public class ChangePasswordBean extends GenericManagedBean implements Serializable {
 
     private static final long serialVersionUID = 13543439334535435L;
     private final Logger logger = Logger.getLogger(getClass());
@@ -53,27 +55,30 @@ public class ChangePasswordBean implements Serializable {
 
     public String changePassword() {
 
-//        logger.debug("sessionUsername : " + sessionUsername);
         logger.debug("sessionUsername : " + username);
         logger.debug("entered into changePassword !!!");
         logger.debug("username : " + username);
         logger.debug("userId : " + userId);
-        logger.debug("password : " + password);
-        logger.debug("newPassword : " + newPassword);
-        logger.debug("confirmPassword : " + confirmPassword);
         logger.debug("end of changePassword !!!");
 
-        boolean isUserValid = userAdministrationService.isUserValid(username, password);
-        if (isUserValid) {
+        // Get user details and verify current password using BCrypt
+        UserDetails userDetails =
+            userAdministrationService.getUserDetailEntityByUserName(username);
 
+        boolean isUserValid = false;
+        if (userDetails != null && userDetails.getPassword() != null) {
+            // Verify current password using BCrypt
+            isUserValid = verifyPassword(password, userDetails.getPassword());
+        }
+
+        if (isUserValid) {
             logger.debug("isUserValid : " + isUserValid);
 
             if (password.equals(newPassword)) {
-                logger.debug("New Password password cannot be old Password");
+                logger.debug("New Password cannot be old Password");
                 FacesContext facesContext = FacesContext.getCurrentInstance();
-                facesContext.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "New Password password cannot be same as old Password"));
+                facesContext.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "New Password cannot be same as old Password"));
             } else if (!newPassword.equals(confirmPassword)) {
-
                 logger.debug("New Password and Confirm Password do not match!");
                 logger.error("New Password and Confirm Password do not match!");
                 FacesContext facesContext = FacesContext.getCurrentInstance();
@@ -81,25 +86,24 @@ public class ChangePasswordBean implements Serializable {
             } else if (newPassword.equals(confirmPassword)) {
                 logger.debug("New Password and Confirm Password match!");
                 logger.debug("userId : " + userId);
-                logger.debug("newPassword : " + newPassword);
-                userAdministrationService.updateUserPassword(userId, newPassword);
+
+                // Hash the new password using BCrypt before storing
+                String hashedPassword = hashPassword(newPassword);
+                logger.debug("New password hashed successfully");
+
+                userAdministrationService.updateUserPassword(userId, hashedPassword);
 
                 FacesContext facesContext = FacesContext.getCurrentInstance();
                 facesContext.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Info", "Password changed successfully"));
             }
-        }
-        else {
-logger.debug("isUserValid : " + isUserValid);
-// Handle case where user is not valid
+        } else {
+            logger.debug("isUserValid : " + isUserValid);
             logger.error("Username and Password do not match!");
             FacesContext facesContext = FacesContext.getCurrentInstance();
-            facesContext.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Username and Password do not match!"));
+            facesContext.addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Current password is incorrect!"));
             return null;
         }
 
-// Continue with password update if the passwords match
-
-        //userAdministrationService.updateUserPassword();
         return null;
     }
 
