@@ -9,7 +9,8 @@ import com.persist.coretix.modal.systemmanagement.dao.INotificationSettingDAO;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -22,7 +23,7 @@ import org.hibernate.exception.ConstraintViolationException;
 @Named
 public class NotificationSettingDAO  implements INotificationSettingDAO {
 
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(NotificationSettingDAO.class);
     @Inject
     private SessionFactory sessionFactory;
 
@@ -163,7 +164,7 @@ public class NotificationSettingDAO  implements INotificationSettingDAO {
         Transaction trans = session.beginTransaction();
 
         List<?> list = session
-                .createQuery("from NotificationSettings where organization_id=?").setParameter(0, organizationId)
+                .createQuery("from NotificationSettings where organization_id=?1").setParameter(1, organizationId)
                 .list();
 
         trans.commit();
@@ -175,7 +176,7 @@ public class NotificationSettingDAO  implements INotificationSettingDAO {
         Transaction trans = session.beginTransaction();
 
         List<?> list = session
-                .createQuery("from NotificationSettings where id=?").setParameter(0, id)
+                .createQuery("from NotificationSettings where id=?1").setParameter(1, id)
                 .list();
 
         trans.commit();
@@ -193,4 +194,7 @@ public class NotificationSettingDAO  implements INotificationSettingDAO {
     }
     
 }
+
+
+
 

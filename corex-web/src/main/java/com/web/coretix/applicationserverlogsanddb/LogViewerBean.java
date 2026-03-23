@@ -22,7 +22,8 @@ import org.primefaces.model.DefaultStreamedContent;
 import javax.inject.Named;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 
 @Named("logViewerBean")
@@ -30,7 +31,7 @@ import org.springframework.context.annotation.Scope;
 public  class LogViewerBean implements Serializable {
 
 
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(LogViewerBean.class);
     
     private TreeNode root;
     private TreeNode selectedNode;
@@ -352,3 +353,4 @@ public  class LogViewerBean implements Serializable {
     }
   
 }
+

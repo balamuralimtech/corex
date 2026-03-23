@@ -25,7 +25,8 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.event.ActionListener;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.primefaces.PrimeFaces;
 
 /**
@@ -37,7 +38,7 @@ import org.primefaces.PrimeFaces;
 public class ExceptionHandlingActionListener extends ActionListenerImpl 
         implements ActionListener
 {
-    private Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(ExceptionHandlingActionListener.class);
     private static final String GENERIC_DAO_EXCEPTION = "GenericJDBCException: Cannot open connection";
     private static final String TRANSACTION_EXCEPTION = "TransactionException: JDBC begin failed";
     private static final String RESOURCE_POOL_EXCEPTION = "resourcepool.TimeoutException";

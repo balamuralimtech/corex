@@ -10,7 +10,8 @@ import com.persist.coretix.modal.systemmanagement.dao.ICityDAO;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -23,7 +24,7 @@ import org.hibernate.exception.ConstraintViolationException;
 @Named
 public class CityDAO implements ICityDAO {
 
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(CityDAO.class);
     @Inject
     private SessionFactory sessionFactory;
 
@@ -162,7 +163,7 @@ public class CityDAO implements ICityDAO {
         Transaction trans = session.beginTransaction();
 
         List<?> list = session
-                .createQuery("from Cities where id=?").setParameter(0, id)
+                .createQuery("from Cities where id=?1").setParameter(1, id)
                 .list();
 
         trans.commit();
@@ -174,7 +175,7 @@ public class CityDAO implements ICityDAO {
         Transaction trans = session.beginTransaction();
 
         List<?> list = session
-                .createQuery("from Cities where name=?").setParameter(0, cityName)
+                .createQuery("from Cities where name=?1").setParameter(1, cityName)
                 .list();
 
         trans.commit();
@@ -197,10 +198,17 @@ public class CityDAO implements ICityDAO {
         Transaction trans = session.beginTransaction();
 
         @SuppressWarnings("unchecked")
-        List<Cities> list = (List<Cities>) session.createQuery("from Cities where country_id=? and state_id=?").setParameter(0, countryId).setParameter(1, stateId).list();
+        List<Cities> list = (List<Cities>) session
+                .createQuery("from Cities where country_id = ?1 and state_id = ?2")
+                .setParameter(1, countryId)
+                .setParameter(2, stateId)
+                .list();
 
         trans.commit();
         return list;
     }
 
 }
+
+
+

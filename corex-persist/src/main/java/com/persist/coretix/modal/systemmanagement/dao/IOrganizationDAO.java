@@ -28,3 +28,4 @@ public interface IOrganizationDAO {
     public Organizations getOrganizationsEntityByOrganizationName(String organizationName);
     
 }
+

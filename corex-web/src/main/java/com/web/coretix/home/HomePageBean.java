@@ -2,7 +2,8 @@ package com.web.coretix.home;
 
 import com.module.coretix.commonto.CoreDashboardTO;
 import com.module.coretix.coretix.ICoreDashboardService;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 
 import javax.faces.context.FacesContext;
@@ -18,7 +19,7 @@ import java.util.ResourceBundle;
 public class HomePageBean implements Serializable {
 
     private static final long serialVersionUID = 13543439334535435L;
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(HomePageBean.class);
     private ResourceBundle resourceBundle;
     @Inject
     private ICoreDashboardService coreDashboardService;
@@ -70,3 +71,4 @@ public class HomePageBean implements Serializable {
 //        return memoryJson;
 //    }
 }
+

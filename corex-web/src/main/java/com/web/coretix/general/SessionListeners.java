@@ -31,7 +31,8 @@ import javax.servlet.http.HttpSessionListener;
 
 import com.web.coretix.constants.LoginConstants;
 import com.web.coretix.constants.UserActivityConstants;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -40,7 +41,7 @@ import org.apache.log4j.Logger;
  */
 public class SessionListeners implements HttpSessionListener
 {
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(SessionListeners.class);
 
     @Inject
     private IUserAdministrationService userAdministrationService;
@@ -102,10 +103,10 @@ public class SessionListeners implements HttpSessionListener
         if (httpSession != null) {
             logger.debug("httpSession.getId() : " + httpSession.getId());
             logger.debug("#############################################################################");
-            logger.debug((Integer) httpSession.getAttribute(com.web.coretix.constants.SessionAttributes.USER_ACCOUNT_ID.getName()));
-            logger.debug((String) httpSession.getAttribute(com.web.coretix.constants.SessionAttributes.USERNAME.getName()));
-            logger.debug((String) httpSession.getAttribute(com.web.coretix.constants.SessionAttributes.MACHINE_IP.getName()));
-            logger.debug((String) httpSession.getAttribute(com.web.coretix.constants.SessionAttributes.MACHINE_NAME.getName()));
+            logger.debug("{}", (Integer) httpSession.getAttribute(com.web.coretix.constants.SessionAttributes.USER_ACCOUNT_ID.getName()));
+            logger.debug("{}", (String) httpSession.getAttribute(com.web.coretix.constants.SessionAttributes.USERNAME.getName()));
+            logger.debug("{}", (String) httpSession.getAttribute(com.web.coretix.constants.SessionAttributes.MACHINE_IP.getName()));
+            logger.debug("{}", (String) httpSession.getAttribute(com.web.coretix.constants.SessionAttributes.MACHINE_NAME.getName()));
             logger.debug("#############################################################################");
 
             userActivityTO.setUserId((Integer) httpSession.getAttribute(com.web.coretix.constants.SessionAttributes.USER_ACCOUNT_ID.getName()));
@@ -229,3 +230,4 @@ public class SessionListeners implements HttpSessionListener
     
     
 }
+

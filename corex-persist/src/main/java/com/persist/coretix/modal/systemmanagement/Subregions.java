@@ -130,3 +130,4 @@ public class Subregions implements Serializable {
         this.wikiDataId = wikiDataId;
     }
 }
+

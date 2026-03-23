@@ -12,7 +12,8 @@ import com.module.coretix.usermanagement.IRoleAdministrationService;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -23,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class RoleAdministrationService implements IRoleAdministrationService {
     
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(RoleAdministrationService.class);
     
     @Inject
     private IRoleAdministrationDAO roleAdministrationDAO;
@@ -90,3 +91,4 @@ public class RoleAdministrationService implements IRoleAdministrationService {
 
     
 }
+

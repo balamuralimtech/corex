@@ -7,7 +7,8 @@ import com.persist.coretix.modal.license.Licenses;
 import com.persist.coretix.modal.license.dao.ILicenseDAO;
 import com.persist.coretix.modal.usermanagement.UserActivities;
 import com.persist.coretix.modal.usermanagement.dao.impl.UserActivityDAO;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
@@ -19,7 +20,7 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class LicenseService implements ILicenseService {
 
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(LicenseService.class);
 
     @Inject
     private ILicenseDAO licenseDAO;
@@ -81,3 +82,4 @@ public class LicenseService implements ILicenseService {
         userActivityDAO.addUserActivity(useractivity);
     }
 }
+

@@ -18,7 +18,8 @@ import javax.inject.Named;
 
 import com.persist.coretix.modal.usermanagement.UserActivities;
 import com.persist.coretix.modal.usermanagement.dao.impl.UserActivityDAO;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -29,7 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class  DepartmentService implements IDepartmentService {
 
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(DepartmentService.class);
     @Inject
     private IDepartmentDAO departmentDAO;
 
@@ -109,4 +110,5 @@ public class  DepartmentService implements IDepartmentService {
 
 
 }
+
 

@@ -118,3 +118,4 @@ public class Departments implements Serializable {
         this.updatedAt = updatedAt;
     }
 }
+

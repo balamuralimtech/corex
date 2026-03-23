@@ -9,7 +9,8 @@ import com.persist.coretix.modal.systemmanagement.BankDetails;
 import com.persist.coretix.modal.usermanagement.UserActivities;
 import com.persist.coretix.modal.usermanagement.dao.impl.UserActivityDAO;
 import com.persist.coretix.modal.systemmanagement.dao.IBankDetailsDAO;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
@@ -21,7 +22,7 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class BankDetailsService implements IBankDetailsService {
 
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(BankDetailsService.class);
     @Inject
     private IBankDetailsDAO bankDetailsDAO;
 
@@ -114,4 +115,5 @@ public class BankDetailsService implements IBankDetailsService {
         userActivityDAO.addUserActivity(useractivity);
     }
 }
+
 

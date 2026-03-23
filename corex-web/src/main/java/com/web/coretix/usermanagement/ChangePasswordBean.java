@@ -3,7 +3,8 @@ package com.web.coretix.usermanagement;
 import com.module.coretix.usermanagement.IUserAdministrationService;
 import com.persist.coretix.modal.usermanagement.UserDetails;
 import com.web.coretix.appgeneral.GenericManagedBean;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 
 import javax.faces.application.FacesMessage;
@@ -20,7 +21,7 @@ import java.util.List;
 public class ChangePasswordBean extends GenericManagedBean implements Serializable {
 
     private static final long serialVersionUID = 13543439334535435L;
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(ChangePasswordBean.class);
 
     private String username;
     private String password;
@@ -199,3 +200,4 @@ public class ChangePasswordBean extends GenericManagedBean implements Serializab
     }
 
 }
+

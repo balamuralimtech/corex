@@ -79,3 +79,4 @@ public class Roles implements Serializable {
         this.rolePrivileges = rolePrivileges;
     }
 }
+

@@ -25,3 +25,4 @@ public interface IDesignationDAO {
     public List<Designations> getDesignationsList();
 
 }
+

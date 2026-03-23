@@ -10,7 +10,8 @@ import com.module.coretix.usermanagement.IModulePrivilegeService;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -21,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class ModulePrivilegeService implements IModulePrivilegeService{
     
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(ModulePrivilegeService.class);
     
     @Inject
     private IModulePrivilegeDAO iModulePrivilegeDAO;
@@ -68,3 +69,4 @@ public class ModulePrivilegeService implements IModulePrivilegeService{
 
     
 }
+

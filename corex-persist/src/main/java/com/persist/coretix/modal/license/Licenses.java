@@ -98,3 +98,4 @@ public class Licenses implements Serializable {
         this.updatedAt = updatedAt;
     }
 }
+

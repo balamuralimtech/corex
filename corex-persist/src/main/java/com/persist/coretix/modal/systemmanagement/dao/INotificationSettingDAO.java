@@ -26,3 +26,4 @@ public interface INotificationSettingDAO {
     public List<NotificationSettings> getNotificationSettingsList();
     
 }
+

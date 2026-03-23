@@ -28,3 +28,4 @@ public interface IBranchDAO {
     public List<Branches> getBranchesListByOrgId(int orgId);
 
 }
+

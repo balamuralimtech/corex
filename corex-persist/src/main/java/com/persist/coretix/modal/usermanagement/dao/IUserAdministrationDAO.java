@@ -36,3 +36,4 @@ public interface IUserAdministrationDAO {
 
     public void updateUserStatus(int userId, int newStatus);
 }
+

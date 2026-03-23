@@ -15,7 +15,8 @@ import javax.inject.Named;
 
 import com.web.coretix.constants.*;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.springframework.context.annotation.Scope;
 
@@ -32,7 +33,7 @@ import org.springframework.context.annotation.Scope;
 public class ModulesRolePrivilegeDefinitionBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(ModulesRolePrivilegeDefinitionBean.class);
     private List<RoleModuleBean> roleModuleList = new ArrayList<>();
 
     private boolean isDataAvailable;
@@ -345,3 +346,4 @@ public class ModulesRolePrivilegeDefinitionBean implements Serializable {
     }
 
 }
+

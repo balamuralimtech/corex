@@ -174,3 +174,4 @@ public class States implements Serializable  {
         this.wikiDataId = wikiDataId;
     }
 }
+

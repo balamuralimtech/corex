@@ -9,7 +9,8 @@ import com.persist.coretix.modal.usermanagement.dao.IModulePrivilegeDAO;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -22,7 +23,7 @@ import org.hibernate.Transaction;
 @Named
 public class ModulePrivilegeDAO implements IModulePrivilegeDAO {
 
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(ModulePrivilegeDAO.class);
 
     @Inject
     private SessionFactory sessionFactory;
@@ -101,7 +102,7 @@ public class ModulePrivilegeDAO implements IModulePrivilegeDAO {
         Transaction trans = session.beginTransaction();
 
         List<?> list = session
-                .createQuery("from ModulePrivileges where id=?").setParameter(0, id)
+                .createQuery("from ModulePrivileges where id=?1").setParameter(1, id)
                 .list();
 
         trans.commit();
@@ -120,3 +121,6 @@ public class ModulePrivilegeDAO implements IModulePrivilegeDAO {
     }
 
 }
+
+
+

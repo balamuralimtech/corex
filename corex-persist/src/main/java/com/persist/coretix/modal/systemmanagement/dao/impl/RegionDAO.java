@@ -9,7 +9,8 @@ import com.persist.coretix.modal.systemmanagement.dao.IRegionDAO;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -22,7 +23,7 @@ import org.hibernate.exception.ConstraintViolationException;
 @Named
 public class RegionDAO implements IRegionDAO {
 
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(RegionDAO.class);
     @Inject
     private SessionFactory sessionFactory;
 
@@ -161,7 +162,7 @@ public class RegionDAO implements IRegionDAO {
         Transaction trans = session.beginTransaction();
 
         List<?> list = session
-                .createQuery("from Regions where id=?").setParameter(0, id)
+                .createQuery("from Regions where id=?1").setParameter(1, id)
                 .list();
 
         trans.commit();
@@ -173,7 +174,7 @@ public class RegionDAO implements IRegionDAO {
         Transaction trans = session.beginTransaction();
 
         List<?> list = session
-                .createQuery("from Regions where name=?").setParameter(0, regionName)
+                .createQuery("from Regions where name=?1").setParameter(1, regionName)
                 .list();
 
         trans.commit();
@@ -192,3 +193,5 @@ public class RegionDAO implements IRegionDAO {
     }
 
 }
+
+

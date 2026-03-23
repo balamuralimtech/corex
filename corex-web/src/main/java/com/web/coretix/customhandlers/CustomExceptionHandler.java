@@ -8,7 +8,8 @@ import javax.faces.context.ExceptionHandler;
 import javax.faces.context.ExceptionHandlerWrapper;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ExceptionQueuedEvent;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Custom exception handler to gracefully handle JSF view state restoration errors
@@ -16,7 +17,7 @@ import org.apache.log4j.Logger;
  */
 public class CustomExceptionHandler extends ExceptionHandlerWrapper {
 
-    private static final Logger logger = Logger.getLogger(CustomExceptionHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(CustomExceptionHandler.class);
     private static final String SESSION_TIMEOUT_PAGE = "/session-timeout";
     private static final String INTERNAL_SERVER_ERROR_PAGE = "/internal-server-error";
     private ExceptionHandler wrapped;
@@ -127,3 +128,4 @@ public class CustomExceptionHandler extends ExceptionHandlerWrapper {
         return wrapped;
     }
 }
+

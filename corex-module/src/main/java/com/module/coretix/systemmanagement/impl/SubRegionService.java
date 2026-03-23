@@ -16,7 +16,8 @@ import javax.inject.Named;
 
 import com.persist.coretix.modal.usermanagement.UserActivities;
 import com.persist.coretix.modal.usermanagement.dao.impl.UserActivityDAO;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
 
@@ -31,7 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 public class  SubRegionService implements ISubRegionService {
 
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(SubRegionService.class);
     @Inject
     private ISubRegionDAO subRegionDAO;
     @Inject
@@ -120,3 +121,4 @@ public class  SubRegionService implements ISubRegionService {
     }
 
 }
+

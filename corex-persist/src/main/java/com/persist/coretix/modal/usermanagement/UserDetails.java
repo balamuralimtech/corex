@@ -250,3 +250,4 @@ public class UserDetails implements Serializable {
         this.lastSuccessfulLogin = lastSuccessfulLogin;
     }
 }
+

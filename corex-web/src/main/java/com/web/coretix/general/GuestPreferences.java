@@ -18,7 +18,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpSession;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.faces.model.SelectItem;
 
 import org.springframework.context.annotation.Scope;
@@ -27,7 +28,7 @@ import org.springframework.context.annotation.Scope;
 @Scope("session")
 public class GuestPreferences extends GenericManagedBean implements Serializable {
 
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(GuestPreferences.class);
 
     private Map<String, String> themeColors;
 
@@ -237,7 +238,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
             for (Integer pageId : pageList) {
 
                 logger.debug("getUserManagementPageList : pageId : " + pageId);
-                logger.debug(UserManagementModule.getById(pageId));
+                logger.debug("{}", UserManagementModule.getById(pageId));
 
                 switch (UserManagementModule.getById(pageId)) {
                     case USER_PROFILE :
@@ -275,7 +276,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         if (CollectionUtils.isNotEmpty(pageList)) {
             for (Integer pageId : pageList) {
                 logger.debug("getSystemManagementPageList : pageId : " + pageId);
-                logger.debug(SystemManagementModule.getById(pageId));
+                logger.debug("{}", SystemManagementModule.getById(pageId));
                 switch (SystemManagementModule.getById(pageId)) {
                     case ORGANIZATION:
                         organizationRendered = true;
@@ -339,7 +340,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         if (CollectionUtils.isNotEmpty(pageList)) {
             for (Integer pageId : pageList) {
                 logger.debug("getLicensePageList : pageId : " + pageId);
-                logger.debug(LicenseManagementModule.getById(pageId));
+                logger.debug("{}", LicenseManagementModule.getById(pageId));
                 switch (LicenseManagementModule.getById(pageId)){
                     case LICENSE:
                         licenseRendered = true;
@@ -358,7 +359,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         if (CollectionUtils.isNotEmpty(pageList)) {
             for (Integer pageId : pageList) {
                 logger.debug("getDbAndServerLogPageList : pageId : " + pageId);
-                logger.debug(ServerAndDBModule.getById(pageId));
+                logger.debug("{}", ServerAndDBModule.getById(pageId));
                 switch (ServerAndDBModule.getById(pageId)){
                     case SERVER_LOGS:
                         serverLogRendered = true;
@@ -434,10 +435,10 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         if (httpSession != null) {
             logger.debug("httpSession.getId() : " + httpSession.getId());
             logger.debug("#############################################################################");
-            logger.debug((Integer) httpSession.getAttribute(SessionAttributes.USER_ACCOUNT_ID.getName()));
-            logger.debug((String) httpSession.getAttribute(SessionAttributes.USERNAME.getName()));
-            logger.debug((String) httpSession.getAttribute(SessionAttributes.MACHINE_IP.getName()));
-            logger.debug((String) httpSession.getAttribute(SessionAttributes.MACHINE_NAME.getName()));
+            logger.debug("{}", (Integer) httpSession.getAttribute(SessionAttributes.USER_ACCOUNT_ID.getName()));
+            logger.debug("{}", (String) httpSession.getAttribute(SessionAttributes.USERNAME.getName()));
+            logger.debug("{}", (String) httpSession.getAttribute(SessionAttributes.MACHINE_IP.getName()));
+            logger.debug("{}", (String) httpSession.getAttribute(SessionAttributes.MACHINE_NAME.getName()));
             logger.debug("#############################################################################");
 
             userActivityTO.setUserId((Integer) httpSession.getAttribute(SessionAttributes.USER_ACCOUNT_ID.getName()));
@@ -940,3 +941,4 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         this.dbDetailsRendered = dbDetailsRendered;
     }
 }
+

@@ -25,3 +25,4 @@ public interface ICoreDashboardDAO {
     public long fetchUserActivityCount();
 
 }
+

@@ -35,3 +35,4 @@ public interface IRoleAdministrationDAO {
 
     public List<Integer> getSubmodulesByRoleandModuleId(int roleId, int moduleId);
 }
+

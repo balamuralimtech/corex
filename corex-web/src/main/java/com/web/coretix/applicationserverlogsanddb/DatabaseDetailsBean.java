@@ -14,7 +14,8 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import javax.inject.Named;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 
 /**
@@ -25,7 +26,7 @@ import org.springframework.context.annotation.Scope;
 @Scope("session")
 public class DatabaseDetailsBean implements Serializable {
     private static final long serialVersionUID = 1354353434334535435L;
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(DatabaseDetailsBean.class);
     private String jdbcUrl;
     private String jdbcUsername;
     private String jdbcProductName;
@@ -98,3 +99,4 @@ public class DatabaseDetailsBean implements Serializable {
     }
 
 }
+

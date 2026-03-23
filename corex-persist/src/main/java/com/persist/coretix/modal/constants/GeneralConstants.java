@@ -28,3 +28,4 @@ public enum GeneralConstants {
         return this.constantName;
     }
 }
+

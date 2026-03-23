@@ -19,7 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 
 /**
@@ -30,7 +31,7 @@ import org.springframework.context.annotation.Scope;
 public class UserActivityBean implements Serializable {
 
     private static final long serialVersionUID = 1354353434334535435L;
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(UserActivityBean.class);
     private List<UserActivities> userActivityList = new ArrayList<>();
 
 
@@ -267,3 +268,4 @@ public class UserActivityBean implements Serializable {
     }
 
 }
+

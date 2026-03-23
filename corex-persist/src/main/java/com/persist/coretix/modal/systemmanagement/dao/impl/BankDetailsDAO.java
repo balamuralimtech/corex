@@ -10,7 +10,8 @@ import javax.inject.Named;
 
 import com.persist.coretix.modal.systemmanagement.BankDetails;
 import com.persist.coretix.modal.systemmanagement.dao.IBankDetailsDAO;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -23,7 +24,7 @@ import org.hibernate.exception.ConstraintViolationException;
 @Named
 public class BankDetailsDAO implements IBankDetailsDAO {
 
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(BankDetailsDAO.class);
     @Inject
     private SessionFactory sessionFactory;
 
@@ -178,7 +179,7 @@ public class BankDetailsDAO implements IBankDetailsDAO {
         Transaction trans = session.beginTransaction();
 
         List<?> list = session
-                .createQuery("from BankDetails where id=?").setParameter(0, id)
+                .createQuery("from BankDetails where id=?1").setParameter(1, id)
                 .list();
 
         trans.commit();
@@ -190,7 +191,7 @@ public class BankDetailsDAO implements IBankDetailsDAO {
         Transaction trans = session.beginTransaction();
 
         List<?> list = session
-                .createQuery("from BankDetails where organization_id=?").setParameter(0, orgId)
+                .createQuery("from BankDetails where organization_id=?1").setParameter(1, orgId)
                 .list();
 
         trans.commit();
@@ -218,7 +219,7 @@ public class BankDetailsDAO implements IBankDetailsDAO {
         Transaction trans = session.beginTransaction();
 
         @SuppressWarnings("unchecked")
-        List<BankDetails> list = (List<BankDetails>) session.createQuery("from BankDetails where organization_id=?").setParameter(0, orgId).list();
+        List<BankDetails> list = (List<BankDetails>) session.createQuery("from BankDetails where organization_id=?1").setParameter(1, orgId).list();
 
         for (BankDetails bankDetails : list) {
             logger.debug("bankDetails getBankAccountDetails  : "+bankDetails.getBankAccountDetails());
@@ -228,3 +229,5 @@ public class BankDetailsDAO implements IBankDetailsDAO {
     }
 
 }
+
+

@@ -13,7 +13,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -26,7 +27,7 @@ import org.hibernate.Transaction;
 public class UserActivityDAO implements IUserActivityDAO 
 {
     
-     private final Logger logger = Logger.getLogger(getClass());
+     private static final Logger logger = LoggerFactory.getLogger(UserActivityDAO.class);
      
     @Inject
     private SessionFactory sessionFactory;
@@ -115,3 +116,5 @@ public class UserActivityDAO implements IUserActivityDAO
     }
     
 }
+
+

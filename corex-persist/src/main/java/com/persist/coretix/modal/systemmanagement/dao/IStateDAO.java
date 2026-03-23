@@ -29,3 +29,4 @@ public interface IStateDAO {
     public List<States> getStatesListByCountryId(int countryId);
 
 }
+

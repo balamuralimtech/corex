@@ -14,7 +14,8 @@ import com.web.coretix.constants.SessionAttributes;
 import com.web.coretix.constants.UserActivityConstants;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.primefaces.PrimeFaces;
 import org.springframework.context.annotation.Scope;
 
@@ -36,7 +37,7 @@ import java.util.stream.Collectors;
 public class LicenseBean extends GenericManagedBean implements Serializable {
 
     private static final long serialVersionUID = 13543439334535436L;
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(LicenseBean.class);
 
     private List<Licenses> licenseList = new ArrayList<>();
     private List<Organizations> organizationList = new ArrayList<>();
@@ -343,3 +344,4 @@ public class LicenseBean extends GenericManagedBean implements Serializable {
         this.selectedLicense = selectedLicense;
     }
 }
+

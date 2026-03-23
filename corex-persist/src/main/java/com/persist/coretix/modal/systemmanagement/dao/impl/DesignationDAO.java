@@ -11,7 +11,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import com.persist.coretix.modal.usermanagement.dao.IUserActivityDAO;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -24,7 +25,7 @@ import org.hibernate.exception.ConstraintViolationException;
 @Named
 public class DesignationDAO implements IDesignationDAO {
 
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(DesignationDAO.class);
     @Inject
     private SessionFactory sessionFactory;
 
@@ -174,7 +175,7 @@ public class DesignationDAO implements IDesignationDAO {
         Transaction trans = session.beginTransaction();
 
         List<?> list = session
-                .createQuery("from Designations where id=?").setParameter(0, id)
+                .createQuery("from Designations where id=?1").setParameter(1, id)
                 .list();
 
         trans.commit();
@@ -193,3 +194,5 @@ public class DesignationDAO implements IDesignationDAO {
     }
 
 }
+
+

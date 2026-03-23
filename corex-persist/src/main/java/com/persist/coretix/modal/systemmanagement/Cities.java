@@ -164,3 +164,4 @@ public class Cities implements Serializable  {
         this.wikiDataId = wikiDataId;
     }
 }
+

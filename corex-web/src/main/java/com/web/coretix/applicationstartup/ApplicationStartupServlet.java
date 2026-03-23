@@ -8,8 +8,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @since 1.0
@@ -18,8 +18,7 @@ import org.apache.log4j.PropertyConfigurator;
 public class ApplicationStartupServlet extends HttpServlet
 {
 
-    private Logger logger = Logger.getLogger(getClass().getName());
-    public static final String LOGGER_FILE_PATH = "conf" + File.separator + "log4j.properties";
+    private static final Logger logger = LoggerFactory.getLogger(ApplicationStartupServlet.class);
     public static final String APPLICATION_FILE_PATH = "application.properties";
     private String realPath;
 
@@ -27,16 +26,7 @@ public class ApplicationStartupServlet extends HttpServlet
     public void init()
     {
         realPath = getServletContext().getRealPath("");
-        try
-        {
-            PropertyConfigurator.configure(realPath + File.separator
-                    + LOGGER_FILE_PATH);
-        }
-        catch (Exception ex)
-        {
-            logger.info("[PL] - Error loading while initializing log !");
-        }
-        
+
         try
         {
             loadProperties();

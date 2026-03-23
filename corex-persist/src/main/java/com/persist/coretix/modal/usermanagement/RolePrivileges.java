@@ -104,3 +104,4 @@ public class RolePrivileges implements Serializable {
         this.updatedAt = updatedAt;
     }
 }
+

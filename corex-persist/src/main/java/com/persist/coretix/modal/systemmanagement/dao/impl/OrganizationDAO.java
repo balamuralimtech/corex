@@ -13,7 +13,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import com.persist.coretix.modal.usermanagement.dao.IUserActivityDAO;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -22,7 +23,7 @@ import org.hibernate.exception.ConstraintViolationException;
 @Named
 public class OrganizationDAO implements IOrganizationDAO {
     
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(OrganizationDAO.class);
      
     @Inject
     private SessionFactory sessionFactory;
@@ -162,8 +163,8 @@ public class OrganizationDAO implements IOrganizationDAO {
             trans = session.beginTransaction();
 
             List<?> list = session
-                    .createQuery("from Organizations where id=?")
-                    .setParameter(0, id)
+                    .createQuery("from Organizations where id=?1")
+                    .setParameter(1, id)
                     .list();
 
             trans.commit();
@@ -183,8 +184,8 @@ public class OrganizationDAO implements IOrganizationDAO {
             trans = session.beginTransaction();
 
             List<?> list = session
-                    .createQuery("from Organizations where organization_name=?")
-                    .setParameter(0, organizationName)
+                    .createQuery("from Organizations where organization_name=?1")
+                    .setParameter(1, organizationName)
                     .list();
 
             trans.commit();
@@ -215,3 +216,6 @@ public class OrganizationDAO implements IOrganizationDAO {
         }
     }
 }
+
+
+

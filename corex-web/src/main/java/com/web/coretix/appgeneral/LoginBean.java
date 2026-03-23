@@ -9,7 +9,8 @@ import com.module.coretix.usermanagement.IUserAdministrationService;
 import com.web.coretix.constants.UserActivityConstants;
 import com.web.coretix.general.SessionListeners;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.web.coretix.constants.AccessRightConstants;
 import com.web.coretix.constants.LoginConstants;
 import com.web.coretix.constants.SessionAttributes;
@@ -33,7 +34,7 @@ import java.util.Map;
 public class LoginBean extends GenericManagedBean implements Serializable  {
 
     private static final long serialVersionUID = 13543439334535435L;
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(LoginBean.class);
 
     private String username;
     private String password;
@@ -284,3 +285,4 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
     }
 
 }
+

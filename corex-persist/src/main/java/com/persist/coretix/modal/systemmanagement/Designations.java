@@ -88,3 +88,4 @@ public class Designations implements Serializable
         this.organization = organization;
     }
 }
+

@@ -31,7 +31,8 @@ import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpSession;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.primefaces.PrimeFaces;
 import org.springframework.context.annotation.Scope;
 
@@ -44,7 +45,7 @@ import org.springframework.context.annotation.Scope;
 public class RoleAdministrationBean implements Serializable {
 
     private static final long serialVersionUID = 1354353434334535435L;
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(RoleAdministrationBean.class);
 
     private List<RoleModuleBean> roleModuleList = new ArrayList<>();
 
@@ -711,3 +712,4 @@ public class RoleAdministrationBean implements Serializable {
     }
 
 }
+

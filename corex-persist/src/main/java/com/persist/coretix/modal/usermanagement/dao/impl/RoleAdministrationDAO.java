@@ -13,10 +13,11 @@ import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -25,7 +26,7 @@ import org.hibernate.Transaction;
 @Named
 public class RoleAdministrationDAO implements IRoleAdministrationDAO {
     
-     private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(RoleAdministrationDAO.class);
      
     @Inject
     private SessionFactory sessionFactory;
@@ -68,7 +69,7 @@ public class RoleAdministrationDAO implements IRoleAdministrationDAO {
         Transaction trans = session.beginTransaction();
 
         List<?> list = session
-                .createQuery("from Roles where id=?").setParameter(0, id)
+                .createQuery("from Roles where id=?1").setParameter(1, id)
                 .list();
 
         trans.commit();
@@ -78,12 +79,15 @@ public class RoleAdministrationDAO implements IRoleAdministrationDAO {
     public List<RolePrivileges> getRolePrivilegesByModuleAndSubModule(int roleId, int moduleId, int subModuleId) {
 
         logger.debug("inside dao getRolePrivilegesByModuleAndSubModule !!");
-        logger.debug(roleId + ":" + moduleId + ":" + subModuleId);
+        logger.debug("{}", roleId + ":" + moduleId + ":" + subModuleId);
         Session session = getSessionFactory().getCurrentSession();
         Transaction trans = session.beginTransaction();
 
         List<RolePrivileges> list = session
-                .createQuery("from RolePrivileges where roles.id=? and moduleId=? and submoduleId=? and isSelected=true").setParameter(0, roleId).setParameter(1, moduleId).setParameter(2, subModuleId)
+                .createQuery("from RolePrivileges where roles.id = ?1 and moduleId = ?2 and submoduleId = ?3 and isSelected = true")
+                .setParameter(1, roleId)
+                .setParameter(2, moduleId)
+                .setParameter(3, subModuleId)
                 .list();
 
                 trans.commit();
@@ -146,7 +150,7 @@ public class RoleAdministrationDAO implements IRoleAdministrationDAO {
         Transaction trans = session.beginTransaction();
 
         List<?> list = session
-                .createQuery("from Roles where roleName=?").setParameter(0, roleName)
+                .createQuery("from Roles where roleName=?1").setParameter(1, roleName)
                 .list();
 
         trans.commit();
@@ -187,3 +191,5 @@ public class RoleAdministrationDAO implements IRoleAdministrationDAO {
     }
     
 }
+
+

@@ -1,7 +1,8 @@
 package com.persist.coretix.modal.coretix.dao.impl;
 
 import com.persist.coretix.modal.coretix.dao.ICoreDashboardDAO;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -12,7 +13,7 @@ import javax.inject.Named;
 @Named
 public class CoreDashboardDAO implements ICoreDashboardDAO {
 
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(CoreDashboardDAO.class);
 
     @Inject
     private SessionFactory sessionFactory;
@@ -289,3 +290,5 @@ public class CoreDashboardDAO implements ICoreDashboardDAO {
         return count;
     }
 }
+
+

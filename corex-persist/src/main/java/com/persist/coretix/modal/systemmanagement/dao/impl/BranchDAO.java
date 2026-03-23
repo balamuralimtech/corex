@@ -13,7 +13,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import com.persist.coretix.modal.usermanagement.dao.IUserActivityDAO;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -26,7 +27,7 @@ import org.hibernate.exception.ConstraintViolationException;
 @Named
 public class BranchDAO implements IBranchDAO {
 
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(BranchDAO.class);
     @Inject
     private SessionFactory sessionFactory;
 
@@ -171,7 +172,7 @@ public class BranchDAO implements IBranchDAO {
         Transaction trans = session.beginTransaction();
 
         List<?> list = session
-                .createQuery("from Branches where id=?").setParameter(0, id)
+                .createQuery("from Branches where id=?1").setParameter(1, id)
                 .list();
 
         trans.commit();
@@ -183,7 +184,7 @@ public class BranchDAO implements IBranchDAO {
         Transaction trans = session.beginTransaction();
 
         List<?> list = session
-                .createQuery("from Branches where branch_name=?").setParameter(0, branchName)
+                .createQuery("from Branches where branch_name=?1").setParameter(1, branchName)
                 .list();
 
         trans.commit();
@@ -207,10 +208,13 @@ public class BranchDAO implements IBranchDAO {
         Transaction trans = session.beginTransaction();
 
         @SuppressWarnings("unchecked")
-        List<Branches> list = (List<Branches>) session.createQuery("from Branches where organization_id=?").setParameter(0, orgId).list();
+        List<Branches> list = (List<Branches>) session.createQuery("from Branches where organization_id=?1").setParameter(1, orgId).list();
         logger.debug("list size  : "+list.size());
         trans.commit();
         return list;
     }
 
 }
+
+
+

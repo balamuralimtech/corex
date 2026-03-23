@@ -90,3 +90,4 @@ public class ModulePrivileges implements Serializable {
         this.updatedAt = updatedAt;
     }
 }
+

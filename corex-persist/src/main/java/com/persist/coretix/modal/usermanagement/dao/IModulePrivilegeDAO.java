@@ -26,3 +26,4 @@ public interface IModulePrivilegeDAO {
     public List<ModulePrivileges> getModulePrivilegesList();
     
 }
+

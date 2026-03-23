@@ -28,3 +28,4 @@ public interface ICityDAO {
     
     public List<Cities> getCitiesListByCountryIdAndStateId(int countryId, int stateId);
 }
+

@@ -9,7 +9,8 @@ import com.persist.coretix.modal.systemmanagement.dao.IDepartmentDAO;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -22,7 +23,7 @@ import org.hibernate.exception.ConstraintViolationException;
 @Named
 public class DepartmentDAO implements IDepartmentDAO {
 
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(DepartmentDAO.class);
     @Inject
     private SessionFactory sessionFactory;
 
@@ -164,7 +165,7 @@ public class DepartmentDAO implements IDepartmentDAO {
         Transaction trans = session.beginTransaction();
 
         List<?> list = session
-                .createQuery("from Departments where id=?").setParameter(0, id)
+                .createQuery("from Departments where id=?1").setParameter(1, id)
                 .list();
 
         trans.commit();
@@ -187,3 +188,5 @@ public class DepartmentDAO implements IDepartmentDAO {
     }
 
 }
+
+

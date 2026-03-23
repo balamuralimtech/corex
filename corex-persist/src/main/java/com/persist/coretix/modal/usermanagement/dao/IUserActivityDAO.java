@@ -20,3 +20,4 @@ public interface IUserActivityDAO {
     public Map<String, Integer> getActivityTypeCounts();
    
 }
+

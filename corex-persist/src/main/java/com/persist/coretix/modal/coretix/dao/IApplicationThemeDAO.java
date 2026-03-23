@@ -23,3 +23,4 @@ public interface IApplicationThemeDAO {
     public ApplicationTheme getApplicationThemeByUserid(int userid);
     
 }
+

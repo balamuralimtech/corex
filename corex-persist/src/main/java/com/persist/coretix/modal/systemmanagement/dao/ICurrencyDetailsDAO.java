@@ -26,3 +26,4 @@ public interface ICurrencyDetailsDAO
 
     public List<CurrencyDetails> getCurrencyDetailsList();
 }
+

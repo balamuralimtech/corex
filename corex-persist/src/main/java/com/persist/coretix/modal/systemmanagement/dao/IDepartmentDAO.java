@@ -24,3 +24,4 @@ public interface IDepartmentDAO {
 
     public List<Departments> getDepartmentsList();
 }
+

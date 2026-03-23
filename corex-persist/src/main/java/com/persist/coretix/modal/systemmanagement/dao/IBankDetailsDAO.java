@@ -22,3 +22,4 @@ public interface IBankDetailsDAO {
     public List<BankDetails> getBankDetailsListByOrgId(int orgId);
 
 }
+

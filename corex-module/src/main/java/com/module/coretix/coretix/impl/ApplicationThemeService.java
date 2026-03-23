@@ -7,7 +7,8 @@ import com.persist.coretix.modal.coretix.ApplicationTheme;
 import com.persist.coretix.modal.coretix.dao.IApplicationThemeDAO;
 import com.persist.coretix.modal.usermanagement.UserActivities;
 import com.persist.coretix.modal.usermanagement.dao.impl.UserActivityDAO;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
@@ -18,7 +19,7 @@ import java.sql.Timestamp;
 @Transactional(readOnly = true)
 public class ApplicationThemeService implements IApplicationThemeService {
 
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(ApplicationThemeService.class);
 
     @Inject
     private IApplicationThemeDAO applicationThemeDAO;
@@ -85,3 +86,4 @@ public class ApplicationThemeService implements IApplicationThemeService {
         this.userActivityDAO = userActivityDAO;
     }
 }
+

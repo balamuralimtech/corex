@@ -5,7 +5,8 @@ import com.persist.coretix.modal.coretix.ApplicationTheme;
 import com.persist.coretix.modal.coretix.dao.IApplicationThemeDAO;
 import com.persist.coretix.modal.systemmanagement.Organizations;
 import com.persist.coretix.modal.usermanagement.dao.IUserActivityDAO;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -17,7 +18,7 @@ import java.util.List;
 
 @Named
 public class ApplicationThemeDAO implements IApplicationThemeDAO {
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(ApplicationThemeDAO.class);
 
     @Inject
     private SessionFactory sessionFactory;
@@ -101,8 +102,8 @@ public class ApplicationThemeDAO implements IApplicationThemeDAO {
             trans = session.beginTransaction();
 
             List<?> list = session
-                    .createQuery("from ApplicationTheme where userid=?")
-                    .setParameter(0, userid)
+                    .createQuery("from ApplicationTheme where userid=?1")
+                    .setParameter(1, userid)
                     .list();
 
             trans.commit();
@@ -114,3 +115,6 @@ public class ApplicationThemeDAO implements IApplicationThemeDAO {
         }
     }
 }
+
+
+

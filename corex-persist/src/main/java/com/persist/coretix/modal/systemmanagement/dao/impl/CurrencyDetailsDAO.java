@@ -12,7 +12,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import com.persist.coretix.modal.usermanagement.UserDetails;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -25,7 +26,7 @@ import org.hibernate.exception.ConstraintViolationException;
 @Named
 public class CurrencyDetailsDAO implements ICurrencyDetailsDAO {
 
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(CurrencyDetailsDAO.class);
     @Inject
     private SessionFactory sessionFactory;
 
@@ -165,7 +166,7 @@ public class CurrencyDetailsDAO implements ICurrencyDetailsDAO {
         Transaction trans = session.beginTransaction();
 
         List<?> list = session
-                .createQuery("from CurrencyDetails where id=?").setParameter(0, id)
+                .createQuery("from CurrencyDetails where id=?1").setParameter(1, id)
                 .list();
 
         trans.commit();
@@ -178,7 +179,7 @@ public class CurrencyDetailsDAO implements ICurrencyDetailsDAO {
         Transaction trans = session.beginTransaction();
 
         List<?> list = session
-                .createQuery("from CurrencyDetails where currencyCode=?").setParameter(0, currencyName)
+                .createQuery("from CurrencyDetails where currencyCode=?1").setParameter(1, currencyName)
                 .list();
 
         trans.commit();
@@ -197,3 +198,6 @@ public class CurrencyDetailsDAO implements ICurrencyDetailsDAO {
     }
 
 }
+
+
+

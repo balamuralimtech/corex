@@ -16,7 +16,8 @@ package com.web.coretix.general;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.context.WebApplicationContext;
 
 /**
@@ -28,7 +29,7 @@ import org.springframework.web.context.WebApplicationContext;
 public class BackgroundThreadsKillerListener implements ServletContextListener
 {
 
-    Logger logger = Logger.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
      * This method is called when the application is deploy.
@@ -59,3 +60,4 @@ public class BackgroundThreadsKillerListener implements ServletContextListener
         }
     }
 }
+

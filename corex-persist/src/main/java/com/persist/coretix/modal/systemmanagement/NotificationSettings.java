@@ -138,3 +138,4 @@ public class NotificationSettings implements Serializable {
         this.updatedAt = updatedAt;
     }
 }
+

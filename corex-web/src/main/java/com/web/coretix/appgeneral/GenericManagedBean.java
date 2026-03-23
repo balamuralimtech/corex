@@ -17,7 +17,8 @@ import com.web.coretix.constants.CoreAppModule;
 import com.web.coretix.constants.RolePrivilegeConstants;
 import com.web.coretix.constants.SessionAttributes;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.mindrot.jbcrypt.BCrypt;
 
 
@@ -27,7 +28,7 @@ import org.mindrot.jbcrypt.BCrypt;
  */
 public class GenericManagedBean 
 {
-    public Logger logger = Logger.getLogger(getClass());
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private static final String AES_ALGORITHM = "AES";
     private static final String AES_TRANSFORMATION = "AES/CBC/PKCS5Padding"; // CBC mode with padding
@@ -249,7 +250,7 @@ public class GenericManagedBean
         {
             for (RolePrivileges rolePrivilege : rolePrivilegesList)
             {
-                logger.debug(rolePrivilege.getPrivilegeId());
+                logger.debug("{}", rolePrivilege.getPrivilegeId());
                 modulePrivilegeList.add(RolePrivilegeConstants.getById(rolePrivilege.getPrivilegeId()));
             }
         }
@@ -292,3 +293,4 @@ public class GenericManagedBean
     }
 
 }
+

@@ -21,3 +21,4 @@ public interface ILicenseDAO {
 
     boolean isLicenseActiveForOrganization(int organizationId);
 }
+

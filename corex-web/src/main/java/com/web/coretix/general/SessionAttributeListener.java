@@ -20,13 +20,14 @@ import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionBindingEvent;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class SessionAttributeListener implements HttpSessionAttributeListener
 {
 
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(SessionAttributeListener.class);
 
     @Override
     public void attributeAdded(HttpSessionBindingEvent event)
@@ -68,3 +69,4 @@ public class SessionAttributeListener implements HttpSessionAttributeListener
     }
 
 }
+

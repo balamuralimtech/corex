@@ -29,7 +29,8 @@ import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpSession;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 
 /**
@@ -41,7 +42,7 @@ import org.springframework.context.annotation.Scope;
 public class SubRegionBean implements Serializable {
 
     private static final long serialVersionUID = 1354353434334535435L;
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(SubRegionBean.class);
     private List<Subregions> subregionList = new ArrayList<>();
 
     private String regionName;
@@ -245,10 +246,10 @@ public class SubRegionBean implements Serializable {
         if (httpSession != null) {
             logger.debug("httpSession.getId() : " + httpSession.getId());
             logger.debug("#############################################################################");
-            logger.debug((Integer) httpSession.getAttribute(SessionAttributes.USER_ACCOUNT_ID.getName()));
-            logger.debug((String) httpSession.getAttribute(SessionAttributes.USERNAME.getName()));
-            logger.debug((String) httpSession.getAttribute(SessionAttributes.MACHINE_IP.getName()));
-            logger.debug((String) httpSession.getAttribute(SessionAttributes.MACHINE_NAME.getName()));
+            logger.debug("{}", (Integer) httpSession.getAttribute(SessionAttributes.USER_ACCOUNT_ID.getName()));
+            logger.debug("{}", (String) httpSession.getAttribute(SessionAttributes.USERNAME.getName()));
+            logger.debug("{}", (String) httpSession.getAttribute(SessionAttributes.MACHINE_IP.getName()));
+            logger.debug("{}", (String) httpSession.getAttribute(SessionAttributes.MACHINE_NAME.getName()));
             logger.debug("#############################################################################");
 
             userActivityTO.setUserId((Integer) httpSession.getAttribute(SessionAttributes.USER_ACCOUNT_ID.getName()));
@@ -419,3 +420,4 @@ public class SubRegionBean implements Serializable {
     }
 
 }
+

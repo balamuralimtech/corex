@@ -21,7 +21,8 @@ import com.module.coretix.usermanagement.IRoleAdministrationService;
 import com.module.coretix.usermanagement.IUserAdministrationService;
 import com.web.coretix.constants.LoginConstants;
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.primefaces.PrimeFaces;
 import com.web.coretix.appgeneral.GenericManagedBean;
 import org.springframework.context.annotation.Scope;
@@ -45,7 +46,7 @@ import com.web.coretix.constants.AccessRightConstants;
 public class UserAdministrationBean extends GenericManagedBean implements Serializable {
 
     private static final long serialVersionUID = 13543434334535435L;
-    private final Logger logger = Logger.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(UserAdministrationBean.class);
     private List<UserDetails> usersList = new ArrayList<>();
     
     private boolean isAddOperation;
@@ -706,3 +707,4 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         this.usersNeverLoggedinCount = usersNeverLoggedinCount;
     }
 }
+

@@ -13,12 +13,13 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 
 import com.web.coretix.appgeneral.GenericManagedBean;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PropertyUtils
 {
 
-    private static Logger logger = Logger.getLogger(PropertyUtils.class);
+    private static final Logger logger = LoggerFactory.getLogger(PropertyUtils.class);
     /**
      * The file to load
      */
@@ -350,9 +351,9 @@ public class PropertyUtils
         {
             Object key = iterator.next();
             Object value = properties.get(key);
-            logger.info(key + ": " + value);
+            logger.info("{}", key + ": " + value);
             genericManagedBean.addPropertyFileMap(key.toString(), value.toString());
-            logger.debug(genericManagedBean.getPropertyFileMap().toString());
+            logger.debug("{}", genericManagedBean.getPropertyFileMap().toString());
         }
     }
     /**
@@ -391,7 +392,7 @@ public class PropertyUtils
         }
         else
         {
-//            logger.info(propertyFileName + " file found");
+//            logger.info("{}", propertyFileName + " file found");
             try
             {
                 /**
@@ -426,3 +427,4 @@ public class PropertyUtils
         }
     }
 }
+

@@ -11,7 +11,8 @@ import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Named;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -24,7 +25,7 @@ import org.hibernate.Transaction;
 @Named
 public class UserAdministrationDAO  implements IUserAdministrationDAO{
     
-private final Logger logger = Logger.getLogger(getClass());
+private static final Logger logger = LoggerFactory.getLogger(UserAdministrationDAO.class);
     @Inject
     private SessionFactory sessionFactory;
 
@@ -63,13 +64,13 @@ private final Logger logger = Logger.getLogger(getClass());
     public UserDetails getUserDetail(int id) {
         Session session = getSessionFactory().getCurrentSession();
         Transaction trans = session.beginTransaction();
-logger.debug("User Id inside getUserDetail(int id):"+id);
+        logger.debug("User Id inside getUserDetail(int id):" + id);
         List<?> list = session
-                .createQuery("from UserDetails where id=?").setParameter(0, id)
+                .createQuery("from UserDetails where userId = ?1").setParameter(1, id)
                 .list();
 
         trans.commit();
-        return (UserDetails) list.get(0);
+        return list.isEmpty() ? null : (UserDetails) list.get(0);
     }
 
     public UserDetails getUserDetailEntityByUserName(String userName) {
@@ -77,11 +78,11 @@ logger.debug("User Id inside getUserDetail(int id):"+id);
         Transaction trans = session.beginTransaction();
 
         List<?> list = session
-                .createQuery("from UserDetails where user_name=?").setParameter(0, userName)
+                .createQuery("from UserDetails where userName = ?1").setParameter(1, userName)
                 .list();
 
         trans.commit();
-        return (UserDetails) list.get(0);
+        return list.isEmpty() ? null : (UserDetails) list.get(0);
     }
     
     public List<UserDetails> getUserDetailsList() {
@@ -100,7 +101,7 @@ logger.debug("User Id inside getUserDetail(int id):"+id);
         Session session = getSessionFactory().getCurrentSession();
         Transaction trans = session.beginTransaction();
 
-        String hql = "update UserDetails set password = :newPassword where user_id = :userId";
+        String hql = "update UserDetails set password = :newPassword where userId = :userId";
         int updatedEntities = session.createQuery(hql)
                 .setParameter("newPassword", newPassword)
                 .setParameter("userId", userId)
@@ -114,7 +115,7 @@ logger.debug("User Id inside getUserDetail(int id):"+id);
         Transaction trans = session.beginTransaction();
 
         List<?> list = session
-                .createQuery("from UserDetails where user_name = :username and password = :password")
+                .createQuery("from UserDetails where userName = :username and password = :password")
                 .setParameter("username", username)
                 .setParameter("password", password)
                 .list();
@@ -127,7 +128,7 @@ logger.debug("User Id inside getUserDetail(int id):"+id);
         Session session = getSessionFactory().getCurrentSession();
         Transaction trans = session.beginTransaction();
 
-        Long count = (Long) session.createQuery("select count(*) from UserDetails where status_id = 6").uniqueResult();
+        Long count = (Long) session.createQuery("select count(*) from UserDetails where status = 6").uniqueResult();
 
         trans.commit();
         return count.intValue();
@@ -137,7 +138,7 @@ logger.debug("User Id inside getUserDetail(int id):"+id);
         Session session = getSessionFactory().getCurrentSession();
         Transaction trans = session.beginTransaction();
 
-        Long count = (Long) session.createQuery("select count(*) from UserDetails where status_id = 1").uniqueResult();
+        Long count = (Long) session.createQuery("select count(*) from UserDetails where status = 1").uniqueResult();
 
         trans.commit();
         return count.intValue();
@@ -147,7 +148,7 @@ logger.debug("User Id inside getUserDetail(int id):"+id);
         Session session = getSessionFactory().getCurrentSession();
         Transaction trans = session.beginTransaction();
 
-        Long count = (Long) session.createQuery("select count(*) from UserDetails where status_id = 3").uniqueResult();
+        Long count = (Long) session.createQuery("select count(*) from UserDetails where status = 3").uniqueResult();
 
         trans.commit();
         return count.intValue();
@@ -157,7 +158,7 @@ logger.debug("User Id inside getUserDetail(int id):"+id);
         Session session = getSessionFactory().getCurrentSession();
         Transaction trans = session.beginTransaction();
 
-        String hql = "update UserDetails set status_id = :newStatus, last_successful_login = current_timestamp(), updated_at = current_timestamp() where user_id = :userId";
+        String hql = "update UserDetails set status = :newStatus, lastSuccessfulLogin = current_timestamp(), updatedAt = current_timestamp() where userId = :userId";
         int updatedEntities = session.createQuery(hql)
                 .setParameter("newStatus", newStatus)
                 .setParameter("userId", userId)
@@ -167,4 +168,7 @@ logger.debug("User Id inside getUserDetail(int id):"+id);
     }
 
 }
+
+
+
 
