@@ -20,8 +20,11 @@ import javax.inject.Named;
 
 import com.web.coretix.constants.SessionAttributes;
 import com.web.coretix.constants.UserActivityConstants;
+import com.web.coretix.general.NotificationService;
 import org.springframework.context.annotation.Scope;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 import javax.faces.application.FacesMessage;
@@ -46,6 +49,7 @@ public class BankDetailsBean implements Serializable {
 
     private static final long serialVersionUID = 13355L;
     private static final Logger logger = LoggerFactory.getLogger(BankDetailsBean.class);
+    private static final DateTimeFormatter NOTIFICATION_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd-MMM-yyyy hh:mm:ss a");
     private List<BankDetails> bankDetailsList = new ArrayList<>();
 
     private ResourceBundle resourceBundle;
@@ -192,6 +196,7 @@ public class BankDetailsBean implements Serializable {
         logger.debug("crossed validation !!!!!!!!!!!");
 
         BankDetails bankDetails = new BankDetails();
+        Integer organizationId = resolveCurrentOrganizationId();
         bankDetails.setBankAccountDetails(bankAccountDetails);
 
 
@@ -219,6 +224,8 @@ public class BankDetailsBean implements Serializable {
             logger.debug("addStatus : "+addStatus);
             switch (addStatus) {
                 case SUCCESSFUL:
+                    notifyActiveOrganizationUsers(organizationId,
+                            buildBankDetailsChangeNotification(bankDetails.getOrganization().getOrganizationName(), "added"));
                     fetchBankDetailsList();
                     PrimeFaces.current().executeScript("PF('manageBDDialog').hide()");
                     FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(resourceBundle.getString("bankDetailsAddedSuccessfullyLabel")));
@@ -246,6 +253,8 @@ public class BankDetailsBean implements Serializable {
             GeneralConstants updateStatus = bankDetailsService.updateBankDetails(userActivityTO, bankDetails);
             switch (updateStatus) {
                 case SUCCESSFUL:
+                    notifyActiveOrganizationUsers(organizationId,
+                            buildBankDetailsChangeNotification(bankDetails.getOrganization().getOrganizationName(), "edited"));
                     fetchBankDetailsList();
                     PrimeFaces.current().executeScript("PF('manageBDDialog').hide()");
                     FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(resourceBundle.getString("bankDetailsUpdatedSuccessfullyLabel")));
@@ -281,6 +290,7 @@ public class BankDetailsBean implements Serializable {
 
         logger.debug("bankAccountDetails : "+bankAccountDetails);
         logger.debug("bDOrganizationName : "+bDOrganizationName);
+        Integer organizationId = resolveCurrentOrganizationId();
 
 
         UserActivityTO userActivityTO = populateUserActivityTO();
@@ -290,6 +300,8 @@ public class BankDetailsBean implements Serializable {
         GeneralConstants deleteStatus = bankDetailsService.deleteBankDetails(userActivityTO, getSelectedBankDetails());
         switch (deleteStatus) {
             case SUCCESSFUL:
+                notifyActiveOrganizationUsers(organizationId,
+                        buildBankDetailsChangeNotification(bDOrganizationName, "deleted"));
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(resourceBundle.getString("bankDetailsRemovedSuccessfullyLabel")));
                 break;
             case ENTRY_NOT_EXISTS:
@@ -472,6 +484,48 @@ public class BankDetailsBean implements Serializable {
 
     public boolean isBankAccountDetailsError() {
         return bankAccountDetailsError;
+    }
+
+    private Integer resolveCurrentOrganizationId() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null) {
+            return null;
+        }
+
+        Object session = facesContext.getExternalContext().getSession(false);
+        if (!(session instanceof HttpSession)) {
+            return null;
+        }
+
+        Object organizationId = ((HttpSession) session).getAttribute(SessionAttributes.ORGANIZATION_ID.getName());
+        return organizationId instanceof Integer ? (Integer) organizationId : null;
+    }
+
+    private void notifyActiveOrganizationUsers(Integer organizationId, String message) {
+        NotificationService.sendGrowlMessageToOrganization(organizationId, message);
+    }
+
+    private String buildBankDetailsChangeNotification(String changedOrganizationName, String action) {
+        String actorUserName = resolveCurrentUserName();
+        String formattedDateTime = LocalDateTime.now().format(NOTIFICATION_DATE_TIME_FORMATTER);
+        return "Bank details for organization '" + changedOrganizationName + "' were " + action + " by " + actorUserName + " on " + formattedDateTime + ".";
+    }
+
+    private String resolveCurrentUserName() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null) {
+            return "Unknown user";
+        }
+
+        Object session = facesContext.getExternalContext().getSession(false);
+        if (!(session instanceof HttpSession)) {
+            return "Unknown user";
+        }
+
+        Object username = ((HttpSession) session).getAttribute(SessionAttributes.USERNAME.getName());
+        return username instanceof String && !((String) username).trim().isEmpty()
+                ? ((String) username).trim()
+                : "Unknown user";
     }
 }
 

@@ -19,10 +19,13 @@ import javax.inject.Named;
 import com.persist.coretix.modal.systemmanagement.States;
 import com.web.coretix.appgeneral.GenericManagedBean;
 import com.web.coretix.constants.*;
+import com.web.coretix.general.NotificationService;
 import org.primefaces.PrimeFaces;
 
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -53,6 +56,7 @@ public class OrganizationBean extends GenericManagedBean implements Serializable
 
     private static final long serialVersionUID = 1354353434334535435L;
     private static final Logger logger = LoggerFactory.getLogger(OrganizationBean.class);
+    private static final DateTimeFormatter NOTIFICATION_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd-MMM-yyyy hh:mm:ss a");
     private List<Organizations> organizationList = new ArrayList<>();
     private List<Countries> countriesList = new ArrayList<>();
     private ResourceBundle resourceBundle;
@@ -371,6 +375,7 @@ public class OrganizationBean extends GenericManagedBean implements Serializable
         logger.debug("crossed validation !!!!!!!!!!!");
 
         Organizations org = new Organizations();
+        Integer organizationId = resolveCurrentOrganizationId();
 
         org.setOrganizationName(organizationName);
         Countries addCountries = getCountriesByCountryName(organizationCountry);
@@ -421,6 +426,8 @@ public class OrganizationBean extends GenericManagedBean implements Serializable
             GeneralConstants updateStatus = organizationService.updateOrganization(userActivityTO, org);
             switch (updateStatus) {
                 case SUCCESSFUL:
+                    notifyActiveOrganizationUsers(organizationId,
+                            buildOrganizationChangeNotification(org.getOrganizationName(), "edited"));
                     FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(resourceBundle.getString("organizationUpdatedSuccessfullyLabel")));
                     break;
                 case ENTRY_ALREADY_EXISTS:
@@ -488,6 +495,7 @@ public class OrganizationBean extends GenericManagedBean implements Serializable
         logger.debug("organizationCity : " + organizationCity);
         logger.debug("organizationPhoneNumber : " + organizationPhoneNumber);
         logger.debug("organizationWebsite : " + organizationWebsite);
+        Integer organizationId = resolveCurrentOrganizationId();
         UserActivityTO userActivityTO = populateUserActivityTO();
         userActivityTO.setActivityType(UserActivityConstants.DELETE.getValue());
         userActivityTO.setActivityDescription(" Organization "+organizationName+" Deleted");
@@ -784,6 +792,48 @@ public class OrganizationBean extends GenericManagedBean implements Serializable
 
     public boolean isPhoneError() {
         return phoneError;
+    }
+
+    private Integer resolveCurrentOrganizationId() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null) {
+            return null;
+        }
+
+        Object session = facesContext.getExternalContext().getSession(false);
+        if (!(session instanceof HttpSession)) {
+            return null;
+        }
+
+        Object organizationId = ((HttpSession) session).getAttribute(SessionAttributes.ORGANIZATION_ID.getName());
+        return organizationId instanceof Integer ? (Integer) organizationId : null;
+    }
+
+    private void notifyActiveOrganizationUsers(Integer organizationId, String message) {
+        NotificationService.sendGrowlMessageToOrganization(organizationId, message);
+    }
+
+    private String buildOrganizationChangeNotification(String changedOrganizationName, String action) {
+        String actorUserName = resolveCurrentUserName();
+        String formattedDateTime = LocalDateTime.now().format(NOTIFICATION_DATE_TIME_FORMATTER);
+        return "Organization '" + changedOrganizationName + "' was " + action + " by " + actorUserName + " on " + formattedDateTime + ".";
+    }
+
+    private String resolveCurrentUserName() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null) {
+            return "Unknown user";
+        }
+
+        Object session = facesContext.getExternalContext().getSession(false);
+        if (!(session instanceof HttpSession)) {
+            return "Unknown user";
+        }
+
+        Object username = ((HttpSession) session).getAttribute(SessionAttributes.USERNAME.getName());
+        return username instanceof String && !((String) username).trim().isEmpty()
+                ? ((String) username).trim()
+                : "Unknown user";
     }
 
 }

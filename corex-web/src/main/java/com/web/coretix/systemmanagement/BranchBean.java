@@ -14,9 +14,12 @@ import javax.inject.Named;
 
 import com.web.coretix.constants.SessionAttributes;
 import com.web.coretix.constants.UserActivityConstants;
+import com.web.coretix.general.NotificationService;
 import org.primefaces.PrimeFaces;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -42,6 +45,7 @@ public class BranchBean implements Serializable {
 
     private static final long serialVersionUID = 1354353434334535435L;
     private static final Logger logger = LoggerFactory.getLogger(BranchBean.class);
+    private static final DateTimeFormatter NOTIFICATION_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd-MMM-yyyy hh:mm:ss a");
     private List<Branches> branchesList = new ArrayList<>();
 
     private ResourceBundle resourceBundle;
@@ -301,6 +305,7 @@ public class BranchBean implements Serializable {
         logger.debug("crossed validation !!!!!!!!!!!");
 
         Branches branches = new Branches();
+        Integer organizationId = resolveCurrentOrganizationId();
 
         branches.setBranchName(branchName);
 
@@ -343,6 +348,8 @@ public class BranchBean implements Serializable {
             logger.debug("addStatus : "+addStatus);
             switch (addStatus) {
                 case SUCCESSFUL:
+                    notifyActiveOrganizationUsers(organizationId,
+                            buildBranchChangeNotification(branches.getBranchName(), "added"));
                     FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(resourceBundle.getString("branchAddedSuccessfullyLabel")));
                     break;
                 case ENTRY_ALREADY_EXISTS:
@@ -364,6 +371,8 @@ public class BranchBean implements Serializable {
             GeneralConstants updateStatus = branchService.updateBranch(userActivityTO, branches);
             switch (updateStatus) {
                 case SUCCESSFUL:
+                    notifyActiveOrganizationUsers(organizationId,
+                            buildBranchChangeNotification(branches.getBranchName(), "edited"));
                     FacesContext.getCurrentInstance().addMessage(null, new FacesMessage( resourceBundle.getString("branchUpdatedSuccessfullyLabel")));
                     break;
                 case ENTRY_ALREADY_EXISTS:
@@ -469,6 +478,7 @@ public class BranchBean implements Serializable {
         logger.debug("organizationCity : "+branchCity);
         logger.debug("organizationPhoneNumber : "+branchPhoneNumber);
         logger.debug("organizationWebsite : "+branchEmail);
+        Integer organizationId = resolveCurrentOrganizationId();
         UserActivityTO userActivityTO = populateUserActivityTO();
         userActivityTO.setActivityType(UserActivityConstants.DELETE.getValue());
         userActivityTO.setActivityDescription(" Branch "+branchName+" Deleted");
@@ -476,6 +486,8 @@ public class BranchBean implements Serializable {
         GeneralConstants deleteStatus = branchService.deleteBranch(userActivityTO, getSelectedBranch());
         switch (deleteStatus) {
             case SUCCESSFUL:
+                notifyActiveOrganizationUsers(organizationId,
+                        buildBranchChangeNotification(branchName, "deleted"));
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage( resourceBundle.getString("branchRemovedSuccessfullyLabel")));
                 break;
             case ENTRY_NOT_EXISTS:
@@ -734,6 +746,48 @@ public class BranchBean implements Serializable {
 
     public boolean isEmailError() {
         return emailError;
+    }
+
+    private Integer resolveCurrentOrganizationId() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null) {
+            return null;
+        }
+
+        Object session = facesContext.getExternalContext().getSession(false);
+        if (!(session instanceof HttpSession)) {
+            return null;
+        }
+
+        Object organizationId = ((HttpSession) session).getAttribute(SessionAttributes.ORGANIZATION_ID.getName());
+        return organizationId instanceof Integer ? (Integer) organizationId : null;
+    }
+
+    private void notifyActiveOrganizationUsers(Integer organizationId, String message) {
+        NotificationService.sendGrowlMessageToOrganization(organizationId, message);
+    }
+
+    private String buildBranchChangeNotification(String changedBranchName, String action) {
+        String actorUserName = resolveCurrentUserName();
+        String formattedDateTime = LocalDateTime.now().format(NOTIFICATION_DATE_TIME_FORMATTER);
+        return "Branch '" + changedBranchName + "' was " + action + " by " + actorUserName + " on " + formattedDateTime + ".";
+    }
+
+    private String resolveCurrentUserName() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null) {
+            return "Unknown user";
+        }
+
+        Object session = facesContext.getExternalContext().getSession(false);
+        if (!(session instanceof HttpSession)) {
+            return "Unknown user";
+        }
+
+        Object username = ((HttpSession) session).getAttribute(SessionAttributes.USERNAME.getName());
+        return username instanceof String && !((String) username).trim().isEmpty()
+                ? ((String) username).trim()
+                : "Unknown user";
     }
 
 }

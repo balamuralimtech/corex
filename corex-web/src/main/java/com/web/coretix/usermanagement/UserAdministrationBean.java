@@ -20,11 +20,13 @@ import com.module.coretix.systemmanagement.IStateService;
 import com.module.coretix.usermanagement.IRoleAdministrationService;
 import com.module.coretix.usermanagement.IUserAdministrationService;
 import com.web.coretix.constants.LoginConstants;
+import com.web.coretix.constants.SessionAttributes;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.primefaces.PrimeFaces;
 import com.web.coretix.appgeneral.GenericManagedBean;
+import com.web.coretix.general.NotificationService;
 import org.springframework.context.annotation.Scope;
 
 import javax.faces.application.FacesMessage;
@@ -32,10 +34,13 @@ import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import com.web.coretix.constants.AccessRightConstants;
+import javax.servlet.http.HttpSession;
 
 /**
  *
@@ -47,6 +52,7 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
 
     private static final long serialVersionUID = 13543434334535435L;
     private static final Logger logger = LoggerFactory.getLogger(UserAdministrationBean.class);
+    private static final DateTimeFormatter NOTIFICATION_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd-MMM-yyyy hh:mm:ss a");
     private List<UserDetails> usersList = new ArrayList<>();
     
     private boolean isAddOperation;
@@ -399,11 +405,14 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         userDetails.setAccessRight(AccessRightConstants.getByValue(getAccessRight()).getId());
         
         userDetails.setAddress(getAddress());
+        Integer organizationId = resolveCurrentOrganizationId();
 
         if (isAddOperation) {
             userDetails.setStatus(LoginConstants.NEVER_LOGIN_BEFORE.getId());
             logger.debug("if (isAddOperation) {");
             userAdministrationService.addUserDetail(userDetails);
+            notifyActiveOrganizationUsers(organizationId,
+                    buildUserChangeNotification(userDetails.getUserName(), "added"));
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("User Added"));
         } else {
             logger.debug("else  edit operation !!");
@@ -411,6 +420,8 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
             //country.setId(selectedCountry.getId());
             userDetails.setUserId(getSelectedUserDetail().getUserId());
             userAdministrationService.updateUserDetail(userDetails);
+            notifyActiveOrganizationUsers(organizationId,
+                    buildUserChangeNotification(userDetails.getUserName(), "edited"));
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("User Updated"));
         }
 
@@ -436,7 +447,11 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         logger.debug("inside delete user ");
         logger.debug("selectedUserDetail.getId() : " + getSelectedUserDetail().getUserId());
 
+        String deletedUserName = selectedUserDetail != null ? selectedUserDetail.getUserName() : "Unknown user";
+        Integer organizationId = resolveCurrentOrganizationId();
         userAdministrationService.deleteUserDetail(selectedUserDetail);
+        notifyActiveOrganizationUsers(organizationId,
+                buildUserChangeNotification(deletedUserName, "deleted"));
         fetchUserDetailsList();
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("User Removed"));
         PrimeFaces.current().ajax().update("userform:messages", "userform:usersDataTableId");
@@ -705,6 +720,48 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
 
     public void setUsersNeverLoggedinCount(int usersNeverLoggedinCount) {
         this.usersNeverLoggedinCount = usersNeverLoggedinCount;
+    }
+
+    private Integer resolveCurrentOrganizationId() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null) {
+            return null;
+        }
+
+        Object session = facesContext.getExternalContext().getSession(false);
+        if (!(session instanceof HttpSession)) {
+            return null;
+        }
+
+        Object organizationId = ((HttpSession) session).getAttribute(SessionAttributes.ORGANIZATION_ID.getName());
+        return organizationId instanceof Integer ? (Integer) organizationId : null;
+    }
+
+    private void notifyActiveOrganizationUsers(Integer organizationId, String message) {
+        NotificationService.sendGrowlMessageToOrganization(organizationId, message);
+    }
+
+    private String buildUserChangeNotification(String changedUserName, String action) {
+        String actorUserName = resolveCurrentUserName();
+        String formattedDateTime = LocalDateTime.now().format(NOTIFICATION_DATE_TIME_FORMATTER);
+        return "User '" + changedUserName + "' was " + action + " by " + actorUserName + " on " + formattedDateTime + ".";
+    }
+
+    private String resolveCurrentUserName() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null) {
+            return "Unknown user";
+        }
+
+        Object session = facesContext.getExternalContext().getSession(false);
+        if (!(session instanceof HttpSession)) {
+            return "Unknown user";
+        }
+
+        Object username = ((HttpSession) session).getAttribute(SessionAttributes.USERNAME.getName());
+        return username instanceof String && !((String) username).trim().isEmpty()
+                ? ((String) username).trim()
+                : "Unknown user";
     }
 }
 

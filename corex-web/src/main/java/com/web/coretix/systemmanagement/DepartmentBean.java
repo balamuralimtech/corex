@@ -18,9 +18,12 @@ import javax.inject.Named;
 
 import com.web.coretix.constants.SessionAttributes;
 import com.web.coretix.constants.UserActivityConstants;
+import com.web.coretix.general.NotificationService;
 import org.springframework.context.annotation.Scope;
 import com.module.coretix.systemmanagement.IDepartmentService;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 import javax.faces.application.FacesMessage;
@@ -45,6 +48,7 @@ public class DepartmentBean implements Serializable {
 
     private static final long serialVersionUID = 131435345345354355L;
     private static final Logger logger = LoggerFactory.getLogger(DepartmentBean.class);
+    private static final DateTimeFormatter NOTIFICATION_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd-MMM-yyyy hh:mm:ss a");
     private List<Departments> departmentList = new ArrayList<>();
 
     private ResourceBundle resourceBundle;
@@ -220,6 +224,7 @@ public class DepartmentBean implements Serializable {
         logger.debug("crossed validation !!!!!!!!!!!");
 
         Departments departments = new Departments();
+        Integer organizationId = resolveCurrentOrganizationId();
 
         departments.setDepartmentName(departmentName);
         
@@ -244,6 +249,8 @@ public class DepartmentBean implements Serializable {
             logger.debug("addStatus : "+addStatus);
             switch (addStatus) {
                 case SUCCESSFUL:
+                    notifyActiveOrganizationUsers(organizationId,
+                            buildDepartmentChangeNotification(departments.getDepartmentName(), "added"));
                     FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(resourceBundle.getString("departmentAddedSuccessfullyLabel")));
                     break;
                 case ENTRY_ALREADY_EXISTS:
@@ -266,6 +273,8 @@ public class DepartmentBean implements Serializable {
             GeneralConstants updateStatus = departmentService.updateDepartment(userActivityTO, departments);
             switch (updateStatus) {
                 case SUCCESSFUL:
+                    notifyActiveOrganizationUsers(organizationId,
+                            buildDepartmentChangeNotification(departments.getDepartmentName(), "edited"));
                     FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(resourceBundle.getString("departmentUpdatedSuccessfullyLabel")));
                     break;
                 case ENTRY_ALREADY_EXISTS:
@@ -303,6 +312,7 @@ public class DepartmentBean implements Serializable {
         logger.debug("departmentOrganizationName : "+getDepartmentOrganizationName());
         logger.debug("organizationPhoneNumber : "+departmentPhoneNumber);
         logger.debug("organizationWebsite : "+departmentEmail);
+        Integer organizationId = resolveCurrentOrganizationId();
 
         UserActivityTO userActivityTO = populateUserActivityTO();
         userActivityTO.setActivityType(UserActivityConstants.DELETE.getValue());
@@ -311,6 +321,8 @@ public class DepartmentBean implements Serializable {
         GeneralConstants deleteStatus = departmentService.deleteDepartment(userActivityTO, getSelectedDepartment());
         switch (deleteStatus) {
             case SUCCESSFUL:
+                notifyActiveOrganizationUsers(organizationId,
+                        buildDepartmentChangeNotification(departmentName, "deleted"));
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(resourceBundle.getString("departmentRemovedSuccessfullyLabel")));
                 break;
             case ENTRY_NOT_EXISTS:
@@ -514,6 +526,48 @@ public class DepartmentBean implements Serializable {
 
     public boolean isEmailError() {
         return emailError;
+    }
+
+    private Integer resolveCurrentOrganizationId() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null) {
+            return null;
+        }
+
+        Object session = facesContext.getExternalContext().getSession(false);
+        if (!(session instanceof HttpSession)) {
+            return null;
+        }
+
+        Object organizationId = ((HttpSession) session).getAttribute(SessionAttributes.ORGANIZATION_ID.getName());
+        return organizationId instanceof Integer ? (Integer) organizationId : null;
+    }
+
+    private void notifyActiveOrganizationUsers(Integer organizationId, String message) {
+        NotificationService.sendGrowlMessageToOrganization(organizationId, message);
+    }
+
+    private String buildDepartmentChangeNotification(String changedDepartmentName, String action) {
+        String actorUserName = resolveCurrentUserName();
+        String formattedDateTime = LocalDateTime.now().format(NOTIFICATION_DATE_TIME_FORMATTER);
+        return "Department '" + changedDepartmentName + "' was " + action + " by " + actorUserName + " on " + formattedDateTime + ".";
+    }
+
+    private String resolveCurrentUserName() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null) {
+            return "Unknown user";
+        }
+
+        Object session = facesContext.getExternalContext().getSession(false);
+        if (!(session instanceof HttpSession)) {
+            return "Unknown user";
+        }
+
+        Object username = ((HttpSession) session).getAttribute(SessionAttributes.USERNAME.getName());
+        return username instanceof String && !((String) username).trim().isEmpty()
+                ? ((String) username).trim()
+                : "Unknown user";
     }
 
 }

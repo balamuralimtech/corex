@@ -18,9 +18,12 @@ import javax.inject.Named;
 
 import com.web.coretix.constants.SessionAttributes;
 import com.web.coretix.constants.UserActivityConstants;
+import com.web.coretix.general.NotificationService;
 import org.springframework.context.annotation.Scope;
 import com.module.coretix.systemmanagement.IDesignationService;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 import javax.faces.application.FacesMessage;
@@ -45,6 +48,7 @@ public class DesignationBean implements Serializable {
 
     private static final long serialVersionUID = 135415345345354355L;
     private static final Logger logger = LoggerFactory.getLogger(DesignationBean.class);
+    private static final DateTimeFormatter NOTIFICATION_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd-MMM-yyyy hh:mm:ss a");
     private List<Designations> designationList = new ArrayList<>();
 
     private ResourceBundle resourceBundle;
@@ -184,6 +188,7 @@ public class DesignationBean implements Serializable {
         logger.debug("crossed validation !!!!!!!!!!!");
 
         Designations designation = new Designations();
+        Integer organizationId = resolveCurrentOrganizationId();
 
         designation.setDesignationName(designationName);
 
@@ -207,6 +212,8 @@ public class DesignationBean implements Serializable {
             logger.debug("addStatus : "+addStatus);
             switch (addStatus) {
                 case SUCCESSFUL:
+                    notifyActiveOrganizationUsers(organizationId,
+                            buildDesignationChangeNotification(designation.getDesignationName(), "added"));
                     FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(resourceBundle.getString("designationAddedSuccessfullyLabel")));
                     break;
                 case ENTRY_ALREADY_EXISTS:
@@ -231,6 +238,8 @@ public class DesignationBean implements Serializable {
 
             switch (updateStatus) {
                 case SUCCESSFUL:
+                    notifyActiveOrganizationUsers(organizationId,
+                            buildDesignationChangeNotification(designation.getDesignationName(), "edited"));
                     FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(resourceBundle.getString("designationUpdatedSuccessfullyLabel")));
                     break;
                 case ENTRY_ALREADY_EXISTS:
@@ -286,6 +295,7 @@ public class DesignationBean implements Serializable {
 
         designationName = getSelectedDesignation().getDesignationName();
         setDesignationOrganizationName(getSelectedDesignation().getOrganization().getOrganizationName());
+        Integer organizationId = resolveCurrentOrganizationId();
         
         logger.debug("departmentName : "+designationName);
         logger.debug("departmentOrganizationName : "+getDesignationOrganizationName());
@@ -296,6 +306,8 @@ public class DesignationBean implements Serializable {
         GeneralConstants deleteStatus = designationService.deleteDesignation(userActivityTO, getSelectedDesignation());
         switch (deleteStatus) {
             case SUCCESSFUL:
+                notifyActiveOrganizationUsers(organizationId,
+                        buildDesignationChangeNotification(designationName, "deleted"));
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(resourceBundle.getString("designationRemovedSuccessfullyLabel")));
                 break;
             case ENTRY_NOT_EXISTS:
@@ -435,6 +447,48 @@ public class DesignationBean implements Serializable {
 
     public boolean isOrganizationError() {
         return organizationError;
+    }
+
+    private Integer resolveCurrentOrganizationId() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null) {
+            return null;
+        }
+
+        Object session = facesContext.getExternalContext().getSession(false);
+        if (!(session instanceof HttpSession)) {
+            return null;
+        }
+
+        Object organizationId = ((HttpSession) session).getAttribute(SessionAttributes.ORGANIZATION_ID.getName());
+        return organizationId instanceof Integer ? (Integer) organizationId : null;
+    }
+
+    private void notifyActiveOrganizationUsers(Integer organizationId, String message) {
+        NotificationService.sendGrowlMessageToOrganization(organizationId, message);
+    }
+
+    private String buildDesignationChangeNotification(String changedDesignationName, String action) {
+        String actorUserName = resolveCurrentUserName();
+        String formattedDateTime = LocalDateTime.now().format(NOTIFICATION_DATE_TIME_FORMATTER);
+        return "Designation '" + changedDesignationName + "' was " + action + " by " + actorUserName + " on " + formattedDateTime + ".";
+    }
+
+    private String resolveCurrentUserName() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null) {
+            return "Unknown user";
+        }
+
+        Object session = facesContext.getExternalContext().getSession(false);
+        if (!(session instanceof HttpSession)) {
+            return "Unknown user";
+        }
+
+        Object username = ((HttpSession) session).getAttribute(SessionAttributes.USERNAME.getName());
+        return username instanceof String && !((String) username).trim().isEmpty()
+                ? ((String) username).trim()
+                : "Unknown user";
     }
 
 }

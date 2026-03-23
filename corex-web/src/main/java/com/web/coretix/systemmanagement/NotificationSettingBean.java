@@ -15,8 +15,11 @@ import javax.inject.Named;
 
 import com.web.coretix.constants.SessionAttributes;
 import com.web.coretix.constants.UserActivityConstants;
+import com.web.coretix.general.NotificationService;
 import org.primefaces.PrimeFaces;
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -40,6 +43,7 @@ public class NotificationSettingBean implements Serializable {
 
     private static final long serialVersionUID = 135435341334535432L;
     private static final Logger logger = LoggerFactory.getLogger(NotificationSettingBean.class);
+    private static final DateTimeFormatter NOTIFICATION_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd-MMM-yyyy hh:mm:ss a");
 
     private List<NotificationSettings> notificationSettingList = new ArrayList<>();
     private boolean isAddOperation;
@@ -302,6 +306,7 @@ public class NotificationSettingBean implements Serializable {
         notificationSetting.setSmtpStarttlsEnable(isSmtpStarttlsEnable());
 
         UserActivityTO userActivityTO = populateUserActivityTO();
+        Integer organizationId = resolveCurrentOrganizationId();
 
         if (isIsAddOperation()) {
             logger.debug("if (isAddOperation) {");
@@ -311,6 +316,8 @@ public class NotificationSettingBean implements Serializable {
             GeneralConstants addStatus = notificationSettingService.addNotificationSetting(userActivityTO, notificationSetting);
             switch (addStatus) {
                 case SUCCESSFUL:
+                    notifyActiveOrganizationUsers(organizationId,
+                            buildNotificationSettingChangeNotification(notificationSetting.getOrganization().getOrganizationName(), "added"));
                     FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("NotificationSetting Added Successfully"));
                     break;
                 case ENTRY_ALREADY_EXISTS:
@@ -332,6 +339,8 @@ public class NotificationSettingBean implements Serializable {
             GeneralConstants updateStatus = notificationSettingService.updateNotificationSetting(userActivityTO, notificationSetting);
             switch (updateStatus) {
                 case SUCCESSFUL:
+                    notifyActiveOrganizationUsers(organizationId,
+                            buildNotificationSettingChangeNotification(notificationSetting.getOrganization().getOrganizationName(), "edited"));
                     FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("NotificationSetting Updated Successfully"));
                     break;
                 case ENTRY_ALREADY_EXISTS:
@@ -393,6 +402,8 @@ public class NotificationSettingBean implements Serializable {
         smtpHost = getSelectedNotificationSetting().getSmtpHost();
         smtpPort = getSelectedNotificationSetting().getSmtpPort();
         smtpStarttlsEnable = getSelectedNotificationSetting().isSmtpStarttlsEnable();
+        organizationName = getSelectedNotificationSetting().getOrganization().getOrganizationName();
+        Integer organizationId = resolveCurrentOrganizationId();
 
         logger.debug("EmailId:"+emailId);
         logger.debug("Password:"+password);
@@ -407,6 +418,8 @@ public class NotificationSettingBean implements Serializable {
         GeneralConstants deleteStatus = notificationSettingService.deleteNotificationSetting(userActivityTO, getSelectedNotificationSetting());
         switch (deleteStatus) {
             case SUCCESSFUL:
+                notifyActiveOrganizationUsers(organizationId,
+                        buildNotificationSettingChangeNotification(organizationName, "deleted"));
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Organization Removed Successfully"));
                 break;
             case ENTRY_NOT_EXISTS:
@@ -561,6 +574,48 @@ public class NotificationSettingBean implements Serializable {
 
     public boolean isSmtpPortError() {
         return smtpPortError;
+    }
+
+    private Integer resolveCurrentOrganizationId() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null) {
+            return null;
+        }
+
+        Object session = facesContext.getExternalContext().getSession(false);
+        if (!(session instanceof HttpSession)) {
+            return null;
+        }
+
+        Object organizationId = ((HttpSession) session).getAttribute(SessionAttributes.ORGANIZATION_ID.getName());
+        return organizationId instanceof Integer ? (Integer) organizationId : null;
+    }
+
+    private void notifyActiveOrganizationUsers(Integer organizationId, String message) {
+        NotificationService.sendGrowlMessageToOrganization(organizationId, message);
+    }
+
+    private String buildNotificationSettingChangeNotification(String changedOrganizationName, String action) {
+        String actorUserName = resolveCurrentUserName();
+        String formattedDateTime = LocalDateTime.now().format(NOTIFICATION_DATE_TIME_FORMATTER);
+        return "Notification setting for organization '" + changedOrganizationName + "' was " + action + " by " + actorUserName + " on " + formattedDateTime + ".";
+    }
+
+    private String resolveCurrentUserName() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null) {
+            return "Unknown user";
+        }
+
+        Object session = facesContext.getExternalContext().getSession(false);
+        if (!(session instanceof HttpSession)) {
+            return "Unknown user";
+        }
+
+        Object username = ((HttpSession) session).getAttribute(SessionAttributes.USERNAME.getName());
+        return username instanceof String && !((String) username).trim().isEmpty()
+                ? ((String) username).trim()
+                : "Unknown user";
     }
 
 }
