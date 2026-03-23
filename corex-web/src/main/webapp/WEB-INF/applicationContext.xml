@@ -10,12 +10,16 @@
         http://www.springframework.org/schema/tx/spring-tx.xsd">
 
 
+    <bean class="com.web.coretix.config.EncryptablePropertyConfigurer">
+        <property name="location" value="classpath:jdbc.properties" />
+    </bean>
+
     <bean id="DataSource"
               class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-        <property name="driverClassName" value="com.mysql.cj.jdbc.Driver" />
-        <property name="url" value="jdbc:mysql://localhost:3306/corex?zeroDateTimeBehavior=convertToNull" /> <!--?zeroDateTimeBehavior=convertToNull-->
-        <property name="username" value="root" />
-        <property name="password" value="Password123" />
+        <property name="driverClassName" value="${jdbc.driverClassName}" />
+        <property name="url" value="${jdbc.url}" />
+        <property name="username" value="${jdbc.username}" />
+        <property name="password" value="${jdbc.password}" />
     </bean>
 
     <!-- Session Factory Declaration -->
@@ -51,9 +55,9 @@
         <property name="hibernateProperties">
             <props>
                 <prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
-                <prop key="hibernate.show_sql">true</prop>
+                <prop key="hibernate.show_sql">false</prop>
                 <prop key="hibernate.connection.pool_size">10</prop>
-                <prop key="show_sql">true</prop>
+                <prop key="show_sql">false</prop>
                 <prop key="hibernate.current_session_context_class">thread</prop>
             </props>
         </property>

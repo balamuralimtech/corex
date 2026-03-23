@@ -16,7 +16,7 @@
             <meta name="theme-color" content="#{guestPreferences.themeColors[guestPreferences.theme]}" />
             <link rel="shortcut icon" href="#{request.contextPath}/resources/demo/images/coretix/coretixfavicon.png" type="image/x-icon" />
         </f:facet>
-        <title><ui:insert name="title">coretix</ui:insert></title>
+        <title>#{appInfo.appName}</title>
         <h:outputScript name="js/prism.js" library="avalon-layout"/>
         <h:outputScript name="js/layout.js" library="avalon-layout" />
         <h:outputScript name="highcharts/highcharts.js" library="avalon-layout"/>
