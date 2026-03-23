@@ -22,7 +22,7 @@ public class SessionExpiryFilter implements Filter {
 
         // Check if the session is null or expired
         if (session == null || session.getAttribute(SessionAttributes.USERNAME.getName()) == null) {
-            res.sendRedirect(req.getContextPath() + "/home.xhtml");
+            res.sendRedirect(req.getContextPath() + "/home");
         } else {
             chain.doFilter(request, response); // Continue with the request if session is valid
         }

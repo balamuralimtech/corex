@@ -80,6 +80,8 @@ public class RoleAdministrationBean implements Serializable {
         recordsCount = 0;
 
         roleName = "";
+        selectedRole = new Roles();
+        impactedActiveRoleUsers.clear();
 
         if (CollectionUtils.isNotEmpty(rolesList)) {
             logger.debug("inside  organizationList clear");
@@ -130,6 +132,7 @@ public class RoleAdministrationBean implements Serializable {
         roleSubModuleBean.setSubModule(subModuleName);
         roleSubModuleBean.setRolePrivilegeBeanList(
                 new ArrayList<>(PrivilegeMatrix.getAllowedPrivilegeValues(subModuleName)));
+        roleSubModuleBean.setSelectedPrivilegeList(new ArrayList<>());
 
         logger.debug("roleSubModuleBean.getSubModule() : " + roleSubModuleBean.getSubModule());
         logger.debug("roleSubModuleBean.getRolePrivilegeBeanList() size : "
@@ -332,11 +335,14 @@ public class RoleAdministrationBean implements Serializable {
         logger.debug("entered into add button action !!!");
         isAddOperation = true;
         resetFields();
+        selectedRole = new Roles();
+        impactedActiveRoleUsers.clear();
         if (CollectionUtils.isNotEmpty(roleModuleList)) {
             logger.debug("inside  organizationList clear");
             roleModuleList.clear();
         }
         populateRoleDefintionNewAddList();
+        PrimeFaces.current().resetInputs("form:addEditOrgPanelId");
     }
 
     public void searchButtonAction() {

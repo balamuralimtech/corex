@@ -105,7 +105,11 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
                 setSessionAttributes(userDetails);
 
                 logger.info("User login successful: " + username);
-                return "homepage";
+                FacesContext facesContext = FacesContext.getCurrentInstance();
+                String contextPath = facesContext.getExternalContext().getRequestContextPath();
+                facesContext.getExternalContext().redirect(contextPath + "/home");
+                facesContext.responseComplete();
+                return null;
             } else {
                 userActivities.setUserName(username);
                 userActivities.setActivityDescription(LoginConstants.FAILED_LOGIN.getValue());
@@ -239,6 +243,11 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
 
     public void initializePageAttributes() {
         logger.debug("entered into LoginBean initializePageAttributes !!!");
+
+        if (FacesContext.getCurrentInstance().isPostback()) {
+            logger.debug("postback detected, skipping login page reset");
+            return;
+        }
 
         username = null;
         password = null;

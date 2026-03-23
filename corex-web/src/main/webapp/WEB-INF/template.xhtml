@@ -271,7 +271,7 @@
             <p:poll interval="5" listener="#{guestPreferences.checkForGrowlMessage}" update="growl" global="false"/>
             <p:remoteCommand name="roleUpdateForceLogout"
                              actionListener="#{guestPreferences.handleForcedRoleUpdateLogout}"
-                             oncomplete="window.location='#{request.contextPath}/login2.xhtml';" />
+                             oncomplete="window.location='#{request.contextPath}/landing';" />
         </h:form>
 
         <p:dialog header="Role Update Notification" widgetVar="forcedRoleUpdateDialog" modal="true"

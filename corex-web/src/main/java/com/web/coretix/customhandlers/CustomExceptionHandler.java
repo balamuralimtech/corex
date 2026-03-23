@@ -17,8 +17,8 @@ import org.apache.log4j.Logger;
 public class CustomExceptionHandler extends ExceptionHandlerWrapper {
 
     private static final Logger logger = Logger.getLogger(CustomExceptionHandler.class);
-    private static final String SESSION_TIMEOUT_PAGE = "/pages/errorandwarningpages/408sessiontimeout.xhtml";
-    private static final String INTERNAL_SERVER_ERROR_PAGE = "/pages/errorandwarningpages/500internalservererror.xhtml";
+    private static final String SESSION_TIMEOUT_PAGE = "/session-timeout";
+    private static final String INTERNAL_SERVER_ERROR_PAGE = "/internal-server-error";
     private ExceptionHandler wrapped;
 
     public CustomExceptionHandler(ExceptionHandler wrapped) {

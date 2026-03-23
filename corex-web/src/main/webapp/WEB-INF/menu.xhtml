@@ -69,51 +69,51 @@
                 <pu:menu widgetVar="avalonMenuWidget" styleClass="layout-main-menu">
                     <p:submenu id="m_usermanagement" label="#{msg['userManagementLabel']}" icon="pi pi-fw pi-users" rendered="#{guestPreferences.userManagementRendered}">
                         <p:menuitem id="m_userprofile" value="#{msg['userProfileLabel']}" icon="pi pi-fw pi-user"
-                                    outcome="/pages/usermanagement/userprofile"/>
+                                    url="#{request.contextPath}/user-profile"/>
                         <p:menuitem id="m_useractivity" value="#{msg['userActivityLabel']}"
-                                    icon="pi pi-fw pi-align-justify" outcome="/pages/usermanagement/useractivity"/>
+                                    icon="pi pi-fw pi-align-justify" url="#{request.contextPath}/user-activity"/>
                         <p:menuitem id="m_roleadministration" value="#{msg['roleAdministrationLabel']}"
-                                    icon="pi pi-fw pi-briefcase" outcome="/pages/usermanagement/roleAdministration"/>
+                                    icon="pi pi-fw pi-briefcase" url="#{request.contextPath}/manage-role"/>
                         <p:menuitem id="m_changepassword" value="#{msg['changePasswordLabel']}" icon="pi pi-fw pi-key"
-                                    outcome="/pages/usermanagement/changePassword"/>
+                                    url="#{request.contextPath}/change-password"/>
                         <p:menuitem id="m_useradministration" value="#{msg['userAdministrationLabel']}"
-                                    icon="pi pi-fw pi-id-card" outcome="/pages/usermanagement/useradministration"/>
+                                    icon="pi pi-fw pi-id-card" url="#{request.contextPath}/manage-user"/>
                     </p:submenu>
                     <p:submenu id="m_systemmanagement" label="#{msg['systemManagementLabel']}" icon="pi pi-fw pi-cog" rendered="#{guestPreferences.systemManagementRendered}">
                         <p:menuitem id="m_organization" value="#{msg['organizationLabel']}" icon="pi pi-fw pi-building"
-                                    outcome="/pages/systemmanagement/organization"/>
+                                    url="#{request.contextPath}/organization"/>
                         <p:menuitem id="m_branch" value="#{msg['branchLabel']}" icon="pi pi-fw pi-map-marker"
-                                    outcome="/pages/systemmanagement/branch"/>
+                                    url="#{request.contextPath}/branch"/>
                         <p:menuitem id="m_department" value="#{msg['departmentLabel']}" icon="pi pi-fw pi-sitemap"
-                                    outcome="/pages/systemmanagement/department"/>
+                                    url="#{request.contextPath}/department"/>
                         <p:menuitem id="m_designation" value="#{msg['designationLabel']}" icon="pi pi-fw pi-id-card"
-                                    outcome="/pages/systemmanagement/designation"/>
+                                    url="#{request.contextPath}/designation"/>
                         <p:menuitem id="m_country" value="#{msg['countryLabel']}" icon="pi pi-fw pi-flag"
-                                    outcome="/pages/systemmanagement/country"/>
+                                    url="#{request.contextPath}/country"/>
                         <p:menuitem id="m_state" value="#{msg['stateLabel']}" icon="pi pi-fw pi-flag"
-                                    outcome="/pages/systemmanagement/state"/>
+                                    url="#{request.contextPath}/state"/>
                         <p:menuitem id="m_city" value="#{msg['cityLabel']}" icon="pi pi-fw pi-flag"
-                                    outcome="/pages/systemmanagement/city"/>
+                                    url="#{request.contextPath}/city"/>
                         <p:menuitem id="m_region" value="#{msg['regionLabel']}" icon="pi pi-fw pi-flag"
-                                    outcome="/pages/systemmanagement/region"/>
+                                    url="#{request.contextPath}/region"/>
                         <p:menuitem id="m_subregion" value="#{msg['subregionLabel']}" icon="pi pi-fw pi-flag"
-                                    outcome="/pages/systemmanagement/subregion"/>
+                                    url="#{request.contextPath}/subregion"/>
                         <p:menuitem id="m_currency" value="#{msg['currencyLabel']}" icon="pi pi-fw pi-dollar"
-                                    outcome="/pages/systemmanagement/currency"/>
+                                    url="#{request.contextPath}/currency"/>
                         <p:menuitem id="m_bankdetails" value="Bank Details" icon="pi pi-fw pi-dollar"
-                                    outcome="/pages/systemmanagement/bankdetails"/>
+                                    url="#{request.contextPath}/bank-details"/>
                         <p:menuitem id="m_notificationsettings" value="#{msg['notificationSettingsLabel']}"
-                                    icon="pi pi-fw pi-at" outcome="/pages/systemmanagement/notificationsettings"/>
+                                    icon="pi pi-fw pi-at" url="#{request.contextPath}/notification-settings"/>
                     </p:submenu>
                     <p:submenu id="m_license" label="#{msg['licenseLabel']}" icon="pi pi-fw pi-ticket" rendered="#{guestPreferences.licenseRendered}">
                         <p:menuitem id="m_licensepage" value="#{msg['licenseLabel']}" icon="pi pi-fw pi-file-o"
-                                    outcome="/pages/license/license"/>
+                                    url="#{request.contextPath}/license"/>
                     </p:submenu>
                     <p:submenu id="m_serverlogs" label="#{msg['serverAndDBLabel']}" icon="pi pi-fw pi-server" rendered="#{guestPreferences.dbAndServerLogRendered}">
                         <p:menuitem id="m_serverlogspage" value="#{msg['serverLogsLabel']}" icon="pi pi-fw pi-server"
-                                    outcome="/pages/serverlogs/serverlogs"/>
+                                    url="#{request.contextPath}/server-logs"/>
                         <p:menuitem id="m_databasedetails" value="#{msg['databaseLabel']}" icon="pi pi-fw pi-server"
-                                    outcome="/pages/serverlogs/databaseDetails"/>
+                                    url="#{request.contextPath}/database-details"/>
                     </p:submenu>
                 </pu:menu>
             </div>

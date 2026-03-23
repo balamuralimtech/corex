@@ -6,10 +6,7 @@ import com.module.coretix.usermanagement.IUserAdministrationService;
 import com.persist.coretix.modal.usermanagement.UserActivities;
 import com.persist.coretix.modal.usermanagement.UserDetails;
 import com.web.coretix.appgeneral.GenericManagedBean;
-import com.web.coretix.constants.LoginConstants;
-import com.web.coretix.constants.CoreAppModule;
-import com.web.coretix.constants.SessionAttributes;
-import com.web.coretix.constants.UserActivityConstants;
+import com.web.coretix.constants.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.primefaces.PrimeFaces;
 
@@ -171,17 +168,10 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
     private void fetchModuleRenderList() {
 
-        userManagementRendered = true;
-        systemManagementRendered = true;
-        licenseRendered = true;
-        dbAndServerLogRendered = true;
-
-        clientManagementRendered = true;
-        inventoryManagementRendered = true;
-        quoteManagementRendered = true;
-        shippingManagementRendered = true;
-        opConsultationRendered = true;
-        clinicManagementRendered = true;
+        userManagementRendered = false;
+        systemManagementRendered = false;
+        licenseRendered = false;
+        dbAndServerLogRendered = false;
 
         List<CoreAppModule> modules = getRoleModuleList();
 
@@ -224,7 +214,10 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
         if (CollectionUtils.isNotEmpty(pageList)) {
             for (Integer pageId : pageList) {
+
                 logger.debug("getUserManagementPageList : pageId : " + pageId);
+                logger.debug(UserManagementModule.getById(pageId));
+
             }
         }
 
@@ -237,6 +230,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         if (CollectionUtils.isNotEmpty(pageList)) {
             for (Integer pageId : pageList) {
                 logger.debug("getSystemManagementPageList : pageId : " + pageId);
+                logger.debug(SystemManagementModule.getById(pageId));
             }
         }
     }
@@ -248,6 +242,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         if (CollectionUtils.isNotEmpty(pageList)) {
             for (Integer pageId : pageList) {
                 logger.debug("getLicensePageList : pageId : " + pageId);
+                logger.debug(LicenseManagementModule.getById(pageId));
             }
         }
     }
@@ -258,6 +253,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         if (CollectionUtils.isNotEmpty(pageList)) {
             for (Integer pageId : pageList) {
                 logger.debug("getDbAndServerLogPageList : pageId : " + pageId);
+                logger.debug(ServerAndDBModule.getById(pageId));
             }
         }
     }

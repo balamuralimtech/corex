@@ -13,10 +13,7 @@
             <h:form>
                 <p:graphicImage name="images/logo.png" library="avalon-layout" styleClass="topbar-logo"
                                 style="cursor: pointer;"
-                                onclick="naviagteToHomePage()"/>
-                <p:remoteCommand name="naviagteToHomePage"
-                                 action="#{guestPreferences.navigateToHomepage}">
-                </p:remoteCommand>
+                                onclick="window.location='#{request.contextPath}/home'"/>
             </h:form>
         </div>
 

@@ -1,6 +1,7 @@
 package com.web.coretix.customhandlers;
 
 import com.web.coretix.constants.SessionAttributes;
+import com.web.coretix.filter.FriendlyUrlFilter;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -25,19 +26,24 @@ public class AuthorizationFilter implements Filter {
         HttpServletResponse res = (HttpServletResponse) response;
 
         HttpSession session = req.getSession(false);
-        String login2URI = req.getContextPath() + "/login2.xhtml";
-        String loginURI = req.getContextPath() + "/login.xhtml";
+        String login2URI = req.getContextPath() + "/landing";
+        String loginURI = req.getContextPath() + "/login";
+        String login2InternalURI = req.getContextPath() + "/login2.xhtml";
+        String loginInternalURI = req.getContextPath() + "/login.xhtml";
         String videoURI = req.getContextPath() + "/resources/avalon-layout/videos/home.mp4";
-        String errorPagesURI = req.getContextPath() + "/pages/errorandwarningpages/";
+        String requestPath = req.getRequestURI().substring(req.getContextPath().length());
 
         boolean loggedIn = (session != null && session.getAttribute(SessionAttributes.USERNAME.getName()) != null);
         boolean loginRequest = req.getRequestURI().equals(loginURI);
         boolean login2Request = req.getRequestURI().equals(login2URI);
+        boolean loginInternalRequest = req.getRequestURI().equals(loginInternalURI);
+        boolean login2InternalRequest = req.getRequestURI().equals(login2InternalURI);
         boolean videoRequest = req.getRequestURI().startsWith(videoURI);
-        boolean errorPageRequest = req.getRequestURI().startsWith(errorPagesURI);
+        boolean publicFriendlyRequest = FriendlyUrlFilter.PUBLIC_FRIENDLY_PATHS.contains(requestPath);
         boolean resourceRequest = req.getRequestURI().startsWith(req.getContextPath() + "/javax.faces.resource");
 
-        if (loggedIn || loginRequest || login2Request || videoRequest || errorPageRequest || resourceRequest) {
+        if (loggedIn || loginRequest || login2Request || loginInternalRequest || login2InternalRequest
+                || videoRequest || publicFriendlyRequest || resourceRequest) {
             chain.doFilter(request, response); // User is logged in, so continue with the request.
         } else {
             res.sendRedirect(login2URI); // Not logged in, redirect to login page.
