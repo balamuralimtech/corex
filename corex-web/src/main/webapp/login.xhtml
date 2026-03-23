@@ -98,7 +98,16 @@
                 top: 32px;
                 left: 50px;
                 width: 210px;
-                height: auto;
+                height: 30px;
+                display: inline-flex;
+                align-items: center;
+                font-family: "Roboto", sans-serif;
+                font-size: 30px;
+                font-weight: 700;
+                letter-spacing: 0.04em;
+                line-height: 1;
+                color: #2d3436;
+                text-decoration: none;
             }
 
             #organizationlogo{
@@ -159,9 +168,9 @@
 
         <nav class="navbar navbar-expand-lg">
             <div class="container">
-                <a class="navbar-brand">
-                    <p:graphicImage id="logo" name="images/logo-dark.png" library="avalon-layout" style="width:160px"/>
-                </a>
+                <h:outputLink value="#{request.contextPath}/login" id="logo" styleClass="navbar-brand">
+                    <h:outputText value="#{appInfo.appName}" />
+                </h:outputLink>
 
                 <a class="navbar-brand">
                     <!--<p:graphicImage id="organizationlogo" name="images/logo-sm.jpg" library="avalon-layout"/>-->

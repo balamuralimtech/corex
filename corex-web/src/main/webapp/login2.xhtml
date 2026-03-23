@@ -24,7 +24,16 @@
             top: 32px;
             left: 50px;
             width: 210px;
-            height: auto;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            font-family: "Roboto", sans-serif;
+            font-size: 30px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            line-height: 1;
+            color: #ffffff;
+            text-decoration: none;
         }
     </style>
 </h:head>
@@ -34,9 +43,9 @@
     <h:form id="form">
         <nav class="navbar navbar-expand-lg">
             <div class="container">
-                <a class="navbar-brand">
-                    <p:graphicImage id="logo" name="images/logo.png" library="avalon-layout" style="width:160px"/>
-                </a>
+                <h:outputLink value="#{request.contextPath}/login" id="logo" styleClass="navbar-brand">
+                    <h:outputText value="#{appInfo.appName}" />
+                </h:outputLink>
                 <!-- Sign In button -->
                 <a class="btn custom-btn smoothscroll" href="#{request.contextPath}/login">
                     Let's Cure!
@@ -54,10 +63,10 @@
                     <div class="col-12 mt-auto mb-5 text-center">
 
 
-                        <h1 class="text-white mb-5"> Simplifying Healthcare </h1>
+                        <h1 class="text-white mb-5">#{appInfo.loginHeadline}</h1>
 
                         <small>
-                            CareX is a unified healthcare management platform designed to support both clinics and hospitals in managing their daily operations efficiently. The system enables seamless handling of patient records, appointments, clinical workflows, billing, and reporting across departments. With a secure, role-based architecture and an intuitive interface, CareX helps healthcare providers improve operational efficiency, ensure data accuracy, and deliver better patient care at scale.
+                            #{appInfo.loginDescription}
                         </small>
                     </div>
 

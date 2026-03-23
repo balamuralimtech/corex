@@ -11,9 +11,9 @@
     <div class="topbar clearfix">
         <div class="topbar-left">
             <h:form>
-                <p:graphicImage name="images/logo.png" library="avalon-layout" styleClass="topbar-logo"
-                                style="cursor: pointer;"
-                                onclick="window.location='#{request.contextPath}/home'"/>
+                <h:outputLink value="#{request.contextPath}/home" styleClass="topbar-logo app-brand app-brand-topbar">
+                    <h:outputText value="#{appInfo.appName}" />
+                </h:outputLink>
             </h:form>
         </div>
 
