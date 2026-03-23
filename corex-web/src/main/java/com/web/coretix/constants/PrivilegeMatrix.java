@@ -46,7 +46,7 @@ public final class PrivilegeMatrix {
                         RolePrivilegeConstants.DELETE, RolePrivilegeConstants.APPROVE));
        pagePrivileges.put(UserManagementModule.CHANGE_PASSWORD.getValue(),
                 EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.EDIT));
-        pagePrivileges.put(UserManagementModule.USER_MANAGEMENT.getValue(),
+        pagePrivileges.put(UserManagementModule.USER_ADMINISTRATION.getValue(),
                 EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.ADD, RolePrivilegeConstants.EDIT,
                         RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT, RolePrivilegeConstants.EMAIL));
 

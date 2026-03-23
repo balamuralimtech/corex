@@ -66,15 +66,36 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     private String selectedLanguage;
     private boolean userManagementRendered;
     private boolean systemManagementRendered;
-    private boolean licenseRendered;
+    private boolean licenseManagementRendered;
     private boolean dbAndServerLogRendered;
 
-    private boolean clientManagementRendered;
-    private boolean inventoryManagementRendered;
-    private boolean quoteManagementRendered;
-    private boolean shippingManagementRendered;
-    private boolean opConsultationRendered;
-    private boolean clinicManagementRendered;
+    private boolean userProfileRendered;
+    private boolean userActivityRendered;
+    private boolean roleAdministrationRendered;
+    private boolean changePasswordRendered;
+    private boolean userAdministrationRendered;
+
+    private boolean organizationRendered;
+    private boolean branchRendered;
+    private boolean departmentRendered;
+    private boolean designationRendered;
+    private boolean countryRendered;
+    private boolean stateRendered;
+    private boolean cityRendered;
+    private boolean regionRendered;
+    private boolean subregionRendered;
+    private boolean currencyRendered;
+    private boolean bankDetailsRendered;
+    private boolean notificationSettingRendered;
+
+
+
+    private boolean licenseRendered;
+
+    private boolean serverLogRendered;
+    private boolean dbDetailsRendered;
+
+
 
     @Inject
     private IUserAdministrationService userAdministrationService;
@@ -170,7 +191,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
         userManagementRendered = false;
         systemManagementRendered = false;
-        licenseRendered = false;
+        licenseManagementRendered = false;
         dbAndServerLogRendered = false;
 
         List<CoreAppModule> modules = getRoleModuleList();
@@ -191,7 +212,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
                         logger.debug("System management available");
                         break;
                     case LICENCE:
-                        licenseRendered = true;
+                        licenseManagementRendered = true;
                         getLicensePageList();
                         logger.debug("Licence available");
                         break;
@@ -218,6 +239,31 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
                 logger.debug("getUserManagementPageList : pageId : " + pageId);
                 logger.debug(UserManagementModule.getById(pageId));
 
+                switch (UserManagementModule.getById(pageId)) {
+                    case USER_PROFILE :
+                        userProfileRendered = true;
+                        logger.debug("User Profile available");
+                        break;
+                    case USER_ACTIVITY :
+                        userActivityRendered = true;
+                        logger.debug("User Activity available");
+                        break;
+                    case ROLE_ADMINISTRATION:
+                        roleAdministrationRendered = true;
+                        logger.debug("Role Administration available");
+                        break;
+                    case CHANGE_PASSWORD:
+                        changePasswordRendered = true;
+                        logger.debug("Change Password available");
+                        break;
+                        case USER_ADMINISTRATION:
+                        userAdministrationRendered = true;
+                        logger.debug("User Administration available");
+                        break;
+                    default:
+                        logger.error("Unsupported module: " + UserManagementModule.getById(pageId));
+                }
+
             }
         }
 
@@ -226,11 +272,62 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     private void getSystemManagementPageList() {
         logger.debug("getSystemManagementPageList");
         List<Integer> pageList = getSubModuleDetailsByRoleandModuleId(CoreAppModule.SYSTEM_MANAGEMENT.getId());
-
         if (CollectionUtils.isNotEmpty(pageList)) {
             for (Integer pageId : pageList) {
                 logger.debug("getSystemManagementPageList : pageId : " + pageId);
                 logger.debug(SystemManagementModule.getById(pageId));
+                switch (SystemManagementModule.getById(pageId)) {
+                    case ORGANIZATION:
+                        organizationRendered = true;
+                        logger.debug("Organization available");
+                        break;
+                    case BRANCH:
+                        branchRendered = true;
+                        logger.debug("Branch available");
+                        break;
+                    case DEPARTMENT:
+                        departmentRendered = true;
+                        logger.debug("Department available");
+                        break;
+                    case DESIGNATION:
+                        designationRendered = true;
+                        logger.debug("Designation available");
+                        break;
+                    case COUNTRY:
+                        countryRendered = true;
+                        logger.debug("Country available");
+                        break;
+                    case STATE:
+                        stateRendered = true;
+                        logger.debug("State available");
+                        break;
+                    case CITY:
+                        cityRendered = true;
+                        logger.debug("City available");
+                        break;
+                    case REGION:
+                        regionRendered = true;
+                        logger.debug("Region available");
+                        break;
+                    case SUBREGION:
+                        subregionRendered = true;
+                        logger.debug("Subregion available");
+                        break;
+                    case CURRENCY:
+                        currencyRendered = true;
+                        logger.debug("Currency available");
+                        break;
+                    case BANK_DETAILS:
+                        bankDetailsRendered = true;
+                        logger.debug("Bank Details available");
+                        break;
+                    case NOTIFICATION_SETTING:
+                        notificationSettingRendered = true;
+                        logger.debug("Notification Setting available");
+                        break;
+                    default:
+                        logger.error("Unsupported module: " + SystemManagementModule.getById(pageId));
+                }
             }
         }
     }
@@ -243,6 +340,14 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
             for (Integer pageId : pageList) {
                 logger.debug("getLicensePageList : pageId : " + pageId);
                 logger.debug(LicenseManagementModule.getById(pageId));
+                switch (LicenseManagementModule.getById(pageId)){
+                    case LICENSE:
+                        licenseRendered = true;
+                        logger.debug("License page available");
+                        break;
+                    default:
+                        logger.error("Unsupported module: " + LicenseManagementModule.getById(pageId));
+                }
             }
         }
     }
@@ -254,10 +359,21 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
             for (Integer pageId : pageList) {
                 logger.debug("getDbAndServerLogPageList : pageId : " + pageId);
                 logger.debug(ServerAndDBModule.getById(pageId));
+                switch (ServerAndDBModule.getById(pageId)){
+                    case SERVER_LOGS:
+                        serverLogRendered = true;
+                        logger.debug("License page available");
+                        break;
+                    case DATABASE:
+                        dbDetailsRendered = true;
+                        logger.debug("Database page available");
+                        break;
+                    default:
+                        logger.error("Unsupported module: " + LicenseManagementModule.getById(pageId));
+                }
             }
         }
     }
-
 
     private UserDetails getUserDetailsByUsername(String username) {
         return userAdministrationService.getUserDetailEntityByUserName(username);
@@ -644,12 +760,12 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         this.systemManagementRendered = systemManagementRendered;
     }
 
-    public boolean isLicenseRendered() {
-        return licenseRendered;
+    public boolean isLicenseManagementRendered() {
+        return licenseManagementRendered;
     }
 
-    public void setLicenseRendered(boolean licenseRendered) {
-        this.licenseRendered = licenseRendered;
+    public void setLicenseManagementRendered(boolean licenseManagementRendered) {
+        this.licenseManagementRendered = licenseManagementRendered;
     }
 
     public boolean isDbAndServerLogRendered() {
@@ -660,51 +776,167 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         this.dbAndServerLogRendered = dbAndServerLogRendered;
     }
 
-    public boolean isClientManagementRendered() {
-        return clientManagementRendered;
+    public void setGrowlMessage(String growlMessage) {
+        this.growlMessage = growlMessage;
     }
 
-    public void setClientManagementRendered(boolean clientManagementRendered) {
-        this.clientManagementRendered = clientManagementRendered;
+    public boolean isUserProfileRendered() {
+        return userProfileRendered;
     }
 
-    public boolean isInventoryManagementRendered() {
-        return inventoryManagementRendered;
+    public void setUserProfileRendered(boolean userProfileRendered) {
+        this.userProfileRendered = userProfileRendered;
     }
 
-    public void setInventoryManagementRendered(boolean inventoryManagementRendered) {
-        this.inventoryManagementRendered = inventoryManagementRendered;
+    public boolean isUserActivityRendered() {
+        return userActivityRendered;
     }
 
-    public boolean isQuoteManagementRendered() {
-        return quoteManagementRendered;
+    public void setUserActivityRendered(boolean userActivityRendered) {
+        this.userActivityRendered = userActivityRendered;
     }
 
-    public void setQuoteManagementRendered(boolean quoteManagementRendered) {
-        this.quoteManagementRendered = quoteManagementRendered;
+    public boolean isRoleAdministrationRendered() {
+        return roleAdministrationRendered;
     }
 
-    public boolean isShippingManagementRendered() {
-        return shippingManagementRendered;
+    public void setRoleAdministrationRendered(boolean roleAdministrationRendered) {
+        this.roleAdministrationRendered = roleAdministrationRendered;
     }
 
-    public void setShippingManagementRendered(boolean shippingManagementRendered) {
-        this.shippingManagementRendered = shippingManagementRendered;
+    public boolean isChangePasswordRendered() {
+        return changePasswordRendered;
     }
 
-    public boolean isOpConsultationRendered() {
-        return opConsultationRendered;
+    public void setChangePasswordRendered(boolean changePasswordRendered) {
+        this.changePasswordRendered = changePasswordRendered;
     }
 
-    public void setOpConsultationRendered(boolean opConsultationRendered) {
-        this.opConsultationRendered = opConsultationRendered;
+    public boolean isUserAdministrationRendered() {
+        return userAdministrationRendered;
     }
 
-    public boolean isClinicManagementRendered() {
-        return clinicManagementRendered;
+    public void setUserAdministrationRendered(boolean userAdministrationRendered) {
+        this.userAdministrationRendered = userAdministrationRendered;
     }
 
-    public void setClinicManagementRendered(boolean clinicManagementRendered) {
-        this.clinicManagementRendered = clinicManagementRendered;
+    public boolean isOrganizationRendered() {
+        return organizationRendered;
+    }
+
+    public void setOrganizationRendered(boolean organizationRendered) {
+        this.organizationRendered = organizationRendered;
+    }
+
+    public boolean isBranchRendered() {
+        return branchRendered;
+    }
+
+    public void setBranchRendered(boolean branchRendered) {
+        this.branchRendered = branchRendered;
+    }
+
+    public boolean isDepartmentRendered() {
+        return departmentRendered;
+    }
+
+    public void setDepartmentRendered(boolean departmentRendered) {
+        this.departmentRendered = departmentRendered;
+    }
+
+    public boolean isDesignationRendered() {
+        return designationRendered;
+    }
+
+    public void setDesignationRendered(boolean designationRendered) {
+        this.designationRendered = designationRendered;
+    }
+
+    public boolean isCountryRendered() {
+        return countryRendered;
+    }
+
+    public void setCountryRendered(boolean countryRendered) {
+        this.countryRendered = countryRendered;
+    }
+
+    public boolean isStateRendered() {
+        return stateRendered;
+    }
+
+    public void setStateRendered(boolean stateRendered) {
+        this.stateRendered = stateRendered;
+    }
+
+    public boolean isCityRendered() {
+        return cityRendered;
+    }
+
+    public void setCityRendered(boolean cityRendered) {
+        this.cityRendered = cityRendered;
+    }
+
+    public boolean isRegionRendered() {
+        return regionRendered;
+    }
+
+    public void setRegionRendered(boolean regionRendered) {
+        this.regionRendered = regionRendered;
+    }
+
+    public boolean isSubregionRendered() {
+        return subregionRendered;
+    }
+
+    public void setSubregionRendered(boolean subregionRendered) {
+        this.subregionRendered = subregionRendered;
+    }
+
+    public boolean isCurrencyRendered() {
+        return currencyRendered;
+    }
+
+    public void setCurrencyRendered(boolean currencyRendered) {
+        this.currencyRendered = currencyRendered;
+    }
+
+    public boolean isBankDetailsRendered() {
+        return bankDetailsRendered;
+    }
+
+    public void setBankDetailsRendered(boolean bankDetailsRendered) {
+        this.bankDetailsRendered = bankDetailsRendered;
+    }
+
+    public boolean isNotificationSettingRendered() {
+        return notificationSettingRendered;
+    }
+
+    public void setNotificationSettingRendered(boolean notificationSettingRendered) {
+        this.notificationSettingRendered = notificationSettingRendered;
+    }
+
+    public boolean isLicenseRendered() {
+        return licenseRendered;
+    }
+
+    public void setLicenseRendered(boolean licenseRendered) {
+        this.licenseRendered = licenseRendered;
+    }
+
+    public boolean isServerLogRendered() {
+        return serverLogRendered;
+    }
+
+    public void setServerLogRendered(boolean serverLogRendered) {
+        this.serverLogRendered = serverLogRendered;
+    }
+
+    public boolean isDbDetailsRendered() {
+        return dbDetailsRendered;
+    }
+
+    public void setDbDetailsRendered(boolean dbDetailsRendered) {
+        this.dbDetailsRendered = dbDetailsRendered;
     }
 }

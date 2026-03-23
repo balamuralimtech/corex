@@ -16,7 +16,7 @@ public enum UserManagementModule {
     USER_ACTIVITY(2, "User Activity"),
     ROLE_ADMINISTRATION(3, "Role Administration"),
     CHANGE_PASSWORD(4, "Change Password"),
-    USER_MANAGEMENT(5, "User Management");
+    USER_ADMINISTRATION(5, "User Administration");
 
     private final int id;
     private final String value;
