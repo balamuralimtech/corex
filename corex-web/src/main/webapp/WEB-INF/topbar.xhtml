@@ -27,6 +27,9 @@
             </a>
 
             <h:form id="topbar-items-form">
+                <p:remoteCommand name="markTopbarMessagesAsSeen"
+                                 actionListener="#{guestPreferences.markTopbarMessagesAsSeen}"
+                                 update="messageUnreadCount"/>
                 <ul class="topbar-items fadeInDown animated">
                     <ui:fragment
                             rendered="#{guestPreferences.profileMode == 'overlay'||guestPreferences.menuLayout == 'menu-layout-static menu-layout-horizontal'}">
@@ -39,21 +42,9 @@
 
                             <ul class="layout-menu animated">
                                 <li role="menuitem">
-                                    <a href="#">
+                                    <a href="#{request.contextPath}/user-profile">
                                         <i class="pi pi-fw pi-user"/>
                                         <span>Profile</span>
-                                    </a>
-                                </li>
-                                <li role="menuitem">
-                                    <a href="#">
-                                        <i class="pi pi-fw pi-lock"/>
-                                        <span>Privacy</span>
-                                    </a>
-                                </li>
-                                <li role="menuitem">
-                                    <a href="#">
-                                        <i class="pi pi-fw pi-cog"/>
-                                        <span>Settings</span>
                                     </a>
                                 </li>
                                 <li role="menuitem">
@@ -99,42 +90,30 @@
                         </ul>
                     </li>
                     <li>
-                        <a href="#">
+                        <a href="#" onclick="markTopbarMessagesAsSeen();">
                             <i class="topbar-icon animated swing pi pi-fw pi-envelope"/>
-                            <span class="topbar-badge animated rubberBand">5</span>
+                            <p:outputPanel id="messageUnreadCount" layout="inline">
+                                <span class="topbar-badge animated rubberBand">#{guestPreferences.topbarMessageCount}</span>
+                            </p:outputPanel>
                             <span class="topbar-item-name">Messages</span>
                         </a>
                         <ul class="layout-menu animated">
-                            <li role="menuitem">
-                                <a href="#" class="topbar-message">
-                                    <p:graphicImage name="images/avatar1.png" library="avalon-layout" width="35"/>
-                                    <span>Give me a call</span>
-                                </a>
-                            </li>
-                            <li role="menuitem">
-                                <a href="#" class="topbar-message">
-                                    <p:graphicImage name="images/avatar2.png" library="avalon-layout" width="35"/>
-                                    <span>Sales reports attached</span>
-                                </a>
-                            </li>
-                            <li role="menuitem">
-                                <a href="#" class="topbar-message">
-                                    <p:graphicImage name="images/avatar3.png" library="avalon-layout" width="35"/>
-                                    <span>About your invoice</span>
-                                </a>
-                            </li>
-                            <li role="menuitem">
-                                <a href="#" class="topbar-message">
-                                    <p:graphicImage name="images/avatar2.png" library="avalon-layout" width="35"/>
-                                    <span>Meeting today at 10pm</span>
-                                </a>
-                            </li>
-                            <li role="menuitem">
-                                <a href="#" class="topbar-message">
-                                    <p:graphicImage name="images/avatar4.png" library="avalon-layout" width="35"/>
-                                    <span>Out of office</span>
-                                </a>
-                            </li>
+                            <ui:repeat value="#{guestPreferences.displayedTopbarMessages}" var="topbarMessage">
+                                <li role="menuitem">
+                                    <a href="#" class="topbar-message">
+                                        <p:graphicImage name="images/avatar2.png" library="avalon-layout" width="35"/>
+                                        <span>#{topbarMessage}</span>
+                                    </a>
+                                </li>
+                            </ui:repeat>
+                            <ui:fragment rendered="#{empty guestPreferences.displayedTopbarMessages}">
+                                <li role="menuitem">
+                                    <a href="#" class="topbar-message">
+                                        <p:graphicImage name="images/avatar2.png" library="avalon-layout" width="35"/>
+                                        <span>No messages</span>
+                                    </a>
+                                </li>
+                            </ui:fragment>
                         </ul>
                     </li>
                     <li>

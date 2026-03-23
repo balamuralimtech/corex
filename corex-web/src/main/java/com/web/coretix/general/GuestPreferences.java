@@ -108,6 +108,8 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     private IRoleAdministrationService roleAdministrationService;
 
     private String growlMessage;
+    private List<String> topbarMessages = new ArrayList<>();
+    private int topbarUnreadMessageCount;
 
     public void initializePageAttributes() {
 
@@ -116,7 +118,14 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         layoutSpecialThemes.clear();
 
         FacesContext facesContext = FacesContext.getCurrentInstance();
-        HttpSession httpSession = (HttpSession) facesContext.getExternalContext().getSession(false);
+        HttpSession httpSession = facesContext == null
+                ? null
+                : (HttpSession) facesContext.getExternalContext().getSession(false);
+
+        if (httpSession == null) {
+            logger.warn("Unable to initialize guest preferences because the HTTP session is not available.");
+            return;
+        }
 
         //languageItems = getAvailableResourceBundles(); commented to use it in the future
 
@@ -125,7 +134,8 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         role = (String) httpSession.getAttribute(SessionAttributes.ROLE.getName());
         logger.debug("Role retrieved from session: " + role);
 
-        userId = (int) httpSession.getAttribute(SessionAttributes.USER_ACCOUNT_ID.getName());
+        Integer sessionUserId = (Integer) httpSession.getAttribute(SessionAttributes.USER_ACCOUNT_ID.getName());
+        userId = sessionUserId != null ? sessionUserId : 0;
         logger.debug("User Id retrieved from session: " + userId);
 
         themeColors = new HashMap<>();
@@ -175,6 +185,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         layoutSpecialThemes.add(new LayoutSpecialTheme("Suzy", "suzy", "#834d9b", "#d04ed6"));
 
         fetchModuleRenderList();
+        syncTopbarMessagesFromSession(httpSession);
     }
 
     public void changeLocale(){
@@ -633,11 +644,16 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
     public void checkForGrowlMessage() {
         HttpSession session = SessionUtils.getSession();
+        if (session == null) {
+            return;
+        }
+
+        syncTopbarMessagesFromSession(session);
         growlMessage = (String) session.getAttribute(SessionAttributes.APPLICATION_NOTIFICATION_GROWL.getName());
         if (growlMessage != null) {
             PrimeFaces.current().executeScript(
                     "PF('growlWidget').renderMessage({severity: 'info', summary: 'Notification', detail: '"
-                            + growlMessage + "'});"
+                            + escapeForJavascript(growlMessage) + "', life: 10000, sticky: false});"
             );
             session.removeAttribute(SessionAttributes.APPLICATION_NOTIFICATION_GROWL.getName());
         }
@@ -669,6 +685,28 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
     public String getGrowlMessage() {
         return growlMessage;
+    }
+
+    public List<String> getTopbarMessages() {
+        return topbarMessages;
+    }
+
+    public List<String> getDisplayedTopbarMessages() {
+        return topbarMessages;
+    }
+
+    public int getTopbarMessageCount() {
+        return topbarUnreadMessageCount;
+    }
+
+    public void markTopbarMessagesAsSeen() {
+        HttpSession session = SessionUtils.getSession();
+        if (session == null) {
+            return;
+        }
+
+        topbarUnreadMessageCount = 0;
+        session.setAttribute(SessionAttributes.APPLICATION_NOTIFICATION_UNREAD_COUNT.getName(), 0);
     }
 
     public static class LayoutSpecialTheme {
@@ -779,6 +817,18 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
     public void setGrowlMessage(String growlMessage) {
         this.growlMessage = growlMessage;
+    }
+
+    public void setTopbarMessages(List<String> topbarMessages) {
+        this.topbarMessages = topbarMessages;
+    }
+
+    public int getTopbarUnreadMessageCount() {
+        return topbarUnreadMessageCount;
+    }
+
+    public void setTopbarUnreadMessageCount(int topbarUnreadMessageCount) {
+        this.topbarUnreadMessageCount = topbarUnreadMessageCount;
     }
 
     public boolean isUserProfileRendered() {
@@ -939,6 +989,19 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
     public void setDbDetailsRendered(boolean dbDetailsRendered) {
         this.dbDetailsRendered = dbDetailsRendered;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void syncTopbarMessagesFromSession(HttpSession session) {
+        Object notificationMessages = session.getAttribute(SessionAttributes.APPLICATION_NOTIFICATION_MESSAGES.getName());
+        if (notificationMessages instanceof List) {
+            topbarMessages = new ArrayList<>((List<String>) notificationMessages);
+        } else {
+            topbarMessages = new ArrayList<>();
+        }
+
+        Object unreadCount = session.getAttribute(SessionAttributes.APPLICATION_NOTIFICATION_UNREAD_COUNT.getName());
+        topbarUnreadMessageCount = unreadCount instanceof Integer ? (Integer) unreadCount : 0;
     }
 }
 

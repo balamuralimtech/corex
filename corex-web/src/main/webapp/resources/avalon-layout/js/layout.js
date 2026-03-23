@@ -284,6 +284,14 @@ PrimeFaces.widget.Avalon = PrimeFaces.widget.BaseWidget.extend({
         });
     },
 
+    refreshTopbarBindings: function() {
+        this.topbar = $('body > .layout-wrapper .topbar');
+        this.topbarItems = this.topbar.find('.topbar-items');
+        this.topbarLinks = this.topbarItems.find('> li > a');
+        this.topbarMenuButton = $('#topbar-menu-button');
+        this._bindEvents();
+    },
+
     activate: function(item) {
         var submenu = item.children('ul');
         item.addClass('active-menuitem');
@@ -582,6 +590,14 @@ PrimeFaces.AvalonConfigurator = {
     
         if (menu) {
             menu.restoreMenuState();
+        }
+    },
+
+    refreshTopbarState: function() {
+        var menu = PF('avalonMenuWidget');
+
+        if (menu && menu.refreshTopbarBindings) {
+            menu.refreshTopbarBindings();
         }
     },
     

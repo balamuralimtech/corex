@@ -43,55 +43,55 @@ public final class PrivilegeMatrix {
                 EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.EXPORT));
         pagePrivileges.put(UserManagementModule.ROLE_ADMINISTRATION.getValue(),
                 EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.ADD, RolePrivilegeConstants.EDIT,
-                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.APPROVE));
+                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT, RolePrivilegeConstants.APP_NOTIFY));
        pagePrivileges.put(UserManagementModule.CHANGE_PASSWORD.getValue(),
                 EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.EDIT));
         pagePrivileges.put(UserManagementModule.USER_ADMINISTRATION.getValue(),
                 EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.ADD, RolePrivilegeConstants.EDIT,
-                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT, RolePrivilegeConstants.EMAIL));
+                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT, RolePrivilegeConstants.EMAIL, RolePrivilegeConstants.APP_NOTIFY));
 
         //System Management entries
         pagePrivileges.put(SystemManagementModule.ORGANIZATION.getValue(),
                 EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.ADD, RolePrivilegeConstants.EDIT,
-                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT));
+                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT, RolePrivilegeConstants.APP_NOTIFY));
         pagePrivileges.put(SystemManagementModule.BRANCH.getValue(),
                 EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.ADD, RolePrivilegeConstants.EDIT,
-                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT));
+                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT, RolePrivilegeConstants.APP_NOTIFY));
         pagePrivileges.put(SystemManagementModule.DEPARTMENT.getValue(),
                 EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.ADD, RolePrivilegeConstants.EDIT,
-                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT));
+                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT, RolePrivilegeConstants.APP_NOTIFY));
         pagePrivileges.put(SystemManagementModule.DESIGNATION.getValue(),
                 EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.ADD, RolePrivilegeConstants.EDIT,
-                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT));
+                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT, RolePrivilegeConstants.APP_NOTIFY));
         pagePrivileges.put(SystemManagementModule.COUNTRY.getValue(),
                 EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.ADD, RolePrivilegeConstants.EDIT,
-                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT));
+                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT, RolePrivilegeConstants.APP_NOTIFY));
         pagePrivileges.put(SystemManagementModule.STATE.getValue(),
                 EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.ADD, RolePrivilegeConstants.EDIT,
-                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT));
+                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT, RolePrivilegeConstants.APP_NOTIFY));
         pagePrivileges.put(SystemManagementModule.CITY.getValue(),
                 EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.ADD, RolePrivilegeConstants.EDIT,
-                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT));
+                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT, RolePrivilegeConstants.APP_NOTIFY));
         pagePrivileges.put(SystemManagementModule.REGION.getValue(),
                 EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.ADD, RolePrivilegeConstants.EDIT,
-                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT));
+                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT, RolePrivilegeConstants.APP_NOTIFY));
         pagePrivileges.put(SystemManagementModule.SUBREGION.getValue(),
                 EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.ADD, RolePrivilegeConstants.EDIT,
-                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT));
+                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT, RolePrivilegeConstants.APP_NOTIFY));
         pagePrivileges.put(SystemManagementModule.CURRENCY.getValue(),
                 EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.ADD, RolePrivilegeConstants.EDIT,
-                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT));
+                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT, RolePrivilegeConstants.APP_NOTIFY));
         pagePrivileges.put(SystemManagementModule.BANK_DETAILS.getValue(),
                 EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.ADD, RolePrivilegeConstants.EDIT,
-                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT));
+                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT, RolePrivilegeConstants.APP_NOTIFY));
         pagePrivileges.put(SystemManagementModule.NOTIFICATION_SETTING.getValue(),
                 EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.ADD, RolePrivilegeConstants.EDIT,
-                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT, RolePrivilegeConstants.EMAIL));
+                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT, RolePrivilegeConstants.EMAIL, RolePrivilegeConstants.APP_NOTIFY));
 
         //Licence entries
         pagePrivileges.put(LicenseManagementModule.LICENSE.getValue(),
                 EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.ADD, RolePrivilegeConstants.EDIT,
-                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT));
+                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT, RolePrivilegeConstants.APP_NOTIFY));
 
         //Server and DB entries
         pagePrivileges.put(ServerAndDBModule.SERVER_LOGS.getValue(),

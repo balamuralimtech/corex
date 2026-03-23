@@ -18,7 +18,11 @@ import javax.inject.Named;
 
 import com.web.coretix.constants.*;
 
+import com.web.coretix.general.NotificationService;
 import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -46,6 +50,7 @@ public class RoleAdministrationBean implements Serializable {
 
     private static final long serialVersionUID = 1354353434334535435L;
     private static final Logger logger = LoggerFactory.getLogger(RoleAdministrationBean.class);
+    private static final DateTimeFormatter NOTIFICATION_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd-MMM-yyyy hh:mm:ss a");
 
     private List<RoleModuleBean> roleModuleList = new ArrayList<>();
 
@@ -477,22 +482,34 @@ public class RoleAdministrationBean implements Serializable {
 
     private void persistRoleChanges(boolean forceLogoutActiveUsers) {
         Roles role = new Roles();
-        role.setRoleName(roleName.trim());
+        String normalizedRoleName = roleName.trim();
+        Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
+        role.setRoleName(normalizedRoleName);
         role.setRolePrivileges(buildRolePrivileges(role));
+        Integer organizationId = resolveCurrentOrganizationId();
         if (isAddOperation) {
             logger.debug("if (isAddOperation) {");
+            role.setCreatedAt(currentTimestamp);
+            role.setUpdatedAt(currentTimestamp);
             roleAdministrationService.addRole(role);
+            notifyActiveOrganizationUsers(organizationId,
+                    buildRoleChangeNotification(normalizedRoleName, "added"));
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Role added successfully"));
         } else {
             logger.debug("else  edit operation !!");
             logger.debug("selectedRole.getId() : " + getSelectedRole().getId());
+            Roles existingRole = roleAdministrationService.getRoleById(getSelectedRole().getId());
             role.setId(getSelectedRole().getId());
+            role.setCreatedAt(existingRole != null ? existingRole.getCreatedAt() : currentTimestamp);
+            role.setUpdatedAt(currentTimestamp);
 
             if (forceLogoutActiveUsers) {
                 notifyUsersForRoleUpdate(role.getId());
             }
 
             roleAdministrationService.updateRole(role);
+            notifyActiveOrganizationUsers(organizationId,
+                    buildRoleChangeNotification(normalizedRoleName, "edited"));
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Role updated successfully"));
         }
 
@@ -547,10 +564,14 @@ public class RoleAdministrationBean implements Serializable {
         logger.debug("selectedRole.getId() : " + getSelectedRole().getId());
 
         roleName = getSelectedRole().getRoleName();
+        String deletedRoleName = roleName;
+        Integer organizationId = resolveCurrentOrganizationId();
 
         logger.debug("roleName : " + roleName);
 
         roleAdministrationService.deleteRole(getSelectedRole());
+        notifyActiveOrganizationUsers(organizationId,
+                buildRoleChangeNotification(deletedRoleName, "deleted"));
         fetchRolesList();
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Role removed successfully"));
         PrimeFaces.current().ajax().update("form:messages", "form:orgDataTableId");
@@ -709,6 +730,48 @@ public class RoleAdministrationBean implements Serializable {
             }
         }
         return false;
+    }
+
+    private Integer resolveCurrentOrganizationId() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null) {
+            return null;
+        }
+
+        Object session = facesContext.getExternalContext().getSession(false);
+        if (!(session instanceof HttpSession)) {
+            return null;
+        }
+
+        Object organizationId = ((HttpSession) session).getAttribute(SessionAttributes.ORGANIZATION_ID.getName());
+        return organizationId instanceof Integer ? (Integer) organizationId : null;
+    }
+
+    private void notifyActiveOrganizationUsers(Integer organizationId, String message) {
+        NotificationService.sendGrowlMessageToOrganization(organizationId, message);
+    }
+
+    private String buildRoleChangeNotification(String changedRoleName, String action) {
+        String actorUserName = resolveCurrentUserName();
+        String formattedDateTime = LocalDateTime.now().format(NOTIFICATION_DATE_TIME_FORMATTER);
+        return "Role '" + changedRoleName + "' was " + action + " by " + actorUserName + " on " + formattedDateTime + ".";
+    }
+
+    private String resolveCurrentUserName() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null) {
+            return "Unknown user";
+        }
+
+        Object session = facesContext.getExternalContext().getSession(false);
+        if (!(session instanceof HttpSession)) {
+            return "Unknown user";
+        }
+
+        Object username = ((HttpSession) session).getAttribute(SessionAttributes.USERNAME.getName());
+        return username instanceof String && !((String) username).trim().isEmpty()
+                ? ((String) username).trim()
+                : "Unknown user";
     }
 
 }

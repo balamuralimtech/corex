@@ -21,7 +21,9 @@ public enum RolePrivilegeConstants {
     EMAIL(7, "Email"),
     PREPARE(8, "Prepare"),
     APPROVE(9, "Approve"),
-    REJECT(10, "Reject");
+    REJECT(10, "Reject"),
+    APP_NOTIFY(11,"APP_NOTIFY");
+
 
     private final int id;
     private final String value;

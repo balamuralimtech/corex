@@ -18,6 +18,8 @@ public enum SessionAttributes {
     ROLE_ID("roleId"),
     LANGUAGE("language"),
     APPLICATION_NOTIFICATION_GROWL("notificationGrowl"),
+    APPLICATION_NOTIFICATION_MESSAGES("notificationMessages"),
+    APPLICATION_NOTIFICATION_UNREAD_COUNT("notificationUnreadCount"),
     ROLE_UPDATE_LOGOUT_NOTIFICATION("roleUpdateLogoutNotification");
 
     private String name;
