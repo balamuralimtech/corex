@@ -43,6 +43,42 @@
                 x.style.display = "none";
             }
 
+            let roleUpdateCountdownInterval = null;
+
+            function showForcedRoleUpdateDialog(message, seconds)
+            {
+                var messageElement = document.getElementById('forced-role-update-message');
+                var countdownElement = document.getElementById('forced-role-update-countdown');
+
+                if (messageElement) {
+                    messageElement.textContent = message;
+                }
+
+                if (roleUpdateCountdownInterval) {
+                    clearInterval(roleUpdateCountdownInterval);
+                }
+
+                if (countdownElement) {
+                    countdownElement.textContent = seconds;
+                }
+
+                PF('forcedRoleUpdateDialog').show();
+
+                roleUpdateCountdownInterval = setInterval(function() {
+                    seconds--;
+
+                    if (countdownElement) {
+                        countdownElement.textContent = seconds;
+                    }
+
+                    if (seconds <= 0) {
+                        clearInterval(roleUpdateCountdownInterval);
+                        roleUpdateCountdownInterval = null;
+                        roleUpdateForceLogout();
+                    }
+                }, 1000);
+            }
+
             //]]>
         </script>
         <style>
@@ -229,11 +265,24 @@
         </style>
     </h:head>
 
-    <h:body styleClass="#{guestPreferences.inputStyleClass}">
+        <h:body styleClass="#{guestPreferences.inputStyleClass}">
         <h:form>
             <p:growl id="growl" widgetVar="growlWidget" life="3000" />
             <p:poll interval="5" listener="#{guestPreferences.checkForGrowlMessage}" update="growl" global="false"/>
+            <p:remoteCommand name="roleUpdateForceLogout"
+                             actionListener="#{guestPreferences.handleForcedRoleUpdateLogout}"
+                             oncomplete="window.location='#{request.contextPath}/login2.xhtml';" />
         </h:form>
+
+        <p:dialog header="Role Update Notification" widgetVar="forcedRoleUpdateDialog" modal="true"
+                  closable="false" draggable="false" resizable="false" responsive="true" width="420">
+            <div style="line-height: 1.7;">
+                <div id="forced-role-update-message">Your role is getting updated.</div>
+                <div style="margin-top: 1rem;">
+                    Redirecting to login page in <span id="forced-role-update-countdown">10</span> seconds.
+                </div>
+            </div>
+        </p:dialog>
 
         <!-- Preloader - style you can find in spinners.css -->
         <div class="preloader" id="progressBarId" style="display: none;background:none;">

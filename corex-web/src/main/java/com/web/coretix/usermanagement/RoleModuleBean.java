@@ -13,7 +13,7 @@ import java.util.List;
 public class RoleModuleBean {
 
     private String module;
-    private List<RoleSubModuleBean> roleSubModuleBean;
+    private List<RoleSubModuleBean> roleSubModuleBeanList;
     
     
     /**
@@ -33,15 +33,15 @@ public class RoleModuleBean {
     /**
      * @return the roleSubModuleBean
      */
-    public List<RoleSubModuleBean> getRoleSubModuleBean() {
-        return roleSubModuleBean;
+    public List<RoleSubModuleBean> getRoleSubModuleBeanList() {
+        return roleSubModuleBeanList;
     }
 
     /**
-     * @param roleSubModuleBean the roleSubModuleBean to set
+     * @param roleSubModuleBeanList the roleSubModuleBean to set
      */
-    public void setRoleSubModuleBean(List<RoleSubModuleBean> roleSubModuleBean) {
-        this.roleSubModuleBean = roleSubModuleBean;
+    public void setRoleSubModuleBeanList(List<RoleSubModuleBean> roleSubModuleBeanList) {
+        this.roleSubModuleBeanList = roleSubModuleBeanList;
     }
 
 }

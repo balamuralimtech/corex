@@ -5,60 +5,138 @@
                 xmlns:p="http://primefaces.org/ui"
                 template="/WEB-INF/template.xhtml">
 
-    <ui:define name="title">License</ui:define>
+    <ui:define name="title">#{msg['licenseLabel']}</ui:define>
 
     <ui:define name="content">
-        <div class="grid">
-            <div class="col">
-                <div class="card">
-                    <p:messages></p:messages>
-                    <h:form>
-                        <table>
-                            <tr>
-                                <td><h:outputLabel for="id" value="Id : " /></td>
-                                <td><p:inputText id="id" value="#{entityBBean.id}"
-                                                 disabled="true">
-                                        <f:converter converterId="javax.faces.Integer" />
-                                        <p:ajax event="blur" update="idMsg" />
-                                    </p:inputText> <p:message id="idMsg" for="id" display="icon" /></td>
-                            </tr>
-                            <tr>
-                                <td><h:outputLabel for="attribute" value="Attribute : " /></td>
-                                <td><p:inputText id="attribute"
-                                                 value="#{entityBBean.attribute}">
-                                        <f:validateLength minimum="5" />
-                                        <p:ajax event="blur" update="attributeMsg" />
-                                    </p:inputText> <p:message id="attributeMsg" for="attribute" display="icon" /></td>
-                            </tr>
-                            <tr>
-                                <td><p:commandButton id="addUser" value="Add"
-                                                     actionListener="#{entityBBean.addEntity}" ajax="false" /></td>
-                                <td><p:commandButton id="reset" value="Reset"
-                                                     actionListener="#{entityBBean.reset}" ajax="false" /></td>
-                            </tr>
-                        </table>
+        <f:event listener="#{licenseBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:form id="form">
+            <div class="col-12">
+                <p:breadCrumb>
+                    <p:menuitem url="#" icon="pi pi-home"/>
+                    <p:menuitem value="#{msg['licenseLabel']}" url="#"/>
+                </p:breadCrumb>
+            </div>
+            <div class="grid crud-demo">
+                <div class="col-12">
+                    <p:outputPanel class="card" id="licenseMainPanelId">
+                        <p:growl id="messages" showDetail="true"/>
 
-                        Elements:
+                        <p:toolbar styleClass="mb-4">
+                            <p:toolbarGroup>
+                                <p:commandButton value="#{msg['newLabel']}" icon="pi pi-plus"
+                                                 actionListener="#{licenseBean.addButtonAction}"
+                                                 update="addEditLicensePanelId" process="@this"
+                                                 oncomplete="PF('manageLicenseDialog').show()"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem"/>
+                                <p:commandButton value="#{msg['fetchLicensesLabel']}" icon="pi pi-search"
+                                                 action="#{licenseBean.searchButtonAction}"
+                                                 update="licenseMainPanelId" process="@this"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem"/>
 
-                        <p:dataTable id="entities" var="entity" value="#{entityBBean.entityList}"
-                                     style="width: 10%">
-                            <p:column>
+                                <h:outputLabel value="#{msg['noOfRecordsLabel']}: " rendered="#{licenseBean.datatableRendered}"/>
+                                <h:outputText value="#{licenseBean.recordsCount}" rendered="#{licenseBean.datatableRendered}"/>
+                            </p:toolbarGroup>
+                            <p:toolbarGroup align="right">
+                                <p:commandButton value="#{msg['exportLabel']}" icon="pi pi-upload" styleClass="ui-button-help"
+                                                 rendered="#{licenseBean.datatableRendered}">
+                                    <p:dataExporter type="pdf" target="licenseDataTableId" fileName="#{msg['licenseLabel']}"/>
+                                </p:commandButton>
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <p:outputPanel id="datatablePanelId" rendered="#{licenseBean.datatableRendered}">
+                            <p:dataTable id="licenseDataTableId" widgetVar="licenseTable" var="license"
+                                         value="#{licenseBean.licenseList}" reflow="true" styleClass="commoncrud-table"
+                                         rowKey="#{license.id}" paginator="true" rows="10" paginatorPosition="bottom">
                                 <f:facet name="header">
-                                    <h:outputText value="ID" />
+                                    <div class="products-table-header">
+                                        <span style="font-weight: bold">#{msg['searchLicenseLabel']}</span>
+                                        <span class="filter-container ui-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <p:inputText id="globalFilter" onkeyup="PF('licenseTable').filter()" placeholder="#{msg['searchLabel']}"/>
+                                        </span>
+                                    </div>
                                 </f:facet>
-                                <h:outputText value="#{entity.id}" />
-                            </p:column>
-                            <p:column>
-                                <f:facet name="header">
-                                    <h:outputText value="Name" />
-                                </f:facet>
-                                <h:outputText value="#{entity.attribute}" />
-                            </p:column>
-                        </p:dataTable>
-                    </h:form>
+
+                                <p:column headerText="#{msg['idLabel']}" sortBy="#{license.id}" filterBy="#{license.id}">
+                                    <h:outputText value="#{license.id}"/>
+                                </p:column>
+                                <p:column headerText="#{msg['organizationLabel']}" sortBy="#{license.organization.organizationName}" filterBy="#{license.organization.organizationName}">
+                                    <h:outputText value="#{license.organization.organizationName}"/>
+                                </p:column>
+                                <p:column headerText="#{msg['licenseStartDateLabel']}" sortBy="#{license.startDate}">
+                                    <h:outputText value="#{licenseBean.getFormattedDate(license.startDate)}"/>
+                                </p:column>
+                                <p:column headerText="#{msg['licenseEndDateLabel']}" sortBy="#{license.endDate}">
+                                    <h:outputText value="#{licenseBean.getFormattedDate(license.endDate)}"/>
+                                </p:column>
+                                <p:column headerText="#{msg['statusLabel']}">
+                                    <h:outputText value="#{licenseBean.getLicenseStatus(license)}"/>
+                                </p:column>
+                                <p:column headerText="#{msg['remarksLabel']}" sortBy="#{license.remarks}" filterBy="#{license.remarks}">
+                                    <h:outputText value="#{license.remarks}"/>
+                                </p:column>
+
+                                <p:column exportable="false">
+                                    <p:commandButton icon="pi pi-pencil" update=":form:addEditLicensePanelId" oncomplete="PF('manageLicenseDialog').show()"
+                                                     action="#{licenseBean.confirmEditButtonAction}"
+                                                     styleClass="edit-button rounded-button ui-button-success" process="@this">
+                                        <f:setPropertyActionListener value="#{license}" target="#{licenseBean.selectedLicense}"/>
+                                    </p:commandButton>
+                                    <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash" process="@this"
+                                                     oncomplete="PF('deleteLicenseDialog').show()">
+                                        <f:setPropertyActionListener value="#{license}" target="#{licenseBean.selectedLicense}"/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </p:outputPanel>
+
+                        <p:dialog header="#{msg['licenseDetailsLabel']}" showEffect="fade" modal="true"
+                                  widgetVar="manageLicenseDialog" responsive="true">
+                            <p:outputPanel id="addEditLicensePanelId" class="ui-fluid">
+                                <div class="field">
+                                    <p:outputLabel for="@next" value="#{msg['organizationLabel']}*"/>
+                                    <p:autoComplete id="organization" dropdown="true" value="#{licenseBean.organizationName}"
+                                                    completeMethod="#{licenseBean.completeOrganization}"
+                                                    scrollHeight="250"/>
+                                </div>
+                                <div class="field">
+                                    <p:outputLabel for="startDate" value="#{msg['licenseStartDateLabel']}*"/>
+                                    <p:calendar id="startDate" value="#{licenseBean.startDate}" pattern="yyyy-MM-dd"
+                                                navigator="true" showButtonPanel="true"/>
+                                </div>
+                                <div class="field">
+                                    <p:outputLabel for="endDate" value="#{msg['licenseEndDateLabel']}*"/>
+                                    <p:calendar id="endDate" value="#{licenseBean.endDate}" pattern="yyyy-MM-dd"
+                                                navigator="true" showButtonPanel="true"/>
+                                </div>
+                                <div class="field">
+                                    <p:outputLabel for="remarks" value="#{msg['remarksLabel']}"/>
+                                    <p:inputTextarea id="remarks" value="#{licenseBean.remarks}" rows="4" autoResize="false"/>
+                                </div>
+                            </p:outputPanel>
+
+                            <f:facet name="footer">
+                                <p:commandButton value="#{msg['saveLabel']}" icon="pi pi-check"
+                                                 actionListener="#{licenseBean.saveLicense}"
+                                                 update=":form:addEditLicensePanelId :form:messages" process=":form:addEditLicensePanelId @this"/>
+                                <p:commandButton value="#{msg['cancelLabel']}" icon="pi pi-times"
+                                                 onclick="PF('manageLicenseDialog').hide()" class="ui-button-secondary"/>
+                            </f:facet>
+                        </p:dialog>
+
+                        <p:confirmDialog widgetVar="deleteLicenseDialog" showEffect="fade" width="300"
+                                         message="#{msg['deleteTheLicenseLabel']}?" header="#{msg['confirmLabel']}" severity="warn">
+                            <p:commandButton value="#{msg['yesLabel']}" icon="pi pi-check"
+                                             actionListener="#{licenseBean.confirmDeleteLicense}" process="@this"
+                                             oncomplete="PF('deleteLicenseDialog').hide()"/>
+                            <p:commandButton value="#{msg['noLabel']}" type="button" styleClass="ui-button-secondary"
+                                             icon="pi pi-times" onclick="PF('deleteLicenseDialog').hide()"/>
+                        </p:confirmDialog>
+                    </p:outputPanel>
                 </div>
             </div>
-        </div>
+        </h:form>
     </ui:define>
 
 </ui:composition>

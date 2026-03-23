@@ -50,7 +50,7 @@ public class RoleAdministrationDAO implements IRoleAdministrationDAO {
         logger.debug("inside dao updateOrganization !!");
         Session session = getSessionFactory().getCurrentSession();
         Transaction trans = session.beginTransaction();
-        session.update(role);
+        session.merge(role);
         trans.commit();
     }
 
@@ -58,7 +58,8 @@ public class RoleAdministrationDAO implements IRoleAdministrationDAO {
         logger.debug("inside dao deleteOrganization !!");
         Session session = getSessionFactory().getCurrentSession();
         Transaction trans = session.beginTransaction();
-        session.delete(role);
+        Roles persistentRole = (Roles) session.get(Roles.class, role.getId());
+        session.delete(persistentRole);
         trans.commit();
     }
 
@@ -82,7 +83,7 @@ public class RoleAdministrationDAO implements IRoleAdministrationDAO {
         Transaction trans = session.beginTransaction();
 
         List<RolePrivileges> list = session
-                .createQuery("from RolePrivileges where role_id=? and module_id=? and submodule_id=? and is_selected=true").setParameter(0, roleId).setParameter(1, moduleId).setParameter(2, subModuleId)
+                .createQuery("from RolePrivileges where roles.id=? and moduleId=? and submoduleId=? and isSelected=true").setParameter(0, roleId).setParameter(1, moduleId).setParameter(2, subModuleId)
                 .list();
 
                 trans.commit();
@@ -140,12 +141,12 @@ public class RoleAdministrationDAO implements IRoleAdministrationDAO {
         return distinctSubModules;
     }
     
-        public Roles getRoleEntityByRoleName(String roleName) {
+    public Roles getRoleEntityByRoleName(String roleName) {
         Session session = getSessionFactory().getCurrentSession();
         Transaction trans = session.beginTransaction();
 
         List<?> list = session
-                .createQuery("from Roles where role_name=?").setParameter(0, roleName)
+                .createQuery("from Roles where roleName=?").setParameter(0, roleName)
                 .list();
 
         trans.commit();

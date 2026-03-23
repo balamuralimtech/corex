@@ -37,6 +37,7 @@
                 <value>com.persist.coretix.modal.systemmanagement.Organizations</value>
                 <value>com.persist.coretix.modal.systemmanagement.BankDetails</value>
                 <value>com.persist.coretix.modal.systemmanagement.NotificationSettings</value>
+                <value>com.persist.coretix.modal.license.Licenses</value>
                                 <!-- User Management  Declaration -->
                 <value>com.persist.coretix.modal.usermanagement.ModulePrivileges</value>
                 <value>com.persist.coretix.modal.usermanagement.UserActivities</value>

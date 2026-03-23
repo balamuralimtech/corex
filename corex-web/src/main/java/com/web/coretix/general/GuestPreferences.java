@@ -528,6 +528,30 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
             );
             session.removeAttribute(SessionAttributes.APPLICATION_NOTIFICATION_GROWL.getName());
         }
+
+        String roleUpdateLogoutMessage =
+                (String) session.getAttribute(SessionAttributes.ROLE_UPDATE_LOGOUT_NOTIFICATION.getName());
+        if (roleUpdateLogoutMessage != null) {
+            PrimeFaces.current().executeScript(
+                    "showForcedRoleUpdateDialog('" + escapeForJavascript(roleUpdateLogoutMessage) + "', 10);"
+            );
+            session.removeAttribute(SessionAttributes.ROLE_UPDATE_LOGOUT_NOTIFICATION.getName());
+        }
+    }
+
+    public void handleForcedRoleUpdateLogout() {
+        logoutAction();
+    }
+
+    private String escapeForJavascript(String value) {
+        if (value == null) {
+            return "";
+        }
+
+        return value.replace("\\", "\\\\")
+                .replace("'", "\\'")
+                .replace("\r", "")
+                .replace("\n", "\\n");
     }
 
     public String getGrowlMessage() {

@@ -17,6 +17,8 @@ import org.apache.log4j.Logger;
 public class CustomExceptionHandler extends ExceptionHandlerWrapper {
 
     private static final Logger logger = Logger.getLogger(CustomExceptionHandler.class);
+    private static final String SESSION_TIMEOUT_PAGE = "/pages/errorandwarningpages/408sessiontimeout.xhtml";
+    private static final String INTERNAL_SERVER_ERROR_PAGE = "/pages/errorandwarningpages/500internalservererror.xhtml";
     private ExceptionHandler wrapped;
 
     public CustomExceptionHandler(ExceptionHandler wrapped) {
@@ -37,16 +39,9 @@ public class CustomExceptionHandler extends ExceptionHandlerWrapper {
 
                 try {
                     ViewExpiredException vee = (ViewExpiredException) throwable;
-                    logger.warn("ViewExpiredException detected for view: " + vee.getViewId() + ". Redirecting to login or home page.", throwable);
-
-                    // Redirect to login page or home page
-                    String contextPath = facesContext.getExternalContext().getRequestContextPath();
-                    String redirectUrl = contextPath + "/login.xhtml";
-
-                    facesContext.getExternalContext().redirect(redirectUrl);
-                    facesContext.responseComplete();
-
-                    logger.debug("Successfully redirected to: " + redirectUrl);
+                    logger.warn("ViewExpiredException detected for view: " + vee.getViewId()
+                            + ". Redirecting to session timeout page.", throwable);
+                    redirectToPage(facesContext, SESSION_TIMEOUT_PAGE);
                 } catch (IOException e) {
                     logger.error("Failed to redirect after ViewExpiredException", e);
                     throw new FacesException("Error handling ViewExpiredException", e);
@@ -60,21 +55,9 @@ public class CustomExceptionHandler extends ExceptionHandlerWrapper {
                 FacesContext facesContext = FacesContext.getCurrentInstance();
 
                 try {
-                    logger.warn("View state restoration error detected. Redirecting to refresh the page.", throwable);
-
-                    // Get the current view ID
-                    String viewId = facesContext.getViewRoot() != null
-                        ? facesContext.getViewRoot().getViewId()
-                        : "/index.xhtml";
-
-                    // Redirect to the same page to reset the view state
-                    String contextPath = facesContext.getExternalContext().getRequestContextPath();
-                    String redirectUrl = contextPath + viewId;
-
-                    facesContext.getExternalContext().redirect(redirectUrl);
-                    facesContext.responseComplete();
-
-                    logger.debug("Successfully redirected to: " + redirectUrl);
+                    logger.warn("View state restoration error detected. Redirecting to session timeout page.",
+                            throwable);
+                    redirectToPage(facesContext, SESSION_TIMEOUT_PAGE);
                 } catch (IOException e) {
                     logger.error("Failed to redirect after view state error", e);
                     throw new FacesException("Error handling view state restoration failure", e);
@@ -82,11 +65,25 @@ public class CustomExceptionHandler extends ExceptionHandlerWrapper {
                     // Remove the exception from the queue
                     iterator.remove();
                 }
+            } else {
+                FacesContext facesContext = FacesContext.getCurrentInstance();
+
+                try {
+                    logger.error("Unhandled JSF exception detected. Redirecting to internal server error page.",
+                            throwable);
+                    redirectToPage(facesContext, INTERNAL_SERVER_ERROR_PAGE);
+                } catch (IOException e) {
+                    logger.error("Failed to redirect after unhandled JSF exception", e);
+                    throw new FacesException("Error handling unhandled JSF exception", e);
+                } finally {
+                    iterator.remove();
+                }
             }
         }
 
-        // Let the parent handle any remaining exceptions
-        getWrapped().handle();
+        if (!FacesContext.getCurrentInstance().getResponseComplete()) {
+            getWrapped().handle();
+        }
     }
 
     /**
@@ -115,6 +112,14 @@ public class CustomExceptionHandler extends ExceptionHandlerWrapper {
 
         // Check cause recursively
         return isViewStateRestorationError(throwable.getCause());
+    }
+
+    private void redirectToPage(FacesContext facesContext, String pagePath) throws IOException {
+        String contextPath = facesContext.getExternalContext().getRequestContextPath();
+        String redirectUrl = contextPath + pagePath;
+        facesContext.getExternalContext().redirect(redirectUrl);
+        facesContext.responseComplete();
+        logger.debug("Successfully redirected to: " + redirectUrl);
     }
 
     @Override

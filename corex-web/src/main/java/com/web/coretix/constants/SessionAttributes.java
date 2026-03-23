@@ -17,7 +17,8 @@ public enum SessionAttributes {
     ACCESS_RIGHT_ID("accessRightId"),
     ROLE_ID("roleId"),
     LANGUAGE("language"),
-    APPLICATION_NOTIFICATION_GROWL("notificationGrowl");
+    APPLICATION_NOTIFICATION_GROWL("notificationGrowl"),
+    ROLE_UPDATE_LOGOUT_NOTIFICATION("roleUpdateLogoutNotification");
 
     private String name;
 

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourcePerFileMappings">
+    <file url="file://$PROJECT_DIR$/corex-db/licensemanagement/license.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
     <file url="file://$PROJECT_DIR$/corex-db/systemmanagement/Currency Details.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
     <file url="file://$PROJECT_DIR$/corex-db/systemmanagement/bankdetails.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
     <file url="file://$PROJECT_DIR$/corex-db/systemmanagement/branches.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />

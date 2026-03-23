@@ -1,5 +1,7 @@
 package com.web.coretix.appgeneral;
 
+import com.module.coretix.license.ILicenseService;
+import com.persist.coretix.modal.license.Licenses;
 import com.persist.coretix.modal.usermanagement.UserActivities;
 import com.persist.coretix.modal.usermanagement.UserDetails;
 import com.module.coretix.usermanagement.IUserActivityService;
@@ -43,6 +45,9 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
     @Inject
     private IUserActivityService userActivityService;
 
+    @Inject
+    private ILicenseService licenseService;
+
     public String navigateToLoginPage() {
         logger.debug("entered into LoginBean navigateToLoginPage !!!");
         logger.debug("end of LoginBean navigateToLoginPage !!!");
@@ -50,8 +55,8 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
     }
 
     public String login() throws Exception {
-        username = username.trim();
-        password = password.trim();
+        username = username == null ? null : username.trim();
+        password = password == null ? null : password.trim();
 
         logger.debug("username : " + username);
         logger.debug("password : " + password);
@@ -78,6 +83,19 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
             userActivities.setCreatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
 
             if (isUserValid && userDetails != null) {
+                String licenseValidationMessage = getLicenseValidationMessage(userDetails);
+                if (licenseValidationMessage != null) {
+                    userActivities.setUserId(userDetails.getUserId());
+                    userActivities.setUserName(userDetails.getUserName());
+                    userActivities.setActivityDescription(LoginConstants.LICENSE_EXPIRED.getValue());
+                    userActivityService.addUserActivity(userActivities);
+                    userAdministrationService.updateUserStatus(userDetails.getUserId(), LoginConstants.LICENSE_EXPIRED.getId());
+                    FacesContext.getCurrentInstance().addMessage(null,
+                            new FacesMessage(FacesMessage.SEVERITY_ERROR, "License Error", licenseValidationMessage));
+                    PrimeFaces.current().ajax().update("form:messages","form:username","form:password");
+                    return null;
+                }
+
                 logger.debug("User login successful !");
                 userActivities.setUserId(userDetails.getUserId());
                 userActivities.setUserName(userDetails.getUserName());
@@ -123,6 +141,23 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
 
     private UserDetails getUserDetailsByUsername(String username) {
         return userAdministrationService.getUserDetailEntityByUserName(username);
+    }
+
+    private String getLicenseValidationMessage(UserDetails userDetails) {
+        if (userDetails == null || userDetails.getOrganization() == null) {
+            return "No license details found. Please contact admin for license registration.";
+        }
+
+        Licenses license = licenseService.getLicenseByOrganizationId(userDetails.getOrganization().getId());
+        if (license == null) {
+            return "No license details found. Please contact admin for license registration.";
+        }
+
+        if (!licenseService.isLicenseActiveForOrganization(userDetails.getOrganization().getId())) {
+            return "Your license has expired. Please contact admin.";
+        }
+
+        return null;
     }
 
     // Method to get machine IP and name

@@ -171,55 +171,55 @@
     </error-page>
     <error-page>
         <error-code>401</error-code>
-        <location>/pages/errorandwarningpages/unauthorized.xhtml</location>
+        <location>/pages/errorandwarningpages/401unauthorized.xhtml</location>
     </error-page>
     <error-page>
         <error-code>403</error-code>
-        <location>/pages/errorandwarningpages/forbidden.xhtml</location>
+        <location>/pages/errorandwarningpages/403forbidden.xhtml</location>
     </error-page>
     <error-page>
         <error-code>404</error-code>
-        <location>/pages/errorandwarningpages/notfound.xhtml</location>
+        <location>/pages/errorandwarningpages/404notfound.xhtml</location>
     </error-page>
     <error-page>
         <error-code>408</error-code>
-        <location>/pages/errorandwarningpages/sessiontimeout.xhtml</location>
+        <location>/pages/errorandwarningpages/408sessiontimeout.xhtml</location>
     </error-page>
     <!--5XX errors-->
     <error-page>
         <error-code>500</error-code>
-        <location>/pages/errorandwarningpages/internalservererror.xhtml</location>
+        <location>/pages/errorandwarningpages/500internalservererror.xhtml</location>
     </error-page>
     <error-page>
         <error-code>501</error-code>
-        <location>/pages/errorandwarningpages/internalservererror.xhtml</location>
+        <location>/pages/errorandwarningpages/501notimplemented.xhtml</location>
     </error-page>
     <error-page>
         <error-code>502</error-code>
-        <location>/pages/errorandwarningpages/internalservererror.xhtml</location>
+        <location>/pages/errorandwarningpages/502badgateway.xhtml</location>
     </error-page>
     <error-page>
         <error-code>503</error-code>
-        <location>/pages/errorandwarningpages/internalservererror.xhtml</location>
+        <location>/pages/errorandwarningpages/501serviceunavailable.xhtml</location>
     </error-page>
     <error-page>
         <error-code>504</error-code>
-        <location>/pages/errorandwarningpages/internalservererror.xhtml</location>
+        <location>/pages/errorandwarningpages/504gatewaytimeout.xhtml</location>
     </error-page>
     <error-page>
         <error-code>505</error-code>
-        <location>/pages/errorandwarningpages/internalservererror.xhtml</location>
+        <location>/pages/errorandwarningpages/505httpversionnotsupported.xhtml</location>
     </error-page>
     <error-page>
         <error-code>506</error-code>
-        <location>/pages/errorandwarningpages/internalservererror.xhtml</location>
+        <location>/pages/errorandwarningpages/506variantalsonegotiates.xhtml</location>
     </error-page>
     <error-page>
         <error-code>509</error-code>
-        <location>/pages/errorandwarningpages/bandwidthlimitexceeded.xhtml</location>
+        <location>/pages/errorandwarningpages/509bandwidthlimitexceeded.xhtml</location>
     </error-page>
     <error-page>
         <error-code>510</error-code>
-        <location>/pages/errorandwarningpages/internalservererror.xhtml</location>
+        <location>/pages/errorandwarningpages/510notextended.xhtml</location>
     </error-page>
 </web-app>

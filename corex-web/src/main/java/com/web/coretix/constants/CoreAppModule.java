@@ -60,9 +60,18 @@ public enum CoreAppModule {
     // Method to get all values as a list
     public static List<String> getAllValues() {
         List<String> valuesList = new ArrayList<>();
-        for (CoreAppModule module : values()) {
+        for (CoreAppModule module : getAllModules()) {
             valuesList.add(module.getValue());
         }
         return valuesList;
+    }
+
+    // Method to get all enum entries as a strongly typed list
+    public static List<CoreAppModule> getAllModules() {
+        List<CoreAppModule> modules = new ArrayList<>();
+        for (CoreAppModule module : values()) {
+            modules.add(module);
+        }
+        return modules;
     }
 }

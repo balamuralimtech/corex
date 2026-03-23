@@ -5,11 +5,14 @@
 package com.web.coretix.usermanagement;
 
 import com.module.coretix.commonto.RoleUsageCountTO;
+import com.persist.coretix.modal.usermanagement.UserDetails;
 import com.persist.coretix.modal.usermanagement.ModulePrivileges;
 import com.persist.coretix.modal.usermanagement.RolePrivileges;
 import com.persist.coretix.modal.usermanagement.Roles;
 import com.module.coretix.usermanagement.IModulePrivilegeService;
 import com.module.coretix.usermanagement.IRoleAdministrationService;
+import com.module.coretix.usermanagement.IUserAdministrationService;
+import com.web.coretix.general.SessionListeners;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -17,12 +20,16 @@ import com.web.coretix.constants.*;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+import javax.servlet.http.HttpSession;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.primefaces.PrimeFaces;
@@ -49,6 +56,9 @@ public class RoleAdministrationBean implements Serializable {
     @Inject
     private IRoleAdministrationService roleAdministrationService;
 
+    @Inject
+    private IUserAdministrationService userAdministrationService;
+
     private String roleName;
     private List<Roles> rolesList = new ArrayList<>();
 
@@ -61,6 +71,7 @@ public class RoleAdministrationBean implements Serializable {
     private int rolesNotUsedCount;
 
     private Roles selectedRole = new Roles();
+    private List<String> impactedActiveRoleUsers = new ArrayList<>();
 
     public void initializePageAttributes() {
         logger.debug("entered into initializePageAttributes !!!");
@@ -83,12 +94,48 @@ public class RoleAdministrationBean implements Serializable {
         logger.debug("end of initializePageAttributes !!!");
     }
 
-    private void populateRoleDefintionDBList() {
+    private void populateRoleDefintionNewAddList() {
 
-        List<ModulePrivileges> modulePrivileges = modulePrivilegeService.getModulePrivilegesList();
+        logger.debug("entered into populateRoleDefintionDBList !!!");
 
-        populateDBModulePrivilegesList(modulePrivileges);
+        roleModuleList.add(buildRoleModuleBean(CoreAppModule.USER_MANAGEMENT.getValue(),
+                UserManagementModule.getAllValues()));
+        roleModuleList.add(buildRoleModuleBean(CoreAppModule.SYSTEM_MANAGEMENT.getValue(),
+                SystemManagementModule.getAllValues()));
+        roleModuleList.add(buildRoleModuleBean(CoreAppModule.LICENCE.getValue(),
+                LicenseManagementModule.getAllValues()));
+        roleModuleList.add(buildRoleModuleBean(CoreAppModule.SERVER_AND_DB.getValue(),
+                ServerAndDBModule.getAllValues()));
 
+        logger.debug("roleModuleList size : " + roleModuleList.size());
+        logger.debug("end of populateRoleDefintionDBList !!!");
+
+    }
+
+    private RoleModuleBean buildRoleModuleBean(String moduleName, List<String> subModuleNames) {
+        RoleModuleBean roleModuleBean = new RoleModuleBean();
+        roleModuleBean.setModule(moduleName);
+        roleModuleBean.setRoleSubModuleBeanList(new ArrayList<>());
+
+        logger.debug("roleModuleBean.getModule() : " + roleModuleBean.getModule());
+
+        for (String subModuleName : subModuleNames) {
+            roleModuleBean.getRoleSubModuleBeanList().add(buildRoleSubModuleBean(subModuleName));
+        }
+        return roleModuleBean;
+    }
+
+    private RoleSubModuleBean buildRoleSubModuleBean(String subModuleName) {
+        RoleSubModuleBean roleSubModuleBean = new RoleSubModuleBean();
+        roleSubModuleBean.setSubModule(subModuleName);
+        roleSubModuleBean.setRolePrivilegeBeanList(
+                new ArrayList<>(PrivilegeMatrix.getAllowedPrivilegeValues(subModuleName)));
+
+        logger.debug("roleSubModuleBean.getSubModule() : " + roleSubModuleBean.getSubModule());
+        logger.debug("roleSubModuleBean.getRolePrivilegeBeanList() size : "
+                + roleSubModuleBean.getRolePrivilegeBeanList().size());
+
+        return roleSubModuleBean;
     }
 
     private void populateDBModulePrivilegesList(List<ModulePrivileges> modulePrivileges) {
@@ -143,50 +190,6 @@ public class RoleAdministrationBean implements Serializable {
                 if (privilegeList != null) {
                     privilegeList.add(modulePrivilege.getId() + "/" + RolePrivilegeConstants.getById(modulePrivilege.getPrivilegeId()).getValue());
                 }
-            } else if (CoreAppModule.getById(modulePrivilege.getModuleId()).getValue().equalsIgnoreCase(CoreAppModule.CLIENT_MANAGEMENT.getValue())) {
-                logger.debug("I" + modulePrivilege.getId() + " M : " + CoreAppModule.getById(modulePrivilege.getModuleId()).getValue()
-                        + " S : " + ClientManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue()
-                        + " P : " + RolePrivilegeConstants.getById(modulePrivilege.getPrivilegeId()).getValue());
-                outerMap.putIfAbsent(CoreAppModule.getById(modulePrivilege.getModuleId()).getValue(), new LinkedHashMap<>());
-                Map<String, List<String>> innerMap = outerMap.get(CoreAppModule.getById(modulePrivilege.getModuleId()).getValue());
-                innerMap.putIfAbsent(ClientManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue(), new ArrayList<>());
-                List<String> privilegeList = innerMap.get(ClientManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue());
-                if (privilegeList != null) {
-                    privilegeList.add(modulePrivilege.getId() + "/" + RolePrivilegeConstants.getById(modulePrivilege.getPrivilegeId()).getValue());
-                }
-            } else if (CoreAppModule.getById(modulePrivilege.getModuleId()).getValue().equalsIgnoreCase(CoreAppModule.INVENTORY_MANAGEMENT.getValue())) {
-                logger.debug("I" + modulePrivilege.getId() + " M : " + CoreAppModule.getById(modulePrivilege.getModuleId()).getValue()
-                        + " S : " + InventoryManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue()
-                        + " P : " + RolePrivilegeConstants.getById(modulePrivilege.getPrivilegeId()).getValue());
-                outerMap.putIfAbsent(CoreAppModule.getById(modulePrivilege.getModuleId()).getValue(), new LinkedHashMap<>());
-                Map<String, List<String>> innerMap = outerMap.get(CoreAppModule.getById(modulePrivilege.getModuleId()).getValue());
-                innerMap.putIfAbsent(InventoryManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue(), new ArrayList<>());
-                List<String> privilegeList = innerMap.get(InventoryManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue());
-                if (privilegeList != null) {
-                    privilegeList.add(modulePrivilege.getId() + "/" + RolePrivilegeConstants.getById(modulePrivilege.getPrivilegeId()).getValue());
-                }
-            } else if (CoreAppModule.getById(modulePrivilege.getModuleId()).getValue().equalsIgnoreCase(CoreAppModule.QUOTE_MANAGEMENT.getValue())) {
-                logger.debug("I" + modulePrivilege.getId() + " M : " + CoreAppModule.getById(modulePrivilege.getModuleId()).getValue()
-                        + " S : " + QuoteManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue()
-                        + " P : " + RolePrivilegeConstants.getById(modulePrivilege.getPrivilegeId()).getValue());
-                outerMap.putIfAbsent(CoreAppModule.getById(modulePrivilege.getModuleId()).getValue(), new LinkedHashMap<>());
-                Map<String, List<String>> innerMap = outerMap.get(CoreAppModule.getById(modulePrivilege.getModuleId()).getValue());
-                innerMap.putIfAbsent(QuoteManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue(), new ArrayList<>());
-                List<String> privilegeList = innerMap.get(QuoteManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue());
-                if (privilegeList != null) {
-                    privilegeList.add(modulePrivilege.getId() + "/" + RolePrivilegeConstants.getById(modulePrivilege.getPrivilegeId()).getValue());
-                }
-            } else if (CoreAppModule.getById(modulePrivilege.getModuleId()).getValue().equalsIgnoreCase(CoreAppModule.SHIPMENT_MANAGEMENT.getValue())) {
-                logger.debug("I" + modulePrivilege.getId() + " M : " + CoreAppModule.getById(modulePrivilege.getModuleId()).getValue()
-                        + " S : " + ShipmentManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue()
-                        + " P : " + RolePrivilegeConstants.getById(modulePrivilege.getPrivilegeId()).getValue());
-                outerMap.putIfAbsent(CoreAppModule.getById(modulePrivilege.getModuleId()).getValue(), new LinkedHashMap<>());
-                Map<String, List<String>> innerMap = outerMap.get(CoreAppModule.getById(modulePrivilege.getModuleId()).getValue());
-                innerMap.putIfAbsent(ShipmentManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue(), new ArrayList<>());
-                List<String> privilegeList = innerMap.get(ShipmentManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue());
-                if (privilegeList != null) {
-                    privilegeList.add(modulePrivilege.getId() + "/" + RolePrivilegeConstants.getById(modulePrivilege.getPrivilegeId()).getValue());
-                }
             }
         }
 
@@ -203,19 +206,21 @@ public class RoleAdministrationBean implements Serializable {
 
                 RoleSubModuleBean roleSubModuleBean = new RoleSubModuleBean();
                 roleSubModuleBean.setSubModule(innerEntry.getKey());
-                List<String> rolePrivilegeBeanList = new ArrayList<>();
                 List<String> availablePrivilegeList = new ArrayList<>();
                 for (String string : innerEntry.getValue()) {
                     String[] parts = string.split("/");
-                    availablePrivilegeList.add(parts[1]);
+                    if (PrivilegeMatrix.isPrivilegeAllowedForPage(innerEntry.getKey(),
+                            RolePrivilegeConstants.getByValue(parts[1]))) {
+                        availablePrivilegeList.add(parts[1]);
+                    }
                 }
                 logger.debug("availablePrivilegeList : " + availablePrivilegeList);
-                rolePrivilegeBeanList.addAll(availablePrivilegeList);
 
-                roleSubModuleBean.setRolePrivilegeBeanList(rolePrivilegeBeanList);
+                roleSubModuleBean.setRolePrivilegeBeanList(new ArrayList<>(
+                        PrivilegeMatrix.getAllowedPrivilegeValues(innerEntry.getKey())));
                 roleSubModuleBeanList.add(roleSubModuleBean);
             }
-            bean.setRoleSubModuleBean(roleSubModuleBeanList);
+            bean.setRoleSubModuleBeanList(roleSubModuleBeanList);
             getRoleModuleList().add(bean);
         }
 
@@ -272,51 +277,8 @@ public class RoleAdministrationBean implements Serializable {
                 if (privilegeList != null) {
                     privilegeList.add(RolePrivilegeConstants.getById(privileges.getPrivilegeId()).getValue()+"/"+privileges.getIsSelected());
                 }
-            } else if (CoreAppModule.getById(privileges.getModuleId()).getValue().equalsIgnoreCase(CoreAppModule.CLIENT_MANAGEMENT.getValue())) {
-                logger.debug("I" + privileges.getId() + " M : " + CoreAppModule.getById(privileges.getModuleId()).getValue()
-                        + " S : " + ClientManagementModule.getById(privileges.getSubmoduleId()).getValue()
-                        + " P : " + RolePrivilegeConstants.getById(privileges.getPrivilegeId()).getValue());
-                outerMap.putIfAbsent(CoreAppModule.getById(privileges.getModuleId()).getValue(), new LinkedHashMap<>());
-                Map<String, List<String>> innerMap = outerMap.get(CoreAppModule.getById(privileges.getModuleId()).getValue());
-                innerMap.putIfAbsent(ClientManagementModule.getById(privileges.getSubmoduleId()).getValue(), new ArrayList<>());
-                List<String> privilegeList = innerMap.get(ClientManagementModule.getById(privileges.getSubmoduleId()).getValue());
-                if (privilegeList != null) {
-                    privilegeList.add(privileges.getId() + "/" + RolePrivilegeConstants.getById(privileges.getPrivilegeId()).getValue());
-                }
-            } else if (CoreAppModule.getById(privileges.getModuleId()).getValue().equalsIgnoreCase(CoreAppModule.INVENTORY_MANAGEMENT.getValue())) {
-                logger.debug("I" + privileges.getId() + " M : " + CoreAppModule.getById(privileges.getModuleId()).getValue()
-                        + " S : " + InventoryManagementModule.getById(privileges.getSubmoduleId()).getValue()
-                        + " P : " + RolePrivilegeConstants.getById(privileges.getPrivilegeId()).getValue());
-                outerMap.putIfAbsent(CoreAppModule.getById(privileges.getModuleId()).getValue(), new LinkedHashMap<>());
-                Map<String, List<String>> innerMap = outerMap.get(CoreAppModule.getById(privileges.getModuleId()).getValue());
-                innerMap.putIfAbsent(InventoryManagementModule.getById(privileges.getSubmoduleId()).getValue(), new ArrayList<>());
-                List<String> privilegeList = innerMap.get(InventoryManagementModule.getById(privileges.getSubmoduleId()).getValue());
-                if (privilegeList != null) {
-                    privilegeList.add(privileges.getId() + "/" + RolePrivilegeConstants.getById(privileges.getPrivilegeId()).getValue());
-                }
-            } else if (CoreAppModule.getById(privileges.getModuleId()).getValue().equalsIgnoreCase(CoreAppModule.QUOTE_MANAGEMENT.getValue())) {
-                logger.debug("I" + privileges.getId() + " M : " + CoreAppModule.getById(privileges.getModuleId()).getValue()
-                        + " S : " + QuoteManagementModule.getById(privileges.getSubmoduleId()).getValue()
-                        + " P : " + RolePrivilegeConstants.getById(privileges.getPrivilegeId()).getValue());
-                outerMap.putIfAbsent(CoreAppModule.getById(privileges.getModuleId()).getValue(), new LinkedHashMap<>());
-                Map<String, List<String>> innerMap = outerMap.get(CoreAppModule.getById(privileges.getModuleId()).getValue());
-                innerMap.putIfAbsent(QuoteManagementModule.getById(privileges.getSubmoduleId()).getValue(), new ArrayList<>());
-                List<String> privilegeList = innerMap.get(QuoteManagementModule.getById(privileges.getSubmoduleId()).getValue());
-                if (privilegeList != null) {
-                    privilegeList.add(privileges.getId() + "/" + RolePrivilegeConstants.getById(privileges.getPrivilegeId()).getValue());
-                }
-            } else if (CoreAppModule.getById(privileges.getModuleId()).getValue().equalsIgnoreCase(CoreAppModule.SHIPMENT_MANAGEMENT.getValue())) {
-                logger.debug("I" + privileges.getId() + " M : " + CoreAppModule.getById(privileges.getModuleId()).getValue()
-                        + " S : " + ShipmentManagementModule.getById(privileges.getSubmoduleId()).getValue()
-                        + " P : " + RolePrivilegeConstants.getById(privileges.getPrivilegeId()).getValue());
-                outerMap.putIfAbsent(CoreAppModule.getById(privileges.getModuleId()).getValue(), new LinkedHashMap<>());
-                Map<String, List<String>> innerMap = outerMap.get(CoreAppModule.getById(privileges.getModuleId()).getValue());
-                innerMap.putIfAbsent(ShipmentManagementModule.getById(privileges.getSubmoduleId()).getValue(), new ArrayList<>());
-                List<String> privilegeList = innerMap.get(ShipmentManagementModule.getById(privileges.getSubmoduleId()).getValue());
-                if (privilegeList != null) {
-                    privilegeList.add(privileges.getId() + "/" + RolePrivilegeConstants.getById(privileges.getPrivilegeId()).getValue());
-                }
             }
+
         }
 
         // Print the outer map (for demonstration purposes)
@@ -330,15 +292,20 @@ public class RoleAdministrationBean implements Serializable {
 
                 RoleSubModuleBean roleSubModuleBean = new RoleSubModuleBean();
                 roleSubModuleBean.setSubModule(innerEntry.getKey());
-                List<String> rolePrivilegeBeanList = new ArrayList<>();
+                List<String> rolePrivilegeBeanList = new ArrayList<>(
+                        PrivilegeMatrix.getAllowedPrivilegeValues(innerEntry.getKey()));
                 List<String> selectedPrivilegeList = new ArrayList<>();
                 for (String string : innerEntry.getValue()) {
                     String[] parts = string.split("/");
+                    if (!PrivilegeMatrix.isPrivilegeAllowedForPage(innerEntry.getKey(),
+                            RolePrivilegeConstants.getByValue(parts[0]))) {
+                        continue;
+                    }
+
                     if(Boolean.parseBoolean(parts[1]))
                     {
                         selectedPrivilegeList.add(parts[0]);
                     }
-                    rolePrivilegeBeanList.add(parts[0]);
                 }
 
                 logger.debug("selectedPrivilegeList : "+selectedPrivilegeList);
@@ -348,7 +315,7 @@ public class RoleAdministrationBean implements Serializable {
                 roleSubModuleBean.setRolePrivilegeBeanList(rolePrivilegeBeanList);
                 roleSubModuleBeanList.add(roleSubModuleBean);
             }
-            bean.setRoleSubModuleBean(roleSubModuleBeanList);
+            bean.setRoleSubModuleBeanList(roleSubModuleBeanList);
             roleModuleList.add(bean);
         }
 
@@ -369,7 +336,7 @@ public class RoleAdministrationBean implements Serializable {
             logger.debug("inside  organizationList clear");
             roleModuleList.clear();
         }
-        populateRoleDefintionDBList();
+        populateRoleDefintionNewAddList();
     }
 
     public void searchButtonAction() {
@@ -383,15 +350,15 @@ public class RoleAdministrationBean implements Serializable {
             logger.debug("inside  organizationList clear");
             roleModuleList.clear();
         }
-        editOrganization();
+        editRole();
     }
 
-    private void editOrganization() {
+    private void editRole() {
         logger.debug("entered into edit button action !!!");
         isAddOperation = false;
 
         logger.debug("isAddOperation : " + isAddOperation);
-        logger.debug("selectedOrganization.getId() : " + getSelectedRole().getId());
+        logger.debug("selectedRole.getId() : " + getSelectedRole().getId());
 
         roleName = getSelectedRole().getRoleName();
 
@@ -402,96 +369,166 @@ public class RoleAdministrationBean implements Serializable {
 
     public void saveRole() {
 
-        logger.debug("Inside save organization method ");
+        logger.debug("Inside save role method ");
         logger.debug("roleName : " + roleName);
         logger.debug("isAddOperation : " + isAddOperation);
 
-        Roles role = new Roles();
-        role.setRoleName(roleName);
-        List<RolePrivileges> rolePrivilegesList = new ArrayList<>();
-        for (RoleModuleBean roleModuleBean : roleModuleList) {
+        if (roleName == null || roleName.trim().isEmpty()) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "Role name is required"));
+            PrimeFaces.current().ajax().update("form:messages", "form:addEditOrgPanelId");
+            return;
+        }
 
+        if (isRoleNameDuplicate()) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_WARN, "Warning", "Role name already exists"));
+            PrimeFaces.current().ajax().update("form:messages", "form:addEditOrgPanelId");
+            return;
+        }
+
+        if (!isAddOperation) {
+            impactedActiveRoleUsers = findActiveUsersForSelectedRole();
+
+            if (CollectionUtils.isNotEmpty(impactedActiveRoleUsers)) {
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_WARN, "Active Users Found",
+                                "These users will be forced logged out after role update confirmation."));
+                PrimeFaces.current().ajax().update("form:messages", "form:roleUpdateConfirmPanelId");
+                PrimeFaces.current().executeScript("PF('roleUpdateConfirmDialog').show()");
+                return;
+            }
+        }
+
+        persistRoleChanges(false);
+    }
+
+    public void confirmRoleUpdateAndLogout() {
+        persistRoleChanges(true);
+    }
+
+    private List<RolePrivileges> buildRolePrivileges(Roles role) {
+        List<RolePrivileges> rolePrivilegesList = new ArrayList<>();
+
+        for (RoleModuleBean roleModuleBean : roleModuleList) {
             logger.debug("roleModuleBean getModule : " + roleModuleBean.getModule());
 
-            for (RoleSubModuleBean roleSubModuleBean : roleModuleBean.getRoleSubModuleBean()) {
-
+            for (RoleSubModuleBean roleSubModuleBean : roleModuleBean.getRoleSubModuleBeanList()) {
                 logger.debug("roleModuleBean getSubModule : " + roleSubModuleBean.getSubModule());
-                logger.debug("roleSubModuleBean.getRolePrivilegeBeanList() : " + roleSubModuleBean.getRolePrivilegeBeanList());
-                logger.debug("roleSubModuleBean.getSelectedPrivilegeList() : " + roleSubModuleBean.getSelectedPrivilegeList());
+                logger.debug("roleSubModuleBean.getSelectedPrivilegeList() : "
+                        + roleSubModuleBean.getSelectedPrivilegeList());
 
-                // List to hold the results
-                List<String> isSelectedRolePrivilegeBeanList = new ArrayList<>();
-
-                // Iterate over list1 and check if each element is present in list2
-                for (String item1 : roleSubModuleBean.getRolePrivilegeBeanList()) {
-                    boolean isMatched = false;
-
-                    // Check if item1 is in list2
-                    for (String item2 : roleSubModuleBean.getSelectedPrivilegeList()) {
-                        if (item1.equals(item2)) {
-                            isMatched = true;
-                            break; // break as soon as a match is found
+                List<String> allowedPrivileges = PrivilegeMatrix.getAllowedPrivilegeValues(
+                        roleSubModuleBean.getSubModule());
+                Set<String> selectedPrivileges = new HashSet<>();
+                if (CollectionUtils.isNotEmpty(roleSubModuleBean.getSelectedPrivilegeList())) {
+                    for (String selectedPrivilege : roleSubModuleBean.getSelectedPrivilegeList()) {
+                        if (allowedPrivileges.contains(selectedPrivilege)) {
+                            selectedPrivileges.add(selectedPrivilege);
                         }
                     }
-                    // Append true/false to the results list based on whether a match was found
-                    isSelectedRolePrivilegeBeanList.add(item1 + "/" + isMatched);
                 }
 
-                // Output the result
-                logger.debug("Final db list: " + isSelectedRolePrivilegeBeanList);
+                logger.debug("allowedPrivileges : " + allowedPrivileges);
+                logger.debug("filteredSelectedPrivileges : " + selectedPrivileges);
 
-                for (String privilege : isSelectedRolePrivilegeBeanList) {
-                    RolePrivileges rolePrivileges = new RolePrivileges();
-                    rolePrivileges.setRoles(role);
-                    rolePrivileges.setModuleId(CoreAppModule.getByValue(roleModuleBean.getModule()).getId());
-
-                    if (roleModuleBean.getModule().equalsIgnoreCase(CoreAppModule.USER_MANAGEMENT.getValue())) {
-                        rolePrivileges.setSubmoduleId(UserManagementModule.getByValue(roleSubModuleBean.getSubModule()).getId());
-                    } else if (roleModuleBean.getModule().equalsIgnoreCase(CoreAppModule.SYSTEM_MANAGEMENT.getValue())) {
-                        rolePrivileges.setSubmoduleId(SystemManagementModule.getByValue(roleSubModuleBean.getSubModule()).getId());
-                    } else if (roleModuleBean.getModule().equalsIgnoreCase(CoreAppModule.LICENCE.getValue())) {
-                        rolePrivileges.setSubmoduleId(LicenseManagementModule.getByValue(roleSubModuleBean.getSubModule()).getId());
-                    } else if (roleModuleBean.getModule().equalsIgnoreCase(CoreAppModule.SERVER_AND_DB.getValue())) {
-                        rolePrivileges.setSubmoduleId(ServerAndDBModule.getByValue(roleSubModuleBean.getSubModule()).getId());
-                    }else if (roleModuleBean.getModule().equalsIgnoreCase(CoreAppModule.CLIENT_MANAGEMENT.getValue())) {
-                        rolePrivileges.setSubmoduleId(ClientManagementModule.getByValue(roleSubModuleBean.getSubModule()).getId());
-                    }else if (roleModuleBean.getModule().equalsIgnoreCase(CoreAppModule.INVENTORY_MANAGEMENT.getValue())) {
-                        rolePrivileges.setSubmoduleId(InventoryManagementModule.getByValue(roleSubModuleBean.getSubModule()).getId());
-                    }else if (roleModuleBean.getModule().equalsIgnoreCase(CoreAppModule.QUOTE_MANAGEMENT.getValue())) {
-                        rolePrivileges.setSubmoduleId(QuoteManagementModule.getByValue(roleSubModuleBean.getSubModule()).getId());
-                    }else if (roleModuleBean.getModule().equalsIgnoreCase(CoreAppModule.SHIPMENT_MANAGEMENT.getValue())) {
-                        rolePrivileges.setSubmoduleId(ShipmentManagementModule.getByValue(roleSubModuleBean.getSubModule()).getId());
-                    }
-                    String[] parts = privilege.split("/");
-                    
-                    rolePrivileges.setIsSelected(Boolean.valueOf(parts[1]));
-                    rolePrivileges.setPrivilegeId(RolePrivilegeConstants.getByValue(parts[0]).getId());
-                    rolePrivilegesList.add(rolePrivileges);
+                for (String privilegeValue : allowedPrivileges) {
+                    rolePrivilegesList.add(buildRolePrivilege(role, roleModuleBean.getModule(),
+                            roleSubModuleBean.getSubModule(), privilegeValue,
+                            selectedPrivileges.contains(privilegeValue)));
                 }
             }
         }
 
-        role.setRolePrivileges(rolePrivilegesList);
+        return rolePrivilegesList;
+    }
 
-        if (isAddOperation) {
+    private RolePrivileges buildRolePrivilege(Roles role, String moduleName, String subModuleName,
+            String privilegeValue, boolean isSelected) {
+        RolePrivileges rolePrivileges = new RolePrivileges();
+        rolePrivileges.setRoles(role);
+        rolePrivileges.setModuleId(CoreAppModule.getByValue(moduleName).getId());
+        rolePrivileges.setSubmoduleId(resolveSubModuleId(moduleName, subModuleName));
+        rolePrivileges.setPrivilegeId(RolePrivilegeConstants.getByValue(privilegeValue).getId());
+        rolePrivileges.setIsSelected(isSelected);
+        return rolePrivileges;
+    }
 
-            logger.debug("if (isAddOperation) {");
-
-            roleAdministrationService.addRole(role);
-
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Role Added"));
-        } else {
-            logger.debug("else  edit operation !!");
-            logger.debug("selectedOrganization.getId() : " + getSelectedRole().getId());
-            role.setId(getSelectedRole().getId());
-            roleAdministrationService.updateRole(getSelectedRole());
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Role Updated"));
+    private int resolveSubModuleId(String moduleName, String subModuleName) {
+        if (moduleName.equalsIgnoreCase(CoreAppModule.USER_MANAGEMENT.getValue())) {
+            return UserManagementModule.getByValue(subModuleName).getId();
+        } else if (moduleName.equalsIgnoreCase(CoreAppModule.SYSTEM_MANAGEMENT.getValue())) {
+            return SystemManagementModule.getByValue(subModuleName).getId();
+        } else if (moduleName.equalsIgnoreCase(CoreAppModule.LICENCE.getValue())) {
+            return LicenseManagementModule.getByValue(subModuleName).getId();
+        } else if (moduleName.equalsIgnoreCase(CoreAppModule.SERVER_AND_DB.getValue())) {
+            return ServerAndDBModule.getByValue(subModuleName).getId();
         }
 
-        fetchRolesList();
-        PrimeFaces.current().executeScript("PF('manageOrgDialog').hide()");
-        PrimeFaces.current().ajax().update("form:messages", "form:datatablePanelId");
+        throw new IllegalArgumentException("Unsupported module name: " + moduleName);
+    }
+
+    private void persistRoleChanges(boolean forceLogoutActiveUsers) {
+        Roles role = new Roles();
+        role.setRoleName(roleName.trim());
+        role.setRolePrivileges(buildRolePrivileges(role));
+        if (isAddOperation) {
+            logger.debug("if (isAddOperation) {");
+            roleAdministrationService.addRole(role);
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Role added successfully"));
+        } else {
+            logger.debug("else  edit operation !!");
+            logger.debug("selectedRole.getId() : " + getSelectedRole().getId());
+            role.setId(getSelectedRole().getId());
+
+            if (forceLogoutActiveUsers) {
+                notifyUsersForRoleUpdate(role.getId());
+            }
+
+            roleAdministrationService.updateRole(role);
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Role updated successfully"));
+        }
+
+        impactedActiveRoleUsers.clear();
+
+        searchButtonAction();
+        PrimeFaces.current().executeScript("PF('roleUpdateConfirmDialog').hide()");
+        PrimeFaces.current().executeScript("PF('manageRoleDialog').hide()");
+        PrimeFaces.current().ajax().update("form:messages", "form:orgMainPanelId");
         logger.debug("End of save action !!!!");
+    }
+
+    private List<String> findActiveUsersForSelectedRole() {
+        Set<String> activeUserNames = new LinkedHashSet<>();
+
+        for (HttpSession session : SessionListeners.getActiveSessions()) {
+            Object sessionRoleId = session.getAttribute(SessionAttributes.ROLE_ID.getName());
+            Object sessionUserName = session.getAttribute(SessionAttributes.USERNAME.getName());
+
+            if (sessionRoleId instanceof Integer
+                    && selectedRole.getId() != null
+                    && selectedRole.getId().equals(sessionRoleId)
+                    && sessionUserName instanceof String) {
+                UserDetails userDetails = userAdministrationService.getUserDetailEntityByUserName(
+                        (String) sessionUserName);
+                if (userDetails != null && userDetails.getRole() != null
+                        && selectedRole.getId().equals(userDetails.getRole().getId())) {
+                    activeUserNames.add(userDetails.getUserName());
+                }
+            }
+        }
+
+        return new ArrayList<>(activeUserNames);
+    }
+
+    private void notifyUsersForRoleUpdate(Integer roleId) {
+        for (HttpSession session : SessionListeners.getActiveSessions()) {
+            Object sessionRoleId = session.getAttribute(SessionAttributes.ROLE_ID.getName());
+            if (roleId != null && roleId.equals(sessionRoleId)) {
+                session.setAttribute(SessionAttributes.ROLE_UPDATE_LOGOUT_NOTIFICATION.getName(),
+                        "Your role is getting updated. You will be redirected to the login page in 10 seconds.");
+            }
+        }
     }
 
     public void confirmDeleteRole() {
@@ -508,7 +545,7 @@ public class RoleAdministrationBean implements Serializable {
 
         roleAdministrationService.deleteRole(getSelectedRole());
         fetchRolesList();
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Role Removed"));
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Role removed successfully"));
         PrimeFaces.current().ajax().update("form:messages", "form:orgDataTableId");
     }
 
@@ -627,6 +664,14 @@ public class RoleAdministrationBean implements Serializable {
         this.selectedRole = selectedRole;
     }
 
+    public List<String> getImpactedActiveRoleUsers() {
+        return impactedActiveRoleUsers;
+    }
+
+    public void setImpactedActiveRoleUsers(List<String> impactedActiveRoleUsers) {
+        this.impactedActiveRoleUsers = impactedActiveRoleUsers;
+    }
+
     public int getRolesUsedCount() {
         return rolesUsedCount;
     }
@@ -641,6 +686,22 @@ public class RoleAdministrationBean implements Serializable {
 
     public void setRolesNotUsedCount(int rolesNotUsedCount) {
         this.rolesNotUsedCount = rolesNotUsedCount;
+    }
+
+    private boolean isRoleNameDuplicate() {
+        List<Roles> existingRoles = roleAdministrationService.getRolesList();
+        if (CollectionUtils.isEmpty(existingRoles)) {
+            return false;
+        }
+
+        for (Roles role : existingRoles) {
+            if (role.getRoleName() != null
+                    && role.getRoleName().equalsIgnoreCase(roleName.trim())
+                    && (isAddOperation || !role.getId().equals(getSelectedRole().getId()))) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

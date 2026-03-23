@@ -14,10 +14,9 @@ import java.util.List;
 public enum UserManagementModule {
     USER_PROFILE(1, "User Profile"),
     USER_ACTIVITY(2, "User Activity"),
-    MODULES_ROLE_DEFINITION(3, "Modules Role Definition"),
-    ROLE_ADMINISTRATION(4, "Role Administration"),
-    USER_ACCESS_RIGHT(5, "User Access Right"),
-    USER_MANAGEMENT(6, "User Management");
+    ROLE_ADMINISTRATION(3, "Role Administration"),
+    CHANGE_PASSWORD(4, "Change Password"),
+    USER_MANAGEMENT(5, "User Management");
 
     private final int id;
     private final String value;

@@ -198,7 +198,8 @@
                                  style="width: 100%;"
                                  styleClass="ui-button-raised mr-2 mb-2"
                                  onclick="showLoader()"
-                                 update="@this"/>
+                                 oncomplete="hideLoaderIfLoginPage()"
+                                 update="messages email password"/>
 
                 <!--<p:button outcome="/pages/home/homePage" value="Sign In" icon="pi pi-sign-in" />-->
                 <!-- Footer text -->
@@ -218,12 +219,22 @@
                 sessionStorage.setItem('showingLoader', 'true');
             }
 
+            function hideLoader() {
+                sessionStorage.removeItem('showingLoader');
+                document.getElementById('loadingOverlay').classList.remove('active');
+            }
+
+            function hideLoaderIfLoginPage() {
+                if (window.location.pathname.includes('login')) {
+                    hideLoader();
+                }
+            }
+
             // Check if we're returning from a failed login
             window.addEventListener('load', function() {
                 // If login failed, hide the loader
                 if (sessionStorage.getItem('showingLoader') === 'true' && window.location.pathname.includes('login')) {
-                    sessionStorage.removeItem('showingLoader');
-                    document.getElementById('loadingOverlay').classList.remove('active');
+                    hideLoader();
                 }
             });
             //]]>
