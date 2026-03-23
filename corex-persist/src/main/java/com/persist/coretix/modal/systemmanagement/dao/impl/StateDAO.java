@@ -171,7 +171,7 @@ public class StateDAO implements IStateDAO {
                 .list();
 
         trans.commit();
-        return (States) list.get(0);
+        return list.isEmpty() ? null : (States) list.get(0);
     }
 
     public States getStateEntityByStateName(String stateName) {

@@ -167,7 +167,7 @@ public class CityDAO implements ICityDAO {
                 .list();
 
         trans.commit();
-        return (Cities) list.get(0);
+        return list.isEmpty() ? null : (Cities) list.get(0);
     }
 
     public Cities getCityEntityByCityName(String cityName) {

@@ -310,26 +310,50 @@ public class BranchBean implements Serializable {
         branches.setBranchName(branchName);
 
         Countries addCountry = getCountriesByCountryName(branchCountry);
-        logger.debug("country name " + addCountry.getName());
-        if (addCountry != null) {
-            branches.setCountry(addCountry);
+        if (addCountry == null) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Select a valid country"));
+            PrimeFaces.current().ajax().update("form:messages", "form:branchMainPanelId");
+            return;
         }
+        logger.debug("country name " + addCountry.getName());
+        branches.setCountry(addCountry);
 
         States addState = getStateEntityByStateName(branchState);
-        if(addState != null) {
-            branches.setState(addState.getName());
+        if (addState == null) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Select a valid state"));
+            PrimeFaces.current().ajax().update("form:messages", "form:branchMainPanelId");
+            return;
         }
+        branches.setState(addState.getName());
 
         Cities addCity = getCityEntityByCityName(branchCity);
-        if(addCity != null) {
-            branches.setCity(addCity.getName());
+        if (addCity == null) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Select a valid city"));
+            PrimeFaces.current().ajax().update("form:messages", "form:branchMainPanelId");
+            return;
         }
+        branches.setCity(addCity.getName());
 
         Organizations addOrganization = getOrganizationsByOrganizationName(branchOrganizationName);
-        logger.debug("country name " + addOrganization.getOrganizationName());
-        if (addOrganization != null) {
-            branches.setOrganization(addOrganization);
+        if (addOrganization == null) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                    resourceBundle.getString("errorLabel"),
+                    "Select a valid organization"));
+            PrimeFaces.current().ajax().update("form:messages", "form:branchMainPanelId");
+            return;
         }
+        logger.debug("country name " + addOrganization.getOrganizationName());
+        branches.setOrganization(addOrganization);
 
         branches.setPhoneNumber(branchPhoneNumber);
         branches.setEmail(branchEmail);
@@ -425,6 +449,9 @@ public class BranchBean implements Serializable {
         List<String> stateList = new ArrayList<>();
 
         Countries tempCountry = getCountriesByCountryName(branchCountry);
+        if (tempCountry == null) {
+            return stateList;
+        }
         List<States> states = stateService.getStatesListByCountryId(tempCountry.getId());
         for (States state : states) {
             stateList.add(state.getName());
@@ -445,6 +472,9 @@ public class BranchBean implements Serializable {
         List<String> cityList = new ArrayList<>();
         Countries tempCountry = getCountriesByCountryName(branchCountry);
         States tempStates = getStateEntityByStateName(branchState);
+        if (tempCountry == null || tempStates == null) {
+            return cityList;
+        }
         List<Cities> cities = cityService.getCitiesListByCountryIdAndStateId(tempCountry.getId(), tempStates.getId());
         for (Cities city : cities) {
             cityList.add(city.getName());
