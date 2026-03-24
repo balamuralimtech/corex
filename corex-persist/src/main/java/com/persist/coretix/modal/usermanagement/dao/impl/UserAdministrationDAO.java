@@ -158,9 +158,55 @@ private static final Logger logger = LoggerFactory.getLogger(UserAdministrationD
         Session session = getSessionFactory().getCurrentSession();
         Transaction trans = session.beginTransaction();
 
-        String hql = "update UserDetails set status = :newStatus, lastSuccessfulLogin = current_timestamp(), updatedAt = current_timestamp() where userId = :userId";
-        int updatedEntities = session.createQuery(hql)
+        String hql = "update UserDetails set status = :newStatus, updatedAt = current_timestamp() where userId = :userId";
+        session.createQuery(hql)
                 .setParameter("newStatus", newStatus)
+                .setParameter("userId", userId)
+                .executeUpdate();
+
+        trans.commit();
+    }
+
+    public void markLoginSuccess(int userId, String sessionId) {
+        Session session = getSessionFactory().getCurrentSession();
+        Transaction trans = session.beginTransaction();
+
+        String hql = "update UserDetails set status = :newStatus, lastSuccessfulLogin = current_timestamp(), "
+                + "lastSeenAt = current_timestamp(), lastLogoutAt = null, lastSessionId = :sessionId, "
+                + "updatedAt = current_timestamp() where userId = :userId";
+        session.createQuery(hql)
+                .setParameter("newStatus", 1)
+                .setParameter("sessionId", sessionId)
+                .setParameter("userId", userId)
+                .executeUpdate();
+
+        trans.commit();
+    }
+
+    public void markLogout(int userId, int newStatus, String sessionId) {
+        Session session = getSessionFactory().getCurrentSession();
+        Transaction trans = session.beginTransaction();
+
+        String hql = "update UserDetails set status = :newStatus, lastSeenAt = current_timestamp(), "
+                + "lastLogoutAt = current_timestamp(), lastSessionId = :sessionId, updatedAt = current_timestamp() "
+                + "where userId = :userId";
+        session.createQuery(hql)
+                .setParameter("newStatus", newStatus)
+                .setParameter("sessionId", sessionId)
+                .setParameter("userId", userId)
+                .executeUpdate();
+
+        trans.commit();
+    }
+
+    public void touchUserSession(int userId, String sessionId) {
+        Session session = getSessionFactory().getCurrentSession();
+        Transaction trans = session.beginTransaction();
+
+        String hql = "update UserDetails set lastSeenAt = current_timestamp(), lastSessionId = :sessionId, "
+                + "updatedAt = current_timestamp() where userId = :userId";
+        session.createQuery(hql)
+                .setParameter("sessionId", sessionId)
                 .setParameter("userId", userId)
                 .executeUpdate();
 

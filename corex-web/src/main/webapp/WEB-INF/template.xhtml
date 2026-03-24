@@ -79,6 +79,79 @@
                 }, 1000);
             }
 
+            window.corexSessionAudit = {
+                url: '#{request.contextPath}/session-audit',
+                heartbeatId: null,
+                logoutRequested: false,
+                navigationRequested: false
+            };
+
+            function markSessionLogoutIntent() {
+                window.corexSessionAudit.logoutRequested = true;
+            }
+
+            function markSessionNavigationIntent() {
+                window.corexSessionAudit.navigationRequested = true;
+            }
+
+            function postSessionAudit(action, useBeacon) {
+                var url = window.corexSessionAudit.url + '?action=' + encodeURIComponent(action);
+                if (useBeacon && navigator.sendBeacon) {
+                    var data = new FormData();
+                    data.append('action', action);
+                    navigator.sendBeacon(url, data);
+                    return;
+                }
+
+                fetch(url, {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    keepalive: action === 'browser-close',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'action=' + encodeURIComponent(action)
+                }).catch(function() {
+                });
+            }
+
+            function startSessionHeartbeat() {
+                if (window.corexSessionAudit.heartbeatId) {
+                    clearInterval(window.corexSessionAudit.heartbeatId);
+                }
+
+                window.corexSessionAudit.heartbeatId = window.setInterval(function() {
+                    postSessionAudit('heartbeat', false);
+                }, 60000);
+            }
+
+            window.addEventListener('load', function() {
+                startSessionHeartbeat();
+                window.corexSessionAudit.navigationRequested = false;
+            });
+
+            window.addEventListener('pagehide', function() {
+                if (!window.corexSessionAudit.logoutRequested && !window.corexSessionAudit.navigationRequested) {
+                    postSessionAudit('browser-close', true);
+                }
+            });
+
+            document.addEventListener('click', function(event) {
+                var target = event.target;
+                if (!target) {
+                    return;
+                }
+
+                var interactiveTarget = target.closest('a, button, input[type="submit"], input[type="button"]');
+                if (interactiveTarget) {
+                    markSessionNavigationIntent();
+                }
+            }, true);
+
+            document.addEventListener('submit', function() {
+                markSessionNavigationIntent();
+            }, true);
+
             //]]>
         </script>
         <style>

@@ -20,7 +20,10 @@ public enum SessionAttributes {
     APPLICATION_NOTIFICATION_GROWL("notificationGrowl"),
     APPLICATION_NOTIFICATION_MESSAGES("notificationMessages"),
     APPLICATION_NOTIFICATION_UNREAD_COUNT("notificationUnreadCount"),
-    ROLE_UPDATE_LOGOUT_NOTIFICATION("roleUpdateLogoutNotification");
+    ROLE_UPDATE_LOGOUT_NOTIFICATION("roleUpdateLogoutNotification"),
+    SESSION_AUDIT_COMPLETED("sessionAuditCompleted"),
+    SESSION_TERMINATION_REASON("sessionTerminationReason"),
+    LAST_ACTIVITY_AT("lastActivityAt");
 
     private String name;
 

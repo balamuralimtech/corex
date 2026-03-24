@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import com.web.coretix.constants.AccessRightConstants;
 import com.web.coretix.constants.LoginConstants;
 import com.web.coretix.constants.SessionAttributes;
+import com.web.coretix.general.SessionAuditSupport;
 import org.primefaces.PrimeFaces;
 import org.springframework.context.annotation.Scope;
 
@@ -101,9 +102,10 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
                 userActivities.setUserId(userDetails.getUserId());
                 userActivities.setUserName(userDetails.getUserName());
                 userActivities.setActivityDescription(LoginConstants.SUCCESSFUL_LOGIN.getValue());
-                userActivityService.addUserActivity(userActivities);
-                userAdministrationService.updateUserStatus(userDetails.getUserId(), LoginConstants.SUCCESSFUL_LOGIN.getId());
                 setSessionAttributes(userDetails);
+                userActivities.setSessionId(getCurrentSessionId());
+                userActivityService.addUserActivity(userActivities);
+                userAdministrationService.markLoginSuccess(userDetails.getUserId(), getCurrentSessionId());
 
                 logger.info("User login successful: " + username);
                 FacesContext facesContext = FacesContext.getCurrentInstance();
@@ -167,6 +169,16 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
 
     // Method to get machine IP and name
     public static String getMachineIP() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext != null) {
+            HttpServletRequest request = (HttpServletRequest) facesContext.getExternalContext().getRequest();
+            String forwardedFor = request.getHeader("X-Forwarded-For");
+            if (StringUtils.isNotBlank(forwardedFor)) {
+                return forwardedFor.split(",")[0].trim();
+            }
+            return request.getRemoteAddr();
+        }
+
         try {
             InetAddress inetAddress = InetAddress.getLocalHost();
             return inetAddress.getHostAddress();
@@ -238,8 +250,16 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
         session.setAttribute(SessionAttributes.MACHINE_NAME.getName(), getMachineName());
         session.setAttribute(SessionAttributes.BROWSER_CLIENT_INFO.getName(), getBrowserClientInfo());
         session.setAttribute(SessionAttributes.COUNTRY_ID.getName(), userDetails.getCountry().getId());
+        session.setAttribute(SessionAttributes.SESSION_AUDIT_COMPLETED.getName(), Boolean.FALSE);
 
         SessionListeners.updateSessionMap(session);
+        SessionAuditSupport.touchSession(session);
+    }
+
+    private String getCurrentSessionId() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        HttpSession session = (HttpSession) facesContext.getExternalContext().getSession(false);
+        return session != null ? session.getId() : null;
     }
 
     public void initializePageAttributes() {

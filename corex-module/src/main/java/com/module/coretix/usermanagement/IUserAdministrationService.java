@@ -33,5 +33,11 @@ public interface IUserAdministrationService {
 
     public void updateUserStatus(int userId, int newStatus);
 
+    public void markLoginSuccess(int userId, String sessionId);
+
+    public void markLogout(int userId, int newStatus, String sessionId);
+
+    public void touchUserSession(int userId, String sessionId);
+
     public UsersStatusCountTO populateUsersStatusCount();
 }

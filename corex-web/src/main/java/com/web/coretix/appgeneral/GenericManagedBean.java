@@ -28,7 +28,7 @@ import org.mindrot.jbcrypt.BCrypt;
  */
 public class GenericManagedBean 
 {
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger logger = LoggerFactory.getLogger(GenericManagedBean.class);
 
     private static final String AES_ALGORITHM = "AES";
     private static final String AES_TRANSFORMATION = "AES/CBC/PKCS5Padding"; // CBC mode with padding
@@ -84,7 +84,10 @@ public class GenericManagedBean
      */
     public static boolean verifyPassword(String plainTextPassword, String hashedPassword) {
         try {
+            logger.debug("inside verifyPassword method");
             //return true;
+            logger.debug("plainTextPassword : "+plainTextPassword);
+            logger.debug("hashedPassword : "+hashedPassword);
             return BCrypt.checkpw(plainTextPassword, hashedPassword);
         } catch (Exception e) {
             // If hash is invalid or not a BCrypt hash, return false

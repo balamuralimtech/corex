@@ -5,343 +5,300 @@
                 xmlns:p="http://primefaces.org/ui"
                 template="/WEB-INF/template.xhtml">
 
-
     <ui:define name="content">
         <f:event listener="#{homePageBean.initializePageAttributes}" type="preRenderComponent"/>
+
+        <h:outputScript library="avalon-layout" name="highcharts/highcharts.js" target="head"/>
+        <h:outputScript library="avalon-layout" name="highcharts/highcharts-more.js" target="head"/>
+
+        <h:outputStylesheet>
+            .dashboard-shell { display:flex; flex-direction:column; gap:1.25rem; }
+            .dashboard-hero { position:relative; overflow:hidden; padding:1.8rem; border-radius:22px; background:linear-gradient(135deg,#0f172a 0%,#12345a 45%,#1d4ed8 100%); color:#f8fafc; box-shadow:0 24px 80px rgba(15,23,42,.22); }
+            .dashboard-hero:before { content:''; position:absolute; inset:auto -8% -35% auto; width:320px; height:320px; border-radius:50%; background:radial-gradient(circle,rgba(255,255,255,.18) 0%,rgba(255,255,255,0) 70%); }
+            .dashboard-hero-title { margin:0; font-size:2rem; font-weight:700; letter-spacing:-.03em; }
+            .dashboard-hero-copy { margin-top:.75rem; max-width:780px; color:rgba(241,245,249,.88); line-height:1.6; }
+            .dashboard-hero-strip { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:.85rem; margin-top:1.4rem; }
+            .hero-chip { padding:.9rem 1rem; border:1px solid rgba(255,255,255,.14); border-radius:16px; background:rgba(255,255,255,.08); backdrop-filter:blur(8px); }
+            .hero-chip-label { display:block; font-size:.82rem; text-transform:uppercase; letter-spacing:.08em; color:rgba(226,232,240,.75); }
+            .hero-chip-value { display:block; margin-top:.3rem; font-size:1.4rem; font-weight:700; color:#fff; }
+            .metric-card { height:100%; padding:1.1rem 1.15rem; border-radius:18px; background:#fff; box-shadow:0 10px 40px rgba(15,23,42,.08); border:1px solid rgba(148,163,184,.18); }
+            .metric-card-muted { color:#64748b; font-size:.82rem; text-transform:uppercase; letter-spacing:.08em; }
+            .metric-card-value { margin-top:.55rem; font-size:2rem; font-weight:700; line-height:1; color:#0f172a; }
+            .metric-card-foot { margin-top:.75rem; color:#475569; font-size:.92rem; }
+            .dashboard-panel { height:100%; padding:1rem; border-radius:20px; background:#fff; box-shadow:0 10px 40px rgba(15,23,42,.08); border:1px solid rgba(148,163,184,.18); }
+            .dashboard-panel-header { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:.75rem; }
+            .dashboard-panel-title { margin:0; font-size:1.05rem; font-weight:700; color:#0f172a; }
+            .dashboard-panel-subtitle { margin-top:.2rem; color:#64748b; font-size:.9rem; }
+            .dashboard-stat-list { display:grid; gap:.7rem; }
+            .dashboard-stat-row { display:flex; justify-content:space-between; align-items:center; padding:.85rem .95rem; border-radius:14px; background:#f8fafc; border:1px solid #e2e8f0; gap:1rem; }
+            .dashboard-stat-name { color:#334155; font-weight:500; }
+            .dashboard-stat-value { color:#0f172a; font-weight:700; text-align:right; }
+            .dashboard-chart { min-height:360px; }
+            .dashboard-chart-sm { min-height:320px; }
+        </h:outputStylesheet>
+
         <h:form id="dashboardFormId">
-            <div class="col-12">
-                <p:breadCrumb>
-                    <p:menuitem url="#" icon="pi pi-home"/>
-                    <p:menuitem value="#{msg['homeLabel']}" url="#"/>
-                    <p:menuitem value="#{msg['dashboardLabel']}" url="#"/>
-                </p:breadCrumb>
-                <p:remoteCommand name="callInitializeMethod"
-                                 action="#{homePageBean.refreshForm}"
-                                 update="dashboardFormId">
-                </p:remoteCommand>
-                <h3>#{msg['refreshInText']}: <span id="countdownDisplay">60</span> seconds</h3>
-            </div>
-            <div class="dashboard grid">
-
-                <div class="col-6">
-                    <figure class="highcharts-figure">
-                        <div id="usercontainer"></div>
-                    </figure>
-
-                    <!-- JavaScript to Initialize Highcharts -->
-                    <h:outputScript>
-                        Highcharts.chart('usercontainer', {
-                        chart: {
-                        type: 'pie',
-                        options3d: {
-                        enabled: true,
-                        alpha: 45,
-                        beta: 0
-                        }
-                        },
-                        title: {
-                        text: 'Users Current Status',
-                        align: 'left'
-                        },
-                        accessibility: {
-                        point: {
-                        valueSuffix: '%'
-                        }
-                        },
-                        tooltip: {
-                        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
-                        },
-                        plotOptions: {
-                        pie: {
-                        allowPointSelect: true,
-                        cursor: 'pointer',
-                        depth: 35,
-                        dataLabels: {
-                        enabled: true,
-                        format: '{point.name}: {point.y}'
-                        }
-                        }
-                        },
-                        series: [{
-                        type: 'pie',
-                        name: 'Users Status',
-                        data: [
-                        ['Users Logged In', #{homePageBean.coreDashboardTO.usersLoggedInCount}],
-                        ['Users Logged Out', #{homePageBean.coreDashboardTO.usersLoggedOutCount}],
-                        ['Users Never Logged In', #{homePageBean.coreDashboardTO.usersNeverLoggedinCount}]
-                        ]
-                        }]
-                        });
-                    </h:outputScript>
-                </div>
-                <div class="col-6">
-                    <figure class="highcharts-figure">
-                        <div id="rolecontainer"></div>
-                    </figure>
-
-                    <!-- JavaScript to Initialize Highcharts -->
-                    <h:outputScript>
-                        Highcharts.chart('rolecontainer', {
-                        chart: {
-                        plotBackgroundColor: null,
-                        plotBorderWidth: 0,
-                        plotShadow: false
-                        },
-                        title: {
-                        text: 'Roles Usage Status',
-                        align: 'center',
-                        verticalAlign: 'middle',
-                        y: 60,
-                        style: {
-                        fontSize: '1.1em'
-                        }
-                        },
-                        tooltip: {
-                        pointFormat: '{series.name}: {series.y}'
-                        },
-                        accessibility: {
-                        point: {
-                        valueSuffix: '%'
-                        }
-                        },
-                        plotOptions: {
-                        pie: {
-                        dataLabels: {
-                        enabled: true,
-                        format: '{point.name}: {point.y}',
-                        distance: -50,
-                        style: {
-                        fontWeight: 'bold',
-                        color: 'white'
-                        }
-                        },
-                        startAngle: -90,
-                        endAngle: 90,
-                        center: ['50%', '75%'],
-                        size: '110%'
-                        }
-                        },
-                        series: [{
-                        type: 'pie',
-                        name: 'Browser share',
-                        innerSize: '50%',
-                        data: [
-                        ['Roles Used', #{homePageBean.coreDashboardTO.rolesUsedCount}],
-                        ['Roles Unused', #{homePageBean.coreDashboardTO.rolesNotUsedCount}]
-                        ]
-                        }]
-                        });
-                    </h:outputScript>
-                </div>
+            <div class="dashboard-shell">
                 <div class="col-12">
-                    <figure class="highcharts-figure">
-                        <div id="useractivitycontainer"></div>
-                    </figure>
-                    <h:outputScript>
-                        // Set up the chart
-                        var chart = new Highcharts.Chart({
-                        chart: {
-                        renderTo: 'useractivitycontainer',
-                        type: 'column',
-                        options3d: {
-                        enabled: true,
-                        alpha: 0,
-                        beta: 0,
-                        depth: 100,
-                        viewDistance: 30
+                    <p:breadCrumb>
+                        <p:menuitem url="#" icon="pi pi-home"/>
+                        <p:menuitem value="#{msg['homeLabel']}" url="#"/>
+                        <p:menuitem value="#{msg['dashboardLabel']}" url="#"/>
+                    </p:breadCrumb>
+                </div>
+
+                <p:remoteCommand name="refreshDashboardData"
+                                 action="#{homePageBean.refreshForm}"
+                                 update="dashboardFormId"
+                                 oncomplete="restartDashboardCountdown(); renderDashboardCharts();"/>
+
+                <div class="dashboard-hero">
+                    <div class="grid align-items-start">
+                        <div class="col-12 lg:col-8">
+                            <h2 class="dashboard-hero-title">CoreX Control Dashboard</h2>
+                            <div class="dashboard-hero-copy">#{homePageBean.dashboardInsights}</div>
+                        </div>
+                        <div class="col-12 lg:col-4">
+                            <div class="hero-chip">
+                                <span class="hero-chip-label">Auto Refresh</span>
+                                <span class="hero-chip-value"><span id="countdownDisplay">60</span>s</span>
+                            </div>
+                            <div style="margin-top:.75rem;display:flex;gap:.75rem;flex-wrap:wrap;">
+                                <p:commandButton value="Refresh Now"
+                                                 icon="pi pi-refresh"
+                                                 action="#{homePageBean.refreshForm}"
+                                                 update="dashboardFormId"
+                                                 oncomplete="restartDashboardCountdown(); renderDashboardCharts();"
+                                                 styleClass="ui-button-secondary"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-hero-strip">
+                        <div class="hero-chip">
+                            <span class="hero-chip-label">Total Users</span>
+                            <span class="hero-chip-value">#{homePageBean.coreDashboardTO.userCount}</span>
+                        </div>
+                        <div class="hero-chip">
+                            <span class="hero-chip-label">Tracked Activities</span>
+                            <span class="hero-chip-value">#{homePageBean.totalTrackedActivities}</span>
+                        </div>
+                        <div class="hero-chip">
+                            <span class="hero-chip-label">Role Utilization</span>
+                            <span class="hero-chip-value">#{homePageBean.roleUsageRate}%</span>
+                        </div>
+                        <div class="hero-chip">
+                            <span class="hero-chip-label">Active User Rate</span>
+                            <span class="hero-chip-value">#{homePageBean.activeUserRate}%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid">
+                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">Organizations</span><div class="metric-card-value">#{homePageBean.coreDashboardTO.organizationCount}</div><div class="metric-card-foot">#{homePageBean.averageBranchesPerOrganization} branches per organization</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">Users</span><div class="metric-card-value">#{homePageBean.coreDashboardTO.userCount}</div><div class="metric-card-foot">#{homePageBean.averageUsersPerRole} users per role</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">Roles</span><div class="metric-card-value">#{homePageBean.coreDashboardTO.roleCount}</div><div class="metric-card-foot">#{homePageBean.coreDashboardTO.rolesUsedCount} in active use</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">User Activities</span><div class="metric-card-value">#{homePageBean.coreDashboardTO.userActivityCount}</div><div class="metric-card-foot">#{homePageBean.averageActivitiesPerUser} activities per user</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">Geography Footprint</span><div class="metric-card-value">#{homePageBean.totalGeographyCount}</div><div class="metric-card-foot">#{homePageBean.averageCitiesPerState} cities per state</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">Structure Inventory</span><div class="metric-card-value">#{homePageBean.totalStructureCount}</div><div class="metric-card-foot">#{homePageBean.averageDepartmentsPerOrganization} departments per organization</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">Authentication Share</span><div class="metric-card-value">#{homePageBean.authenticationShare}%</div><div class="metric-card-foot">Login and logout events out of tracked activity</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">Change Share</span><div class="metric-card-value">#{homePageBean.changeShare}%</div><div class="metric-card-foot">Add, update, and delete events combined</div></div></div>
+                </div>
+
+                <div class="grid">
+                    <div class="col-12 xl:col-8">
+                        <div class="dashboard-panel">
+                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">System Entity Footprint</h3><div class="dashboard-panel-subtitle">Absolute volume across structure, geography, security, and usage objects</div></div></div>
+                            <div id="entityFootprintChart" class="dashboard-chart"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-4">
+                        <div class="dashboard-panel">
+                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">User State Mix</h3><div class="dashboard-panel-subtitle">Current user population by lifecycle status</div></div></div>
+                            <div id="userStateChart" class="dashboard-chart-sm"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-4">
+                        <div class="dashboard-panel">
+                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">Role Utilization</h3><div class="dashboard-panel-subtitle">Used versus dormant roles in the system</div></div></div>
+                            <div id="roleUsageChart" class="dashboard-chart-sm"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-4">
+                        <div class="dashboard-panel">
+                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">Activity Mix</h3><div class="dashboard-panel-subtitle">Volume split across authentication and data change actions</div></div></div>
+                            <div id="activityMixChart" class="dashboard-chart-sm"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-4">
+                        <div class="dashboard-panel">
+                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">Portfolio Mix</h3><div class="dashboard-panel-subtitle">Grouped by structure, geography, and identity assets</div></div></div>
+                            <div id="portfolioMixChart" class="dashboard-chart-sm"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-6">
+                        <div class="dashboard-panel">
+                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">Operational Ratios</h3><div class="dashboard-panel-subtitle">Percent-based dashboard health indicators</div></div></div>
+                            <div id="operationsPulseChart" class="dashboard-chart-sm"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-6">
+                        <div class="dashboard-panel">
+                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">Efficiency Radar</h3><div class="dashboard-panel-subtitle">Density metrics across structure, geography, and identity layers</div></div></div>
+                            <div id="efficiencyRadarChart" class="dashboard-chart-sm"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-6">
+                        <div class="dashboard-panel">
+                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">Density Statistics</h3><div class="dashboard-panel-subtitle">Best available ratios derived from the current dataset</div></div></div>
+                            <div class="dashboard-stat-list">
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Branches per organization</span><span class="dashboard-stat-value">#{homePageBean.averageBranchesPerOrganization}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Departments per organization</span><span class="dashboard-stat-value">#{homePageBean.averageDepartmentsPerOrganization}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Designations per department</span><span class="dashboard-stat-value">#{homePageBean.averageDesignationsPerDepartment}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Users per organization</span><span class="dashboard-stat-value">#{homePageBean.averageUsersPerOrganization}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Users per role</span><span class="dashboard-stat-value">#{homePageBean.averageUsersPerRole}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Activities per user</span><span class="dashboard-stat-value">#{homePageBean.averageActivitiesPerUser}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">States per country</span><span class="dashboard-stat-value">#{homePageBean.averageStatesPerCountry}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Cities per state</span><span class="dashboard-stat-value">#{homePageBean.averageCitiesPerState}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Activities per role</span><span class="dashboard-stat-value">#{homePageBean.averageActivitiesPerRole}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-6">
+                        <div class="dashboard-panel">
+                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">Coverage Summary</h3><div class="dashboard-panel-subtitle">Raw counts that support the derived visuals</div></div></div>
+                            <div class="dashboard-stat-list">
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Organizations</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.organizationCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Branches</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.branchCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Departments</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.departmentCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Designations</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.designationCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Countries / States / Cities</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.countryCount} / #{homePageBean.coreDashboardTO.stateCount} / #{homePageBean.coreDashboardTO.cityCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Currencies</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.currencyCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Roles used / unused</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.rolesUsedCount} / #{homePageBean.coreDashboardTO.rolesNotUsedCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Users logged in / logged out / never</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.usersLoggedInCount} / #{homePageBean.coreDashboardTO.usersLoggedOutCount} / #{homePageBean.coreDashboardTO.usersNeverLoggedinCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Login / logout events</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.loginCount} / #{homePageBean.coreDashboardTO.logoutCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Add / update / delete events</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.addCount} / #{homePageBean.coreDashboardTO.updateCount} / #{homePageBean.coreDashboardTO.deleteCount}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h:outputScript>
+                    //<![CDATA[
+                    var dashboardCountdownTime = 60;
+                    var dashboardCountdownInterval;
+
+                    function clearDashboardCountdown() {
+                        if (dashboardCountdownInterval) {
+                            clearInterval(dashboardCountdownInterval);
                         }
-                        },
-                        xAxis: {
-                        type: 'category'
-                        },
-                        yAxis: {
-                        title: {
-                        enabled: false
+                    }
+
+                    function restartDashboardCountdown() {
+                        clearDashboardCountdown();
+                        dashboardCountdownTime = 60;
+                        var countdownNode = document.getElementById('countdownDisplay');
+                        if (countdownNode) {
+                            countdownNode.innerText = dashboardCountdownTime;
                         }
-                        },
-                        tooltip: {
-                        headerFormat: '<b>{point.key}</b><br/>',
-                        pointFormat: 'Activity: {point.y}'
-                        },
-                        title: {
-                        text: 'Overall User Activity Status',
-                        align: 'left'
-                        },
-                        subtitle: {
-                        text: 'Status',
-                        align: 'left'
-                        },
-                        legend: {
-                        enabled: false
-                        },
-                        plotOptions: {
-                        column: {
-                        depth: 25
-                        }
-                        },
-                        series: [{
-                        data: [
-                        ['Login', #{homePageBean.coreDashboardTO.loginCount}],
-                        ['Logout', #{homePageBean.coreDashboardTO.logoutCount}],
-                        ['Add', #{homePageBean.coreDashboardTO.addCount}],
-                        ['Edit', #{homePageBean.coreDashboardTO.updateCount}],
-                        ['Delete', #{homePageBean.coreDashboardTO.deleteCount}]
-                        ],
-                        colorByPoint: true
-                        }]
+                        dashboardCountdownInterval = setInterval(function () {
+                            dashboardCountdownTime--;
+                            var node = document.getElementById('countdownDisplay');
+                            if (node) {
+                                node.innerText = dashboardCountdownTime;
+                            }
+                            if (dashboardCountdownTime <= 0) {
+                                clearDashboardCountdown();
+                                refreshDashboardData();
+                            }
+                        }, 1000);
+                    }
+
+                    function renderDashboardCharts() {
+                        Highcharts.setOptions({
+                            lang: { thousandsSep: ',' },
+                            credits: { enabled: false },
+                            colors: ['#1d4ed8', '#f97316', '#14b8a6', '#7c3aed', '#ef4444', '#0f766e', '#f59e0b', '#334155']
                         });
-                    </h:outputScript>
-                </div>
-                <div class="col-12 md:col-6 lg:col-3">
-                    <div class="widget-overview overview-box-1">
-                        <div class="overview-box-title">
-                            <i class="pi pi-building"/>
-                            <span>#{msg['organizationLabel']}</span>
-                        </div>
-                        <div class="overview-box-count">#{homePageBean.coreDashboardTO.organizationCount}</div>
-                    </div>
-                </div>
-                <div class="col-12 md:col-6 lg:col-3">
-                    <div class="widget-overview overview-box-2">
-                        <div class="overview-box-title">
-                            <i class="pi pi-map-marker"/>
-                            <span>#{msg['branchLabel']}</span>
-                        </div>
-                        <div class="overview-box-count">#{homePageBean.coreDashboardTO.branchCount}</div>
-                    </div>
-                </div>
-                <div class="col-12 md:col-6 lg:col-3">
-                    <div class="widget-overview overview-box-3">
-                        <div class="overview-box-title">
-                            <i class="pi pi-id-card"/>
-                            <span>#{msg['designationLabel']}</span>
-                        </div>
-                        <div class="overview-box-count">#{homePageBean.coreDashboardTO.designationCount}</div>
-                    </div>
-                </div>
-                <div class="col-12 md:col-6 lg:col-3">
-                    <div class="widget-overview overview-box-4">
-                        <div class="overview-box-title">
-                            <i class="pi pi-sitemap"/>
-                            <span>#{msg['departmentLabel']}</span>
-                        </div>
-                        <div class="overview-box-count">#{homePageBean.coreDashboardTO.departmentCount}</div>
-                    </div>
-                </div>
 
-                <div class="col-12 lg:col-4">
-                    <div class="widget-graph">
-                        <div class="grid">
-                            <div class="col-4">
-                                <span class="graph-title">#{msg['userManagementLabel']}</span>
-                                <span class="graph-value">#{homePageBean.coreDashboardTO.userCount}</span>
-                            </div>
-                            <div class="col-8">
-                                <p:graphicImage name="images/dashboard/graph-1.svg" library="avalon-layout"/>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-12 lg:col-4">
-                    <div class="widget-graph">
-                        <div class="grid">
-                            <div class="col-4">
-                                <span class="graph-title">#{msg['roleLabel']}</span>
-                                <span class="graph-value">#{homePageBean.coreDashboardTO.roleCount}</span>
-                            </div>
-                            <div class="col-8">
-                                <p:graphicImage name="images/dashboard/graph-2.svg" library="avalon-layout"/>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-12 lg:col-4">
-                    <div class="widget-graph">
-                        <div class="grid">
-                            <div class="col-4">
-                                <span class="graph-title">#{msg['userActivityLabel']}</span>
-                                <span class="graph-value">#{homePageBean.coreDashboardTO.userActivityCount}</span>
-                            </div>
-                            <div class="col-8">
-                                <p:graphicImage name="images/dashboard/graph-3.svg" library="avalon-layout"/>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                        Highcharts.chart('entityFootprintChart', {
+                            chart: { type: 'column', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            xAxis: { type: 'category', crosshair: true },
+                            yAxis: { min: 0, title: { text: 'Count' } },
+                            legend: { enabled: false },
+                            tooltip: { pointFormat: '<b>{point.y}</b> records' },
+                            plotOptions: { column: { borderRadius: 8, colorByPoint: true } },
+                            series: [{ name: 'Entities', data: #{homePageBean.entityDistributionJson} }]
+                        });
 
-                <div class="col-12 lg:col-6">
-                    <div class="card widget-sale-table">
-                        <h5>Global Data</h5>
-                        <table>
-                            <thead>
-                            <tr>
-                                <th></th>
-                                <th></th>
-                                <th>Total</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr>
-                                <td>1</td>
-                                <td>#{msg['countryLabel']}</td>
-                                <td>#{homePageBean.coreDashboardTO.countryCount}</td>
-                            </tr>
-                            <tr>
-                                <td>2</td>
-                                <td>#{msg['stateLabel']}</td>
-                                <td>#{homePageBean.coreDashboardTO.stateCount}</td>
-                            </tr>
-                            <tr>
-                                <td>3</td>
-                                <td>#{msg['cityLabel']}</td>
-                                <td>#{homePageBean.coreDashboardTO.cityCount}</td>
-                            </tr>
-                            <tr>
-                                <td>4</td>
-                                <td>#{msg['currenciesLabel']}</td>
-                                <td>#{homePageBean.coreDashboardTO.currencyCount}</td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                        Highcharts.chart('userStateChart', {
+                            chart: { type: 'pie', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            tooltip: { pointFormat: '<b>{point.y}</b> users ({point.percentage:.1f}%)' },
+                            plotOptions: { pie: { innerSize: '62%', dataLabels: { enabled: true, format: '{point.name}<br/><b>{point.y}</b>' } } },
+                            series: [{ name: 'Users', data: #{homePageBean.userStatusJson} }]
+                        });
 
+                        Highcharts.chart('roleUsageChart', {
+                            chart: { type: 'pie', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            tooltip: { pointFormat: '<b>{point.y}</b> roles ({point.percentage:.1f}%)' },
+                            plotOptions: { pie: { innerSize: '68%', startAngle: -90, endAngle: 270, dataLabels: { enabled: true, distance: 12, format: '{point.name}: {point.y}' } } },
+                            series: [{ name: 'Roles', data: #{homePageBean.roleUsageJson} }]
+                        });
+
+                        Highcharts.chart('activityMixChart', {
+                            chart: { type: 'bar', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            xAxis: { type: 'category' },
+                            yAxis: { min: 0, title: { text: 'Events' } },
+                            legend: { enabled: false },
+                            plotOptions: { bar: { borderRadius: 7, colorByPoint: true } },
+                            series: [{ name: 'Activities', data: #{homePageBean.activityMixJson} }]
+                        });
+
+                        Highcharts.chart('portfolioMixChart', {
+                            chart: { type: 'pie', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            tooltip: { pointFormat: '<b>{point.y}</b> total objects' },
+                            plotOptions: { pie: { dataLabels: { enabled: true, format: '{point.name}: {point.y}' } } },
+                            series: [{ name: 'Portfolio', data: #{homePageBean.portfolioMixJson} }]
+                        });
+
+                        Highcharts.chart('operationsPulseChart', {
+                            chart: { type: 'column', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            xAxis: { categories: ['Active Users', 'Role Utilization', 'Auth Share', 'Change Share'] },
+                            yAxis: { max: 100, min: 0, title: { text: 'Percent' } },
+                            legend: { enabled: false },
+                            tooltip: { pointFormat: '<b>{point.y:.2f}%</b>' },
+                            plotOptions: { column: { borderRadius: 8, colorByPoint: true } },
+                            series: [{ name: 'Percent', data: #{homePageBean.operationsPulseJson} }]
+                        });
+
+                        Highcharts.chart('efficiencyRadarChart', {
+                            chart: { polar: true, type: 'line', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            pane: { size: '80%' },
+                            xAxis: { categories: ['Branches/Org', 'Departments/Org', 'Users/Org', 'Users/Role', 'States/Country', 'Cities/State'], tickmarkPlacement: 'on', lineWidth: 0 },
+                            yAxis: { gridLineInterpolation: 'polygon', lineWidth: 0, min: 0 },
+                            tooltip: { shared: true, pointFormat: '<span style="color:{series.color}">{point.category}: <b>{point.y:.2f}</b><br/></span>' },
+                            legend: { enabled: false },
+                            series: [{ name: 'Density', data: #{homePageBean.efficiencyRadarJson}, pointPlacement: 'on', lineWidth: 3, marker: { radius: 4 } }]
+                        });
+                    }
+
+                    window.onload = function () {
+                        if (sessionStorage.getItem('showingLoader') === 'true') {
+                            sessionStorage.removeItem('showingLoader');
+                        }
+                        renderDashboardCharts();
+                        restartDashboardCountdown();
+                    };
+                    //]]>
+                </h:outputScript>
             </div>
-            <script type="text/javascript">
-                //<![CDATA[
-                // JavaScript countdown function
-                var countdownTime = 60;
-                var countdownInterval;
-
-                function startCountdown() {
-                    console.log('Starting countdown!');
-                    countdownTime = 60; // Reset countdown to 60 seconds
-                    document.getElementById('countdownDisplay').innerText = countdownTime;
-                    countdownInterval = setInterval(updateCountdown, 1000); // Update every 1 second
-                }
-
-                function updateCountdown() {
-                    if (countdownTime > 0) {
-                        countdownTime--; // Decrement countdown time by 1
-                        document.getElementById('countdownDisplay').innerText = countdownTime; // Update display
-                    } else {
-                        clearInterval(countdownInterval);
-                        callInitializeMethod(); // Clear interval when reaching 0
-                        startCountdown(); // Restart countdown
-                    }
-                }
-
-                // Automatically start countdown when page reloads
-                window.onload = function () {
-                    // Hide the login loader when homepage is fully loaded
-                    if (sessionStorage.getItem('showingLoader') === 'true') {
-                        sessionStorage.removeItem('showingLoader');
-                    }
-
-                    startCountdown();
-                };
-                //]]>
-            </script>
         </h:form>
     </ui:define>
 </ui:composition>

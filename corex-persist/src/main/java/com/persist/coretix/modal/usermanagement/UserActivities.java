@@ -48,6 +48,12 @@ public class UserActivities  implements Serializable {
     @Column(name = "locationinfo", length = 255)
     private String locationInfo;
 
+    @Column(name = "session_id", length = 128)
+    private String sessionId;
+
+    @Column(name = "termination_reason", length = 64)
+    private String terminationReason;
+
     @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private Timestamp createdAt;
 
@@ -123,6 +129,22 @@ public class UserActivities  implements Serializable {
 
     public void setUserName(String userName) {
         this.userName = userName;
+    }
+
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
+    }
+
+    public String getTerminationReason() {
+        return terminationReason;
+    }
+
+    public void setTerminationReason(String terminationReason) {
+        this.terminationReason = terminationReason;
     }
 
 }

@@ -1,6 +1,7 @@
 package com.web.coretix.filter;
 
 import com.web.coretix.constants.SessionAttributes;
+import com.web.coretix.general.SessionAuditSupport;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -24,6 +25,7 @@ public class SessionExpiryFilter implements Filter {
         if (session == null || session.getAttribute(SessionAttributes.USERNAME.getName()) == null) {
             res.sendRedirect(req.getContextPath() + "/home");
         } else {
+            SessionAuditSupport.touchSession(session);
             chain.doFilter(request, response); // Continue with the request if session is valid
         }
     }

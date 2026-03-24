@@ -84,6 +84,15 @@ public class UserDetails implements Serializable {
     @Column(name = "last_successful_login")
     private Timestamp lastSuccessfulLogin;
 
+    @Column(name = "last_seen_at")
+    private Timestamp lastSeenAt;
+
+    @Column(name = "last_logout_at")
+    private Timestamp lastLogoutAt;
+
+    @Column(name = "last_session_id")
+    private String lastSessionId;
+
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private Timestamp createdAt;
 
@@ -248,6 +257,30 @@ public class UserDetails implements Serializable {
      */
     public void setLastSuccessfulLogin(Timestamp lastSuccessfulLogin) {
         this.lastSuccessfulLogin = lastSuccessfulLogin;
+    }
+
+    public Timestamp getLastSeenAt() {
+        return lastSeenAt;
+    }
+
+    public void setLastSeenAt(Timestamp lastSeenAt) {
+        this.lastSeenAt = lastSeenAt;
+    }
+
+    public Timestamp getLastLogoutAt() {
+        return lastLogoutAt;
+    }
+
+    public void setLastLogoutAt(Timestamp lastLogoutAt) {
+        this.lastLogoutAt = lastLogoutAt;
+    }
+
+    public String getLastSessionId() {
+        return lastSessionId;
+    }
+
+    public void setLastSessionId(String lastSessionId) {
+        this.lastSessionId = lastSessionId;
     }
 
     @PrePersist

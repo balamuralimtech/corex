@@ -72,6 +72,21 @@ public class UserAdministrationService implements IUserAdministrationService {
     }
 
     @Transactional(readOnly = false)
+    public void markLoginSuccess(int userId, String sessionId) {
+        getUserDetailDAO().markLoginSuccess(userId, sessionId);
+    }
+
+    @Transactional(readOnly = false)
+    public void markLogout(int userId, int newStatus, String sessionId) {
+        getUserDetailDAO().markLogout(userId, newStatus, sessionId);
+    }
+
+    @Transactional(readOnly = false)
+    public void touchUserSession(int userId, String sessionId) {
+        getUserDetailDAO().touchUserSession(userId, sessionId);
+    }
+
+    @Transactional(readOnly = false)
     public UsersStatusCountTO populateUsersStatusCount()
     {
         UsersStatusCountTO usersStatusCountTO = new UsersStatusCountTO();

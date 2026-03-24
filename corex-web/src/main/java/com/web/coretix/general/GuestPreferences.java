@@ -417,23 +417,11 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         FacesContext facesContext = FacesContext.getCurrentInstance();
         HttpSession session = (HttpSession) facesContext.getExternalContext().getSession(false);
 
-        // Invalidate the session
         if (session != null) {
             logger.debug("session.getId() !!"+session.getId());
-
-
-            UserActivities userActivityTO = populateUserActivityTO();
-            userActivityTO.setActivityType(UserActivityConstants.LOGOUT.getValue());
-            userActivityTO.setActivityDescription("User Logged Out");
-            userActivityTO.setCreatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
-            userActivityService.addUserActivity(userActivityTO);
-            userAdministrationService.updateUserStatus(userId, LoginConstants.LOGOUT_SUCCESSFUL.getId());
-            session.invalidate();
-            logger.debug("Going to remove Session "+ session.getId() +" from Session Map !!");
-            SessionListeners.removeSessionFromSessionMap(session.getId());
+            SessionAuditSupport.auditSessionTermination(session, LoginConstants.LOGOUT_SUCCESSFUL, "USER_LOGOUT", true);
         }
 
-        // Redirect to login page
         return "loginpage";
 
     }

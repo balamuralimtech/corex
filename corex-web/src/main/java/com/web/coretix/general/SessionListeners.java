@@ -15,22 +15,14 @@
 
 package com.web.coretix.general;
 
-import com.module.coretix.usermanagement.IUserActivityService;
-import com.module.coretix.usermanagement.IUserAdministrationService;
-import com.persist.coretix.modal.usermanagement.UserActivities;
-import com.web.coretix.appgeneral.LoginBean;
-import com.web.coretix.applicationConstants.ApplicationSessionAttributes;
 import com.web.coretix.constants.SessionAttributes;
 
 import java.util.*;
-import javax.faces.context.FacesContext;
-import javax.inject.Inject;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
 import com.web.coretix.constants.LoginConstants;
-import com.web.coretix.constants.UserActivityConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,12 +34,6 @@ import org.slf4j.LoggerFactory;
 public class SessionListeners implements HttpSessionListener
 {
     private static final Logger logger = LoggerFactory.getLogger(SessionListeners.class);
-
-    @Inject
-    private IUserAdministrationService userAdministrationService;
-
-    @Inject
-    private IUserActivityService userActivityService;
 
     private static Map sessionMap = new HashMap();
 
@@ -72,52 +58,17 @@ public class SessionListeners implements HttpSessionListener
      */
      @Override
     public void sessionDestroyed(HttpSessionEvent httpSessionEvent)
-    {        
-        HttpSession httpSession = httpSessionEvent.getSession();   
-        if (httpSession != null)
-        {
-            String userLoginName = (String) httpSession.getAttribute(SessionAttributes.USERNAME.getName());
-            int userId = (int) httpSession.getAttribute(com.web.coretix.constants.SessionAttributes.USER_ACCOUNT_ID.getName());
-
-            if(userLoginName != null)
-            {
-                logger.info("The user session for " + userLoginName + " is "
-                        + "going to invalidate now. The session id is " + httpSession.getId());
-                UserActivities userActivityTO = populateUserActivityTO();
-                userActivityTO.setActivityType(UserActivityConstants.LOGOUT.getValue());
-                userActivityTO.setActivityDescription("User Logged Out");
-                userActivityTO.setCreatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
-                userActivityService.addUserActivity(userActivityTO);
-
-                userAdministrationService.updateUserStatus(userId, LoginConstants.LOGOUT_SUCCESSFUL.getId());
-            }
-           sessionMap.remove(httpSession.getId());
-        }
-    }
-
-    public UserActivities populateUserActivityTO() {
-        FacesContext facesContext = FacesContext.getCurrentInstance();
-        HttpSession httpSession = (HttpSession) facesContext.getExternalContext().getSession(false);
-        UserActivities userActivityTO = new UserActivities();
-
+    {
+        HttpSession httpSession = httpSessionEvent.getSession();
         if (httpSession != null) {
-            logger.debug("httpSession.getId() : " + httpSession.getId());
-            logger.debug("#############################################################################");
-            logger.debug("{}", (Integer) httpSession.getAttribute(com.web.coretix.constants.SessionAttributes.USER_ACCOUNT_ID.getName()));
-            logger.debug("{}", (String) httpSession.getAttribute(com.web.coretix.constants.SessionAttributes.USERNAME.getName()));
-            logger.debug("{}", (String) httpSession.getAttribute(com.web.coretix.constants.SessionAttributes.MACHINE_IP.getName()));
-            logger.debug("{}", (String) httpSession.getAttribute(com.web.coretix.constants.SessionAttributes.MACHINE_NAME.getName()));
-            logger.debug("#############################################################################");
-
-            userActivityTO.setUserId((Integer) httpSession.getAttribute(com.web.coretix.constants.SessionAttributes.USER_ACCOUNT_ID.getName()));
-            userActivityTO.setUserName((String) httpSession.getAttribute(com.web.coretix.constants.SessionAttributes.USERNAME.getName()));
-            // Assuming appropriate keys for the following attributes
-            userActivityTO.setIpAddress((String) httpSession.getAttribute(com.web.coretix.constants.SessionAttributes.MACHINE_IP.getName()));
-            userActivityTO.setDeviceInfo((String) httpSession.getAttribute(com.web.coretix.constants.SessionAttributes.MACHINE_NAME.getName()));
-            userActivityTO.setLocationInfo((String) httpSession.getAttribute(com.web.coretix.constants.SessionAttributes.BROWSER_CLIENT_INFO.getName()));
+            String userLoginName = (String) httpSession.getAttribute(SessionAttributes.USERNAME.getName());
+            if (userLoginName != null) {
+                logger.info("The user session for {} is being destroyed. The session id is {}",
+                        userLoginName, httpSession.getId());
+            }
+            SessionAuditSupport.auditSessionTermination(httpSession, LoginConstants.SESSION_TIMEOUT,
+                    "SESSION_TIMEOUT", false);
         }
-
-        return userActivityTO;
     }
 
     /**
