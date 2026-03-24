@@ -1,7 +1,7 @@
-﻿/*
- * Copyright (c) 2026 `company.name`. All rights reserved.
+/*
+ * Copyright (c) 2026 company.name. All rights reserved.
  *
- * This software and its associated documentation are proprietary to `company.name`.
+ * This software and its associated documentation are proprietary to company.name.
  * Unauthorized copying, distribution, modification, or use of this software,
  * via any medium, is strictly prohibited without prior written permission.
  *
@@ -12,7 +12,7 @@
  * of this software.
  *
  * Author: Balamurali
- * Project: `app.name`
+ * Project: app.name
  */
 package com.module.coretix.coretix;
 

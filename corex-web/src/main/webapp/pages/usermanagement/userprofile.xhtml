@@ -1,28 +1,58 @@
-﻿<!--
-  Copyright (c) 2026 `company.name`. All rights reserved.
-
-  This file and its associated content are proprietary to `company.name`.
-  Unauthorized copying, distribution, modification, or use of this file,
-  via any medium, is strictly prohibited without prior written permission.
-
-  This software is provided "as is", without warranty of any kind, express or implied,
-  including but not limited to the warranties of merchantability, fitness for a
-  particular purpose, and noninfringement. In no event shall the authors or copyright
-  holders be liable for any claim, damages, or other liability arising from the use
-  of this software.
-
-  Author: Balamurali
-  Project: 'app.name'
--->
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:p="http://primefaces.org/ui"
                 template="/WEB-INF/template.xhtml">
-
     <ui:define name="head">
         <h:outputStylesheet name="css/flags/flags.css" library="demo" />
+        <style type="text/css">
+            .profile-page{position:relative;padding-top:.5rem}
+            .profile-page:before{content:"";position:absolute;inset:0 0 auto 0;height:15rem;border-radius:28px;background:linear-gradient(135deg,#0f766e,#155e75 55%,#1d4ed8)}
+            .profile-stack{position:relative;z-index:1;display:flex;flex-direction:column;gap:1.5rem}
+            .profile-hero,.profile-card{border-radius:24px;box-shadow:0 20px 45px rgba(15,23,42,.10)}
+            .profile-hero{padding:2rem;color:#fff;background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.04))}
+            .profile-hero-grid,.profile-body,.profile-grid{display:grid;gap:1.25rem}
+            .profile-hero-grid{grid-template-columns:1.5fr 1fr;align-items:start}
+            .profile-body{grid-template-columns:1.3fr 1fr}
+            .profile-avatar{width:5.5rem;height:5.5rem;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:2.2rem;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.18)}
+            .profile-main{display:flex;gap:1.25rem}
+            .profile-kicker,.detail-label{margin:0;text-transform:uppercase;letter-spacing:.12em;font-size:.78rem;font-weight:700}
+            .profile-kicker{color:rgba(255,255,255,.74)}
+            .profile-title{margin:.35rem 0 0;font-size:2rem;font-weight:800;letter-spacing:-.03em}
+            .profile-subtitle{margin:.8rem 0 0;max-width:40rem;color:rgba(255,255,255,.84);line-height:1.7}
+            .chip-row,.metric-grid{display:grid;gap:.8rem}
+            .chip-row{grid-template-columns:repeat(3,minmax(0,1fr));margin-top:1.2rem}
+            .chip,.metric,.detail,.timeline-item{border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.12);border-radius:18px}
+            .chip{padding:.85rem 1rem;font-weight:600}
+            .metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+            .metric{padding:1rem}
+            .metric-label{margin:0;color:rgba(255,255,255,.75);font-size:.8rem;text-transform:uppercase;letter-spacing:.08em}
+            .metric-value{margin:.55rem 0 0;font-size:1.02rem;font-weight:700;line-height:1.4}
+            .profile-card{padding:1.4rem;background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(248,250,252,.98))}
+            .card-head{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start;margin-bottom:1rem}
+            .card-title{margin:0;color:#0f172a;font-size:1.08rem;font-weight:800}
+            .card-subtitle{margin:.35rem 0 0;color:#64748b;line-height:1.55}
+            .card-icon{width:2.7rem;height:2.7rem;border-radius:14px;display:flex;align-items:center;justify-content:center;background:#ecfeff;color:#0f766e}
+            .profile-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+            .detail,.timeline-item{padding:1rem;border:1px solid #e2e8f0;background:#fff}
+            .detail-label{color:#64748b}
+            .detail-value{margin:.45rem 0 0;color:#0f172a;font-weight:600;line-height:1.5;word-break:break-word}
+            .timeline{display:flex;flex-direction:column;gap:.9rem}
+            .timeline-item{display:grid;grid-template-columns:2.4rem 1fr;gap:.85rem;align-items:start}
+            .timeline-icon{width:2.4rem;height:2.4rem;border-radius:12px;display:flex;align-items:center;justify-content:center;background:#ecfeff;color:#0f766e}
+            .timeline-title{margin:0;color:#0f172a;font-weight:700}
+            .timeline-meta{margin:.3rem 0 0;color:#64748b;line-height:1.55}
+            .detail-wide{grid-column:1 / -1}
+            .country-inline,.location-inline{display:inline-flex;gap:.55rem;align-items:center;flex-wrap:wrap}
+            .flag-pill{border-radius:6px;box-shadow:0 6px 12px rgba(15,23,42,.12)}
+            .empty-state{text-align:center;padding:3rem 1.5rem}
+            .empty-state i{font-size:2.3rem;color:#94a3b8}
+            .empty-state h2{margin:1rem 0 .35rem;color:#0f172a;font-size:1.1rem}
+            .empty-state p{margin:0;color:#64748b;line-height:1.7}
+            @media (max-width: 991px){.profile-page:before{height:18rem}.profile-hero-grid,.profile-body,.profile-grid,.chip-row,.metric-grid{grid-template-columns:1fr}}
+            @media (max-width: 767px){.profile-main{flex-direction:column}.profile-hero,.profile-card{padding:1.2rem}.profile-title{font-size:1.65rem}}
+        </style>
     </ui:define>
 
     <ui:define name="content">
@@ -36,84 +66,142 @@
                 </p:breadCrumb>
             </div>
 
-                <div class="card">
-                    <p:panelGrid id="userDetailsPanelId"
-                                 columns="2"
-                                 columnClasses="ui-grid-col-2,ui-grid-col-4"
-                                 layout="grid"
-                                 styleClass="ui-panelgrid-blank ui-fluid"
-                                 style="border:0px none; background-color:transparent;">
+            <div class="profile-page">
+                <div class="profile-stack">
+                    <p:outputPanel rendered="#{not empty userProfileBean.userDetails}">
+                        <section class="profile-hero">
+                            <div class="profile-hero-grid">
+                                <div>
+                                    <div class="profile-main">
+                                        <div class="profile-avatar"><i class="pi pi-user"></i></div>
+                                        <div>
+                                            <p class="profile-kicker">Account Profile</p>
+                                            <h1 class="profile-title">#{userProfileBean.userDetails.userName}</h1>
+                                            <p class="profile-subtitle">#{userProfileBean.userDetails.role.roleName} account with #{userProfileBean.accessRight} access in #{userProfileBean.userDetails.organization.organizationName}, #{userProfileBean.userDetails.branch.branchName}.</p>
+                                        </div>
+                                    </div>
+                                    <div class="chip-row">
+                                        <div class="chip"><i class="pi pi-id-card"></i> User ID #{userProfileBean.userDetails.userId}</div>
+                                        <div class="chip"><i class="pi pi-briefcase"></i> #{userProfileBean.userDetails.role.roleName}</div>
+                                        <div class="chip"><i class="pi pi-shield"></i> #{userProfileBean.accessRight}</div>
+                                    </div>
+                                </div>
 
-                            <p:column>
-                                <h:outputText value="#{msg['usernameLabel']}:" />
-                            </p:column>
-                            <p:column>
-                                <h:outputText value="#{userProfileBean.userDetails.userName}" />
-                            </p:column>
-                            <p:column>
-                                <h:outputText value="#{msg['roleLabel']}:" />
-                            </p:column>
-                            <p:column>
-                                <h:outputText value="#{userProfileBean.userDetails.role.roleName}" />
-                            </p:column>
-                            <p:column>
-                                <h:outputText value="#{msg['accessRightLabel']}:" />
-                            </p:column>
-                            <p:column>
-                                <h:outputText value="#{userProfileBean.accessRight}"/>
-                            </p:column>
-                            <p:column>
-                                <h:outputText value="#{msg['organizationLabel']}:" />
-                            </p:column>
-                            <p:column>
-                                <h:outputText value="#{userProfileBean.userDetails.organization.organizationName}" />
-                            </p:column>
-                            <p:column>
-                                <h:outputText value="#{msg['branchLabel']}:" />
-                            </p:column>
-                            <p:column>
-                                <h:outputText value="#{userProfileBean.userDetails.branch.branchName}" />
-                            </p:column>
-                            <p:column>
-                                <h:outputText value="#{msg['countryLabel']}:" />
-                            </p:column>
-                            <p:column>
-                                <span class="flag flag-#{userProfileBean.userDetails.country.iso2.toLowerCase()}" style="width: 30px; height: 20px"/>
-                                <h:outputText value="#{userProfileBean.userDetails.country.name}" />
-                            </p:column>
-                            <p:column>
-                                <h:outputText value="#{msg['stateLabel']}:" />
-                            </p:column>
-                            <p:column>
-                                <h:outputText value="#{userProfileBean.userDetails.state.name}" />
-                            </p:column>
-                            <p:column>
-                                <h:outputText value="#{msg['cityLabel']}:" />
-                            </p:column>
-                            <p:column>
-                                <h:outputText value="#{userProfileBean.userDetails.city.name}" />
-                            </p:column>
-                            <p:column>
-                                <h:outputText value="#{msg['emailIDLabel']}:" />
-                            </p:column>
-                            <p:column>
-                                <h:outputText value="#{userProfileBean.userDetails.emailId}" />
-                            </p:column>
-                            <p:column>
-                                <h:outputText value="#{msg['contactLabel']}:" />
-                            </p:column>
-                            <p:column>
-                                <h:outputText value="#{userProfileBean.userDetails.contact}" />
-                            </p:column>
-                            <p:column>
-                                <h:outputText value="#{msg['addressLabel']}:" />
-                            </p:column>
-                            <p:column>
-                                <h:outputText value="#{userProfileBean.userDetails.address}" />
-                            </p:column>
-                    </p:panelGrid>
+                                <div class="metric-grid">
+                                    <div class="metric">
+                                        <p class="metric-label">Organization</p>
+                                        <div class="metric-value">#{userProfileBean.userDetails.organization.organizationName}</div>
+                                    </div>
+                                    <div class="metric">
+                                        <p class="metric-label">Branch</p>
+                                        <div class="metric-value">#{userProfileBean.userDetails.branch.branchName}</div>
+                                    </div>
+                                    <div class="metric">
+                                        <p class="metric-label">Created</p>
+                                        <div class="metric-value"><h:outputText value="#{userProfileBean.userDetails.createdAt}"><f:convertDateTime pattern="dd MMM yyyy" /></h:outputText></div>
+                                    </div>
+                                    <div class="metric">
+                                        <p class="metric-label">Updated</p>
+                                        <div class="metric-value"><h:outputText value="#{userProfileBean.userDetails.updatedAt}"><f:convertDateTime pattern="dd MMM yyyy" /></h:outputText></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <div class="profile-body">
+                            <div class="profile-stack">
+                                <section class="profile-card">
+                                    <div class="card-head">
+                                        <div>
+                                            <h2 class="card-title">Identity Overview</h2>
+                                            <p class="card-subtitle">Core account attributes grouped for faster scanning.</p>
+                                        </div>
+                                        <div class="card-icon"><i class="pi pi-user-edit"></i></div>
+                                    </div>
+                                    <div class="profile-grid">
+                                        <div class="detail"><p class="detail-label">#{msg['usernameLabel']}</p><div class="detail-value">#{userProfileBean.userDetails.userName}</div></div>
+                                        <div class="detail"><p class="detail-label">#{msg['roleLabel']}</p><div class="detail-value">#{userProfileBean.userDetails.role.roleName}</div></div>
+                                        <div class="detail"><p class="detail-label">#{msg['accessRightLabel']}</p><div class="detail-value">#{userProfileBean.accessRight}</div></div>
+                                        <div class="detail"><p class="detail-label">#{msg['organizationLabel']}</p><div class="detail-value">#{userProfileBean.userDetails.organization.organizationName}</div></div>
+                                        <div class="detail"><p class="detail-label">#{msg['branchLabel']}</p><div class="detail-value">#{userProfileBean.userDetails.branch.branchName}</div></div>
+                                        <div class="detail"><p class="detail-label">Session Key</p><div class="detail-value">#{userProfileBean.userDetails.lastSessionId}</div></div>
+                                    </div>
+                                </section>
+
+                                <section class="profile-card">
+                                    <div class="card-head">
+                                        <div>
+                                            <h2 class="card-title">Contact And Location</h2>
+                                            <p class="card-subtitle">Primary communication details and office geography.</p>
+                                        </div>
+                                        <div class="card-icon"><i class="pi pi-map-marker"></i></div>
+                                    </div>
+                                    <div class="profile-grid">
+                                        <div class="detail"><p class="detail-label">#{msg['emailIDLabel']}</p><div class="detail-value">#{userProfileBean.userDetails.emailId}</div></div>
+                                        <div class="detail"><p class="detail-label">#{msg['contactLabel']}</p><div class="detail-value">#{userProfileBean.userDetails.contact}</div></div>
+                                        <div class="detail">
+                                            <p class="detail-label">#{msg['countryLabel']}</p>
+                                            <div class="detail-value">
+                                                <span class="country-inline">
+                                                    <span class="flag flag-#{userProfileBean.userDetails.country.iso2.toLowerCase()} flag-pill" style="width:30px;height:20px"></span>
+                                                    <span>#{userProfileBean.userDetails.country.name}</span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="detail">
+                                            <p class="detail-label">Regional Coverage</p>
+                                            <div class="detail-value"><span class="location-inline"><i class="pi pi-globe"></i><span>#{userProfileBean.userDetails.state.name}, #{userProfileBean.userDetails.city.name}</span></span></div>
+                                        </div>
+                                        <div class="detail detail-wide"><p class="detail-label">#{msg['addressLabel']}</p><div class="detail-value">#{userProfileBean.userDetails.address}</div></div>
+                                    </div>
+                                </section>
+                            </div>
+
+                            <div class="profile-stack">
+                                <section class="profile-card">
+                                    <div class="card-head">
+                                        <div>
+                                            <h2 class="card-title">Recent Account Activity</h2>
+                                            <p class="card-subtitle">Important account milestones from the persisted profile record.</p>
+                                        </div>
+                                        <div class="card-icon"><i class="pi pi-clock"></i></div>
+                                    </div>
+                                    <div class="timeline">
+                                        <div class="timeline-item"><div class="timeline-icon"><i class="pi pi-sign-in"></i></div><div><p class="timeline-title">Last Successful Login</p><div class="timeline-meta"><h:outputText value="#{userProfileBean.userDetails.lastSuccessfulLogin}"><f:convertDateTime pattern="dd MMM yyyy, hh:mm a" /></h:outputText></div></div></div>
+                                        <div class="timeline-item"><div class="timeline-icon"><i class="pi pi-eye"></i></div><div><p class="timeline-title">Last Seen</p><div class="timeline-meta"><h:outputText value="#{userProfileBean.userDetails.lastSeenAt}"><f:convertDateTime pattern="dd MMM yyyy, hh:mm a" /></h:outputText></div></div></div>
+                                        <div class="timeline-item"><div class="timeline-icon"><i class="pi pi-sign-out"></i></div><div><p class="timeline-title">Last Logout</p><div class="timeline-meta"><h:outputText value="#{userProfileBean.userDetails.lastLogoutAt}"><f:convertDateTime pattern="dd MMM yyyy, hh:mm a" /></h:outputText></div></div></div>
+                                        <div class="timeline-item"><div class="timeline-icon"><i class="pi pi-key"></i></div><div><p class="timeline-title">Last Password Change</p><div class="timeline-meta"><h:outputText value="#{userProfileBean.userDetails.lastPasswordChange}"><f:convertDateTime pattern="dd MMM yyyy, hh:mm a" /></h:outputText></div></div></div>
+                                    </div>
+                                </section>
+
+                                <section class="profile-card">
+                                    <div class="card-head">
+                                        <div>
+                                            <h2 class="card-title">Account Snapshot</h2>
+                                            <p class="card-subtitle">Condensed record view for administrative verification.</p>
+                                        </div>
+                                        <div class="card-icon"><i class="pi pi-verified"></i></div>
+                                    </div>
+                                    <div class="profile-grid">
+                                        <div class="detail"><p class="detail-label">Account Created</p><div class="detail-value"><h:outputText value="#{userProfileBean.userDetails.createdAt}"><f:convertDateTime pattern="dd MMM yyyy, hh:mm a" /></h:outputText></div></div>
+                                        <div class="detail"><p class="detail-label">Last Updated</p><div class="detail-value"><h:outputText value="#{userProfileBean.userDetails.updatedAt}"><f:convertDateTime pattern="dd MMM yyyy, hh:mm a" /></h:outputText></div></div>
+                                        <div class="detail"><p class="detail-label">#{msg['cityLabel']}</p><div class="detail-value">#{userProfileBean.userDetails.city.name}</div></div>
+                                        <div class="detail"><p class="detail-label">#{msg['stateLabel']}</p><div class="detail-value">#{userProfileBean.userDetails.state.name}</div></div>
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
+                    </p:outputPanel>
+
+                    <p:outputPanel rendered="#{empty userProfileBean.userDetails}">
+                        <section class="profile-card empty-state">
+                            <i class="pi pi-exclamation-circle"></i>
+                            <h2>Profile details are not available</h2>
+                            <p>The account could not be resolved from the current session. Refresh the page or sign in again to load the profile data.</p>
+                        </section>
+                    </p:outputPanel>
+                </div>
             </div>
         </h:form>
     </ui:define>
 </ui:composition>
-
