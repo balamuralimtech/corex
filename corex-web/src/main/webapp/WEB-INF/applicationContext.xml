@@ -49,6 +49,7 @@
                 <value>com.persist.coretix.modal.usermanagement.RolePrivileges</value>
                  <value>com.persist.coretix.modal.usermanagement.UserDetails</value>
                                 <!-- Coretix app  Declaration for future use -->
+                <value>com.persist.coretix.modal.coretix.ApplicationTheme</value>
 
             </list>
         </property>

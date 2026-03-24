@@ -47,6 +47,7 @@ public class ApplicationThemeDAO implements IApplicationThemeDAO {
             if (trans != null) {
                 trans.rollback();
             }
+            logger.error("Error while saving application theme for user {}", applicationTheme.getUserId(), e);
             return GeneralConstants.FAILED;
         } finally {
             if (session != null) {
@@ -80,11 +81,13 @@ public class ApplicationThemeDAO implements IApplicationThemeDAO {
             if (trans != null) {
                 trans.rollback();
             }
+            logger.error("Constraint violation while updating application theme for user {}", applicationTheme.getUserId(), e);
             return GeneralConstants.ENTRY_IN_USE;
         } catch (Exception e) {
             if (trans != null) {
                 trans.rollback();
             }
+            logger.error("Error while updating application theme for user {}", applicationTheme.getUserId(), e);
             return GeneralConstants.FAILED;
         } finally {
             if (session != null) {
@@ -102,12 +105,18 @@ public class ApplicationThemeDAO implements IApplicationThemeDAO {
             trans = session.beginTransaction();
 
             List<?> list = session
-                    .createQuery("from ApplicationTheme where userid=?1")
+                    .createQuery("from ApplicationTheme where userId = ?1")
                     .setParameter(1, userid)
                     .list();
 
             trans.commit();
             return list.isEmpty() ? null : (ApplicationTheme) list.get(0);
+        } catch (Exception e) {
+            if (trans != null) {
+                trans.rollback();
+            }
+            logger.error("Error while fetching application theme for user {}", userid, e);
+            return null;
         } finally {
             if (session != null) {
                 session.close();

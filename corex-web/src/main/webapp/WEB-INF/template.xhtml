@@ -6,6 +6,7 @@
       xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui">
 <f:view contentType="text/html" locale="#{guestPreferences.locale}">
+    <f:event listener="#{guestPreferences.initializePageAttributes}" type="preRenderView"/>
     <h:head>
         <meta charset="UTF-8"/>
         <f:facet name="first">
@@ -13,6 +14,7 @@
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
             <meta name="apple-mobile-web-app-capable" content="yes" />
+            <meta name="mobile-web-app-capable" content="yes" />
             <meta name="theme-color" content="#{guestPreferences.themeColors[guestPreferences.theme]}" />
             <link rel="shortcut icon" href="#{request.contextPath}/resources/demo/images/coretix/coretixfavicon.png" type="image/x-icon" />
         </f:facet>
@@ -394,7 +396,7 @@
                 <ui:insert name="content"/>
             </p:outputPanel>
 
-            <p:outputPanel id="configPanelId" rendered="false">
+            <p:outputPanel id="configPanelId">
             <ui:include src="./config.xhtml"/>
             </p:outputPanel>
             <ui:include src="./footer.xhtml" />

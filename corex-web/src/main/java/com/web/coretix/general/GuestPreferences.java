@@ -1,8 +1,12 @@
 package com.web.coretix.general;
 
+import com.module.coretix.commonto.UserActivityTO;
+import com.module.coretix.coretix.IApplicationThemeService;
 import com.module.coretix.usermanagement.IRoleAdministrationService;
 import com.module.coretix.usermanagement.IUserActivityService;
 import com.module.coretix.usermanagement.IUserAdministrationService;
+import com.persist.coretix.modal.constants.GeneralConstants;
+import com.persist.coretix.modal.coretix.ApplicationTheme;
 import com.persist.coretix.modal.usermanagement.UserActivities;
 import com.persist.coretix.modal.usermanagement.UserDetails;
 import com.web.coretix.appgeneral.GenericManagedBean;
@@ -107,6 +111,9 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     @Inject
     private IRoleAdministrationService roleAdministrationService;
 
+    @Inject
+    private IApplicationThemeService applicationThemeService;
+
     private String growlMessage;
     private List<String> topbarMessages = new ArrayList<>();
     private int topbarUnreadMessageCount;
@@ -184,6 +191,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         layoutSpecialThemes.add(new LayoutSpecialTheme("Firewatch", "firewatch", "#cb2d3e", "#ef473a"));
         layoutSpecialThemes.add(new LayoutSpecialTheme("Suzy", "suzy", "#834d9b", "#d04ed6"));
 
+        loadUserThemePreferences();
         fetchModuleRenderList();
         syncTopbarMessagesFromSession(httpSession);
     }
@@ -392,15 +400,34 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     }
 
     public void onLayoutChange() {
+        persistCurrentThemePreferences();
         PrimeFaces.current().executeScript("PrimeFaces.AvalonConfigurator.changeMenuLayout('" + menuLayout + "')");
     }
 
     public void onMenuThemeChange() {
+        persistCurrentThemePreferences();
         if ("layout-menu-dark".equals(menuClass)) {
             PrimeFaces.current().executeScript("PrimeFaces.AvalonConfigurator.changeMenuToDark()");
         } else {
             PrimeFaces.current().executeScript("PrimeFaces.AvalonConfigurator.changeMenuToLight()");
         }
+    }
+
+    public void onProfileModeChange() {
+        persistCurrentThemePreferences();
+    }
+
+    public void applyThemeSelection(String selectedTheme) {
+        this.theme = selectedTheme;
+        persistCurrentThemePreferences();
+    }
+
+    public void applyLayoutSelection(String selectedLayout, boolean special) {
+        this.layout = selectedLayout;
+        if (special) {
+            this.menuClass = "layout-menu-dark";
+        }
+        persistCurrentThemePreferences();
     }
 
     public String navigateToHomepage()
@@ -990,6 +1017,91 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
         Object unreadCount = session.getAttribute(SessionAttributes.APPLICATION_NOTIFICATION_UNREAD_COUNT.getName());
         topbarUnreadMessageCount = unreadCount instanceof Integer ? (Integer) unreadCount : 0;
+    }
+
+    private void loadUserThemePreferences() {
+        if (userId <= 0) {
+            return;
+        }
+
+        try {
+            ApplicationTheme savedTheme = applicationThemeService.getApplicationThemeByUserid(userId);
+            if (savedTheme == null) {
+                return;
+            }
+
+            if (savedTheme.getTheme() != null && !savedTheme.getTheme().trim().isEmpty()) {
+                theme = savedTheme.getTheme().trim();
+            }
+            if (savedTheme.getLayout() != null && !savedTheme.getLayout().trim().isEmpty()) {
+                layout = savedTheme.getLayout().trim();
+            }
+            if (savedTheme.getMenuClass() != null && !savedTheme.getMenuClass().trim().isEmpty()) {
+                menuClass = savedTheme.getMenuClass().trim();
+            }
+            if (savedTheme.getProfileMode() != null && !savedTheme.getProfileMode().trim().isEmpty()) {
+                profileMode = savedTheme.getProfileMode().trim();
+            }
+            if (savedTheme.getMenuLayout() != null && !savedTheme.getMenuLayout().trim().isEmpty()) {
+                menuLayout = savedTheme.getMenuLayout().trim();
+            }
+            if (savedTheme.getInputStyle() != null && !savedTheme.getInputStyle().trim().isEmpty()) {
+                inputStyle = savedTheme.getInputStyle().trim();
+            }
+        } catch (Exception e) {
+            logger.error("Unable to load saved theme configuration for user {}", userId, e);
+        }
+    }
+
+    public void persistCurrentThemePreferences() {
+        if (userId <= 0) {
+            logger.warn("Skipping theme persistence because no logged-in user is available.");
+            return;
+        }
+
+        try {
+            ApplicationTheme existingTheme = applicationThemeService.getApplicationThemeByUserid(userId);
+            ApplicationTheme applicationTheme = existingTheme == null ? new ApplicationTheme() : existingTheme;
+
+            applicationTheme.setUserId(userId);
+            applicationTheme.setTheme(theme);
+            applicationTheme.setLayout(layout);
+            applicationTheme.setMenuClass(menuClass);
+            applicationTheme.setProfileMode(profileMode);
+            applicationTheme.setMenuLayout(menuLayout);
+            applicationTheme.setInputStyle(inputStyle);
+
+            UserActivityTO userActivityTO = buildThemeUserActivity();
+            GeneralConstants result;
+            if (existingTheme == null) {
+                result = applicationThemeService.addApplicationTheme(userActivityTO, applicationTheme);
+            } else {
+                result = applicationThemeService.updateApplicationTheme(userActivityTO, applicationTheme);
+            }
+            logger.info("Theme persistence result for user {}: {} [theme={}, layout={}, menuClass={}, profileMode={}, menuLayout={}, inputStyle={}]",
+                    userId, result, theme, layout, menuClass, profileMode, menuLayout, inputStyle);
+        } catch (Exception e) {
+            logger.error("Unable to persist theme configuration for user {}", userId, e);
+        }
+    }
+
+    private UserActivityTO buildThemeUserActivity() {
+        UserActivityTO userActivityTO = new UserActivityTO();
+        HttpSession session = SessionUtils.getSession();
+
+        userActivityTO.setUserId(userId);
+        userActivityTO.setUserName(userName);
+        userActivityTO.setActivityType("config");
+        userActivityTO.setActivityDescription("User interface preferences updated");
+        userActivityTO.setCreatedAt(new Date());
+
+        if (session != null) {
+            userActivityTO.setIpAddress((String) session.getAttribute(SessionAttributes.MACHINE_IP.getName()));
+            userActivityTO.setDeviceInfo((String) session.getAttribute(SessionAttributes.MACHINE_NAME.getName()));
+            userActivityTO.setLocationInfo((String) session.getAttribute(SessionAttributes.BROWSER_CLIENT_INFO.getName()));
+        }
+
+        return userActivityTO;
     }
 }
 
