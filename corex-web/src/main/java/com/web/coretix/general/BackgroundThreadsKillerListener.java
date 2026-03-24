@@ -1,16 +1,18 @@
-/*
- * KillBackgroundThreadsListener.java
+﻿/*
+ * Copyright (c) 2026 `company.name`. All rights reserved.
  *
- * Created on Jul 19, 2012, 3:46:23 PM
+ * This software and its associated documentation are proprietary to `company.name`.
+ * Unauthorized copying, distribution, modification, or use of this software,
+ * via any medium, is strictly prohibited without prior written permission.
  *
- * Copyright © 2007-2009 BMSolutions.
- * All Rights Reserved.
+ * This software is provided "as is", without warranty of any kind, express or implied,
+ * including but not limited to the warranties of merchantability, fitness for a
+ * particular purpose, and noninfringement. In no event shall the authors or copyright
+ * holders be liable for any claim, damages, or other liability arising from the use
+ * of this software.
  *
- * This software is the confidential and proprietary information of
- * BMSolutions.("Confidential Information"). You shall
- * not disclose such Confidential Information and shall use it only
- * in accordance with the terms of the license agreement you entered
- * into with BMSolutions.
+ * Author: Balamurali
+ * Project: `app.name`
  */
 package com.web.coretix.general;
 
@@ -60,4 +62,7 @@ public class BackgroundThreadsKillerListener implements ServletContextListener
         }
     }
 }
+
+
+
 
