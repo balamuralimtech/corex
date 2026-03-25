@@ -36,14 +36,14 @@
                     <f:selectItem itemLabel="Overlay" itemValue="overlay" />
                     <f:selectItem itemLabel="Horizontal" itemValue="horizontal" />
                     <f:selectItem itemLabel="Slim" itemValue="slim" />
-                    <p:ajax listener="#{guestPreferences.onLayoutChange}" process="@this" update=":config-form menuform" />
+                    <p:ajax listener="#{guestPreferences.onLayoutChange}" process="@this" update=":config-form menuform" global="false" />
                 </p:selectOneRadio>
 
                 <h5>Menu Theme</h5>
                 <p:selectOneRadio value="#{guestPreferences.menuClass}" layout="responsive" columns="2">
                     <f:selectItem itemLabel="Dark" itemValue="layout-menu-dark" />
                     <f:selectItem itemLabel="Light" itemValue="layout-menu-light" />
-                    <p:ajax process="@this" update=":config-form menuform"
+                    <p:ajax process="@this" update=":config-form menuform" global="false"
                             listener="#{guestPreferences.onMenuThemeChange}"/>
                 </p:selectOneRadio>
 
@@ -53,7 +53,7 @@
                                   itemDisabled="#{guestPreferences.menuLayout == 'horizontal'}"/>
                     <f:selectItem itemLabel="Overlay" itemValue="overlay"
                                   itemDisabled="#{guestPreferences.menuLayout == 'horizontal'}"/>
-                    <p:ajax process="@this" update=":config-form menuform topbar-items-form"
+                    <p:ajax process="@this" update=":config-form menuform topbar-items-form" global="false"
                             listener="#{guestPreferences.onProfileModeChange}" />
                 </p:selectOneRadio>
 
@@ -62,7 +62,7 @@
                                   onchange="PrimeFaces.AvalonConfigurator.updateInputStyle(event.target.value)">
                     <f:selectItem itemLabel="Outlined" itemValue="outlined" />
                     <f:selectItem itemLabel="Filled" itemValue="filled" />
-                    <p:ajax process="@this" update=":config-form"
+                    <p:ajax process="@this" update=":config-form" global="false"
                             listener="#{guestPreferences.persistCurrentThemePreferences}" />
                 </p:selectOneRadio>
 
@@ -73,7 +73,7 @@
                             <div>
                                 <p:commandLink action="#{guestPreferences.applyLayoutSelection(layoutTheme.file, layoutTheme.special)}"
                                                style="background-color: #{layoutTheme.color}" title="#{layoutTheme.name}"
-                                               process="@this" update=":config-form"
+                                               process="@this" update=":config-form" global="false"
                                                onstart="PrimeFaces.AvalonConfigurator.beforeResourceChange()"
                                                oncomplete="PrimeFaces.AvalonConfigurator.changeLayout('#{layoutTheme.file}')">
                                     <ui:fragment rendered="#{layoutTheme.file eq guestPreferences.layout}">
@@ -92,7 +92,7 @@
                             <div>
                                 <p:commandLink action="#{guestPreferences.applyLayoutSelection(layoutSpecialTheme.file, layoutSpecialTheme.special)}"
                                                style="background-image: linear-gradient(to right, #{layoutSpecialTheme.color1}, #{layoutSpecialTheme.color2})"
-                                               process="@this" update=":config-form"
+                                               process="@this" update=":config-form" global="false"
                                                onstart="PrimeFaces.AvalonConfigurator.beforeResourceChange()"
                                                oncomplete="PrimeFaces.AvalonConfigurator.changeLayout('#{layoutSpecialTheme.file}')">
                                     <ui:fragment rendered="#{layoutSpecialTheme.file eq guestPreferences.layout}">
@@ -111,7 +111,7 @@
                             <div>
                                 <p:commandLink action="#{guestPreferences.applyThemeSelection(componentTheme.file)}"
                                                style="background-color: #{componentTheme.color}"
-                                               process="@this" update=":config-form"
+                                               process="@this" update=":config-form" global="false"
                                                onstart="PrimeFaces.AvalonConfigurator.beforeResourceChange()"
                                                oncomplete="PrimeFaces.AvalonConfigurator.changeComponentsTheme('#{componentTheme.file}')">
                                     <ui:fragment rendered="#{componentTheme.file eq guestPreferences.theme}">

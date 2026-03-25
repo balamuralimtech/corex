@@ -123,6 +123,9 @@
                         <p:menuitem id="m_notificationsettings" value="#{msg['notificationSettingsLabel']}"
                                     icon="pi pi-fw pi-at" url="#{request.contextPath}/notification-settings"
                                     rendered="#{guestPreferences.notificationSettingRendered}"/>
+                        <p:menuitem id="m_applicationnotifications" value="Application Notifications"
+                                    icon="pi pi-fw pi-envelope" url="#{request.contextPath}/application-notifications"
+                                    rendered="#{guestPreferences.notificationSettingRendered}"/>
                     </p:submenu>
                     <p:submenu id="m_license" label="#{msg['licenseLabel']}" icon="pi pi-fw pi-ticket" rendered="#{guestPreferences.licenseManagementRendered}">
                         <p:menuitem id="m_licensepage" value="#{msg['licenseLabel']}" icon="pi pi-fw pi-file-o"

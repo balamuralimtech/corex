@@ -1,0 +1,180 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="head">
+        <h:outputStylesheet name="css/custom-validation.css" library="demo" />
+        <script type="text/javascript">
+            function highlightErrorFields(fieldIds) {
+                document.querySelectorAll('.ui-state-error-custom, .shake-animation, .pulse-animation').forEach(function(el) {
+                    el.classList.remove('ui-state-error-custom', 'shake-animation', 'pulse-animation');
+                });
+
+                fieldIds.forEach(function(fieldId) {
+                    var field = document.getElementById(fieldId);
+                    if (!field) {
+                        return;
+                    }
+
+                    field.classList.add('ui-state-error-custom', 'shake-animation', 'pulse-animation');
+                    if (fieldIds.indexOf(fieldId) === 0) {
+                        field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+
+                    setTimeout(function() {
+                        field.classList.remove('shake-animation', 'pulse-animation');
+                    }, 2000);
+                });
+            }
+
+            function clearNotificationErrorStyles() {
+                document.querySelectorAll('.ui-state-error-custom').forEach(function(el) {
+                    el.classList.remove('ui-state-error-custom');
+                });
+            }
+        </script>
+    </ui:define>
+
+    <ui:define name="content">
+        <f:event listener="#{applicationNotificationBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:form id="form">
+            <div class="col-12">
+                <p:breadCrumb>
+                    <p:menuitem url="#" icon="pi pi-home" />
+                    <p:menuitem value="#{msg['systemManagementLabel']}" url="#" />
+                    <p:menuitem value="Application Notifications" url="#" />
+                </p:breadCrumb>
+            </div>
+            <div class="grid crud-demo">
+                <div class="col-12">
+                    <p:outputPanel class="card" id="notificationMainPanelId">
+                        <p:growl id="messages" showDetail="true" />
+
+                        <p:toolbar styleClass="mb-4">
+                            <p:toolbarGroup>
+                                <p:commandButton value="#{msg['newLabel']}" icon="pi pi-plus"
+                                                 actionListener="#{applicationNotificationBean.addButtonAction}"
+                                                 update="addEditNotificationPanelId" process="@this"
+                                                 oncomplete="PF('manageApplicationNotificationDialog').show()"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+                                <p:commandButton value="Fetch Notifications" icon="pi pi-search"
+                                                 action="#{applicationNotificationBean.searchButtonAction}"
+                                                 update="notificationMainPanelId" process="@this"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+
+                                <h:outputLabel value="#{msg['noOfRecordsLabel']}: " rendered="#{applicationNotificationBean.datatableRendered}"/>
+                                <h:outputText value="#{applicationNotificationBean.recordsCount}" rendered="#{applicationNotificationBean.datatableRendered}"/>
+                            </p:toolbarGroup>
+                            <p:toolbarGroup align="right">
+                                <p:commandButton value="#{msg['exportLabel']}" icon="pi pi-upload" styleClass="ui-button-help"
+                                                 rendered="#{applicationNotificationBean.datatableRendered}">
+                                    <p:dataExporter type="pdf" target="notificationDataTableId" fileName="application-notifications"/>
+                                </p:commandButton>
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <p:outputPanel id="datatablePanelId" rendered="#{applicationNotificationBean.datatableRendered}">
+                            <p:dataTable id="notificationDataTableId" widgetVar="applicationNotificationTable"
+                                         var="notification" value="#{applicationNotificationBean.notificationList}"
+                                         reflow="true" styleClass="commoncrud-table"
+                                         rowKey="#{notification.id}" paginator="true" rows="10" paginatorPosition="bottom">
+                                <f:facet name="header">
+                                    <div class="products-table-header">
+                                        <span style="font-weight: bold">Search Application Notifications</span>
+                                        <span class="filter-container ui-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <p:inputText id="globalFilter" onkeyup="PF('applicationNotificationTable').filter()" placeholder="#{msg['searchLabel']}" />
+                                        </span>
+                                    </div>
+                                </f:facet>
+
+                                <p:column headerText="#{msg['idLabel']}" sortBy="#{notification.id}" filterBy="#{notification.id}">
+                                    <h:outputText value="#{notification.id}" />
+                                </p:column>
+                                <p:column headerText="Message" sortBy="#{notification.message}" filterBy="#{notification.message}">
+                                    <h:outputText value="#{notification.message}" />
+                                </p:column>
+                                <p:column headerText="Created By" sortBy="#{notification.createdByUserName}" filterBy="#{notification.createdByUserName}">
+                                    <h:outputText value="#{notification.createdByUserName}" />
+                                </p:column>
+                                <p:column headerText="Created At" sortBy="#{notification.createdAt}" filterBy="#{notification.createdAt}">
+                                    <h:outputText value="#{notification.createdAt}">
+                                        <f:convertDateTime pattern="dd-MMM-yyyy hh:mm:ss a"/>
+                                    </h:outputText>
+                                </p:column>
+
+                                <p:column exportable="false">
+                                    <p:commandButton icon="pi pi-pencil"
+                                                     update=":form:addEditNotificationPanelId"
+                                                     oncomplete="PF('manageApplicationNotificationDialog').show()"
+                                                     action="#{applicationNotificationBean.confirmEditButtonAction}"
+                                                     styleClass="edit-button rounded-button ui-button-success"
+                                                     process="@this">
+                                        <f:setPropertyActionListener value="#{notification}" target="#{applicationNotificationBean.selectedNotification}" />
+                                    </p:commandButton>
+                                    <p:commandButton class="ui-button-warning rounded-button"
+                                                     icon="pi pi-trash"
+                                                     process="@this"
+                                                     oncomplete="PF('deleteApplicationNotificationDialog').show()">
+                                        <f:setPropertyActionListener value="#{notification}" target="#{applicationNotificationBean.selectedNotification}" />
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </p:outputPanel>
+
+                        <p:dialog header="Application Notification Details"
+                                  showEffect="fade"
+                                  modal="true"
+                                  widgetVar="manageApplicationNotificationDialog"
+                                  responsive="true"
+                                  width="60%">
+                            <p:outputPanel id="addEditNotificationPanelId" class="ui-fluid">
+                                <div class="field">
+                                    <p:outputLabel for="notificationMessage" value="Message" />
+                                    <p:inputTextarea id="notificationMessage"
+                                                     value="#{applicationNotificationBean.message}"
+                                                     rows="8"
+                                                     maxlength="1000"
+                                                     autoResize="false"
+                                                     onfocus="clearNotificationErrorStyles()" />
+                                </div>
+                            </p:outputPanel>
+                            <f:facet name="footer">
+                                <center>
+                                    <p:commandButton value="#{msg['saveLabel']}" icon="pi pi-check"
+                                                     actionListener="#{applicationNotificationBean.saveNotification}"
+                                                     update=":form:addEditNotificationPanelId :form:messages :form:notificationDataTableId"
+                                                     process="addEditNotificationPanelId @this" />
+                                    <p:commandButton value="#{msg['cancelLabel']}" icon="pi pi-times"
+                                                     onclick="PF('manageApplicationNotificationDialog').hide()"
+                                                     type="button"
+                                                     class="ui-button-secondary" />
+                                </center>
+                            </f:facet>
+                        </p:dialog>
+
+                        <p:confirmDialog widgetVar="deleteApplicationNotificationDialog"
+                                         showEffect="fade"
+                                         width="300"
+                                         message="Delete the selected application notification?"
+                                         header="#{msg['confirmLabel']}"
+                                         severity="warn">
+                            <p:commandButton value="#{msg['yesLabel']}" icon="pi pi-check"
+                                             actionListener="#{applicationNotificationBean.confirmDeleteNotification}"
+                                             process="@this"
+                                             update=":form:messages :form:notificationDataTableId"
+                                             oncomplete="PF('deleteApplicationNotificationDialog').hide()" />
+                            <p:commandButton value="#{msg['noLabel']}" type="button"
+                                             styleClass="ui-button-secondary"
+                                             icon="pi pi-times"
+                                             onclick="PF('deleteApplicationNotificationDialog').hide()" />
+                        </p:confirmDialog>
+                    </p:outputPanel>
+                </div>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

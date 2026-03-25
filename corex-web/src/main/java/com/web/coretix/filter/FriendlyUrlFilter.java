@@ -121,6 +121,7 @@ public class FriendlyUrlFilter implements Filter {
         paths.put("/currency", "/pages/systemmanagement/currency.xhtml");
         paths.put("/bank-details", "/pages/systemmanagement/bankdetails.xhtml");
         paths.put("/notification-settings", "/pages/systemmanagement/notificationsettings.xhtml");
+        paths.put("/application-notifications", "/pages/systemmanagement/applicationnotifications.xhtml");
 
         paths.put("/license", "/pages/license/license.xhtml");
         paths.put("/server-logs", "/pages/serverlogs/serverlogs.xhtml");

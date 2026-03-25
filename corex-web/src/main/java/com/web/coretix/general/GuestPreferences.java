@@ -17,11 +17,13 @@
 package com.web.coretix.general;
 
 import com.module.coretix.commonto.UserActivityTO;
+import com.module.coretix.coretix.IApplicationNotificationService;
 import com.module.coretix.coretix.IApplicationThemeService;
 import com.module.coretix.usermanagement.IRoleAdministrationService;
 import com.module.coretix.usermanagement.IUserActivityService;
 import com.module.coretix.usermanagement.IUserAdministrationService;
 import com.persist.coretix.modal.constants.GeneralConstants;
+import com.persist.coretix.modal.coretix.ApplicationNotification;
 import com.persist.coretix.modal.coretix.ApplicationTheme;
 import com.persist.coretix.modal.usermanagement.UserActivities;
 import com.persist.coretix.modal.usermanagement.UserDetails;
@@ -130,9 +132,14 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     @Inject
     private IApplicationThemeService applicationThemeService;
 
+    @Inject
+    private IApplicationNotificationService applicationNotificationService;
+
     private String growlMessage;
     private List<String> topbarMessages = new ArrayList<>();
     private int topbarUnreadMessageCount;
+    private List<String> applicationMessages = new ArrayList<>();
+    private int applicationUnreadMessageCount;
 
     public void initializePageAttributes() {
 
@@ -209,6 +216,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
         loadUserThemePreferences();
         fetchModuleRenderList();
+        refreshPersistentNotifications(httpSession);
         syncTopbarMessagesFromSession(httpSession);
     }
 
@@ -679,6 +687,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
             return;
         }
 
+        refreshPersistentNotifications(session);
         syncTopbarMessagesFromSession(session);
         growlMessage = (String) session.getAttribute(SessionAttributes.APPLICATION_NOTIFICATION_GROWL.getName());
         if (growlMessage != null) {
@@ -727,10 +736,32 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     }
 
     public int getTopbarMessageCount() {
+        return applicationUnreadMessageCount;
+    }
+
+    public List<String> getDisplayedApplicationMessages() {
+        return applicationMessages;
+    }
+
+    public int getTopbarAlertCount() {
         return topbarUnreadMessageCount;
     }
 
     public void markTopbarMessagesAsSeen() {
+        HttpSession session = SessionUtils.getSession();
+        if (session == null) {
+            return;
+        }
+
+        if (userId > 0) {
+            applicationNotificationService.markAllNotificationsAsSeen(userId);
+        }
+
+        refreshPersistentNotifications(session);
+        syncTopbarMessagesFromSession(session);
+    }
+
+    public void markTopbarAlertsAsSeen() {
         HttpSession session = SessionUtils.getSession();
         if (session == null) {
             return;
@@ -1033,6 +1064,21 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
         Object unreadCount = session.getAttribute(SessionAttributes.APPLICATION_NOTIFICATION_UNREAD_COUNT.getName());
         topbarUnreadMessageCount = unreadCount instanceof Integer ? (Integer) unreadCount : 0;
+    }
+
+    private void refreshPersistentNotifications(HttpSession session) {
+        if (session == null || userId <= 0) {
+            return;
+        }
+
+        List<ApplicationNotification> notifications = applicationNotificationService.getRecentNotifications(10);
+        List<String> notificationMessages = new ArrayList<>();
+        for (ApplicationNotification notification : notifications) {
+            notificationMessages.add(notification.getMessage());
+        }
+
+        applicationMessages = notificationMessages;
+        applicationUnreadMessageCount = applicationNotificationService.getUnreadNotificationCountForUser(userId);
     }
 
     private void loadUserThemePreferences() {

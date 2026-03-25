@@ -50,6 +50,8 @@
                  <value>com.persist.coretix.modal.usermanagement.UserDetails</value>
                                 <!-- Coretix app  Declaration for future use -->
                 <value>com.persist.coretix.modal.coretix.ApplicationTheme</value>
+                <value>com.persist.coretix.modal.coretix.ApplicationNotification</value>
+                <value>com.persist.coretix.modal.coretix.UserNotificationReceipt</value>
 
             </list>
         </property>

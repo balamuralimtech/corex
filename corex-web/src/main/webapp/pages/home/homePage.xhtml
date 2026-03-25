@@ -29,7 +29,7 @@
 
         <h:outputStylesheet>
             .dashboard-shell { display:flex; flex-direction:column; gap:1.25rem; }
-            .dashboard-hero { position:relative; overflow:hidden; padding:1.8rem; border-radius:22px; background:linear-gradient(135deg,#0f172a 0%,#12345a 45%,#1d4ed8 100%); color:#f8fafc; box-shadow:0 24px 80px rgba(15,23,42,.22); }
+            .dashboard-hero { position:relative; overflow:hidden; padding:1.8rem; border-radius:22px; background:linear-gradient(135deg,var(--dashboard-hero-primary, #1e3c72) 0%, var(--dashboard-hero-primary, #1e3c72) 42%, var(--dashboard-hero-secondary, #2a5298) 100%); color:#f8fafc; box-shadow:0 24px 80px rgba(15,23,42,.22); }
             .dashboard-hero:before { content:''; position:absolute; inset:auto -8% -35% auto; width:320px; height:320px; border-radius:50%; background:radial-gradient(circle,rgba(255,255,255,.18) 0%,rgba(255,255,255,0) 70%); }
             .dashboard-hero-title { margin:0; font-size:2rem; font-weight:700; letter-spacing:-.03em; }
             .dashboard-hero-copy { margin-top:.75rem; max-width:780px; color:rgba(241,245,249,.88); line-height:1.6; }
@@ -37,6 +37,13 @@
             .hero-chip { padding:.9rem 1rem; border:1px solid rgba(255,255,255,.14); border-radius:16px; background:rgba(255,255,255,.08); backdrop-filter:blur(8px); }
             .hero-chip-label { display:block; font-size:.82rem; text-transform:uppercase; letter-spacing:.08em; color:rgba(226,232,240,.75); }
             .hero-chip-value { display:block; margin-top:.3rem; font-size:1.4rem; font-weight:700; color:#fff; }
+            .dashboard-hero-actions { margin-top:.75rem; display:flex; gap:.75rem; flex-wrap:wrap; align-items:center; }
+            .dashboard-refresh-btn.ui-button { border:none !important; border-radius:999px !important; padding:.2rem !important; background:transparent !important; box-shadow:none !important; }
+            .dashboard-refresh-btn.ui-button .ui-button-text { padding:.85rem 1.2rem .85rem 1rem !important; border-radius:999px; background:rgba(255,255,255,.16); color:#f8fafc; font-weight:600; letter-spacing:.01em; border:1px solid rgba(255,255,255,.2); transition:background-color .2s ease, transform .2s ease, border-color .2s ease; }
+            .dashboard-refresh-btn.ui-button .ui-button-icon-left { left:1rem; color:#f8fafc; }
+            .dashboard-refresh-btn.ui-button.ui-state-hover .ui-button-text,
+            .dashboard-refresh-btn.ui-button:focus .ui-button-text { background:rgba(255,255,255,.24); border-color:rgba(255,255,255,.34); }
+            .dashboard-refresh-btn.ui-button.ui-state-active .ui-button-text { background:rgba(255,255,255,.28); transform:translateY(1px); }
             .metric-card { height:100%; padding:1.1rem 1.15rem; border-radius:18px; background:#fff; box-shadow:0 10px 40px rgba(15,23,42,.08); border:1px solid rgba(148,163,184,.18); }
             .metric-card-muted { color:#64748b; font-size:.82rem; text-transform:uppercase; letter-spacing:.08em; }
             .metric-card-value { margin-top:.55rem; font-size:2rem; font-weight:700; line-height:1; color:#0f172a; }
@@ -66,6 +73,7 @@
                 <p:remoteCommand name="refreshDashboardData"
                                  action="#{homePageBean.refreshForm}"
                                  update="dashboardFormId"
+                                 onstart="beginDashboardRefresh();"
                                  oncomplete="restartDashboardCountdown(); renderDashboardCharts();"/>
 
                 <div class="dashboard-hero">
@@ -77,15 +85,27 @@
                         <div class="col-12 lg:col-4">
                             <div class="hero-chip">
                                 <span class="hero-chip-label">Auto Refresh</span>
-                                <span class="hero-chip-value"><span id="countdownDisplay">60</span>s</span>
+                                <span class="hero-chip-value"><span id="countdownDisplay">60</span><span id="countdownSuffix">s</span></span>
                             </div>
-                            <div style="margin-top:.75rem;display:flex;gap:.75rem;flex-wrap:wrap;">
+                            <div class="dashboard-hero-actions">
                                 <p:commandButton value="Refresh Now"
                                                  icon="pi pi-refresh"
                                                  action="#{homePageBean.refreshForm}"
                                                  update="dashboardFormId"
+                                                 onstart="beginDashboardRefresh();"
                                                  oncomplete="restartDashboardCountdown(); renderDashboardCharts();"
-                                                 styleClass="ui-button-secondary"/>
+                                                 styleClass="dashboard-refresh-btn"/>
+                                <div style="display:flex;align-items:center;gap:.5rem;padding:.55rem .8rem;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);">
+                                    <span style="font-size:.9rem;font-weight:600;color:#f8fafc;">Auto Refresh</span>
+                                    <p:inputSwitch value="#{homePageBean.timerEnabled}"
+                                                   onLabel="On"
+                                                   offLabel="Off"
+                                                   onchange="applyDashboardAutoRefreshState(this.checked);">
+                                        <p:ajax process="@this"
+                                                update="@none"
+                                                global="false"/>
+                                    </p:inputSwitch>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -201,33 +221,162 @@
 
                 <h:outputScript>
                     //<![CDATA[
-                    var dashboardCountdownTime = 60;
+                    var dashboardLayoutThemeColors = {
+                        amber: ['#7A5E06', '#B28708'],
+                        blue: ['#146fd7', '#1d4ed8'],
+                        brown: ['#593E22', '#8B5E34'],
+                        cyan: ['#0A616F', '#17A2B8'],
+                        darkgrey: ['#343A40', '#495057'],
+                        deeppurple: ['#341A64', '#612FBE'],
+                        green: ['#1F8E38', '#28A745'],
+                        indigo: ['#470EA2', '#6610F2'],
+                        lightblue: ['#14569D', '#4DA3FF'],
+                        lightgreen: ['#2E8942', '#61CC79'],
+                        lime: ['#407916', '#74CD32'],
+                        orange: ['#904100', '#FD7E14'],
+                        pink: ['#771340', '#E83E8C'],
+                        purple: ['#391F68', '#883cae'],
+                        teal: ['#136E52', '#20C997'],
+                        calm: ['#5f2c82', '#0DA9A4'],
+                        crimson: ['#521c52', '#c6426e'],
+                        firewatch: ['#cb2d3e', '#ef473a'],
+                        influenza: ['#a83279', '#f38e00'],
+                        joomla: ['#1e3c72', '#2a5298'],
+                        littleleaf: ['#4DB865', '#80D293'],
+                        night: ['#2c0747', '#6441a5'],
+                        skyline: ['#2b32b2', '#1488cc'],
+                        sunkist: ['#ee8a21', '#f2c94c'],
+                        suzy: ['#834d9b', '#d04ed6']
+                    };
+                    var DASHBOARD_REFRESH_SECONDS = 60;
+                    var DASHBOARD_TIMER_STORAGE_KEY = 'corex.dashboard.nextRefreshAt';
                     var dashboardCountdownInterval;
+                    var dashboardNextRefreshAt = 0;
+                    var dashboardRefreshInFlight = false;
+                    var dashboardAutoRefreshEnabled = #{homePageBean.timerEnabled};
+
+                    function applyDashboardHeroColors(layoutTheme) {
+                        var colors = dashboardLayoutThemeColors[layoutTheme] || dashboardLayoutThemeColors['joomla'];
+                        document.documentElement.style.setProperty('--dashboard-hero-primary', colors[0]);
+                        document.documentElement.style.setProperty('--dashboard-hero-secondary', colors[1]);
+                    }
+
+                    function wireDashboardThemeSync() {
+                        if (!PrimeFaces || !PrimeFaces.AvalonConfigurator || PrimeFaces.AvalonConfigurator._dashboardThemeHooked) {
+                            return;
+                        }
+
+                        var originalChangeLayout = PrimeFaces.AvalonConfigurator.changeLayout;
+                        PrimeFaces.AvalonConfigurator.changeLayout = function(layoutTheme) {
+                            originalChangeLayout.call(this, layoutTheme);
+                            applyDashboardHeroColors(layoutTheme);
+                        };
+                        PrimeFaces.AvalonConfigurator._dashboardThemeHooked = true;
+                    }
+
+                    function updateDashboardCountdownDisplay(value, suffix) {
+                        var countdownNode = document.getElementById('countdownDisplay');
+                        var suffixNode = document.getElementById('countdownSuffix');
+                        if (countdownNode) {
+                            countdownNode.innerText = value;
+                        }
+                        if (suffixNode) {
+                            suffixNode.innerText = suffix || '';
+                        }
+                    }
+
+                    function persistDashboardNextRefreshAt() {
+                        sessionStorage.setItem(DASHBOARD_TIMER_STORAGE_KEY, String(dashboardNextRefreshAt || 0));
+                    }
+
+                    function readPersistedDashboardNextRefreshAt() {
+                        var storedValue = sessionStorage.getItem(DASHBOARD_TIMER_STORAGE_KEY);
+                        var parsedValue = storedValue ? parseInt(storedValue, 10) : 0;
+                        return isNaN(parsedValue) ? 0 : parsedValue;
+                    }
 
                     function clearDashboardCountdown() {
                         if (dashboardCountdownInterval) {
                             clearInterval(dashboardCountdownInterval);
+                            dashboardCountdownInterval = null;
+                        }
+                    }
+
+                    function stopDashboardAutoRefresh() {
+                        dashboardRefreshInFlight = false;
+                        dashboardNextRefreshAt = 0;
+                        sessionStorage.removeItem(DASHBOARD_TIMER_STORAGE_KEY);
+                        clearDashboardCountdown();
+                        updateDashboardCountdownDisplay('-', '');
+                    }
+
+                    function tickDashboardCountdown() {
+                        if (!dashboardAutoRefreshEnabled) {
+                            stopDashboardAutoRefresh();
+                            return;
+                        }
+
+                        if (dashboardRefreshInFlight) {
+                            updateDashboardCountdownDisplay('...', '');
+                            return;
+                        }
+
+                        var secondsRemaining = Math.max(0, Math.ceil((dashboardNextRefreshAt - Date.now()) / 1000));
+                        updateDashboardCountdownDisplay(secondsRemaining, 's');
+
+                        if (secondsRemaining <= 0) {
+                            clearDashboardCountdown();
+                            beginDashboardRefresh();
+                            refreshDashboardData();
                         }
                     }
 
                     function restartDashboardCountdown() {
-                        clearDashboardCountdown();
-                        dashboardCountdownTime = 60;
-                        var countdownNode = document.getElementById('countdownDisplay');
-                        if (countdownNode) {
-                            countdownNode.innerText = dashboardCountdownTime;
+                        if (!dashboardAutoRefreshEnabled) {
+                            stopDashboardAutoRefresh();
+                            return;
                         }
-                        dashboardCountdownInterval = setInterval(function () {
-                            dashboardCountdownTime--;
-                            var node = document.getElementById('countdownDisplay');
-                            if (node) {
-                                node.innerText = dashboardCountdownTime;
-                            }
-                            if (dashboardCountdownTime <= 0) {
-                                clearDashboardCountdown();
-                                refreshDashboardData();
-                            }
-                        }, 1000);
+
+                        dashboardRefreshInFlight = false;
+                        dashboardNextRefreshAt = Date.now() + (DASHBOARD_REFRESH_SECONDS * 1000);
+                        persistDashboardNextRefreshAt();
+                        clearDashboardCountdown();
+                        tickDashboardCountdown();
+                        dashboardCountdownInterval = setInterval(tickDashboardCountdown, 1000);
+                    }
+
+                    function beginDashboardRefresh() {
+                        dashboardRefreshInFlight = true;
+                        clearDashboardCountdown();
+                        updateDashboardCountdownDisplay('...', '');
+                    }
+
+                    function restoreDashboardCountdown() {
+                        if (!dashboardAutoRefreshEnabled) {
+                            stopDashboardAutoRefresh();
+                            return;
+                        }
+
+                        dashboardRefreshInFlight = false;
+                        dashboardNextRefreshAt = readPersistedDashboardNextRefreshAt();
+
+                        if (!dashboardNextRefreshAt || dashboardNextRefreshAt <= Date.now()) {
+                            dashboardNextRefreshAt = Date.now() + (DASHBOARD_REFRESH_SECONDS * 1000);
+                            persistDashboardNextRefreshAt();
+                        }
+
+                        clearDashboardCountdown();
+                        tickDashboardCountdown();
+                        dashboardCountdownInterval = setInterval(tickDashboardCountdown, 1000);
+                    }
+
+                    function applyDashboardAutoRefreshState(enabled) {
+                        dashboardAutoRefreshEnabled = enabled === true || enabled === 'true';
+                        if (dashboardAutoRefreshEnabled) {
+                            restartDashboardCountdown();
+                        } else {
+                            stopDashboardAutoRefresh();
+                        }
                     }
 
                     function renderDashboardCharts() {
@@ -305,13 +454,15 @@
                         });
                     }
 
-                    window.onload = function () {
+                    window.addEventListener('load', function() {
                         if (sessionStorage.getItem('showingLoader') === 'true') {
                             sessionStorage.removeItem('showingLoader');
                         }
+                        applyDashboardHeroColors('#{guestPreferences.layout}');
+                        wireDashboardThemeSync();
                         renderDashboardCharts();
-                        restartDashboardCountdown();
-                    };
+                        applyDashboardAutoRefreshState(#{homePageBean.timerEnabled});
+                    });
                     //]]>
                 </h:outputScript>
             </div>

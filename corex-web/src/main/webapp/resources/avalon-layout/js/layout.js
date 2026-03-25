@@ -513,13 +513,19 @@ PrimeFaces.AvalonConfigurator = {
     },
     
     changeComponentsTheme: function(theme) {
-        var library = 'primefaces-coretix';
         var linkElement = $('link[href*="theme.css"]');
         var href = linkElement.attr('href');
-        var index = href.indexOf(library) + 1;
-        var currentTheme = href.substring(index + library.length);
+        if (!href) {
+            return;
+        }
 
-        this.replaceLink(linkElement, href.replace(currentTheme, theme));
+        var currentThemeMatch = href.match(/primefaces-[^\/&?]+/);
+        if (!currentThemeMatch) {
+            return;
+        }
+
+        var nextThemeLibrary = 'primefaces-avalon-' + theme;
+        this.replaceLink(linkElement, href.replace(currentThemeMatch[0], nextThemeLibrary));
     },
 
     changeMenuLayout: function(menuLayout) {

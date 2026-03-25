@@ -143,7 +143,22 @@
                 }, 60000);
             }
 
+            function applyStoredUiPreferences() {
+                if (window.PrimeFaces && PrimeFaces.AvalonConfigurator) {
+                    PrimeFaces.AvalonConfigurator.changeComponentsTheme('#{guestPreferences.theme}');
+                    PrimeFaces.AvalonConfigurator.changeMenuLayout('#{guestPreferences.menuLayout}');
+                    PrimeFaces.AvalonConfigurator.updateInputStyle('#{guestPreferences.inputStyle}');
+
+                    if ('#{guestPreferences.menuClass}' === 'layout-menu-dark') {
+                        PrimeFaces.AvalonConfigurator.changeMenuToDark();
+                    } else {
+                        PrimeFaces.AvalonConfigurator.changeMenuToLight();
+                    }
+                }
+            }
+
             window.addEventListener('load', function() {
+                applyStoredUiPreferences();
                 startSessionHeartbeat();
                 window.corexSessionAudit.navigationRequested = false;
             });
