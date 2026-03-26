@@ -18,7 +18,7 @@
 		<module>corex-web</module>
 		<module>applications/shipx</module>
 		<module>applications/carex</module>
-		<module>applications/payollx</module>
+		<module>applications/payrollx</module>
 	</modules>
 
 	<properties>

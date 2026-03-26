@@ -7,19 +7,19 @@
 
     <parent>
         <groupId>com.coretix</groupId>
-        <artifactId>carex-parent</artifactId>
+        <artifactId>payrollx-parent</artifactId>
         <version>1.0-SNAPSHOT</version>
         <relativePath>..</relativePath>
     </parent>
 
-    <artifactId>carex-web</artifactId>
+    <artifactId>payrollx-web</artifactId>
     <packaging>war</packaging>
-    <name>CareX Web Module</name>
+    <name>PayrollX Web Module</name>
 
     <dependencies>
         <dependency>
             <groupId>com.coretix</groupId>
-            <artifactId>carex-module</artifactId>
+            <artifactId>payrollx-module</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -31,7 +31,7 @@
     </dependencies>
 
     <build>
-        <finalName>carex</finalName>
+        <finalName>payrollx</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

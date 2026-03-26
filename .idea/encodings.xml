@@ -13,18 +13,18 @@
     <file url="file://$PROJECT_DIR$/applications/carex/carex-web/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/applications/carex/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/applications/carex/src/main/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/applications/payollx/payollx-common/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/applications/payollx/payollx-common/src/main/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/applications/payollx/payollx-db/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/applications/payollx/payollx-db/src/main/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/applications/payollx/payollx-module/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/applications/payollx/payollx-module/src/main/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/applications/payollx/payollx-persist/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/applications/payollx/payollx-persist/src/main/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/applications/payollx/payollx-web/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/applications/payollx/payollx-web/src/main/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/applications/payollx/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/applications/payollx/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/payrollx/payrollx-common/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/payrollx/payrollx-common/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/payrollx/payrollx-db/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/payrollx/payrollx-db/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/payrollx/payrollx-module/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/payrollx/payrollx-module/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/payrollx/payrollx-persist/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/payrollx/payrollx-persist/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/payrollx/payrollx-web/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/payrollx/payrollx-web/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/payrollx/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/payrollx/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/applications/shipx/shipx-common/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/applications/shipx/shipx-common/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/applications/shipx/shipx-db/src/main/java" charset="UTF-8" />
