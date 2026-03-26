@@ -7,9 +7,24 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="corex-module" />
+        <module name="carex-common" />
+        <module name="payollx-web" />
         <module name="corex-web" />
         <module name="corex-common" />
+        <module name="payollx-common" />
+        <module name="carex-persist" />
+        <module name="shipx-module" />
+        <module name="carex-module" />
+        <module name="shipx-persist" />
+        <module name="payollx-module" />
+        <module name="shipx-db" />
+        <module name="carex-web" />
+        <module name="payollx-persist" />
+        <module name="shipx-web" />
+        <module name="shipx-common" />
+        <module name="carex-db" />
         <module name="corex-persist" />
+        <module name="payollx-db" />
         <module name="corex-base" />
       </profile>
     </annotationProcessing>

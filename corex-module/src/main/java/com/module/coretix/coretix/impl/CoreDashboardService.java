@@ -29,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.Map;
 
 @Named
 @Transactional(readOnly = true)
@@ -62,21 +63,31 @@ public class CoreDashboardService implements ICoreDashboardService {
         coreDashboardTO.setUserCount(coreDashboardDAO.fetchUserCount());
         coreDashboardTO.setUserActivityCount(coreDashboardDAO.fetchUserActivityCount());
 
-        coreDashboardTO.setLoginCount(getUserActivityDAO().getActivityTypeCounts().get("login"));
-        coreDashboardTO.setLogoutCount(getUserActivityDAO().getActivityTypeCounts().get("logout"));
-        coreDashboardTO.setAddCount(getUserActivityDAO().getActivityTypeCounts().get("add"));
-        coreDashboardTO.setUpdateCount(getUserActivityDAO().getActivityTypeCounts().get("update"));
-        coreDashboardTO.setDeleteCount(getUserActivityDAO().getActivityTypeCounts().get("delete"));
+        Map<String, Integer> activityTypeCounts = getUserActivityDAO().getActivityTypeCounts();
+        coreDashboardTO.setLoginCount(getCount(activityTypeCounts, "login"));
+        coreDashboardTO.setLogoutCount(getCount(activityTypeCounts, "logout"));
+        coreDashboardTO.setAddCount(getCount(activityTypeCounts, "add"));
+        coreDashboardTO.setUpdateCount(getCount(activityTypeCounts, "update"));
+        coreDashboardTO.setDeleteCount(getCount(activityTypeCounts, "delete"));
 
         coreDashboardTO.setUsersLoggedInCount(getUserAdministrationDAO().getCountOfUsersLoggedIn());
         coreDashboardTO.setUsersLoggedOutCount(getUserAdministrationDAO().getCountOfUsersLoggedOut());
         coreDashboardTO.setUsersNeverLoggedinCount(getUserAdministrationDAO().getCountOfUsersNeverLoggedIn());
 
-        coreDashboardTO.setRolesNotUsedCount(getRoleAdministrationDAO().getCountOfRolesUsedAndNotUsed().get("notUsedRoles"));
-        coreDashboardTO.setRolesUsedCount(getRoleAdministrationDAO().getCountOfRolesUsedAndNotUsed().get("usedRoles"));
+        Map<String, Integer> roleUsageCounts = getRoleAdministrationDAO().getCountOfRolesUsedAndNotUsed();
+        coreDashboardTO.setRolesNotUsedCount(getCount(roleUsageCounts, "notUsedRoles"));
+        coreDashboardTO.setRolesUsedCount(getCount(roleUsageCounts, "usedRoles"));
 
         return coreDashboardTO;
 
+    }
+
+    private int getCount(Map<String, Integer> counts, String key) {
+        if (counts == null) {
+            return 0;
+        }
+        Integer value = counts.get(key);
+        return value == null ? 0 : value;
     }
 
     public ICoreDashboardDAO getCoreDashboardDAO() {

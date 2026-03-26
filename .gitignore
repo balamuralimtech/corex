@@ -1,0 +1,14 @@
+target/
+out/
+build/
+dist/
+
+*.war
+*.jar
+*.ear
+*.class
+
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/shelf/
+*.iml

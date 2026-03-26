@@ -31,6 +31,8 @@ import java.io.IOException;
 
 public class AuthorizationFilter implements Filter {
 
+    private static final String DEFAULT_LOGIN_VIDEO = "/resources/avalon-layout/videos/home.mp4";
+
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
     }
@@ -46,7 +48,8 @@ public class AuthorizationFilter implements Filter {
         String loginURI = req.getContextPath() + "/login";
         String login2InternalURI = req.getContextPath() + "/login2.xhtml";
         String loginInternalURI = req.getContextPath() + "/login.xhtml";
-        String videoURI = req.getContextPath() + "/resources/avalon-layout/videos/home.mp4";
+        String loginVideoPath = System.getProperty("app.login.video", DEFAULT_LOGIN_VIDEO);
+        String videoURI = req.getContextPath() + loginVideoPath;
         String requestPath = req.getRequestURI().substring(req.getContextPath().length());
 
         boolean loggedIn = (session != null && session.getAttribute(SessionAttributes.USERNAME.getName()) != null);
@@ -54,7 +57,7 @@ public class AuthorizationFilter implements Filter {
         boolean login2Request = req.getRequestURI().equals(login2URI);
         boolean loginInternalRequest = req.getRequestURI().equals(loginInternalURI);
         boolean login2InternalRequest = req.getRequestURI().equals(login2InternalURI);
-        boolean videoRequest = req.getRequestURI().startsWith(videoURI);
+        boolean videoRequest = req.getRequestURI().equals(videoURI);
         boolean publicFriendlyRequest = FriendlyUrlFilter.PUBLIC_FRIENDLY_PATHS.contains(requestPath);
         boolean resourceRequest = req.getRequestURI().startsWith(req.getContextPath() + "/javax.faces.resource");
 

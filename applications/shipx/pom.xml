@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.coretix</groupId>
+        <artifactId>corex</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>shipx-parent</artifactId>
+    <packaging>pom</packaging>
+    <name>ShipX Application Parent</name>
+
+    <modules>
+        <module>shipx-common</module>
+        <module>shipx-persist</module>
+        <module>shipx-module</module>
+        <module>shipx-web</module>
+        <module>shipx-db</module>
+    </modules>
+</project>

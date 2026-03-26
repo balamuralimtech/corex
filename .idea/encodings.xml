@@ -1,6 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/applications/carex/carex-common/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/carex/carex-common/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/carex/carex-db/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/carex/carex-db/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/carex/carex-module/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/carex/carex-module/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/carex/carex-persist/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/carex/carex-persist/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/carex/carex-web/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/carex/carex-web/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/carex/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/carex/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/payollx/payollx-common/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/payollx/payollx-common/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/payollx/payollx-db/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/payollx/payollx-db/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/payollx/payollx-module/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/payollx/payollx-module/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/payollx/payollx-persist/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/payollx/payollx-persist/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/payollx/payollx-web/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/payollx/payollx-web/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/payollx/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/payollx/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/shipx/shipx-common/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/shipx/shipx-common/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/shipx/shipx-db/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/shipx/shipx-db/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/shipx/shipx-module/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/shipx/shipx-module/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/shipx/shipx-persist/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/shipx/shipx-persist/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/shipx/shipx-web/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/shipx/shipx-web/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/shipx/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/shipx/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/corex-common/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/corex-common/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/corex-main/src/main/java" charset="UTF-8" />

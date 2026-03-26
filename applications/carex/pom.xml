@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.coretix</groupId>
+        <artifactId>corex</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>carex-parent</artifactId>
+    <packaging>pom</packaging>
+    <name>CareX Application Parent</name>
+
+    <modules>
+        <module>carex-common</module>
+        <module>carex-persist</module>
+        <module>carex-module</module>
+        <module>carex-web</module>
+        <module>carex-db</module>
+    </modules>
+</project>

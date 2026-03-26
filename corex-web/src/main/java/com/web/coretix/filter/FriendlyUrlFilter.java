@@ -18,13 +18,16 @@ package com.web.coretix.filter;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -32,8 +35,14 @@ import javax.servlet.http.HttpServletResponse;
 
 public class FriendlyUrlFilter implements Filter {
 
-    public static final Map<String, String> FRIENDLY_TO_INTERNAL_PATHS = buildFriendlyToInternalPaths();
-    public static final Map<String, String> INTERNAL_TO_FRIENDLY_PATHS = buildInternalToFriendlyPaths();
+    private static final Set<String> SHARED_PAGE_DIRECTORIES = Set.of(
+            "errorandwarningpages",
+            "home",
+            "license",
+            "serverlogs",
+            "systemmanagement",
+            "usermanagement");
+
     public static final java.util.Set<String> PUBLIC_FRIENDLY_PATHS = java.util.Set.of(
             "/",
             "/landing",
@@ -54,8 +63,15 @@ public class FriendlyUrlFilter implements Filter {
             "/bandwidth-limit-exceeded",
             "/not-extended");
 
+    private Map<String, String> friendlyToInternalPaths;
+    private Map<String, String> internalToFriendlyPaths;
+
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
+        Map<String, String> paths = new LinkedHashMap<>(buildFriendlyToInternalPaths());
+        paths.putAll(discoverApplicationFriendlyPaths(filterConfig.getServletContext()));
+        friendlyToInternalPaths = Collections.unmodifiableMap(paths);
+        internalToFriendlyPaths = Collections.unmodifiableMap(buildInternalToFriendlyPaths(friendlyToInternalPaths));
     }
 
     @Override
@@ -68,14 +84,14 @@ public class FriendlyUrlFilter implements Filter {
         String contextPath = httpRequest.getContextPath();
         String path = requestUri.substring(contextPath.length());
 
-        String internalPath = FRIENDLY_TO_INTERNAL_PATHS.get(path);
+        String internalPath = friendlyToInternalPaths.get(path);
         if (internalPath != null) {
             RequestDispatcher dispatcher = request.getRequestDispatcher(internalPath);
             dispatcher.forward(request, response);
             return;
         }
 
-        String friendlyPath = INTERNAL_TO_FRIENDLY_PATHS.get(path);
+        String friendlyPath = internalToFriendlyPaths.get(path);
         if (friendlyPath != null
                 && "GET".equalsIgnoreCase(httpRequest.getMethod())
                 && !isErrorDispatch(httpRequest)) {
@@ -146,12 +162,79 @@ public class FriendlyUrlFilter implements Filter {
         return Collections.unmodifiableMap(paths);
     }
 
-    private static Map<String, String> buildInternalToFriendlyPaths() {
+    private static Map<String, String> buildInternalToFriendlyPaths(Map<String, String> friendlyToInternalPaths) {
         Map<String, String> paths = new LinkedHashMap<>();
-        for (Map.Entry<String, String> entry : FRIENDLY_TO_INTERNAL_PATHS.entrySet()) {
+        for (Map.Entry<String, String> entry : friendlyToInternalPaths.entrySet()) {
             paths.put(entry.getValue(), entry.getKey());
         }
         return Collections.unmodifiableMap(paths);
+    }
+
+    private Map<String, String> discoverApplicationFriendlyPaths(ServletContext servletContext) {
+        Map<String, String> paths = new LinkedHashMap<>();
+        Set<String> pageResources = new HashSet<>();
+        collectPageResources(servletContext, "/pages/", pageResources);
+
+        for (String internalPath : pageResources) {
+            if (!isApplicationPage(internalPath)) {
+                continue;
+            }
+
+            String friendlyPath = toApplicationFriendlyPath(internalPath);
+            if (!friendlyPath.isEmpty() && !paths.containsKey(friendlyPath)) {
+                paths.put(friendlyPath, internalPath);
+                continue;
+            }
+
+            String fallbackFriendlyPath = toFriendlyPath(internalPath);
+            if (!fallbackFriendlyPath.isEmpty() && !paths.containsKey(fallbackFriendlyPath)) {
+                paths.put(fallbackFriendlyPath, internalPath);
+            }
+        }
+
+        return paths;
+    }
+
+    private void collectPageResources(ServletContext servletContext, String directory, Set<String> pageResources) {
+        Set<String> resourcePaths = servletContext.getResourcePaths(directory);
+        if (resourcePaths == null || resourcePaths.isEmpty()) {
+            return;
+        }
+
+        for (String resourcePath : resourcePaths) {
+            if (resourcePath.endsWith("/")) {
+                collectPageResources(servletContext, resourcePath, pageResources);
+            } else if (resourcePath.endsWith(".xhtml")) {
+                pageResources.add(resourcePath);
+            }
+        }
+    }
+
+    private boolean isApplicationPage(String internalPath) {
+        if (!internalPath.startsWith("/pages/") || !internalPath.endsWith(".xhtml")) {
+            return false;
+        }
+
+        String relativePath = internalPath.substring("/pages/".length());
+        int separatorIndex = relativePath.indexOf('/');
+        if (separatorIndex <= 0) {
+            return false;
+        }
+
+        String topLevelDirectory = relativePath.substring(0, separatorIndex);
+        return !SHARED_PAGE_DIRECTORIES.contains(topLevelDirectory);
+    }
+
+    private String toFriendlyPath(String internalPath) {
+        String relativePath = internalPath.substring("/pages/".length(), internalPath.length() - ".xhtml".length());
+        return "/" + relativePath;
+    }
+
+    private String toApplicationFriendlyPath(String internalPath) {
+        String relativePath = internalPath.substring("/pages/".length(), internalPath.length() - ".xhtml".length());
+        int separatorIndex = relativePath.lastIndexOf('/');
+        String pageName = separatorIndex >= 0 ? relativePath.substring(separatorIndex + 1) : relativePath;
+        return pageName.isEmpty() ? "" : "/" + pageName;
     }
 }
 

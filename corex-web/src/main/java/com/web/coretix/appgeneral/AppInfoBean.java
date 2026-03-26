@@ -27,6 +27,8 @@ public class AppInfoBean {
     private static final String DEFAULT_LOGIN_HEADLINE = "Simplifying Healthcare";
     private static final String DEFAULT_LOGIN_DESCRIPTION =
             "CareX is a unified healthcare management platform designed to support both clinics and hospitals in managing their daily operations efficiently.";
+    private static final String DEFAULT_LOGIN_CTA = "Let's Begin!";
+    private static final String DEFAULT_LOGIN_VIDEO = "/resources/avalon-layout/videos/home.mp4";
 
     public String getAppName() {
         String appName = System.getProperty("app.name");
@@ -45,6 +47,20 @@ public class AppInfoBean {
         return loginDescription == null || loginDescription.trim().isEmpty()
                 ? DEFAULT_LOGIN_DESCRIPTION
                 : loginDescription;
+    }
+
+    public String getLoginCta() {
+        String loginCta = System.getProperty("app.login.cta");
+        return loginCta == null || loginCta.trim().isEmpty()
+                ? DEFAULT_LOGIN_CTA
+                : loginCta;
+    }
+
+    public String getLoginVideo() {
+        String loginVideo = System.getProperty("app.login.video");
+        return loginVideo == null || loginVideo.trim().isEmpty()
+                ? DEFAULT_LOGIN_VIDEO
+                : loginVideo;
     }
 }
 

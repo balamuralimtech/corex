@@ -16,6 +16,9 @@
 		<module>corex-persist</module>
 		<module>corex-module</module>
 		<module>corex-web</module>
+		<module>applications/shipx</module>
+		<module>applications/carex</module>
+		<module>applications/payollx</module>
 	</modules>
 
 	<properties>

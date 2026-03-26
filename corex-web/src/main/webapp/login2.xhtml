@@ -64,7 +64,7 @@
                 </h:outputLink>
                 <!-- Sign In button -->
                 <a class="btn custom-btn smoothscroll" href="#{request.contextPath}/login">
-                    Let's Cure!
+                    #{appInfo.loginCta}
                 </a>
             </div>
         </nav>
@@ -112,7 +112,7 @@
             </div>
             <div class="video-wrap">
                 <video autoplay="" loop="" muted="" class="custom-video">
-                    <source src="resources/avalon-layout/videos/home.mp4" type="video/mp4"/>
+                    <source src="#{request.contextPath}#{appInfo.loginVideo}" type="video/mp4"/>
                     Your browser does not support the video tag.
                 </video>
             </div>

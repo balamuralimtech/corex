@@ -36,6 +36,7 @@ public class ApplicationStartupServlet extends HttpServlet
 
     private static final Logger logger = LoggerFactory.getLogger(ApplicationStartupServlet.class);
     public static final String APPLICATION_FILE_PATH = "application.properties";
+    public static final String APPLICATION_OVERRIDE_PREFIX = "application-";
     private String realPath;
 
     @Override
@@ -71,10 +72,27 @@ public class ApplicationStartupServlet extends HttpServlet
      */
     private void loadProperties()
     {
-        PropertyUtils propertyUtils = new PropertyUtils(realPath + File.separator + "conf" +
-                File.separator + APPLICATION_FILE_PATH);
+        File confDirectory = new File(realPath + File.separator + "conf");
+        File basePropertiesFile = new File(confDirectory, APPLICATION_FILE_PATH);
+        String contextName = resolveContextName();
+        File overridePropertiesFile = new File(confDirectory, APPLICATION_OVERRIDE_PREFIX + contextName + ".properties");
+
+        PropertyUtils propertyUtils = new PropertyUtils(basePropertiesFile);
         Properties appProperties = propertyUtils.getProperties();
+        if (appProperties == null) {
+            appProperties = new Properties();
+        }
+
+        if (overridePropertiesFile.exists()) {
+            logger.info("[PL] - Loading application property overrides from {}", overridePropertiesFile.getAbsolutePath());
+            Properties overrideProperties = new PropertyUtils(overridePropertiesFile).getProperties();
+            if (overrideProperties != null) {
+                appProperties.putAll(overrideProperties);
+            }
+        }
+
         appProperties.setProperty("webclient.path", realPath);
+        appProperties.setProperty("app.context", contextName);
         propertyUtils.setSystemProperties(appProperties);
 
         logger.info("-----------------------------");
@@ -84,6 +102,19 @@ public class ApplicationStartupServlet extends HttpServlet
         logger.info("-----------------------------");
         logger.info("");
 
+    }
+
+    private String resolveContextName() {
+        String contextPath = getServletContext().getContextPath();
+        if (contextPath == null || contextPath.trim().isEmpty() || "/".equals(contextPath.trim())) {
+            return "corex";
+        }
+
+        String normalized = contextPath.trim();
+        if (normalized.startsWith("/")) {
+            normalized = normalized.substring(1);
+        }
+        return normalized.replace('/', '-');
     }
 
     /**
