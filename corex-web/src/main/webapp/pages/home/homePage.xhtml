@@ -39,8 +39,7 @@
             .hero-chip-value { display:block; margin-top:.3rem; font-size:1.4rem; font-weight:700; color:#fff; }
             .dashboard-hero-actions { margin-top:.75rem; display:flex; gap:.75rem; flex-wrap:wrap; align-items:center; }
             .dashboard-refresh-btn.ui-button { border:none !important; border-radius:999px !important; padding:.2rem !important; background:transparent !important; box-shadow:none !important; }
-            .dashboard-refresh-btn.ui-button .ui-button-text { padding:.85rem 1.2rem .85rem 1rem !important; border-radius:999px; background:rgba(255,255,255,.16); color:#f8fafc; font-weight:600; letter-spacing:.01em; border:1px solid rgba(255,255,255,.2); transition:background-color .2s ease, transform .2s ease, border-color .2s ease; }
-            .dashboard-refresh-btn.ui-button .ui-button-icon-left { left:1rem; color:#f8fafc; }
+            .dashboard-refresh-btn.ui-button .ui-button-text { padding:.85rem 1.2rem 1.05rem 1.2rem !important; min-width:10.75rem; border-radius:999px; background:rgba(255,255,255,.16); color:#f8fafc; font-weight:600; letter-spacing:.01em; border:1px solid rgba(255,255,255,.2); transition:background-color .2s ease, transform .2s ease, border-color .2s ease; }
             .dashboard-refresh-btn.ui-button.ui-state-hover .ui-button-text,
             .dashboard-refresh-btn.ui-button:focus .ui-button-text { background:rgba(255,255,255,.24); border-color:rgba(255,255,255,.34); }
             .dashboard-refresh-btn.ui-button.ui-state-active .ui-button-text { background:rgba(255,255,255,.28); transform:translateY(1px); }
@@ -89,7 +88,6 @@
                             </div>
                             <div class="dashboard-hero-actions">
                                 <p:commandButton value="Refresh Now"
-                                                 icon="pi pi-refresh"
                                                  action="#{homePageBean.refreshForm}"
                                                  update="dashboardFormId"
                                                  onstart="beginDashboardRefresh();"

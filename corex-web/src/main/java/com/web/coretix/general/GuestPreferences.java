@@ -614,6 +614,22 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         return this.themeColors;
     }
 
+    public String getActiveLayoutColor() {
+        for (LayoutTheme layoutTheme : layoutThemes) {
+            if (layoutTheme.getFile().equals(layout)) {
+                return layoutTheme.getColor();
+            }
+        }
+
+        for (LayoutSpecialTheme layoutSpecialTheme : layoutSpecialThemes) {
+            if (layoutSpecialTheme.getFile().equals(layout)) {
+                return layoutSpecialTheme.getColor1();
+            }
+        }
+
+        return "#146fd7";
+    }
+
     public List<LayoutTheme> getLayoutThemes() {
         return layoutThemes;
     }
