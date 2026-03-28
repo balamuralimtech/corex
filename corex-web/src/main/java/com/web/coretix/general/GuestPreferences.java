@@ -63,8 +63,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     //private String profileMode = "inline";
     private String profileMode = "overlay";
 
-    private String menuLayout = "horizontal";
-    //private String menuLayout = "static";
+    private String menuLayout = "static";
 
     private String inputStyle = "outlined";
 
@@ -140,6 +139,8 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     private int topbarUnreadMessageCount;
     private List<String> applicationMessages = new ArrayList<>();
     private int applicationUnreadMessageCount;
+    private int latestApplicationNotificationId;
+    private boolean applicationNotificationTrackerInitialized;
 
     public void initializePageAttributes() {
 
@@ -216,7 +217,8 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
         loadUserThemePreferences();
         fetchModuleRenderList();
-        refreshPersistentNotifications(httpSession);
+        List<ApplicationNotification> notifications = refreshPersistentNotifications(httpSession);
+        updateApplicationNotificationTracker(notifications, false);
         syncTopbarMessagesFromSession(httpSession);
     }
 
@@ -424,8 +426,9 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     }
 
     public void onLayoutChange() {
+        menuLayout = normalizeMenuLayout(menuLayout);
         persistCurrentThemePreferences();
-        PrimeFaces.current().executeScript("PrimeFaces.AvalonConfigurator.changeMenuLayout('" + menuLayout + "')");
+        PrimeFaces.current().executeScript("PrimeFaces.AvalonConfigurator.changeMenuLayout('" + getMenuLayout() + "')");
     }
 
     public void onMenuThemeChange() {
@@ -573,11 +576,12 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     }
 
     public String getMenuLayout() {
+        this.menuLayout = normalizeMenuLayout(this.menuLayout);
         return this.menuLayout;
     }
 
     public String getMenu() {
-        switch (this.menuLayout) {
+        switch (getMenuLayout()) {
             case "overlay":
                 return "menu-layout-overlay";
             case "horizontal":
@@ -591,11 +595,15 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     }
 
     public void setMenuLayout(String menuLayout) {
-        if (menuLayout.equals("horizontal")) {
+        this.menuLayout = normalizeMenuLayout(menuLayout);
+
+        if ("horizontal".equals(this.menuLayout)) {
             this.profileMode = "overlay";
         }
+    }
 
-        this.menuLayout = menuLayout;
+    public boolean isHorizontalMenuLayout() {
+        return "horizontal".equals(getMenuLayout());
     }
 
     public String getInputStyleClass() {
@@ -703,7 +711,8 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
             return;
         }
 
-        refreshPersistentNotifications(session);
+        List<ApplicationNotification> notifications = refreshPersistentNotifications(session);
+        updateApplicationNotificationTracker(notifications, true);
         syncTopbarMessagesFromSession(session);
         growlMessage = (String) session.getAttribute(SessionAttributes.APPLICATION_NOTIFICATION_GROWL.getName());
         if (growlMessage != null) {
@@ -773,7 +782,8 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
             applicationNotificationService.markAllNotificationsAsSeen(userId);
         }
 
-        refreshPersistentNotifications(session);
+        List<ApplicationNotification> notifications = refreshPersistentNotifications(session);
+        updateApplicationNotificationTracker(notifications, false);
         syncTopbarMessagesFromSession(session);
     }
 
@@ -1082,9 +1092,9 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         topbarUnreadMessageCount = unreadCount instanceof Integer ? (Integer) unreadCount : 0;
     }
 
-    private void refreshPersistentNotifications(HttpSession session) {
+    private List<ApplicationNotification> refreshPersistentNotifications(HttpSession session) {
         if (session == null || userId <= 0) {
-            return;
+            return Collections.emptyList();
         }
 
         List<ApplicationNotification> notifications = applicationNotificationService.getRecentNotifications(10);
@@ -1095,6 +1105,25 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
         applicationMessages = notificationMessages;
         applicationUnreadMessageCount = applicationNotificationService.getUnreadNotificationCountForUser(userId);
+        return notifications;
+    }
+
+    private void updateApplicationNotificationTracker(List<ApplicationNotification> notifications, boolean showGrowl) {
+        int newestNotificationId = CollectionUtils.isEmpty(notifications) ? 0 : notifications.get(0).getId();
+        if (!applicationNotificationTrackerInitialized) {
+            latestApplicationNotificationId = newestNotificationId;
+            applicationNotificationTrackerInitialized = true;
+            return;
+        }
+
+        if (showGrowl && newestNotificationId > latestApplicationNotificationId && CollectionUtils.isNotEmpty(notifications)) {
+            PrimeFaces.current().executeScript(
+                    "PF('growlWidget').renderMessage({severity: 'info', summary: 'Customer Request', detail: '"
+                            + escapeForJavascript(notifications.get(0).getMessage()) + "', life: 10000, sticky: false});"
+            );
+        }
+
+        latestApplicationNotificationId = newestNotificationId;
     }
 
     private void loadUserThemePreferences() {
@@ -1121,7 +1150,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
                 profileMode = savedTheme.getProfileMode().trim();
             }
             if (savedTheme.getMenuLayout() != null && !savedTheme.getMenuLayout().trim().isEmpty()) {
-                menuLayout = savedTheme.getMenuLayout().trim();
+                menuLayout = normalizeMenuLayout(savedTheme.getMenuLayout());
             }
             if (savedTheme.getInputStyle() != null && !savedTheme.getInputStyle().trim().isEmpty()) {
                 inputStyle = savedTheme.getInputStyle().trim();
@@ -1146,7 +1175,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
             applicationTheme.setLayout(layout);
             applicationTheme.setMenuClass(menuClass);
             applicationTheme.setProfileMode(profileMode);
-            applicationTheme.setMenuLayout(menuLayout);
+            applicationTheme.setMenuLayout(getMenuLayout());
             applicationTheme.setInputStyle(inputStyle);
 
             UserActivityTO userActivityTO = buildThemeUserActivity();
@@ -1161,6 +1190,24 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         } catch (Exception e) {
             logger.error("Unable to persist theme configuration for user {}", userId, e);
         }
+    }
+
+    private String normalizeMenuLayout(String rawMenuLayout) {
+        if (rawMenuLayout == null || rawMenuLayout.trim().isEmpty()) {
+            return "static";
+        }
+
+        String normalized = rawMenuLayout.trim().toLowerCase(Locale.ENGLISH);
+        if (normalized.contains("horizontal")) {
+            return "horizontal";
+        }
+        if (normalized.contains("overlay")) {
+            return "overlay";
+        }
+        if (normalized.contains("slim")) {
+            return "slim";
+        }
+        return "static";
     }
 
     private UserActivityTO buildThemeUserActivity() {

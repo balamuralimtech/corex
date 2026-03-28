@@ -51,7 +51,7 @@
                                  update="alertUnreadCount"/>
                 <ul class="topbar-items fadeInDown animated">
                     <ui:fragment
-                            rendered="#{guestPreferences.profileMode == 'overlay'||guestPreferences.menuLayout == 'menu-layout-static menu-layout-horizontal'}">
+                            rendered="#{guestPreferences.profileMode == 'overlay' or guestPreferences.horizontalMenuLayout}">
                         <li class="profile-item">
                             <a href="#">
                                 <p:graphicImage name="images/male.png" library="avalon-layout"

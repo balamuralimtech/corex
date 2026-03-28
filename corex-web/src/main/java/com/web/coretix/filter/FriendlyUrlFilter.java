@@ -47,6 +47,7 @@ public class FriendlyUrlFilter implements Filter {
             "/",
             "/landing",
             "/login",
+            "/customer-request-form",
             "/error",
             "/bad-request",
             "/unauthorized",

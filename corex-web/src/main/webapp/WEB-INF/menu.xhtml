@@ -25,7 +25,7 @@
         <div class="layout-menu-container #{guestPreferences.menuClass}">
             <div class="menu-scroll-content">
                 <ui:fragment
-                        rendered="#{guestPreferences.profileMode == 'inline' and guestPreferences.menuLayout != 'menu-layout-static menu-layout-horizontal'}">
+                        rendered="#{guestPreferences.profileMode == 'inline' and not guestPreferences.horizontalMenuLayout}">
                     <div class="profile">
                         <a id="profile-options" href="#">
                             <p:graphicImage name="images/superuser.png" library="avalon-layout"

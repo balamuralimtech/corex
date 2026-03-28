@@ -32,6 +32,8 @@ import java.io.IOException;
 public class AuthorizationFilter implements Filter {
 
     private static final String DEFAULT_LOGIN_VIDEO = "/resources/avalon-layout/videos/home.mp4";
+    private static final java.util.Set<String> PUBLIC_INTERNAL_PATHS = java.util.Set.of(
+            "/pages/shipx/public/customer-request-form.xhtml");
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -59,10 +61,11 @@ public class AuthorizationFilter implements Filter {
         boolean login2InternalRequest = req.getRequestURI().equals(login2InternalURI);
         boolean videoRequest = req.getRequestURI().equals(videoURI);
         boolean publicFriendlyRequest = FriendlyUrlFilter.PUBLIC_FRIENDLY_PATHS.contains(requestPath);
+        boolean publicInternalRequest = PUBLIC_INTERNAL_PATHS.contains(requestPath);
         boolean resourceRequest = req.getRequestURI().startsWith(req.getContextPath() + "/javax.faces.resource");
 
         if (loggedIn || loginRequest || login2Request || loginInternalRequest || login2InternalRequest
-                || videoRequest || publicFriendlyRequest || resourceRequest) {
+                || videoRequest || publicFriendlyRequest || publicInternalRequest || resourceRequest) {
             chain.doFilter(request, response); // User is logged in, so continue with the request.
         } else {
             res.sendRedirect(login2URI); // Not logged in, redirect to login page.

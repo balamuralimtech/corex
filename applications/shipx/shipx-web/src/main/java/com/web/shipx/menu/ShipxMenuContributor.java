@@ -17,7 +17,13 @@ public class ShipxMenuContributor implements MenuContributor {
         AppMenuGroup shipmentOps = new AppMenuGroup("shipx_shipment_ops", "Shipment Ops", "pi pi-fw pi-send",
                 100, "true")
                 .addItem(new AppMenuItem("shipx_shipment_dashboard", "Shipment Dashboard", "pi pi-fw pi-home",
-                        "/pages/shipx/shipment-ops/shipment-dashboard.xhtml", 10, "true"))
+                        "/pages/shipx/shipment-ops/shipxdashboard.xhtml", 10, "true"))
+                .addItem(new AppMenuItem("shipx_customer_link_share", "Customer Link Share", "pi pi-fw pi-envelope",
+                        "/pages/shipx/shipment-ops/customer-link-share.xhtml", 15, "true"))
+                .addItem(new AppMenuItem("shipx_manage_customer_request", "Manage Customer Request", "pi pi-fw pi-file-edit",
+                        "/pages/shipx/shipment-ops/manage-customer-request.xhtml", 18, "true"))
+                .addItem(new AppMenuItem("shipx_quotation", "Quotation", "pi pi-fw pi-money-bill",
+                        "/pages/shipx/shipment-ops/quotation.xhtml", 19, "true"))
                 .addItem(new AppMenuItem("shipx_load_planning", "Load Planning", "pi pi-fw pi-directions",
                         "/pages/shipx/shipment-ops/load-planning.xhtml", 20, "true"))
                 .addItem(new AppMenuItem("shipx_route_board", "Route Board", "pi pi-fw pi-map",

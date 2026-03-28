@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="content">
+        <f:event listener="#{quotationBean.initializePageAttributes}" type="preRenderComponent"/>
+
+        <h:outputStylesheet>
+            .q-shell{display:flex;flex-direction:column;gap:1rem}.q-hero{padding:1.5rem;border-radius:24px;background:linear-gradient(135deg,#0f172a,#0f766e,#f59e0b);color:#fff}.q-card{border-radius:20px;background:#fff;border:1px solid rgba(148,163,184,.18);box-shadow:0 14px 40px rgba(15,23,42,.06)}.q-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem}.q-stat{padding:1rem 1.1rem}.q-stat b{display:block;font-size:1.7rem;margin-top:.35rem}.q-block{padding:1rem;border-radius:16px;background:#f8fafc;border:1px solid #e2e8f0}.q-row{display:grid;grid-template-columns:1fr auto;gap:.75rem;margin-bottom:.5rem}.q-head{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:.75rem}.q-head h3,.q-head h4{margin:0}.q-link.ui-button{background:none!important;border:none!important;color:#2563eb!important;padding:0!important;box-shadow:none!important}.q-summary{padding:1rem 1.1rem;border-radius:18px;background:#0f172a;color:#fff}.q-summary small{color:rgba(255,255,255,.74);text-transform:uppercase;letter-spacing:.08em}.q-summary strong{display:block;margin-top:.4rem;font-size:1.2rem;line-height:1.5}.line-total-box{display:block;padding:.55rem .7rem;border:1px solid #cbd5e1;border-radius:8px;background:#e2e8f0;color:#0f172a;font-weight:600;min-height:2.5rem}.q-line-table .ui-datatable-tablewrapper{overflow:auto}
+        </h:outputStylesheet>
+
+        <h:outputScript target="body">
+            function parseQuotationAmount(value) {
+                if (!value) {
+                    return 0;
+                }
+                const parsed = Number(String(value).replace(/,/g, '').trim());
+                return Number.isFinite(parsed) ? parsed : 0;
+            }
+
+            function formatQuotationTotals(totals) {
+                const entries = Object.entries(totals);
+                if (!entries.length) {
+                    return 'No costing yet';
+                }
+                return entries.map(([currency, amount]) => currency + ' ' + amount.toFixed(2)).join(' | ');
+            }
+
+            function collectSectionTotals(sectionElement) {
+                const totals = {};
+                sectionElement.querySelectorAll('tbody tr').forEach((row) => {
+                    const currencyElement = row.querySelector('.currency-select');
+                    const quantityElement = row.querySelector('.quantity-input');
+                    const priceElement = row.querySelector('.price-input');
+                    const lineTotalElement = row.querySelector('.line-total-value');
+                    const currency = currencyElement ? currencyElement.value.trim().toUpperCase() : '';
+                    const quantity = quantityElement ? parseQuotationAmount(quantityElement.value) : 0;
+                    const unitPrice = priceElement ? parseQuotationAmount(priceElement.value) : 0;
+                    const amount = quantity * unitPrice;
+                    if (lineTotalElement) {
+                        lineTotalElement.textContent = amount.toFixed(2);
+                    }
+                    if (!currency || !amount) {
+                        return;
+                    }
+                    totals[currency] = (totals[currency] || 0) + amount;
+                });
+                return totals;
+            }
+
+            function mergeQuotationTotals(target, source) {
+                Object.keys(source).forEach((currency) => {
+                    target[currency] = (target[currency] || 0) + source[currency];
+                });
+            }
+
+            function recalcQuotationTotals() {
+                const grandTotals = {};
+                document.querySelectorAll('.q-section').forEach((sectionElement) => {
+                    const sectionTotals = collectSectionTotals(sectionElement);
+                    mergeQuotationTotals(grandTotals, sectionTotals);
+                    const sectionTarget = sectionElement.querySelector('.section-total-value');
+                    if (sectionTarget) {
+                        sectionTarget.textContent = formatQuotationTotals(sectionTotals);
+                    }
+                });
+                document.querySelectorAll('.grand-total-value').forEach((target) => {
+                    target.textContent = formatQuotationTotals(grandTotals);
+                });
+            }
+
+            function initQuotationCalculator() {
+                recalcQuotationTotals();
+            }
+
+            document.addEventListener('DOMContentLoaded', initQuotationCalculator);
+        </h:outputScript>
+
+        <h:form id="form">
+            <div class="q-shell">
+                <div class="col-12">
+                    <p:breadCrumb>
+                        <p:menuitem url="#" icon="pi pi-home"/>
+                        <p:menuitem value="ShipX" url="#"/>
+                        <p:menuitem value="Shipment Ops" url="#"/>
+                        <p:menuitem value="Quotation" url="#"/>
+                    </p:breadCrumb>
+                </div>
+
+                <div class="q-hero">
+                    <h1 style="margin:0;">Quotation Costing Desk</h1>
+                    <div style="margin-top:.75rem;max-width:920px;line-height:1.7;color:rgba(255,255,255,.82);">
+                        The quotation editor now lives directly in the page. Each section supports multiple descriptions,
+                        unit type, units, unit price, row-level currencies, calculated line values, section totals, and a grand total across all sections.
+                    </div>
+                </div>
+
+                <div class="q-grid">
+                    <div class="q-card q-stat"><span>All Quotations</span><b>#{quotationBean.recordsCount}</b></div>
+                    <div class="q-card q-stat"><span>Draft</span><b>#{quotationBean.draftCount}</b></div>
+                    <div class="q-card q-stat"><span>Sent</span><b>#{quotationBean.sentCount}</b></div>
+                    <div class="q-card q-stat"><span>Linked Requests</span><b>#{quotationBean.linkedRequestCount}</b></div>
+                </div>
+
+                <p:outputPanel id="quotationEditorPanel" class="q-card">
+                    <div class="q-shell" style="padding:1rem;">
+                        <div class="q-head">
+                            <h2 style="margin:0;">#{quotationBean.viewMode ? 'View Quotation' : (quotationBean.addOperation ? 'Create Quotation' : 'Edit Quotation')}</h2>
+                            <div>
+                                <p:commandButton value="New Quotation" icon="pi pi-plus"
+                                                 actionListener="#{quotationBean.newQuotationInlineAction}"
+                                                 update=":form:quotationEditorPanel"
+                                                 process="@this"
+                                                 oncomplete="initQuotationCalculator()"
+                                                 styleClass="ui-button-success" style="margin-right:.5rem;"/>
+                                <p:commandButton value="Fetch Quotations" icon="pi pi-search"
+                                                 action="#{quotationBean.searchButtonAction}"
+                                                 update=":form:quotationMainPanelId"
+                                                 process="@this"/>
+                            </div>
+                        </div>
+
+                        <div class="q-grid">
+                            <div class="q-card q-stat"><span>Reference</span><b>#{quotationBean.buildPreviewReference()}</b></div>
+                            <div class="q-card q-stat"><span>Source</span><b>#{empty quotationBean.selectedCustomerRequestId ? 'Standalone' : 'Request Linked'}</b></div>
+                            <div class="q-card q-stat"><span>Grand Total</span><b class="grand-total-value" style="font-size:1.15rem;">#{quotationBean.grandTotalSummary}</b></div>
+                        </div>
+
+                        <div class="grid">
+                            <div class="col-12 lg:col-6">
+                                <div class="q-block">
+                                    <div class="grid">
+                                        <div class="col-12">
+                                            <label>Customer Request</label>
+                                            <p:selectOneMenu value="#{quotationBean.selectedCustomerRequestId}" style="width:100%;" disabled="#{quotationBean.viewMode}">
+                                                <f:selectItem itemLabel="Standalone quotation" itemValue="#{null}" noSelectionOption="true"/>
+                                                <f:selectItems value="#{quotationBean.availableCustomerRequests}" var="customerRequest"
+                                                               itemValue="#{customerRequest.id}" itemLabel="#{customerRequest.requestReference} - #{customerRequest.customerName}"/>
+                                                <p:ajax listener="#{quotationBean.onCustomerRequestChange}" update=":form:quotationEditorPanel" process="@this" oncomplete="initQuotationCalculator()"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                        <div class="col-12"><label>Quotation Title</label><p:inputText value="#{quotationBean.quotationTitle}" style="width:100%;" readonly="#{quotationBean.viewMode}"/></div>
+                                        <div class="col-12 md:col-6"><label>Service Category</label><p:selectOneMenu value="#{quotationBean.serviceCategory}" style="width:100%;" disabled="#{quotationBean.viewMode}"><f:selectItem itemLabel="Freight Forwarding" itemValue="FREIGHT_FORWARDING"/><f:selectItem itemLabel="Customs Clearance" itemValue="CUSTOMS_CLEARANCE"/><f:selectItem itemLabel="Warehousing" itemValue="WAREHOUSING"/><f:selectItem itemLabel="Last Mile Delivery" itemValue="LAST_MILE_DELIVERY"/><f:selectItem itemLabel="Multimodal Logistics" itemValue="MULTIMODAL_LOGISTICS"/></p:selectOneMenu></div>
+                                        <div class="col-12 md:col-6"><label>Valid Until</label><p:datePicker value="#{quotationBean.validUntil}" showIcon="true" pattern="dd-MMM-yyyy" style="width:100%;" readonlyInput="#{quotationBean.viewMode}" disabled="#{quotationBean.viewMode}"/></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 lg:col-6">
+                                <div class="q-block">
+                                    <div class="grid">
+                                        <div class="col-12"><label>Customer Name</label><p:inputText value="#{quotationBean.customerName}" style="width:100%;" readonly="#{quotationBean.viewMode}"/></div>
+                                        <div class="col-12 md:col-6"><label>Contact Person</label><p:inputText value="#{quotationBean.contactPerson}" style="width:100%;" readonly="#{quotationBean.viewMode}"/></div>
+                                        <div class="col-12 md:col-6"><label>Contact Number</label><p:inputText value="#{quotationBean.contactNumber}" style="width:100%;" readonly="#{quotationBean.viewMode}"/></div>
+                                        <div class="col-12"><label>Recipient Email</label><p:inputText value="#{quotationBean.recipientEmail}" style="width:100%;" readonly="#{quotationBean.viewMode}"/></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="q-block">
+                            <div class="grid">
+                                <div class="col-12 md:col-6"><label>Origin</label><p:inputText value="#{quotationBean.originLocation}" style="width:100%;" readonly="#{quotationBean.viewMode}"/></div>
+                                <div class="col-12 md:col-6"><label>Destination</label><p:inputText value="#{quotationBean.destinationLocation}" style="width:100%;" readonly="#{quotationBean.viewMode}"/></div>
+                                <div class="col-12"><label>Cargo Summary</label><p:inputTextarea value="#{quotationBean.cargoSummary}" rows="3" autoResize="false" style="width:100%;" readonly="#{quotationBean.viewMode}"/></div>
+                            </div>
+                        </div>
+
+                        <div class="q-block">
+                            <div class="q-head">
+                                <h3>Costing Sections</h3>
+                                <p:commandButton value="Add Section" icon="pi pi-plus" process=":form:quotationEditorPanel @this"
+                                                 actionListener="#{quotationBean.addCostSection}"
+                                                 update=":form:quotationEditorPanel" rendered="#{not quotationBean.viewMode}"
+                                                 oncomplete="initQuotationCalculator()"/>
+                            </div>
+
+                            <ui:repeat value="#{quotationBean.costSections}" var="section" varStatus="sectionStatus">
+                                <div class="q-block q-section" style="background:#fff;margin-bottom:1rem;">
+                                    <div class="q-head">
+                                        <h4>Section #{sectionStatus.index + 1}</h4>
+                                        <div>
+                                            <p:commandButton value="Add Line" icon="pi pi-plus" process=":form:quotationEditorPanel @this"
+                                                             actionListener="#{quotationBean.addCostLine(section)}"
+                                                             update=":form:quotationEditorPanel" rendered="#{not quotationBean.viewMode}"
+                                                             oncomplete="initQuotationCalculator()"
+                                                             styleClass="ui-button-secondary" style="margin-right:.5rem;"/>
+                                            <p:commandButton value="Remove Section" icon="pi pi-times" process=":form:quotationEditorPanel @this"
+                                                             actionListener="#{quotationBean.removeCostSection(section)}"
+                                                             update=":form:quotationEditorPanel" rendered="#{not quotationBean.viewMode}"
+                                                             oncomplete="initQuotationCalculator()"
+                                                             styleClass="ui-button-danger"/>
+                                        </div>
+                                    </div>
+
+                                    <div style="margin-bottom:.75rem;">
+                                        <label>Section Title</label>
+                                        <p:inputText value="#{section.title}" style="width:100%;" readonly="#{quotationBean.viewMode}"/>
+                                    </div>
+
+                                    <p:dataTable value="#{section.lines}" var="line" reflow="true" styleClass="q-line-table">
+                                        <p:column headerText="Description"><p:inputText value="#{line.description}" style="width:100%;" readonly="#{quotationBean.viewMode}"/></p:column>
+                                        <p:column headerText="Unit Type" style="width:150px;"><p:inputText value="#{line.unit}" style="width:100%;" readonly="#{quotationBean.viewMode}" placeholder="Container, Kg, Lot"/></p:column>
+                                        <p:column headerText="Units" style="width:120px;">
+                                            <p:inputText value="#{line.quantity}" style="width:100%;" readonly="#{quotationBean.viewMode}" styleClass="quantity-input" oninput="recalcQuotationTotals()" placeholder="0"/>
+                                        </p:column>
+                                        <p:column headerText="Unit Price" style="width:140px;">
+                                            <p:inputText value="#{line.unitPrice}" style="width:100%;" readonly="#{quotationBean.viewMode}" styleClass="price-input" oninput="recalcQuotationTotals()" placeholder="0.00"/>
+                                        </p:column>
+                                        <p:column headerText="Value" style="width:140px;">
+                                            <span class="line-total-box line-total-value">#{quotationBean.lineTotalAmount(line)}</span>
+                                        </p:column>
+                                        <p:column headerText="Currency" style="width:160px;">
+                                            <h:selectOneMenu value="#{line.currencyCode}" style="width:100%;" styleClass="currency-select ui-inputfield ui-inputtext ui-widget ui-state-default ui-corner-all" disabled="#{quotationBean.viewMode}" onchange="recalcQuotationTotals()">
+                                                <f:selectItem itemLabel="Select" itemValue="" noSelectionOption="true"/>
+                                                <f:selectItems value="#{quotationBean.availableCurrencyCodes}"/>
+                                            </h:selectOneMenu>
+                                        </p:column>
+                                        <p:column headerText="Basis / Remark"><p:inputText value="#{line.basis}" style="width:100%;" readonly="#{quotationBean.viewMode}"/></p:column>
+                                        <p:column headerText="Action" rendered="#{not quotationBean.viewMode}" style="width:90px;">
+                                            <p:commandButton icon="pi pi-trash" process=":form:quotationEditorPanel @this"
+                                                             actionListener="#{quotationBean.removeCostLine(section, line)}"
+                                                             update=":form:quotationEditorPanel"
+                                                             oncomplete="initQuotationCalculator()"
+                                                             styleClass="rounded-button ui-button-warning"/>
+                                        </p:column>
+                                    </p:dataTable>
+
+                                    <div class="q-summary" style="margin-top:.85rem;">
+                                        <small>Section Total</small>
+                                        <strong class="section-total-value">#{quotationBean.sectionTotalSummary(section)}</strong>
+                                    </div>
+                                </div>
+                            </ui:repeat>
+
+                            <div class="q-summary">
+                                <small>Grand Total</small>
+                                <strong class="grand-total-value">#{quotationBean.grandTotalSummary}</strong>
+                            </div>
+                        </div>
+
+                        <div class="q-block">
+                            <div class="q-head">
+                                <h3>Notes</h3>
+                                <p:commandButton value="Add Note" icon="pi pi-plus" process=":form:quotationEditorPanel @this"
+                                                 actionListener="#{quotationBean.addNoteLine}"
+                                                 update=":form:quotationEditorPanel" rendered="#{not quotationBean.viewMode}"
+                                                 oncomplete="initQuotationCalculator()"/>
+                            </div>
+                            <ui:repeat value="#{quotationBean.noteLines}" var="noteLine" varStatus="noteStatus">
+                                <div class="q-row">
+                                    <p:inputText value="#{quotationBean.noteLines[noteStatus.index]}" style="width:100%;" readonly="#{quotationBean.viewMode}"/>
+                                    <p:commandButton icon="pi pi-times" process=":form:quotationEditorPanel @this"
+                                                     actionListener="#{quotationBean.removeNoteLineAt(noteStatus.index)}"
+                                                     update=":form:quotationEditorPanel" rendered="#{not quotationBean.viewMode}"
+                                                     oncomplete="initQuotationCalculator()"
+                                                     styleClass="rounded-button ui-button-warning"/>
+                                </div>
+                            </ui:repeat>
+                        </div>
+
+                        <div class="q-block">
+                            <div class="grid">
+                                <div class="col-12"><label>Email Subject</label><p:inputText value="#{quotationBean.emailSubject}" style="width:100%;" readonly="#{quotationBean.viewMode}"/></div>
+                                <div class="col-12"><label>Email Body</label><p:inputTextarea value="#{quotationBean.emailBody}" rows="5" autoResize="false" style="width:100%;" readonly="#{quotationBean.viewMode}"/></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <p:commandButton value="Save Quotation" icon="pi pi-check"
+                                             actionListener="#{quotationBean.saveQuotation}"
+                                             update=":form:quotationEditorPanel :form:quotationMainPanelId"
+                                             process=":form:quotationEditorPanel"
+                                             oncomplete="initQuotationCalculator()"
+                                             rendered="#{not quotationBean.viewMode}"
+                                             styleClass="ui-button-success" style="margin-right:.5rem;"/>
+                            <p:commandButton value="Send Email" icon="pi pi-send"
+                                             action="#{quotationBean.sendQuotationAction}"
+                                             update=":form:quotationEditorPanel :form:quotationMainPanelId"
+                                             process="@this"
+                                             rendered="#{not quotationBean.addOperation and quotationBean.selectedQuotation.id ne null}"
+                                             styleClass="ui-button-info" style="margin-right:.5rem;"/>
+                            <p:commandButton value="Reset" icon="pi pi-refresh"
+                                             actionListener="#{quotationBean.newQuotationInlineAction}"
+                                             update=":form:quotationEditorPanel"
+                                             process="@this"
+                                             oncomplete="initQuotationCalculator()"
+                                             styleClass="ui-button-secondary"/>
+                        </div>
+                    </div>
+                </p:outputPanel>
+
+                <p:outputPanel id="quotationMainPanelId" class="q-card">
+                    <p:growl id="messages" showDetail="true"/>
+                    <div style="padding:1rem;">
+                        <h2 style="margin:0 0 1rem 0;">Saved Quotations</h2>
+                        <p:outputPanel rendered="#{quotationBean.datatableRendered}">
+                            <p:dataTable id="quotationDataTableId" var="quotation"
+                                         value="#{quotationBean.quotationList}" widgetVar="quotationTable"
+                                         paginator="true" rows="10" reflow="true">
+                                <f:facet name="header">
+                                    <div class="products-table-header">
+                                        <span style="font-weight:bold">Quotation costing sheets</span>
+                                        <span class="filter-container ui-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <p:inputText id="globalFilter" onkeyup="PF('quotationTable').filter()" placeholder="Search quotations"/>
+                                        </span>
+                                    </div>
+                                </f:facet>
+
+                                <p:column headerText="Quotation Ref" sortBy="#{quotation.quotationReference}" filterBy="#{quotation.quotationReference}">
+                                    <p:commandLink value="#{quotation.quotationReference}" styleClass="q-link"
+                                                   action="#{quotationBean.viewQuotationAction}"
+                                                   update=":form:quotationEditorPanel" process="@this"
+                                                   oncomplete="initQuotationCalculator()">
+                                        <f:setPropertyActionListener value="#{quotation}" target="#{quotationBean.selectedQuotation}"/>
+                                    </p:commandLink>
+                                </p:column>
+                                <p:column headerText="Request Ref"><h:outputText value="#{empty quotation.linkedRequestReference ? 'Standalone' : quotation.linkedRequestReference}"/></p:column>
+                                <p:column headerText="Customer"><h:outputText value="#{quotation.customerName}"/></p:column>
+                                <p:column headerText="Service"><h:outputText value="#{quotation.serviceCategory}"/></p:column>
+                                <p:column headerText="Currency Summary"><h:outputText value="#{quotation.totalSummaryLabel}"/></p:column>
+                                <p:column headerText="Status"><h:outputText value="#{quotation.status}"/></p:column>
+                                <p:column exportable="false">
+                                    <p:commandButton icon="pi pi-pencil" process="@this"
+                                                     action="#{quotationBean.confirmEditButtonAction}"
+                                                     update=":form:quotationEditorPanel"
+                                                     oncomplete="initQuotationCalculator()"
+                                                     styleClass="rounded-button ui-button-success">
+                                        <f:setPropertyActionListener value="#{quotation}" target="#{quotationBean.selectedQuotation}"/>
+                                    </p:commandButton>
+                                    <p:commandButton icon="pi pi-send" process="@this"
+                                                     action="#{quotationBean.sendQuotationAction}"
+                                                     update=":form:quotationEditorPanel :form:quotationMainPanelId"
+                                                     styleClass="rounded-button ui-button-info">
+                                        <f:setPropertyActionListener value="#{quotation}" target="#{quotationBean.selectedQuotation}"/>
+                                    </p:commandButton>
+                                    <p:commandButton icon="pi pi-trash" process="@this"
+                                                     oncomplete="PF('deleteQuotationDialog').show()"
+                                                     styleClass="rounded-button ui-button-warning">
+                                        <f:setPropertyActionListener value="#{quotation}" target="#{quotationBean.selectedQuotation}"/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </p:outputPanel>
+                    </div>
+                </p:outputPanel>
+
+                <p:confirmDialog widgetVar="deleteQuotationDialog" width="320" message="Delete this quotation?" header="Confirm" severity="warn">
+                    <p:commandButton value="Yes" icon="pi pi-check"
+                                     actionListener="#{quotationBean.confirmDeleteQuotation}"
+                                     process="@this" update=":form:quotationEditorPanel :form:quotationMainPanelId"
+                                     oncomplete="PF('deleteQuotationDialog').hide();initQuotationCalculator();"/>
+                    <p:commandButton value="No" type="button" styleClass="ui-button-secondary"
+                                     icon="pi pi-times" onclick="PF('deleteQuotationDialog').hide()"/>
+                </p:confirmDialog>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

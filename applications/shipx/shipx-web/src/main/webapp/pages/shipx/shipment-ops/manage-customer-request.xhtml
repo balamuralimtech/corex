@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="content">
+        <f:event listener="#{manageCustomerRequestBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:form id="form">
+            <div class="col-12">
+                <p:breadCrumb>
+                    <p:menuitem url="#" icon="pi pi-home"/>
+                    <p:menuitem value="ShipX" url="#"/>
+                    <p:menuitem value="Shipment Ops" url="#"/>
+                    <p:menuitem value="Manage Customer Request" url="#"/>
+                </p:breadCrumb>
+            </div>
+
+            <div class="grid crud-demo">
+                <div class="col-12">
+                    <p:outputPanel class="card" id="customerRequestMainPanelId">
+                        <p:growl id="messages" showDetail="true"/>
+
+                        <p:toolbar styleClass="mb-4">
+                            <p:toolbarGroup>
+                                <p:commandButton value="New" icon="pi pi-plus"
+                                                 actionListener="#{manageCustomerRequestBean.addButtonAction}"
+                                                 update=":form:customerRequestDialogPanel"
+                                                 process="@this"
+                                                 oncomplete="PF('manageCustomerRequestDialog').show()"
+                                                 styleClass="ui-button-success" style="margin-right:.5rem"/>
+
+                                <p:commandButton value="Fetch Customer Requests" icon="pi pi-search"
+                                                 action="#{manageCustomerRequestBean.searchButtonAction}"
+                                                 update="customerRequestMainPanelId"
+                                                 process="@this"
+                                                 styleClass="ui-button-success" style="margin-right:.5rem"/>
+
+                                <h:outputLabel value="No. of records: " rendered="#{manageCustomerRequestBean.datatableRendered}"/>
+                                <h:outputText value="#{manageCustomerRequestBean.recordsCount}" rendered="#{manageCustomerRequestBean.datatableRendered}"/>
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <p:outputPanel id="datatablePanelId" rendered="#{manageCustomerRequestBean.datatableRendered}">
+                            <p:dataTable id="customerRequestDataTableId" var="customerRequest"
+                                         value="#{manageCustomerRequestBean.customerRequestList}"
+                                         widgetVar="customerRequestTable"
+                                         rowKey="#{customerRequest.id}"
+                                         reflow="true"
+                                         paginator="true"
+                                         rows="10"
+                                         paginatorPosition="bottom"
+                                         styleClass="commoncrud-table">
+                                <f:facet name="header">
+                                    <div class="products-table-header">
+                                        <span style="font-weight:bold">Search customer requests</span>
+                                        <span class="filter-container ui-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <p:inputText id="globalFilter" onkeyup="PF('customerRequestTable').filter()" placeholder="Search"/>
+                                        </span>
+                                    </div>
+                                </f:facet>
+
+                                <p:column headerText="Reference" sortBy="#{customerRequest.requestReference}" filterBy="#{customerRequest.requestReference}">
+                                    <p:commandLink value="#{customerRequest.requestReference}"
+                                                   action="#{manageCustomerRequestBean.viewCustomerRequestAction}"
+                                                   update=":form:customerRequestDialogPanel"
+                                                   process="@this"
+                                                   oncomplete="PF('manageCustomerRequestDialog').show()">
+                                        <f:setPropertyActionListener value="#{customerRequest}" target="#{manageCustomerRequestBean.selectedCustomerRequest}"/>
+                                    </p:commandLink>
+                                </p:column>
+                                <p:column headerText="Customer Type" sortBy="#{customerRequest.customerType}" filterBy="#{customerRequest.customerType}">
+                                    <h:outputText value="#{customerRequest.customerType}"/>
+                                </p:column>
+                                <p:column headerText="Customer Name" sortBy="#{customerRequest.customerName}" filterBy="#{customerRequest.customerName}">
+                                    <h:outputText value="#{customerRequest.customerName}"/>
+                                </p:column>
+                                <p:column headerText="Route">
+                                    <h:outputText value="#{customerRequest.routeSummary}"/>
+                                </p:column>
+                                <p:column headerText="Requirement">
+                                    <h:outputText value="#{customerRequest.capacitySummary}"/>
+                                </p:column>
+                                <p:column headerText="Estimated Date" sortBy="#{customerRequest.estimatedShippingDate}">
+                                    <h:outputText value="#{customerRequest.estimatedShippingDate}">
+                                        <f:convertDateTime pattern="dd-MMM-yyyy"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Contact">
+                                    <h:outputText value="#{customerRequest.contactPerson} / #{customerRequest.contactNumber}"/>
+                                </p:column>
+                                <p:column headerText="Created By" sortBy="#{customerRequest.createdByUserName}" filterBy="#{customerRequest.createdByUserName}">
+                                    <h:outputText value="#{empty customerRequest.createdByUserName ? 'Public Customer' : customerRequest.createdByUserName}"/>
+                                </p:column>
+                                <p:column headerText="Status" sortBy="#{customerRequest.status}" filterBy="#{customerRequest.status}">
+                                    <h:outputText value="#{customerRequest.status}"/>
+                                </p:column>
+                                <p:column exportable="false">
+                                    <p:commandButton icon="pi pi-pencil"
+                                                     update=":form:customerRequestDialogPanel"
+                                                     oncomplete="PF('manageCustomerRequestDialog').show()"
+                                                     action="#{manageCustomerRequestBean.confirmEditButtonAction}"
+                                                     styleClass="edit-button rounded-button ui-button-success"
+                                                     process="@this">
+                                        <f:setPropertyActionListener value="#{customerRequest}" target="#{manageCustomerRequestBean.selectedCustomerRequest}"/>
+                                    </p:commandButton>
+                                    <p:commandButton class="ui-button-warning rounded-button"
+                                                     icon="pi pi-trash"
+                                                     process="@this"
+                                                     oncomplete="PF('deleteCustomerRequestDialog').show()">
+                                        <f:setPropertyActionListener value="#{customerRequest}" target="#{manageCustomerRequestBean.selectedCustomerRequest}"/>
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+                        </p:outputPanel>
+
+                        <p:dialog header="#{manageCustomerRequestBean.viewMode ? 'View Customer Request' : 'Customer Request Details'}"
+                                  showEffect="fade"
+                                  modal="true"
+                                  widgetVar="manageCustomerRequestDialog"
+                                  responsive="true"
+                                  width="85%">
+                            <p:outputPanel id="customerRequestDialogPanel">
+                                <ui:include src="/pages/shipx/include/customer-request-fields.xhtml">
+                                    <ui:param name="formBean" value="#{manageCustomerRequestBean}"/>
+                                </ui:include>
+                            </p:outputPanel>
+                            <f:facet name="footer">
+                                <center>
+                                    <p:commandButton value="Save" icon="pi pi-check"
+                                                     actionListener="#{manageCustomerRequestBean.saveCustomerRequest}"
+                                                     update=":form:customerRequestDialogPanel :form:messages :form:customerRequestDataTableId"
+                                                     process=":form:customerRequestDialogPanel @this"
+                                                     rendered="#{not manageCustomerRequestBean.viewMode}"/>
+                                    <p:commandButton value="#{manageCustomerRequestBean.viewMode ? 'Close' : 'Cancel'}" icon="pi pi-times"
+                                                     onclick="PF('manageCustomerRequestDialog').hide()"
+                                                     type="button"
+                                                     styleClass="ui-button-secondary"/>
+                                </center>
+                            </f:facet>
+                        </p:dialog>
+
+                        <p:confirmDialog widgetVar="deleteCustomerRequestDialog"
+                                         showEffect="fade"
+                                         width="320"
+                                         message="Delete this customer request?"
+                                         header="Confirm"
+                                         severity="warn">
+                            <p:commandButton value="Yes" icon="pi pi-check"
+                                             actionListener="#{manageCustomerRequestBean.confirmDeleteCustomerRequest}"
+                                             process="@this"
+                                             oncomplete="PF('deleteCustomerRequestDialog').hide()"/>
+                            <p:commandButton value="No" type="button"
+                                             styleClass="ui-button-secondary"
+                                             icon="pi pi-times"
+                                             onclick="PF('deleteCustomerRequestDialog').hide()"/>
+                        </p:confirmDialog>
+                    </p:outputPanel>
+                </div>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

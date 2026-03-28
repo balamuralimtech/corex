@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="content">
+        <h:outputStylesheet>
+            .shipx-share-shell { display:flex; flex-direction:column; gap:1.25rem; }
+            .shipx-share-card { max-width:760px; padding:1.5rem; border-radius:20px; background:#fff; border:1px solid rgba(148,163,184,.18); box-shadow:0 10px 40px rgba(15,23,42,.08); }
+            .shipx-share-title { margin:0; font-size:1.7rem; font-weight:700; color:#0f172a; }
+            .shipx-share-copy { margin-top:.75rem; color:#475569; line-height:1.65; }
+            .shipx-share-form { margin-top:1.25rem; display:grid; gap:1rem; }
+            .shipx-share-label { display:block; margin-bottom:.45rem; font-weight:600; color:#334155; }
+            .shipx-share-note { margin-top:1rem; padding:.9rem 1rem; border-radius:14px; background:#f8fafc; border:1px solid #e2e8f0; color:#64748b; }
+        </h:outputStylesheet>
+
+        <h:form id="customerLinkShareForm">
+            <div class="shipx-share-shell">
+                <div class="col-12">
+                    <p:breadCrumb>
+                        <p:menuitem url="#" icon="pi pi-home"/>
+                        <p:menuitem value="ShipX" url="#"/>
+                        <p:menuitem value="Shipment Ops" url="#"/>
+                        <p:menuitem value="Customer Link Share" url="#"/>
+                    </p:breadCrumb>
+                </div>
+
+                <div class="shipx-share-card">
+                    <h1 class="shipx-share-title">Customer Link Share</h1>
+                    <div class="shipx-share-copy">
+                        Dummy page for the upcoming freight forwarding customer communication workflow.
+                        Later this page can generate a shipment tracking or document link and email it directly to the customer.
+                    </div>
+
+                    <div class="shipx-share-form">
+                        <div>
+                            <label for="customerEmail" class="shipx-share-label">Customer Email</label>
+                            <p:inputText id="customerEmail"
+                                         style="width:100%;"
+                                         placeholder="customer@company.com"/>
+                        </div>
+
+                        <div>
+                            <label for="linkPurpose" class="shipx-share-label">Purpose</label>
+                            <p:inputText id="linkPurpose"
+                                         style="width:100%;"
+                                         placeholder="Tracking link, document link, booking confirmation"/>
+                        </div>
+
+                        <div>
+                            <p:commandButton value="Send Link"
+                                             type="button"
+                                             icon="pi pi-send"/>
+                        </div>
+                    </div>
+
+                    <div class="shipx-share-note">
+                        This is a placeholder only. The send action is not connected to backend email or link-generation logic yet.
+                    </div>
+                </div>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

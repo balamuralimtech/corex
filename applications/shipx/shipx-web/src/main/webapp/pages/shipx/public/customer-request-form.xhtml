@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://java.sun.com/jsf/facelets">
+<h:head>
+    <f:facet name="first">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+        <meta name="apple-mobile-web-app-capable" content="yes"/>
+    </f:facet>
+    <title>ShipX Customer Request Form</title>
+    <link rel="shortcut icon" href="#{request.contextPath}/resources/demo/images/coretix/coretixfavicon.png" type="image/x-icon"/>
+
+    <h:outputStylesheet name="css/primeflex.min.css" library="avalon-layout"/>
+    <h:outputStylesheet name="css/primeicons.css" library="avalon-layout"/>
+    <h:outputStylesheet name="css/layout-#{guestPreferences.layout}.css" library="avalon-layout"/>
+    <h:outputStylesheet name="css/demo.css" library="demo"/>
+
+    <style>
+        html, body {
+            margin: 0;
+            min-height: 100%;
+        }
+        #logo {
+            position:absolute;
+            top:32px;
+            left:50px;
+            width:210px;
+            height:30px;
+            display:inline-flex;
+            align-items:center;
+            font-family:"Roboto", sans-serif;
+            font-size:30px;
+            font-weight:700;
+            letter-spacing:.04em;
+            line-height:1;
+            color:#ffffff;
+            text-decoration:none;
+            z-index:20;
+        }
+        .shipx-request-page {
+            position: relative;
+            min-height: 100vh;
+            overflow: hidden;
+            background: #08111f;
+        }
+        .shipx-request-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(6, 12, 27, .78) 0%, rgba(10, 24, 46, .62) 48%, rgba(7, 65, 94, .52) 100%);
+            z-index: 2;
+        }
+        .shipx-request-video {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+        .shipx-request-wrap {
+            position:relative;
+            z-index:5;
+            width:min(1120px, calc(100% - 2rem));
+            margin:7rem auto 2rem;
+        }
+        .shipx-request-card {
+            background:rgba(255,255,255,.95);
+            backdrop-filter:blur(12px);
+            border:1px solid rgba(255,255,255,.22);
+            border-radius:28px;
+            box-shadow:0 24px 90px rgba(15,23,42,.28);
+            overflow:hidden;
+        }
+        .shipx-request-header {
+            padding:1.6rem 1.7rem 0;
+        }
+        .shipx-request-kicker {
+            display:inline-flex;
+            align-items:center;
+            gap:.45rem;
+            padding:.45rem .8rem;
+            border-radius:999px;
+            background:#e0f2fe;
+            color:#0f4c81;
+            font-size:.78rem;
+            font-weight:700;
+            text-transform:uppercase;
+            letter-spacing:.08em;
+        }
+        .shipx-request-title {
+            margin:.95rem 0 0;
+            font-size:2.15rem;
+            font-weight:800;
+            line-height:1.05;
+            color:#0f172a;
+            letter-spacing:-.04em;
+        }
+        .shipx-request-copy {
+            margin-top:.75rem;
+            max-width:760px;
+            color:#475569;
+            line-height:1.7;
+        }
+        .shipx-request-form {
+            padding:1.5rem 1.7rem 1.8rem;
+        }
+        .shipx-request-label {
+            display:block;
+            margin-bottom:.45rem;
+            font-weight:600;
+            color:#334155;
+        }
+        .shipx-request-help {
+            margin-top:.35rem;
+            color:#94a3b8;
+            font-size:.84rem;
+        }
+        .shipx-request-alert {
+            margin-bottom:1rem;
+            padding:1rem 1.1rem;
+            border-radius:16px;
+            background:#ecfeff;
+            border:1px solid #bae6fd;
+            color:#155e75;
+        }
+        .shipx-request-submit.ui-button {
+            border-radius:999px !important;
+            padding:.15rem !important;
+            border:none !important;
+            box-shadow:none !important;
+            background:transparent !important;
+        }
+        .shipx-request-submit.ui-button .ui-button-text {
+            padding:.95rem 1.45rem 1.05rem !important;
+            border-radius:999px;
+            background:#0f4c81;
+            color:#fff;
+            font-weight:700;
+            border:none;
+        }
+        .shipx-request-submit.ui-button.ui-state-hover .ui-button-text,
+        .shipx-request-submit.ui-button:focus .ui-button-text {
+            background:#11629f;
+        }
+        .shipx-request-submit.ui-button .ui-icon {
+            color:#fff !important;
+        }
+        body .ui-messages {
+            margin-bottom: 1rem;
+        }
+        body .ui-inputfield,
+        body .ui-selectonemenu,
+        body .ui-inputtextarea {
+            width: 100%;
+        }
+        @media (max-width: 768px) {
+            #logo {
+                left:20px;
+                top:20px;
+                font-size:24px;
+                width:auto;
+            }
+            .shipx-request-wrap {
+                margin:6rem auto 1.5rem;
+                width:min(1120px, calc(100% - 1rem));
+            }
+            .shipx-request-header,
+            .shipx-request-form {
+                padding-left:1rem;
+                padding-right:1rem;
+            }
+            .shipx-request-title {
+                font-size:1.75rem;
+            }
+        }
+    </style>
+</h:head>
+
+<h:body>
+    <div class="shipx-request-page">
+        <video autoplay="" loop="" muted="" playsinline="" class="shipx-request-video">
+            <source src="#{request.contextPath}/resources/shipx/videos/home.mp4" type="video/mp4"/>
+            Your browser does not support the video tag.
+        </video>
+        <div class="shipx-request-overlay"></div>
+
+        <h:outputLink value="#{request.contextPath}/landing" id="logo">
+            <h:outputText value="#{appInfo.appName}"/>
+        </h:outputLink>
+
+        <div class="shipx-request-wrap">
+            <h:form id="customerRequestForm">
+                <p:messages id="messages" showDetail="true" closable="true"/>
+
+                <h:panelGroup rendered="#{not empty customerRequestFormBean.lastSubmittedReference}"
+                              layout="block"
+                              styleClass="shipx-request-alert">
+                    Your last request reference is <strong>#{customerRequestFormBean.lastSubmittedReference}</strong>.
+                </h:panelGroup>
+
+                <div class="shipx-request-card">
+                    <div class="shipx-request-header">
+                        <span class="shipx-request-kicker">ShipX Freight Forwarding</span>
+                        <h1 class="shipx-request-title">Customer Request Form</h1>
+                        <div class="shipx-request-copy">
+                            Submit your freight requirement without signing in. Share the route, capacity need, and contact details,
+                            and the ShipX team can turn this into the next operational and commercial step.
+                        </div>
+                    </div>
+
+                    <div class="shipx-request-form">
+                        <ui:include src="/pages/shipx/include/customer-request-fields.xhtml">
+                            <ui:param name="formBean" value="#{customerRequestFormBean}"/>
+                        </ui:include>
+
+                        <div style="margin-top:1.35rem; display:flex; gap:.75rem; flex-wrap:wrap;">
+                            <p:commandButton value="Submit Request"
+                                             icon="pi pi-send"
+                                             action="#{customerRequestFormBean.submitRequest}"
+                                             ajax="false"
+                                             process="@form"
+                                             styleClass="shipx-request-submit"/>
+                        </div>
+                    </div>
+                </div>
+            </h:form>
+        </div>
+    </div>
+</h:body>
+</html>

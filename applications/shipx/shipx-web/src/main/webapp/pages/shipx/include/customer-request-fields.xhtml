@@ -1,0 +1,109 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:ui="http://java.sun.com/jsf/facelets">
+    <div class="grid">
+        <div class="col-12 md:col-6">
+            <label for="customerType" class="shipx-request-label">Customer Type</label>
+            <p:selectOneMenu id="customerType" value="#{formBean.customerType}" style="width:100%;" disabled="#{formBean.viewMode}">
+                <f:selectItem itemLabel="Select customer type" itemValue="" noSelectionOption="true"/>
+                <f:selectItem itemLabel="Individual" itemValue="INDIVIDUAL"/>
+                <f:selectItem itemLabel="Organization" itemValue="ORGANIZATION"/>
+                <p:ajax listener="#{formBean.onCustomerTypeChange}" update="requestFormFields"/>
+            </p:selectOneMenu>
+        </div>
+
+        <div class="col-12 md:col-6">
+            <label for="customerName" class="shipx-request-label">#{formBean.customerNameLabel}</label>
+            <p:inputText id="customerName" value="#{formBean.customerName}" style="width:100%;" readonly="#{formBean.viewMode}"/>
+        </div>
+    </div>
+
+    <p:outputPanel id="requestFormFields">
+        <div class="grid" style="margin-top:.25rem;">
+            <div class="col-12 md:col-6">
+                <label for="originCountry" class="shipx-request-label">Origin Country</label>
+                <p:selectOneMenu id="originCountry" value="#{formBean.originCountry}" filter="true" filterMatchMode="contains" style="width:100%;" disabled="#{formBean.viewMode}">
+                    <f:selectItem itemLabel="Select origin country" itemValue="" noSelectionOption="true"/>
+                    <f:selectItems value="#{formBean.countryNames}"/>
+                </p:selectOneMenu>
+            </div>
+
+            <div class="col-12 md:col-6">
+                <label for="destinationCountry" class="shipx-request-label">Destination Country</label>
+                <p:selectOneMenu id="destinationCountry" value="#{formBean.destinationCountry}" filter="true" filterMatchMode="contains" style="width:100%;" disabled="#{formBean.viewMode}">
+                    <f:selectItem itemLabel="Select destination country" itemValue="" noSelectionOption="true"/>
+                    <f:selectItems value="#{formBean.countryNames}"/>
+                </p:selectOneMenu>
+            </div>
+
+            <div class="col-12">
+                <label for="finalDestinationDetails" class="shipx-request-label">Final Destination Details If Any</label>
+                <p:inputTextarea id="finalDestinationDetails" value="#{formBean.finalDestinationDetails}" rows="3" autoResize="false" style="width:100%;" readonly="#{formBean.viewMode}"/>
+            </div>
+
+            <div class="col-12 md:col-6">
+                <label for="capacityType" class="shipx-request-label">Required Space or Container or Weight</label>
+                <p:selectOneMenu id="capacityType" value="#{formBean.capacityType}" style="width:100%;" disabled="#{formBean.viewMode}">
+                    <f:selectItem itemLabel="Select requirement type" itemValue="" noSelectionOption="true"/>
+                    <f:selectItem itemLabel="Space" itemValue="SPACE"/>
+                    <f:selectItem itemLabel="Container" itemValue="CONTAINER"/>
+                    <f:selectItem itemLabel="Weight" itemValue="WEIGHT"/>
+                    <p:ajax listener="#{formBean.onCapacityTypeChange}" update="capacityDetailPanel"/>
+                </p:selectOneMenu>
+            </div>
+
+            <div class="col-12 md:col-6">
+                <label for="estimatedShippingDate" class="shipx-request-label">Estimated Shipping Date</label>
+                <p:datePicker id="estimatedShippingDate" value="#{formBean.estimatedShippingDate}" showIcon="true" pattern="dd-MMM-yyyy" style="width:100%;" readonlyInput="#{formBean.viewMode}" disabled="#{formBean.viewMode}"/>
+            </div>
+        </div>
+
+        <p:outputPanel id="capacityDetailPanel">
+            <div class="grid">
+                <h:panelGroup rendered="#{formBean.spaceSelected}" layout="block" styleClass="col-12 md:col-6">
+                    <label for="spaceSize" class="shipx-request-label">If Space, What Is the Size?</label>
+                    <p:inputText id="spaceSize" value="#{formBean.spaceSize}" style="width:100%;" readonly="#{formBean.viewMode}"/>
+                    <div class="shipx-request-help">Example: 6 pallet positions, 12 CBM, 20 feet floor space.</div>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{formBean.containerSelected}" layout="block" styleClass="col-12 md:col-6">
+                    <label for="containerCount" class="shipx-request-label">If Container, How Many?</label>
+                    <p:inputText id="containerCount" value="#{formBean.containerCount}" style="width:100%;" readonly="#{formBean.viewMode}"/>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{formBean.weightSelected}" layout="block" styleClass="col-12 md:col-6">
+                    <label for="weightValue" class="shipx-request-label">If Weight, How Much?</label>
+                    <p:inputText id="weightValue" value="#{formBean.weightValue}" style="width:100%;" readonly="#{formBean.viewMode}"/>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{formBean.weightSelected}" layout="block" styleClass="col-12 md:col-6">
+                    <label for="weightUnit" class="shipx-request-label">Weight Unit</label>
+                    <p:selectOneMenu id="weightUnit" value="#{formBean.weightUnit}" style="width:100%;" disabled="#{formBean.viewMode}">
+                        <f:selectItem itemLabel="Select unit" itemValue="" noSelectionOption="true"/>
+                        <f:selectItem itemLabel="KG" itemValue="KG"/>
+                        <f:selectItem itemLabel="TON" itemValue="TON"/>
+                    </p:selectOneMenu>
+                </h:panelGroup>
+            </div>
+        </p:outputPanel>
+
+        <div class="grid" style="margin-top:.25rem;">
+            <div class="col-12 md:col-6">
+                <label for="contactPerson" class="shipx-request-label">Contact Person</label>
+                <p:inputText id="contactPerson" value="#{formBean.contactPerson}" style="width:100%;" readonly="#{formBean.viewMode}"/>
+            </div>
+
+            <div class="col-12 md:col-6">
+                <label for="contactNumber" class="shipx-request-label">Contact Number</label>
+                <p:inputText id="contactNumber" value="#{formBean.contactNumber}" style="width:100%;" readonly="#{formBean.viewMode}"/>
+            </div>
+
+            <div class="col-12">
+                <label for="howYouKnowUs" class="shipx-request-label">How You Know Us?</label>
+                <p:inputText id="howYouKnowUs" value="#{formBean.howYouKnowUs}" style="width:100%;" readonly="#{formBean.viewMode}"/>
+            </div>
+        </div>
+    </p:outputPanel>
+</ui:composition>
