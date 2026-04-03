@@ -2,8 +2,12 @@
 <project version="4">
   <component name="DataSourcePerFileMappings">
     <file url="file://$PROJECT_DIR$/applications/carex/carex-db/clinic-settings/clinic_settings.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
+    <file url="file://$PROJECT_DIR$/applications/carex/carex-db/consultation/consultation.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
+    <file url="file://$PROJECT_DIR$/applications/carex/carex-db/doctor/doctor.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
     <file url="file://$PROJECT_DIR$/applications/carex/carex-db/invoice-settings/invoice_settings.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
     <file url="file://$PROJECT_DIR$/applications/carex/carex-db/medical-certificate-settings/medical_certificate_settings.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
+    <file url="file://$PROJECT_DIR$/applications/carex/carex-db/medicine/medicine.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
+    <file url="file://$PROJECT_DIR$/applications/carex/carex-db/patient/patient.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
     <file url="file://$PROJECT_DIR$/applications/carex/carex-db/prescription-settings/prescription_settings.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
     <file url="file://$PROJECT_DIR$/applications/shipx/shipx-db/customer-request/customer_request.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
     <file url="file://$PROJECT_DIR$/applications/shipx/shipx-db/quotation/shipx_quotation.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />

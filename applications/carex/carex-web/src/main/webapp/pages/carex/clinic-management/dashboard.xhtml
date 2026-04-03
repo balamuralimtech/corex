@@ -1,15 +1,347 @@
 <!DOCTYPE html>
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:p="http://primefaces.org/ui"
                 template="/WEB-INF/template.xhtml">
 
     <ui:define name="content">
-        <div class="card">
-            <h1>Clinic Management Dashboard</h1>
-            <p>Overview page for appointments, consultations, doctor workload, patient flow, medicine usage, and clinic revenue.</p>
-            <p>This placeholder can be extended with KPI cards, today&apos;s consultations, and quick actions.</p>
-        </div>
+        <f:event listener="#{carexDashboardBean.initializePageAttributes}" type="preRenderView"/>
+
+        <h:outputScript library="avalon-layout" name="highcharts/highcharts.js" target="head"/>
+        <h:outputScript library="avalon-layout" name="highcharts/highcharts-more.js" target="head"/>
+
+        <h:outputStylesheet>
+            .clinic-dashboard-shell { display:flex; flex-direction:column; gap:1.25rem; }
+            .clinic-dashboard-hero { position:relative; overflow:hidden; padding:1.9rem; border-radius:24px; background:linear-gradient(135deg,#0f766e 0%,#0f766e 38%,#155e75 100%); color:#f8fafc; box-shadow:0 24px 80px rgba(15,118,110,.26); }
+            .clinic-dashboard-hero:before { content:''; position:absolute; inset:auto auto -42% -8%; width:360px; height:360px; border-radius:50%; background:radial-gradient(circle,rgba(255,255,255,.15) 0%,rgba(255,255,255,0) 72%); }
+            .clinic-dashboard-hero:after { content:''; position:absolute; inset:-15% -10% auto auto; width:280px; height:280px; border-radius:40px; transform:rotate(18deg); background:linear-gradient(135deg,rgba(255,255,255,.11),rgba(255,255,255,0)); }
+            .clinic-dashboard-title { margin:0; font-size:2rem; font-weight:700; letter-spacing:-.03em; }
+            .clinic-dashboard-copy { margin-top:.75rem; max-width:760px; color:rgba(240,253,250,.9); line-height:1.65; }
+            .clinic-dashboard-hero-strip { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:.85rem; margin-top:1.4rem; }
+            .clinic-hero-chip { padding:1rem 1rem; border-radius:18px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); backdrop-filter:blur(10px); }
+            .clinic-hero-chip-label { display:block; font-size:.8rem; text-transform:uppercase; letter-spacing:.09em; color:rgba(204,251,241,.82); }
+            .clinic-hero-chip-value { display:block; margin-top:.4rem; font-size:1.5rem; font-weight:700; color:#fff; }
+            .clinic-dashboard-actions { display:flex; gap:.75rem; flex-wrap:wrap; align-items:center; justify-content:flex-end; }
+            .clinic-refresh-btn.ui-button { border:none !important; border-radius:999px !important; padding:.2rem !important; background:transparent !important; box-shadow:none !important; }
+            .clinic-refresh-btn.ui-button .ui-button-text { padding:.85rem 1.2rem 1.05rem 1.2rem !important; min-width:10.75rem; border-radius:999px; background:rgba(255,255,255,.16); color:#f8fafc; font-weight:600; border:1px solid rgba(255,255,255,.22); }
+            .clinic-refresh-btn.ui-button.ui-state-hover .ui-button-text,
+            .clinic-refresh-btn.ui-button:focus .ui-button-text { background:rgba(255,255,255,.24); }
+            .clinic-control-card { padding:1rem; border-radius:18px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.16); }
+            .clinic-metric-card { height:100%; padding:1.15rem; border-radius:18px; background:#fff; box-shadow:0 10px 40px rgba(15,23,42,.08); border:1px solid rgba(148,163,184,.18); }
+            .clinic-metric-muted { color:#64748b; font-size:.82rem; text-transform:uppercase; letter-spacing:.08em; }
+            .clinic-metric-value { margin-top:.55rem; font-size:2rem; font-weight:700; line-height:1; color:#0f172a; }
+            .clinic-metric-foot { margin-top:.8rem; color:#475569; font-size:.92rem; line-height:1.5; }
+            .clinic-panel { height:100%; padding:1rem; border-radius:20px; background:#fff; box-shadow:0 10px 40px rgba(15,23,42,.08); border:1px solid rgba(148,163,184,.18); }
+            .clinic-panel-header { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:.75rem; }
+            .clinic-panel-title { margin:0; font-size:1.05rem; font-weight:700; color:#0f172a; }
+            .clinic-panel-subtitle { margin-top:.2rem; color:#64748b; font-size:.9rem; }
+            .clinic-chart { min-height:330px; }
+            .clinic-chart-sm { min-height:300px; }
+            .clinic-stat-list { display:grid; gap:.7rem; }
+            .clinic-stat-row { display:flex; justify-content:space-between; align-items:center; gap:1rem; padding:.9rem 1rem; border-radius:14px; background:#f8fafc; border:1px solid #e2e8f0; }
+            .clinic-stat-name { color:#334155; font-weight:500; }
+            .clinic-stat-value { color:#0f172a; font-weight:700; text-align:right; }
+            .clinic-signal-board { display:grid; gap:.85rem; }
+            .clinic-signal { padding:1rem; border-radius:16px; }
+            .clinic-signal h4 { margin:0 0 .35rem 0; font-size:.95rem; }
+            .clinic-signal p { margin:0; font-size:.9rem; line-height:1.55; }
+            .clinic-signal-amber { background:#fff7ed; border:1px solid #fdba74; color:#9a3412; }
+            .clinic-signal-teal { background:#ecfeff; border:1px solid #67e8f9; color:#155e75; }
+            .clinic-signal-slate { background:#f8fafc; border:1px solid #cbd5e1; color:#334155; }
+            .clinic-table-chip { display:inline-flex; align-items:center; gap:.35rem; padding:.35rem .65rem; border-radius:999px; font-size:.82rem; font-weight:600; }
+            .clinic-chip-invoice { background:#dcfce7; color:#166534; }
+            .clinic-chip-noinvoice { background:#fef3c7; color:#92400e; }
+            @media (max-width: 768px) {
+                .clinic-dashboard-title { font-size:1.6rem; }
+                .clinic-dashboard-actions { justify-content:flex-start; }
+            }
+        </h:outputStylesheet>
+
+        <h:form id="dashboardFormId">
+            <div class="clinic-dashboard-shell">
+                <div class="col-12">
+                    <p:breadCrumb>
+                        <p:menuitem url="#" icon="pi pi-home"/>
+                        <p:menuitem value="Clinic Management" url="#"/>
+                        <p:menuitem value="Dashboard" url="#"/>
+                    </p:breadCrumb>
+                </div>
+
+                <p:remoteCommand name="refreshCarexDashboard"
+                                 action="#{carexDashboardBean.refreshDashboard}"
+                                 update="dashboardFormId"
+                                 oncomplete="renderCarexDashboardCharts();"/>
+
+                <div class="clinic-dashboard-hero">
+                    <div class="grid align-items-start">
+                        <div class="col-12 lg:col-8">
+                            <h2 class="clinic-dashboard-title">Clinic Command Dashboard</h2>
+                            <div class="clinic-dashboard-copy">#{carexDashboardBean.dashboardInsights}</div>
+                        </div>
+                        <div class="col-12 lg:col-4">
+                            <div class="clinic-control-card">
+                                <label for="organizationSelect" style="display:block;font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(204,251,241,.82);">Organization Scope</label>
+                                <p:selectOneMenu id="organizationSelect" value="#{carexDashboardBean.selectedOrganizationId}" style="display:block;width:100%;margin-top:.55rem;">
+                                    <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                    <f:selectItems value="#{carexDashboardBean.organizationList}" var="organization"
+                                                   itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
+                                    <p:ajax listener="#{carexDashboardBean.refreshDashboard}" process="@this" update="dashboardFormId" oncomplete="renderCarexDashboardCharts();"/>
+                                </p:selectOneMenu>
+                                <div class="clinic-dashboard-actions" style="margin-top:1rem;">
+                                    <p:commandButton value="Refresh Now"
+                                                     action="#{carexDashboardBean.refreshDashboard}"
+                                                     update="dashboardFormId"
+                                                     oncomplete="renderCarexDashboardCharts();"
+                                                     styleClass="clinic-refresh-btn"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="clinic-dashboard-hero-strip">
+                        <div class="clinic-hero-chip">
+                            <span class="clinic-hero-chip-label">Today Consultations</span>
+                            <span class="clinic-hero-chip-value">#{carexDashboardBean.todayConsultations}</span>
+                        </div>
+                        <div class="clinic-hero-chip">
+                            <span class="clinic-hero-chip-label">Total Revenue</span>
+                            <span class="clinic-hero-chip-value">#{carexDashboardBean.formatCurrency(carexDashboardBean.totalRevenue)}</span>
+                        </div>
+                        <div class="clinic-hero-chip">
+                            <span class="clinic-hero-chip-label">Invoice Coverage</span>
+                            <span class="clinic-hero-chip-value">#{carexDashboardBean.invoiceCoverageRate}%</span>
+                        </div>
+                        <div class="clinic-hero-chip">
+                            <span class="clinic-hero-chip-label">Low Stock Alert</span>
+                            <span class="clinic-hero-chip-value">#{carexDashboardBean.lowStockMedicines}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid">
+                    <div class="col-12 md:col-6 xl:col-3"><div class="clinic-metric-card"><span class="clinic-metric-muted">Doctors</span><div class="clinic-metric-value">#{carexDashboardBean.totalDoctors}</div><div class="clinic-metric-foot">#{carexDashboardBean.activeDoctors} active and #{carexDashboardBean.linkedDoctors} linked to system users.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="clinic-metric-card"><span class="clinic-metric-muted">Patients</span><div class="clinic-metric-value">#{carexDashboardBean.totalPatients}</div><div class="clinic-metric-foot">#{carexDashboardBean.activePatients} active records ready for consultation flow.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="clinic-metric-card"><span class="clinic-metric-muted">Medicines</span><div class="clinic-metric-value">#{carexDashboardBean.totalMedicines}</div><div class="clinic-metric-foot">#{carexDashboardBean.lowStockMedicines} items are at or below reorder level.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="clinic-metric-card"><span class="clinic-metric-muted">Consultations</span><div class="clinic-metric-value">#{carexDashboardBean.totalConsultations}</div><div class="clinic-metric-foot">#{carexDashboardBean.consultationsWithInvoice} invoices and #{carexDashboardBean.consultationsWithMedicalCertificate} MC issuances.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="clinic-metric-card"><span class="clinic-metric-muted">Avg Revenue / Visit</span><div class="clinic-metric-value">#{carexDashboardBean.formatCurrency(carexDashboardBean.averageRevenuePerConsultation)}</div><div class="clinic-metric-foot">Blended across consultation fee, medicine lines, and certificate fee.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="clinic-metric-card"><span class="clinic-metric-muted">Avg Medicine Value</span><div class="clinic-metric-value">#{carexDashboardBean.formatCurrency(carexDashboardBean.averageMedicineValue)}</div><div class="clinic-metric-foot">Average medicine basket value per consultation.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="clinic-metric-card"><span class="clinic-metric-muted">Doctor Utilization</span><div class="clinic-metric-value">#{carexDashboardBean.doctorUtilizationRate}%</div><div class="clinic-metric-foot">Share of doctors that are currently active in the selected clinic.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="clinic-metric-card"><span class="clinic-metric-muted">Patient Activation</span><div class="clinic-metric-value">#{carexDashboardBean.patientActivationRate}%</div><div class="clinic-metric-foot">Active patient records available for repeat clinical visits.</div></div></div>
+                </div>
+
+                <div class="grid">
+                    <div class="col-12 xl:col-8">
+                        <div class="clinic-panel">
+                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">Care Footprint</h3><div class="clinic-panel-subtitle">Live inventory across doctors, patients, medicines, and consultations</div></div></div>
+                            <div id="clinicMixChart" class="clinic-chart"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-4">
+                        <div class="clinic-panel">
+                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">Document Mix</h3><div class="clinic-panel-subtitle">How the current consultation base is converting into generated documents</div></div></div>
+                            <div id="documentMixChart" class="clinic-chart-sm"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-4">
+                        <div class="clinic-panel">
+                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">Patient Gender Mix</h3><div class="clinic-panel-subtitle">Gender distribution from patient master data</div></div></div>
+                            <div id="patientGenderChart" class="clinic-chart-sm"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-4">
+                        <div class="clinic-panel">
+                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">Stock Pressure</h3><div class="clinic-panel-subtitle">Healthy versus low and critical medicine positions</div></div></div>
+                            <div id="stockStatusChart" class="clinic-chart-sm"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-4">
+                        <div class="clinic-panel">
+                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">Doctor Specializations</h3><div class="clinic-panel-subtitle">Visible mix of available doctor skill coverage</div></div></div>
+                            <div id="specializationChart" class="clinic-chart-sm"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-6">
+                        <div class="clinic-panel">
+                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">Seven-Day Revenue</h3><div class="clinic-panel-subtitle">Revenue captured from recent consultations</div></div></div>
+                            <div id="weeklyRevenueChart" class="clinic-chart-sm"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-6">
+                        <div class="clinic-panel">
+                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">Consultation Velocity</h3><div class="clinic-panel-subtitle">Last seven days of consultation volume</div></div></div>
+                            <div id="consultationVolumeChart" class="clinic-chart-sm"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-6">
+                        <div class="clinic-panel">
+                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">Patient Age Groups</h3><div class="clinic-panel-subtitle">Useful for pediatric, adult, and senior care planning</div></div></div>
+                            <div id="patientAgeChart" class="clinic-chart-sm"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-6">
+                        <div class="clinic-panel">
+                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">Operational Ratios</h3><div class="clinic-panel-subtitle">Quick percent-based signals for clinic readiness</div></div></div>
+                            <div id="quickHighlightsChart" class="clinic-chart-sm"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-4">
+                        <div class="clinic-panel">
+                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">Action Signals</h3><div class="clinic-panel-subtitle">Short operational readout from current live data</div></div></div>
+                            <div class="clinic-signal-board">
+                                <div class="clinic-signal clinic-signal-amber">
+                                    <h4>Inventory Pressure</h4>
+                                    <p>#{carexDashboardBean.lowStockMedicines} medicines are already at or below reorder level.</p>
+                                </div>
+                                <div class="clinic-signal clinic-signal-teal">
+                                    <h4>Document Throughput</h4>
+                                    <p>#{carexDashboardBean.consultationsWithInvoice} invoice-ready visits and #{carexDashboardBean.consultationsWithMedicalCertificate} medical-certificate cases are on record.</p>
+                                </div>
+                                <div class="clinic-signal clinic-signal-slate">
+                                    <h4>Summary</h4>
+                                    <p>#{carexDashboardBean.openSignals}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-8">
+                        <div class="clinic-panel">
+                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">Recent Consultations</h3><div class="clinic-panel-subtitle">Latest activity in the selected organization</div></div></div>
+                            <p:dataTable value="#{carexDashboardBean.recentConsultations}" var="consultationRow" reflow="true"
+                                         emptyMessage="No consultations available for the selected organization.">
+                                <p:column headerText="Consultation">
+                                    <div style="font-weight:700;">#{consultationRow.consultationNumber}</div>
+                                    <div style="font-size:.84rem;color:#64748b;">#{carexDashboardBean.getRecentConsultationDate(consultationRow)}</div>
+                                </p:column>
+                                <p:column headerText="Doctor">
+                                    <div>#{consultationRow.doctor.doctorName}</div>
+                                    <div style="font-size:.84rem;color:#64748b;">#{consultationRow.doctor.specialization}</div>
+                                </p:column>
+                                <p:column headerText="Patient">
+                                    <div>#{consultationRow.patient.patientName}</div>
+                                    <div style="font-size:.84rem;color:#64748b;">#{consultationRow.patient.patientCode}</div>
+                                </p:column>
+                                <p:column headerText="Documents">
+                                    <span class="clinic-table-chip #{consultationRow.issueInvoice ? 'clinic-chip-invoice' : 'clinic-chip-noinvoice'}">Invoice: #{consultationRow.issueInvoice ? 'Yes' : 'No'}</span>
+                                    <br/>
+                                    <span class="clinic-table-chip #{consultationRow.issueMedicalCertificate ? 'clinic-chip-invoice' : 'clinic-chip-noinvoice'}" style="margin-top:.35rem;">MC: #{consultationRow.issueMedicalCertificate ? 'Yes' : 'No'}</span>
+                                </p:column>
+                                <p:column headerText="Revenue">
+                                    #{carexDashboardBean.formatCurrency(consultationRow.invoiceTotal)}
+                                </p:column>
+                                <p:column headerText="Status">
+                                    <p:tag value="#{consultationRow.status}" severity="info"/>
+                                </p:column>
+                            </p:dataTable>
+                        </div>
+                    </div>
+                </div>
+
+                <h:outputScript>
+                    //<![CDATA[
+                    function renderCarexDashboardCharts() {
+                        if (typeof Highcharts === 'undefined') {
+                            return;
+                        }
+
+                        Highcharts.setOptions({
+                            lang: { thousandsSep: ',' },
+                            credits: { enabled: false },
+                            colors: ['#0f766e', '#f97316', '#0ea5e9', '#7c3aed', '#ef4444', '#14b8a6', '#f59e0b', '#1d4ed8']
+                        });
+
+                        Highcharts.chart('clinicMixChart', {
+                            chart: { type: 'column', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            xAxis: { type: 'category', crosshair: true },
+                            yAxis: { min: 0, title: { text: 'Count' } },
+                            legend: { enabled: false },
+                            plotOptions: { column: { borderRadius: 9, colorByPoint: true } },
+                            series: [{ name: 'Volume', data: #{carexDashboardBean.clinicMixJson} }]
+                        });
+
+                        Highcharts.chart('documentMixChart', {
+                            chart: { type: 'pie', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            tooltip: { pointFormat: '<b>{point.y}</b> documents ({point.percentage:.1f}%)' },
+                            plotOptions: { pie: { innerSize: '62%', dataLabels: { enabled: true, format: '{point.name}<br/><b>{point.y}</b>' } } },
+                            series: [{ name: 'Documents', data: #{carexDashboardBean.documentMixJson} }]
+                        });
+
+                        Highcharts.chart('patientGenderChart', {
+                            chart: { type: 'pie', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            plotOptions: { pie: { dataLabels: { enabled: true, format: '{point.name}: {point.y}' } } },
+                            series: [{ name: 'Patients', data: #{carexDashboardBean.patientGenderJson} }]
+                        });
+
+                        Highcharts.chart('stockStatusChart', {
+                            chart: { type: 'pie', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            tooltip: { pointFormat: '<b>{point.y}</b> medicines' },
+                            plotOptions: { pie: { innerSize: '68%', dataLabels: { enabled: true, format: '{point.name}: {point.y}' } } },
+                            series: [{ name: 'Stock', data: #{carexDashboardBean.stockStatusJson} }]
+                        });
+
+                        Highcharts.chart('specializationChart', {
+                            chart: { type: 'bar', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            xAxis: { type: 'category' },
+                            yAxis: { min: 0, title: { text: 'Doctors' } },
+                            legend: { enabled: false },
+                            plotOptions: { bar: { borderRadius: 8, colorByPoint: true } },
+                            series: [{ name: 'Doctors', data: #{carexDashboardBean.doctorSpecializationJson} }]
+                        });
+
+                        Highcharts.chart('weeklyRevenueChart', {
+                            chart: { type: 'areaspline', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            xAxis: { type: 'category' },
+                            yAxis: { min: 0, title: { text: 'Revenue' } },
+                            legend: { enabled: false },
+                            plotOptions: { areaspline: { fillOpacity: .22, lineWidth: 3, marker: { radius: 4 } } },
+                            series: [{ name: 'Revenue', data: #{carexDashboardBean.weeklyRevenueJson} }]
+                        });
+
+                        Highcharts.chart('consultationVolumeChart', {
+                            chart: { type: 'line', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            xAxis: { type: 'category' },
+                            yAxis: { min: 0, title: { text: 'Consultations' } },
+                            legend: { enabled: false },
+                            plotOptions: { line: { lineWidth: 3, marker: { radius: 4 } } },
+                            series: [{ name: 'Consultations', data: #{carexDashboardBean.recentConsultationVolumeJson} }]
+                        });
+
+                        Highcharts.chart('patientAgeChart', {
+                            chart: { type: 'column', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            xAxis: { type: 'category' },
+                            yAxis: { min: 0, title: { text: 'Patients' } },
+                            legend: { enabled: false },
+                            plotOptions: { column: { borderRadius: 8, colorByPoint: true } },
+                            series: [{ name: 'Patients', data: #{carexDashboardBean.patientAgeGroupJson} }]
+                        });
+
+                        Highcharts.chart('quickHighlightsChart', {
+                            chart: { polar: true, type: 'line', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            pane: { size: '82%' },
+                            xAxis: { categories: ['Doctor Utilization', 'Patient Activation', 'Invoice Coverage', 'MC Coverage'], tickmarkPlacement: 'on', lineWidth: 0 },
+                            yAxis: { min: 0, max: 100, lineWidth: 0, gridLineInterpolation: 'polygon' },
+                            legend: { enabled: false },
+                            tooltip: { pointFormat: '<b>{point.y:.2f}%</b>' },
+                            series: [{ name: 'Rate', data: #{carexDashboardBean.quickHighlightsJson}, pointPlacement: 'on', lineWidth: 3, marker: { radius: 4 } }]
+                        });
+                    }
+
+                    window.addEventListener('load', function() {
+                        renderCarexDashboardCharts();
+                    });
+                    //]]>
+                </h:outputScript>
+            </div>
+        </h:form>
     </ui:define>
 </ui:composition>

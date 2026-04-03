@@ -1,15 +1,499 @@
 <!DOCTYPE html>
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 template="/WEB-INF/template.xhtml">
 
     <ui:define name="content">
-        <div class="card">
-            <h1>Consultation</h1>
-            <p>Consultation workspace for doctor notes, diagnosis, prescriptions, invoice generation, and medical certificate handling.</p>
-            <p>This placeholder is ready for the consultation workflow implementation.</p>
-        </div>
+        <f:event listener="#{consultationBean.initializePageAttributes}" type="preRenderView"/>
+
+        <h:form id="form">
+            <p:remoteCommand name="refreshConsultationPreview" process="consultationEditorPanel medicineLinePanel" update="form:previewTabsPanel"/>
+
+            <h:outputScript target="body">
+                var consultationPreviewTimer = null;
+
+                function bindConsultationPreview() {
+                    var editor = document.querySelector("[id='form:consultationEditorPanel']");
+                    if (!editor || editor.dataset.previewBound === 'true') {
+                        return;
+                    }
+                    editor.dataset.previewBound = 'true';
+
+                    function schedulePreview(event) {
+                        if (event &amp;&amp; event.target &amp;&amp; event.target.closest('.ui-button')) {
+                            return;
+                        }
+                        if (consultationPreviewTimer) {
+                            clearTimeout(consultationPreviewTimer);
+                        }
+                        consultationPreviewTimer = setTimeout(function() {
+                            if (typeof refreshConsultationPreview === 'function') {
+                                refreshConsultationPreview();
+                            }
+                        }, 180);
+                    }
+
+                    editor.addEventListener('input', schedulePreview);
+                    editor.addEventListener('change', schedulePreview);
+                }
+
+                function captureConsultationPreviewState(previewPanelId, bodyFieldId, footerFieldId, footerClass) {
+                    var preview = document.querySelector("[id='" + previewPanelId + "']");
+                    var bodyField = document.getElementById(bodyFieldId);
+                    var footerField = document.getElementById(footerFieldId);
+                    if (!preview || !bodyField || !footerField) {
+                        return false;
+                    }
+                    var previewClone = preview.cloneNode(true);
+                    var footer = previewClone.querySelector('.' + footerClass);
+                    footerField.value = footer ? footer.outerHTML : '';
+                    if (footer &amp;&amp; footer.parentNode) {
+                        footer.parentNode.removeChild(footer);
+                    }
+                    bodyField.value = previewClone.innerHTML;
+                    return true;
+                }
+
+                function executeConsultationPrint(previewPanelId, bodyFieldId, footerFieldId, footerClass, title, previewClass) {
+                    if (!captureConsultationPreviewState(previewPanelId, bodyFieldId, footerFieldId, footerClass)) {
+                        return false;
+                    }
+                    var bodyField = document.getElementById(bodyFieldId);
+                    var footerField = document.getElementById(footerFieldId);
+                    var iframe = document.createElement('iframe');
+                    iframe.style.position = 'fixed';
+                    iframe.style.right = '0';
+                    iframe.style.bottom = '0';
+                    iframe.style.width = '0';
+                    iframe.style.height = '0';
+                    iframe.style.border = '0';
+                    document.body.appendChild(iframe);
+                    var printDocument = iframe.contentWindow.document;
+                    printDocument.open();
+                    printDocument.write('<html><head><title>' + title + '</title><style>html,body{font-family:Helvetica,Arial,sans-serif;margin:0;padding:0;background:#fff;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;overflow:hidden !important;}body{background:#fff;overflow:hidden !important;}.preview-shell{position:relative;box-sizing:border-box;width:186mm;height:272mm;max-height:272mm;margin:0 auto;padding:0;overflow:hidden !important;border:none !important;outline:none !important;box-shadow:none !important;}.preview-shell *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;box-sizing:border-box;}.print-body{padding-bottom:42mm;overflow:hidden !important;max-height:230mm;}.print-body .' + previewClass + ',.print-body .card{border:none !important;outline:none !important;box-shadow:none !important;background:#fff !important;}.print-footer{position:absolute;left:24px;right:24px;bottom:18px;}@page{size:A4 portrait;margin:12mm;}@media print{html,body{background:#fff !important;overflow:hidden !important;}body{padding:0;margin:0;overflow:hidden !important;}}</style></head><body><div class="preview-shell"><div class="print-body">' + bodyField.value + '</div>' + (footerField.value ? '<div class="print-footer">' + footerField.value + '</div>' : '') + '</div></body></html>');
+                    printDocument.close();
+                    setTimeout(function() {
+                        iframe.contentWindow.focus();
+                        iframe.contentWindow.print();
+                        setTimeout(function() {
+                            document.body.removeChild(iframe);
+                        }, 1000);
+                    }, 250);
+                    return false;
+                }
+
+                window.bindConsultationPreview = bindConsultationPreview;
+                window.captureConsultationPreviewState = captureConsultationPreviewState;
+                window.executeConsultationPrint = executeConsultationPrint;
+
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', bindConsultationPreview);
+                } else {
+                    bindConsultationPreview();
+                }
+                document.addEventListener('pfAjaxComplete', bindConsultationPreview);
+            </h:outputScript>
+
+            <h:inputHidden id="prescriptionPreviewBodyHtml" value="#{consultationBean.prescriptionPreviewBodyHtml}"/>
+            <h:inputHidden id="prescriptionPreviewFooterHtml" value="#{consultationBean.prescriptionPreviewFooterHtml}"/>
+            <h:inputHidden id="invoicePreviewBodyHtml" value="#{consultationBean.invoicePreviewBodyHtml}"/>
+            <h:inputHidden id="invoicePreviewFooterHtml" value="#{consultationBean.invoicePreviewFooterHtml}"/>
+            <h:inputHidden id="medicalCertificatePreviewBodyHtml" value="#{consultationBean.medicalCertificatePreviewBodyHtml}"/>
+            <h:inputHidden id="medicalCertificatePreviewFooterHtml" value="#{consultationBean.medicalCertificatePreviewFooterHtml}"/>
+
+            <div class="card">
+                <p:messages id="messages" showDetail="true" closable="true"/>
+
+                <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-start gap-3 mb-4">
+                    <div>
+                        <h1 style="margin:0;">Consultation</h1>
+                        <p style="margin:.5rem 0 0 0;color:#64748b;">
+                            Search consultations by organization, then open a dedicated workspace only when creating or reviewing a visit.
+                        </p>
+                    </div>
+                </div>
+
+                <p:outputPanel id="contentModePanel" layout="block">
+                <p:outputPanel id="searchPanel" layout="block" rendered="#{consultationBean.searchMode}">
+                    <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
+                        <div class="flex flex-column lg:flex-row lg:justify-content-between lg:align-items-end gap-3">
+                            <div class="flex flex-column md:flex-row gap-3" style="flex:1;">
+                                <div style="min-width:18rem;">
+                                    <label for="organizationFilter"><strong>Organization:</strong></label>
+                                    <p:selectOneMenu id="organizationFilter" value="#{consultationBean.selectedOrganizationId}" style="display:block;width:100%;margin-top:.35rem;">
+                                        <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                        <f:selectItems value="#{consultationBean.organizationList}" var="organization"
+                                                       itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
+                                        <p:ajax listener="#{consultationBean.onOrganizationChange}" process="@this"
+                                                update="form:contentModePanel form:messages"/>
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <p:commandButton value="New Consultation" icon="pi pi-plus" process="@this"
+                                                 actionListener="#{consultationBean.startNewConsultation}"
+                                                 update="form:contentModePanel form:messages"
+                                                 styleClass="ui-button-success"/>
+                                <p:commandButton value="Fetch Consultations" icon="pi pi-search" process="@this"
+                                                 actionListener="#{consultationBean.fetchConsultationList}"
+                                                 update="form:searchPanel" styleClass="ui-button-info"/>
+                            </div>
+                        </div>
+
+                        <p:outputPanel id="consultationMainPanel" styleClass="card" style="margin-top:1rem;border:1px solid #e2e8f0;box-shadow:none;">
+                            <p:dataTable value="#{consultationBean.consultationList}" var="consultationRow" widgetVar="consultationTableWidget"
+                                         paginator="true" rows="10" reflow="true" rowKey="#{consultationRow.id}"
+                                         emptyMessage="No consultations found for the selected organization.">
+                                <f:facet name="header">
+                                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-2">
+                                        <span style="font-weight:600;">Consultation History</span>
+                                        <span class="p-input-icon-left">
+                                            <i class="pi pi-search"/>
+                                            <p:inputText onkeyup="PF('consultationTableWidget').filter()" placeholder="Search consultations"/>
+                                        </span>
+                                    </div>
+                                </f:facet>
+                                <p:column headerText="Consultation No" sortBy="#{consultationRow.consultationNumber}" filterBy="#{consultationRow.consultationNumber}">
+                                    <p:commandLink value="#{consultationRow.consultationNumber}" process="@this"
+                                                   action="#{consultationBean.openConsultationView(consultationRow.id)}"
+                                                   update="form:contentModePanel form:messages">
+                                    </p:commandLink>
+                                </p:column>
+                                <p:column headerText="Date" sortBy="#{consultationRow.consultationDate}">
+                                    <h:outputText value="#{consultationRow.consultationDate}">
+                                        <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Doctor" sortBy="#{consultationRow.doctor.doctorName}" filterBy="#{consultationRow.doctor.doctorName}">
+                                    #{consultationRow.doctor.doctorName}
+                                </p:column>
+                                <p:column headerText="Patient" sortBy="#{consultationRow.patient.patientName}" filterBy="#{consultationRow.patient.patientName}">
+                                    #{consultationRow.patient.patientName}
+                                </p:column>
+                                <p:column headerText="Invoice">
+                                    <p:tag value="#{consultationRow.issueInvoice ? 'Yes' : 'No'}" severity="#{consultationRow.issueInvoice ? 'success' : 'warning'}"/>
+                                </p:column>
+                                <p:column headerText="MC">
+                                    <p:tag value="#{consultationRow.issueMedicalCertificate ? 'Yes' : 'No'}" severity="#{consultationRow.issueMedicalCertificate ? 'success' : 'warning'}"/>
+                                </p:column>
+                                <p:column headerText="Total">#{consultationBean.previewCurrencySymbol} #{consultationRow.invoiceTotal}</p:column>
+                                <p:column headerText="Actions" style="width:16rem;">
+                                    <div class="flex flex-wrap gap-1">
+                                        <p:commandButton icon="pi pi-eye" title="View" process="@this" styleClass="rounded-button ui-button-info ui-button-sm"
+                                                         action="#{consultationBean.openConsultationView(consultationRow.id)}"
+                                                         update="form:contentModePanel form:messages">
+                                        </p:commandButton>
+                                        <p:commandButton icon="pi pi-pencil" title="Edit" process="@this" styleClass="rounded-button ui-button-success ui-button-sm"
+                                                         action="#{consultationBean.openConsultationEditor(consultationRow.id)}"
+                                                         update="form:contentModePanel form:messages">
+                                        </p:commandButton>
+                                        <p:commandButton icon="pi pi-file" title="Prescription" process="@this" styleClass="rounded-button ui-button-help ui-button-sm"
+                                                         action="#{consultationBean.openPrescriptionPreview(consultationRow.id)}"
+                                                         update="form:contentModePanel form:messages">
+                                        </p:commandButton>
+                                        <p:commandButton icon="pi pi-receipt" title="Invoice" process="@this" styleClass="rounded-button ui-button-secondary ui-button-sm"
+                                                         action="#{consultationBean.openInvoicePreview(consultationRow.id)}"
+                                                         update="form:contentModePanel form:messages">
+                                        </p:commandButton>
+                                        <p:commandButton icon="pi pi-file-pdf" title="Medical Certificate" process="@this" styleClass="rounded-button ui-button-warning ui-button-sm"
+                                                         disabled="#{not consultationRow.issueMedicalCertificate}"
+                                                         action="#{consultationBean.openMedicalCertificatePreview(consultationRow.id)}"
+                                                         update="form:contentModePanel form:messages">
+                                        </p:commandButton>
+                                        <p:commandButton icon="pi pi-trash" title="Delete" process="@this" styleClass="rounded-button ui-button-danger ui-button-sm"
+                                                         action="#{consultationBean.selectConsultationForDelete(consultationRow.id)}"
+                                                         oncomplete="PF('deleteConsultationDialog').show()">
+                                        </p:commandButton>
+                                    </div>
+                                </p:column>
+                            </p:dataTable>
+                        </p:outputPanel>
+                    </div>
+                </p:outputPanel>
+
+                <p:outputPanel id="workspacePanel" layout="block" rendered="#{not consultationBean.searchMode}">
+                    <div class="grid">
+                        <p:outputPanel styleClass="col-12" rendered="#{consultationBean.readOnlyMode}">
+                            <div class="card" style="margin:0 0 1rem 0;border:1px solid #e2e8f0;box-shadow:none;">
+                                <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-2">
+                                    <div>
+                                        <h3 style="margin:0;">Consultation View</h3>
+                                        <div style="margin-top:.35rem;color:#64748b;font-size:.9rem;">
+                                            Prescription, invoice, and medical certificate previews are available below.
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <p:commandButton value="Back" icon="pi pi-arrow-left" process="@this" actionListener="#{consultationBean.backToSearch}"
+                                                         update="form:contentModePanel form:messages" styleClass="ui-button-secondary ui-button-sm"/>
+                                        <p:commandButton value="Edit" icon="pi pi-pencil" process="@this" actionListener="#{consultationBean.confirmEditButtonAction}"
+                                                         update="form:contentModePanel form:messages" styleClass="ui-button-success ui-button-sm"/>
+                                    </div>
+                                </div>
+                                <div class="grid" style="margin-top:1rem;">
+                                    <div class="col-12 md:col-3"><strong>Consultation No:</strong> #{consultationBean.consultation.consultationNumber}</div>
+                                    <div class="col-12 md:col-3"><strong>Date:</strong> #{consultationBean.previewConsultationDateTime}</div>
+                                    <div class="col-12 md:col-3"><strong>Doctor:</strong> #{consultationBean.previewDoctorName}</div>
+                                    <div class="col-12 md:col-3"><strong>Patient:</strong> #{consultationBean.previewPatientName}</div>
+                                </div>
+                            </div>
+                        </p:outputPanel>
+
+                        <p:outputPanel styleClass="col-12 xl:col-5" rendered="#{not consultationBean.readOnlyMode}">
+                            <p:outputPanel id="consultationEditorPanel" styleClass="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
+                            <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-2 mb-3">
+                                <div>
+                                    <h3 style="margin:0;">#{consultationBean.readOnlyMode ? 'Consultation View' : (consultationBean.addOperation ? 'New Consultation' : 'Edit Consultation')}</h3>
+                                    <div style="margin-top:.35rem;color:#64748b;font-size:.9rem;">
+                                        #{consultationBean.readOnlyMode ? 'Review the consultation and print or download documents.' : 'Complete the visit details and save the consultation.'}
+                                    </div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <p:commandButton value="Back" icon="pi pi-arrow-left" process="@this" actionListener="#{consultationBean.backToSearch}"
+                                                     update="form:contentModePanel form:messages" styleClass="ui-button-secondary ui-button-sm"/>
+                                    <p:commandButton value="New" icon="pi pi-plus" process="@this" actionListener="#{consultationBean.startNewConsultation}"
+                                                     update="form:contentModePanel form:messages" styleClass="ui-button-success ui-button-sm"/>
+                                    <p:commandButton value="Save Consultation" icon="pi pi-check" process="@form"
+                                                     actionListener="#{consultationBean.saveConsultation}"
+                                                     disabled="#{consultationBean.readOnlyMode}"
+                                                     update="form:contentModePanel form:messages"
+                                                     styleClass="ui-button-primary ui-button-sm"/>
+                                </div>
+                            </div>
+
+                            <div class="grid">
+                                <div class="col-12 md:col-6">
+                                    <label>Consultation No *</label>
+                                    <p:inputText value="#{consultationBean.consultation.consultationNumber}" maxlength="40" style="width:100%;" readonly="#{consultationBean.readOnlyMode}"/>
+                                </div>
+                                <div class="col-12 md:col-6">
+                                    <label>Consultation Date *</label>
+                                    <p:datePicker value="#{consultationBean.consultationDateTime}" pattern="dd/MM/yyyy HH:mm"
+                                                  showTime="true" hourFormat="24" style="width:100%;" disabled="#{consultationBean.readOnlyMode}"/>
+                                </div>
+                                <div class="col-12 md:col-6">
+                                    <label>Doctor *</label>
+                                    <p:selectOneMenu value="#{consultationBean.selectedDoctorId}" style="width:100%;" disabled="#{consultationBean.readOnlyMode}">
+                                        <f:selectItem itemLabel="Select Doctor" itemValue="#{null}" noSelectionOption="true"/>
+                                        <f:selectItems value="#{consultationBean.doctorList}" var="doctor"
+                                                       itemValue="#{doctor.id}" itemLabel="#{doctor.doctorName} - #{doctor.specialization}"/>
+                                        <p:ajax listener="#{consultationBean.onDoctorChange}" process="@this"
+                                                update="form:consultationEditorPanel form:previewTabsPanel"/>
+                                    </p:selectOneMenu>
+                                </div>
+                                <div class="col-12 md:col-6">
+                                    <label>Patient *</label>
+                                    <p:selectOneMenu value="#{consultationBean.selectedPatientId}" style="width:100%;" disabled="#{consultationBean.readOnlyMode}">
+                                        <f:selectItem itemLabel="Select Patient" itemValue="#{null}" noSelectionOption="true"/>
+                                        <f:selectItems value="#{consultationBean.patientList}" var="patient"
+                                                       itemValue="#{patient.id}" itemLabel="#{patient.patientCode} - #{patient.patientName}"/>
+                                        <p:ajax listener="#{consultationBean.onPatientChange}" process="@this" update="form:previewTabsPanel"/>
+                                    </p:selectOneMenu>
+                                </div>
+                                <div class="col-12 md:col-4">
+                                    <label>Consultation Fee</label>
+                                    <p:inputNumber value="#{consultationBean.consultation.consultationFee}" decimalPlaces="2" minValue="0" readonly="#{consultationBean.readOnlyMode}">
+                                        <p:ajax process="@this" update="form:previewTabsPanel"/>
+                                    </p:inputNumber>
+                                </div>
+                                <div class="col-12 md:col-4">
+                                    <div class="field-checkbox mt-4">
+                                        <p:selectBooleanCheckbox id="issueInvoice" value="#{consultationBean.consultation.issueInvoice}" disabled="#{consultationBean.readOnlyMode}">
+                                            <p:ajax listener="#{consultationBean.onInvoiceToggle}" process="@this"
+                                                    update="form:consultationEditorPanel form:previewTabsPanel"/>
+                                        </p:selectBooleanCheckbox>
+                                        <p:outputLabel for="issueInvoice" value="Generate Invoice"/>
+                                    </div>
+                                </div>
+                                <div class="col-12 md:col-4">
+                                    <div class="field-checkbox mt-4">
+                                        <p:selectBooleanCheckbox id="issueMedicalCertificate" value="#{consultationBean.consultation.issueMedicalCertificate}" disabled="#{consultationBean.readOnlyMode}">
+                                            <p:ajax listener="#{consultationBean.onMedicalCertificateToggle}" process="@this"
+                                                    update="form:consultationEditorPanel form:previewTabsPanel"/>
+                                        </p:selectBooleanCheckbox>
+                                        <p:outputLabel for="issueMedicalCertificate" value="Generate Medical Certificate"/>
+                                    </div>
+                                </div>
+                                <div class="col-12 md:col-4">
+                                    <label>Paid By</label>
+                                    <p:selectOneMenu value="#{consultationBean.consultation.invoicePaidBy}" style="width:100%;" disabled="#{not consultationBean.invoiceAvailable or consultationBean.readOnlyMode}">
+                                        <f:selectItems value="#{consultationBean.availablePaidByOptions}"/>
+                                    </p:selectOneMenu>
+                                </div>
+                                <div class="col-12 md:col-4">
+                                    <label>Invoice Issue Date</label>
+                                    <p:datePicker value="#{consultationBean.invoiceIssueDate}" pattern="dd/MM/yyyy" style="width:100%;" disabled="#{not consultationBean.invoiceAvailable or consultationBean.readOnlyMode}"/>
+                                </div>
+                                <div class="col-12 md:col-4">
+                                    <label>Invoice Due Date</label>
+                                    <p:datePicker value="#{consultationBean.invoiceDueDate}" pattern="dd/MM/yyyy" style="width:100%;" disabled="#{not consultationBean.invoiceAvailable or consultationBean.readOnlyMode}"/>
+                                </div>
+                                <div class="col-12">
+                                    <label>Symptoms</label>
+                                    <p:inputTextarea value="#{consultationBean.consultation.symptoms}" rows="3" autoResize="false" style="width:100%;" readonly="#{consultationBean.readOnlyMode}"/>
+                                </div>
+                                <div class="col-12">
+                                    <label>Family History</label>
+                                    <p:inputTextarea value="#{consultationBean.consultation.familyHistory}" rows="2" autoResize="false" style="width:100%;" readonly="#{consultationBean.readOnlyMode}"/>
+                                </div>
+                                <div class="col-12 md:col-6">
+                                    <label>Vitals</label>
+                                    <p:inputTextarea value="#{consultationBean.consultation.vitals}" rows="3" autoResize="false" style="width:100%;" readonly="#{consultationBean.readOnlyMode}"/>
+                                </div>
+                                <div class="col-12 md:col-6">
+                                    <label>Findings</label>
+                                    <p:inputTextarea value="#{consultationBean.consultation.findings}" rows="3" autoResize="false" style="width:100%;" readonly="#{consultationBean.readOnlyMode}"/>
+                                </div>
+                                <div class="col-12">
+                                    <label>Diagnosis</label>
+                                    <p:inputTextarea value="#{consultationBean.consultation.diagnosis}" rows="3" autoResize="false" style="width:100%;" readonly="#{consultationBean.readOnlyMode}"/>
+                                </div>
+                                <div class="col-12">
+                                    <label>Follow Up</label>
+                                    <p:inputTextarea value="#{consultationBean.consultation.followUpNote}" rows="2" autoResize="false" style="width:100%;" readonly="#{consultationBean.readOnlyMode}"/>
+                                </div>
+                                <div class="col-12">
+                                    <label>Doctor Notes</label>
+                                    <p:inputTextarea value="#{consultationBean.consultation.doctorNotes}" rows="3" autoResize="false" style="width:100%;" readonly="#{consultationBean.readOnlyMode}"/>
+                                </div>
+                            </div>
+
+                            <p:outputPanel id="medicineLinePanel" layout="block">
+                                <div class="card" style="margin-top:1rem;border:1px solid #e2e8f0;box-shadow:none;background:#f8fafc;">
+                                    <h3 style="margin-top:0;">Prescription Lines</h3>
+                                    <p:outputPanel layout="block" rendered="#{not consultationBean.readOnlyMode}">
+                                    <div class="grid">
+                                        <div class="col-12 md:col-6">
+                                            <label>Medicine</label>
+                                            <p:selectOneMenu value="#{consultationBean.draftMedicineLine.medicineId}" style="width:100%;">
+                                                <f:selectItem itemLabel="Select Medicine" itemValue="#{null}" noSelectionOption="true"/>
+                                                <f:selectItems value="#{consultationBean.medicineList}" var="medicine"
+                                                               itemValue="#{medicine.id}" itemLabel="#{medicine.medicineName} - #{medicine.strength}"/>
+                                                <p:ajax listener="#{consultationBean.onDraftMedicineChange}" process="@this"
+                                                        update="form:medicineLinePanel form:previewTabsPanel"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                        <div class="col-12 md:col-6">
+                                            <label>Description</label>
+                                            <p:inputText value="#{consultationBean.draftMedicineLine.descriptionText}" style="width:100%;"/>
+                                        </div>
+                                        <div class="col-12 md:col-3">
+                                            <label>Dose</label>
+                                            <p:inputText value="#{consultationBean.draftMedicineLine.dose}" style="width:100%;"/>
+                                        </div>
+                                        <div class="col-12 md:col-3">
+                                            <label>Frequency</label>
+                                            <p:inputText value="#{consultationBean.draftMedicineLine.frequency}" style="width:100%;"/>
+                                        </div>
+                                        <div class="col-12 md:col-3">
+                                            <label>Duration</label>
+                                            <p:inputText value="#{consultationBean.draftMedicineLine.durationText}" style="width:100%;"/>
+                                        </div>
+                                        <div class="col-12 md:col-3">
+                                            <label>Quantity</label>
+                                            <p:inputNumber value="#{consultationBean.draftMedicineLine.quantity}" decimalPlaces="2" minValue="0"/>
+                                        </div>
+                                        <div class="col-12 md:col-4">
+                                            <label>Unit Price</label>
+                                            <p:inputNumber value="#{consultationBean.draftMedicineLine.unitPrice}" decimalPlaces="2" minValue="0"/>
+                                        </div>
+                                        <div class="col-12 md:col-8">
+                                            <label>Remarks</label>
+                                            <p:inputText value="#{consultationBean.draftMedicineLine.remarks}" style="width:100%;"/>
+                                        </div>
+                                        <div class="col-12">
+                                            <p:commandButton value="Add Medicine Line" icon="pi pi-plus" process="medicineLinePanel"
+                                                             actionListener="#{consultationBean.addMedicineLine}"
+                                                             update="form:medicineLinePanel form:previewTabsPanel form:messages"
+                                                             styleClass="ui-button-success ui-button-sm"/>
+                                        </div>
+                                    </div>
+                                    </p:outputPanel>
+
+                                    <p:dataTable value="#{consultationBean.medicineLines}" var="line" reflow="true"
+                                                 emptyMessage="No medicines added yet." style="margin-top:1rem;">
+                                        <p:column headerText="Medicine">
+                                            <div><strong>#{line.medicineName}</strong></div>
+                                            <div style="font-size:.85rem;color:#64748b;">#{line.descriptionText}</div>
+                                        </p:column>
+                                        <p:column headerText="Instruction">
+                                            <div>#{line.dose}</div>
+                                            <div style="font-size:.85rem;color:#64748b;">#{line.frequency} | #{line.durationText}</div>
+                                        </p:column>
+                                        <p:column headerText="Qty">#{line.quantity}</p:column>
+                                        <p:column headerText="Price">#{consultationBean.previewCurrencySymbol} #{line.unitPrice}</p:column>
+                                        <p:column headerText="Total">#{consultationBean.previewCurrencySymbol} #{line.lineTotal}</p:column>
+                                        <p:column headerText="Actions" style="width:4rem;" rendered="#{not consultationBean.readOnlyMode}">
+                                            <p:commandButton icon="pi pi-trash" process="@this" styleClass="rounded-button ui-button-warning ui-button-sm"
+                                                             actionListener="#{consultationBean.removeMedicineLine}"
+                                                             update="form:medicineLinePanel form:previewTabsPanel form:messages">
+                                                <f:setPropertyActionListener value="#{line}" target="#{consultationBean.selectedMedicineLine}"/>
+                                            </p:commandButton>
+                                        </p:column>
+                                    </p:dataTable>
+                                </div>
+                            </p:outputPanel>
+
+                            <div class="card" style="margin-top:1rem;border:1px solid #e2e8f0;box-shadow:none;background:#f8fafc;">
+                                <h3 style="margin-top:0;">Medical Certificate Details</h3>
+                                <div class="grid">
+                                    <div class="col-12 md:col-6">
+                                        <label>Disease / Illness</label>
+                                        <p:inputText value="#{consultationBean.consultation.medicalCertificateDisease}" style="width:100%;"
+                                                     disabled="#{not consultationBean.medicalCertificateAvailable or consultationBean.readOnlyMode}"/>
+                                    </div>
+                                    <div class="col-12 md:col-6">
+                                        <label>Treatment Duration</label>
+                                        <p:inputText value="#{consultationBean.consultation.medicalCertificateTreatmentDuration}" style="width:100%;"
+                                                     disabled="#{not consultationBean.medicalCertificateAvailable or consultationBean.readOnlyMode}"/>
+                                    </div>
+                                    <div class="col-12 md:col-6">
+                                        <label>Certificate Place</label>
+                                        <p:inputText value="#{consultationBean.consultation.medicalCertificatePlace}" style="width:100%;"
+                                                     disabled="#{not consultationBean.medicalCertificateAvailable or consultationBean.readOnlyMode}"/>
+                                    </div>
+                                    <div class="col-12 md:col-6">
+                                        <label>Certificate Fee</label>
+                                        <p:inputNumber value="#{consultationBean.consultation.medicalCertificateFee}" decimalPlaces="2" minValue="0"
+                                                       disabled="#{not consultationBean.medicalCertificateAvailable or consultationBean.readOnlyMode}">
+                                            <p:ajax process="@this" update="form:previewTabsPanel"/>
+                                        </p:inputNumber>
+                                    </div>
+                                </div>
+                            </div>
+                            </p:outputPanel>
+                        </p:outputPanel>
+
+                        <div class="col-12 #{consultationBean.readOnlyMode ? 'xl:col-12' : 'xl:col-7'}">
+                            <p:outputPanel id="previewTabsPanel">
+                                <p:tabView activeIndex="#{consultationBean.activePreviewTabIndex}">
+                                    <p:tab title="Prescription">
+                                        <ui:include src="/WEB-INF/consultation/prescription-preview.xhtml"/>
+                                    </p:tab>
+                                    <p:tab title="Invoice">
+                                        <ui:include src="/WEB-INF/consultation/invoice-preview.xhtml"/>
+                                    </p:tab>
+                                    <p:tab title="Medical Certificate">
+                                        <ui:include src="/WEB-INF/consultation/medical-certificate-preview.xhtml"/>
+                                    </p:tab>
+                                </p:tabView>
+                            </p:outputPanel>
+                        </div>
+                    </div>
+                </p:outputPanel>
+                </p:outputPanel>
+            </div>
+
+            <p:confirmDialog widgetVar="deleteConsultationDialog" header="Confirm Delete" severity="warn"
+                             message="Delete the selected consultation?">
+                <p:commandButton value="Yes" icon="pi pi-check" actionListener="#{consultationBean.confirmDeleteConsultation}"
+                                 process="@this" update=":form:contentModePanel :form:messages"
+                                 oncomplete="PF('deleteConsultationDialog').hide()"/>
+                <p:commandButton value="No" type="button" icon="pi pi-times" onclick="PF('deleteConsultationDialog').hide()"
+                                 styleClass="ui-button-secondary"/>
+            </p:confirmDialog>
+        </h:form>
     </ui:define>
 </ui:composition>

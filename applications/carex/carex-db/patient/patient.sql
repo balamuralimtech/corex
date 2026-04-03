@@ -1,0 +1,23 @@
+CREATE TABLE IF NOT EXISTS Patients (
+    id INT NOT NULL AUTO_INCREMENT,
+    organization_id INT NOT NULL,
+    patient_code VARCHAR(30) NOT NULL,
+    patient_name VARCHAR(120) NOT NULL,
+    gender VARCHAR(20) DEFAULT NULL,
+    date_of_birth DATE DEFAULT NULL,
+    phone_number VARCHAR(30) NOT NULL,
+    email_address VARCHAR(120) DEFAULT NULL,
+    blood_group VARCHAR(10) DEFAULT NULL,
+    patient_id_proof_no VARCHAR(80) DEFAULT NULL,
+    address VARCHAR(255) DEFAULT NULL,
+    emergency_contact_name VARCHAR(120) DEFAULT NULL,
+    emergency_contact_number VARCHAR(30) DEFAULT NULL,
+    active BIT NOT NULL DEFAULT b'1',
+    notes VARCHAR(500) DEFAULT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_patients_patient_code (patient_code),
+    KEY idx_patients_org (organization_id),
+    CONSTRAINT fk_patients_organization FOREIGN KEY (organization_id) REFERENCES Organizations(id)
+);

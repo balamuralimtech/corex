@@ -1,0 +1,83 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui">
+    <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;background:#f8fafc;">
+        <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-3">
+            <div>
+                <h3 style="margin:0;">Medical Certificate Preview</h3>
+                <div style="margin-top:.35rem;color:#64748b;font-size:.9rem;">Generated only when the consultation requires a certificate.</div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <p:commandButton value="Print" type="button" icon="pi pi-print" styleClass="ui-button-secondary ui-button-sm"
+                                 disabled="#{not consultationBean.medicalCertificateAvailable}"
+                                 onclick="(function(){const preview=document.querySelector(&quot;[id$='medicalCertificatePreviewPanel']&quot;);const bodyField=document.getElementById('form:medicalCertificatePreviewBodyHtml');const footerField=document.getElementById('form:medicalCertificatePreviewFooterHtml');if(!preview||!bodyField||!footerField){return false;}const previewClone=preview.cloneNode(true);const footer=previewClone.querySelector('.medical-certificate-preview-footer');footerField.value=footer?footer.outerHTML:'';if(footer&amp;&amp;footer.parentNode){footer.parentNode.removeChild(footer);}bodyField.value=previewClone.innerHTML;const iframe=document.createElement('iframe');iframe.style.position='fixed';iframe.style.right='0';iframe.style.bottom='0';iframe.style.width='0';iframe.style.height='0';iframe.style.border='0';document.body.appendChild(iframe);const printDocument=iframe.contentWindow.document;printDocument.open();printDocument.write('&lt;html&gt;&lt;head&gt;&lt;title&gt;Medical Certificate&lt;/title&gt;&lt;style&gt;html,body{font-family:Helvetica,Arial,sans-serif;margin:0;padding:0;background:#fff;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;overflow:hidden !important;}body{background:#fff;overflow:hidden !important;}.preview-shell{position:relative;box-sizing:border-box;width:186mm;height:272mm;max-height:272mm;margin:0 auto;padding:0;overflow:hidden !important;border:none !important;outline:none !important;box-shadow:none !important;}.preview-shell *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;box-sizing:border-box;}.print-body{padding-bottom:42mm;overflow:hidden !important;max-height:230mm;}.print-body .medical-certificate-preview,.print-body .card{border:none !important;outline:none !important;box-shadow:none !important;background:#fff !important;}.print-footer{position:absolute;left:24px;right:24px;bottom:18px;}@page{size:A4 portrait;margin:12mm;}@media print{html,body{background:#fff !important;overflow:hidden !important;}body{padding:0;margin:0;overflow:hidden !important;}}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;div class=&quot;preview-shell&quot;&gt;&lt;div class=&quot;print-body&quot;&gt;'+bodyField.value+'&lt;/div&gt;'+(footerField.value?'&lt;div class=&quot;print-footer&quot;&gt;'+footerField.value+'&lt;/div&gt;':'')+'&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;');printDocument.close();setTimeout(function(){iframe.contentWindow.focus();iframe.contentWindow.print();setTimeout(function(){document.body.removeChild(iframe);},1000);},250);return false;})(); return false;"/>
+                <p:commandButton value="Download" ajax="false" icon="pi pi-download" process="@form"
+                                 disabled="#{not consultationBean.medicalCertificateAvailable}"
+                                 actionListener="#{consultationBean.prepareMedicalCertificateDownload}"
+                                 onclick="(function(){const preview=document.querySelector(&quot;[id$='medicalCertificatePreviewPanel']&quot;);const bodyField=document.getElementById('form:medicalCertificatePreviewBodyHtml');const footerField=document.getElementById('form:medicalCertificatePreviewFooterHtml');if(!preview||!bodyField||!footerField){return false;}const previewClone=preview.cloneNode(true);const footer=previewClone.querySelector('.medical-certificate-preview-footer');footerField.value=footer?footer.outerHTML:'';if(footer&amp;&amp;footer.parentNode){footer.parentNode.removeChild(footer);}bodyField.value=previewClone.innerHTML;return true;})();"
+                                 styleClass="ui-button-help ui-button-sm">
+                    <p:fileDownload value="#{consultationBean.consultationMedicalCertificatePdf}"/>
+                </p:commandButton>
+            </div>
+        </div>
+        <p:outputPanel id="medicalCertificatePreviewPanel" layout="block">
+            <h:panelGroup rendered="#{consultationBean.medicalCertificateAvailable}">
+                <div class="medical-certificate-preview" style="position:relative;margin-top:1rem;background:#fff;border:1px solid #cbd5e1;border-radius:12px;padding:24px;color:#{consultationBean.medicalCertificateSettings.textColor};font-family:'#{consultationBean.medicalCertificateSettings.fontFamily}', Helvetica, Arial, sans-serif;font-size:#{consultationBean.medicalCertificateSettings.fontSize}px;min-height:1120px;display:flex;flex-direction:column;">
+                    <div style="position:relative;z-index:1;display:flex;flex-direction:column;flex:1;">
+                        <div style="display:grid;grid-template-columns:1.5fr .8fr 1.5fr;align-items:start;gap:1rem;padding-bottom:10px;">
+                            <div>
+                                <div style="font-size:1.3rem;font-weight:700;">#{consultationBean.previewClinicName}</div>
+                                <div style="margin-top:4px;font-size:.85rem;">#{consultationBean.previewClinicTagline}</div>
+                            </div>
+                            <div style="display:flex;justify-content:center;">
+                                <h:panelGroup rendered="#{consultationBean.medicalCertificateSettings.showClinicLogo}">
+                                    <h:panelGroup rendered="#{consultationBean.previewOrganizationLogoAvailable}">
+                                        <img src="#{consultationBean.previewOrganizationLogoDataUri}" alt="Organization Logo" style="width:#{consultationBean.previewLogoSizePx}px;height:#{consultationBean.previewLogoSizePx}px;object-fit:contain;display:block;"/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{not consultationBean.previewOrganizationLogoAvailable}">
+                                        <div style="width:#{consultationBean.previewLogoSizePx}px;height:#{consultationBean.previewLogoSizePx}px;border:2px solid #9ca3af;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:.8rem;">LOGO</div>
+                                    </h:panelGroup>
+                                </h:panelGroup>
+                            </div>
+                            <div style="text-align:right;font-size:.84rem;line-height:1.5;">
+                                <div style="font-size:1.3rem;font-weight:700;">#{consultationBean.previewDoctorName}</div>
+                                <div>#{consultationBean.previewDoctorQualification}</div>
+                                <div>#{consultationBean.previewDoctorSpecialization}</div>
+                                <div>Email: #{consultationBean.previewClinicEmail}</div>
+                                <div>Reg. No: #{consultationBean.previewRegistrationNumber}</div>
+                            </div>
+                        </div>
+                        <div style="margin-top:20px;text-align:center;font-size:1.55rem;font-weight:700;letter-spacing:.06em;color:#{consultationBean.previewThemeColor};text-transform:uppercase;">#{consultationBean.medicalCertificateSettings.certificateTitle}</div>
+                        <div style="margin-top:28px;line-height:2;text-align:justify;">#{consultationBean.medicalCertificateSettings.introLine}</div>
+                        <div style="margin-top:18px;line-height:2;text-align:justify;">Patient Name: #{consultationBean.previewPatientName}</div>
+                        <div style="margin-top:18px;line-height:2;text-align:justify;">#{consultationBean.medicalCertificateSettings.bodyParagraphOne}</div>
+                        <h:panelGroup rendered="#{not empty consultationBean.medicalCertificateSettings.bodyParagraphTwo}">
+                            <div style="margin-top:18px;line-height:2;text-align:justify;">#{consultationBean.medicalCertificateSettings.bodyParagraphTwo}</div>
+                        </h:panelGroup>
+                        <div style="margin-top:30px;line-height:2.6;">
+                            <div><strong>#{consultationBean.medicalCertificateSettings.diseaseLabel}:</strong> #{consultationBean.consultation.medicalCertificateDisease}</div>
+                            <div><strong>#{consultationBean.medicalCertificateSettings.treatmentDurationLabel}:</strong> #{consultationBean.consultation.medicalCertificateTreatmentDuration}</div>
+                            <div><strong>#{consultationBean.medicalCertificateSettings.patientSignatureLabel}:</strong> ............................................................</div>
+                        </div>
+                        <div style="margin-top:26px;line-height:2.1;">
+                            <div>#{consultationBean.medicalCertificateSettings.placeLabel}: #{consultationBean.consultation.medicalCertificatePlace}</div>
+                            <div>#{consultationBean.medicalCertificateSettings.dateLabel}: #{consultationBean.previewInvoiceDate}</div>
+                        </div>
+                        <div class="medical-certificate-preview-footer" style="margin-top:auto;padding-top:24px;">
+                            <div style="text-align:center;font-size:.9rem;">#{consultationBean.previewClinicAddress}</div>
+                            <div style="text-align:center;font-size:1rem;font-weight:700;margin-top:4px;">For Appointment : #{consultationBean.previewAppointmentContact}</div>
+                            <div style="margin-top:6px;text-align:center;background:#{consultationBean.previewThemeColor};color:#fff;padding:6px 10px;font-size:.8rem;">#{consultationBean.previewScheduleLineOne}</div>
+                            <div style="text-align:center;background:#{consultationBean.previewThemeColor};color:#fff;padding:6px 10px;font-size:.8rem;border-top:1px solid rgba(255,255,255,.35);">#{consultationBean.previewScheduleLineTwo}</div>
+                        </div>
+                    </div>
+                </div>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{not consultationBean.medicalCertificateAvailable}">
+                <div class="card" style="margin-top:1rem;border:1px dashed #cbd5e1;background:#fff;color:#64748b;">
+                    Enable <strong>Generate Medical Certificate</strong> in the visit editor to preview and download the certificate.
+                </div>
+            </h:panelGroup>
+        </p:outputPanel>
+    </div>
+</ui:composition>

@@ -3,6 +3,7 @@
   <component name="WebContextManager">
     <option name="state">
       <map>
+        <entry key="file://$PROJECT_DIR$/applications/carex/carex-web/src/main/webapp/pages/carex/clinic-management/dashboard.xhtml" value="file://$PROJECT_DIR$/applications/carex/carex-web/src/main/webapp/pages/carex/clinic-management" />
         <entry key="file://$PROJECT_DIR$/applications/shipx/shipx-web/src/main/webapp/pages/shipx/shipment-ops/quotation.xhtml" value="file://$PROJECT_DIR$/applications/shipx/shipx-web/src/main/webapp/pages/shipx/shipment-ops" />
         <entry key="file://$PROJECT_DIR$/corex-web/src/main/webapp/pages/home/homePage.xhtml" value="file://$PROJECT_DIR$/corex-web/src/main/webapp/pages/home" />
       </map>

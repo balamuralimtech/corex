@@ -1,15 +1,198 @@
 <!DOCTYPE html>
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 template="/WEB-INF/template.xhtml">
 
     <ui:define name="content">
-        <div class="card">
-            <h1>Manage Medicine</h1>
-            <p>Medicine administration page for stock, pricing, dosage notes, dispensing rules, and medicine availability.</p>
-            <p>This placeholder can later be expanded into inventory and prescription-linked medicine management.</p>
-        </div>
+        <f:event listener="#{medicineBean.initializePageAttributes}" type="preRenderView"/>
+
+        <h:form id="form">
+            <div class="card">
+                <p:growl id="messages" showDetail="true"/>
+
+                <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-start gap-3 mb-4">
+                    <div>
+                        <h1 style="margin:0;">Manage Medicine</h1>
+                        <p style="margin:.5rem 0 0 0;color:#64748b;">
+                            Maintain medicines with required units, pricing, stock, and reorder details for each organization.
+                        </p>
+                    </div>
+                    <div class="surface-100 border-round px-3 py-2">
+                        <label for="organizationFilter"><strong>Organization:</strong></label>
+                        <p:selectOneMenu id="organizationFilter" value="#{medicineBean.selectedOrganizationId}" style="display:block;min-width:18rem;margin-top:.35rem;">
+                            <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                            <f:selectItems value="#{medicineBean.organizationList}" var="organization"
+                                           itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
+                            <p:ajax listener="#{medicineBean.onOrganizationChange}" update="form:medicineMainPanel form:messages" process="@this"/>
+                        </p:selectOneMenu>
+                    </div>
+                </div>
+
+                <p:outputPanel id="medicineMainPanel">
+                    <p:toolbar styleClass="mb-4">
+                        <p:toolbarGroup>
+                            <p:commandButton value="New Medicine" icon="pi pi-plus" actionListener="#{medicineBean.addButtonAction}"
+                                             update="form:medicineDialogPanel form:dialogMessages" process="@this"
+                                             oncomplete="PF('manageMedicineDialog').show()" styleClass="ui-button-success"/>
+                            <p:commandButton value="Fetch Medicines" icon="pi pi-search" actionListener="#{medicineBean.fetchMedicineList}"
+                                             update="form:medicineMainPanel" process="@this" styleClass="ui-button-info" style="margin-left:.5rem;"/>
+                        </p:toolbarGroup>
+                        <p:toolbarGroup align="right">
+                            <span style="font-weight:600;">Records: #{medicineBean.medicineList.size()}</span>
+                        </p:toolbarGroup>
+                    </p:toolbar>
+
+                    <p:dataTable id="medicineTable" widgetVar="medicineTableWidget" var="medicineRow" value="#{medicineBean.medicineList}"
+                                 paginator="true" rows="10" reflow="true" rowKey="#{medicineRow.id}"
+                                 emptyMessage="No medicines found for the selected organization.">
+                        <f:facet name="header">
+                            <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-2">
+                                <span style="font-weight:600;">Medicine Register</span>
+                                <span class="p-input-icon-left">
+                                    <i class="pi pi-search"/>
+                                    <p:inputText id="globalFilter" onkeyup="PF('medicineTableWidget').filter()" placeholder="Search medicines"/>
+                                </span>
+                            </div>
+                        </f:facet>
+
+                        <p:column headerText="Code" sortBy="#{medicineRow.medicineCode}" filterBy="#{medicineRow.medicineCode}">
+                            <h:outputText value="#{medicineRow.medicineCode}"/>
+                        </p:column>
+                        <p:column headerText="Medicine Name" sortBy="#{medicineRow.medicineName}" filterBy="#{medicineRow.medicineName}">
+                            <h:outputText value="#{medicineRow.medicineName}"/>
+                        </p:column>
+                        <p:column headerText="Generic Name">
+                            <h:outputText value="#{medicineRow.genericName}"/>
+                        </p:column>
+                        <p:column headerText="Category">
+                            <h:outputText value="#{medicineRow.category}"/>
+                        </p:column>
+                        <p:column headerText="Unit">
+                            <h:outputText value="#{medicineRow.unit}"/>
+                        </p:column>
+                        <p:column headerText="Strength">
+                            <h:outputText value="#{medicineRow.strength}"/>
+                        </p:column>
+                        <p:column headerText="Stock">
+                            <h:outputText value="#{medicineRow.stockQuantity}"/>
+                        </p:column>
+                        <p:column headerText="Selling Price">
+                            <h:outputText value="#{medicineRow.sellingPrice}"/>
+                        </p:column>
+                        <p:column headerText="Status">
+                            <p:tag value="#{medicineRow.active ? 'Active' : 'Inactive'}"
+                                   severity="#{medicineRow.active ? 'success' : 'warning'}"/>
+                        </p:column>
+                        <p:column exportable="false" style="width:8rem;">
+                            <p:commandButton icon="pi pi-pencil" process="@this" styleClass="rounded-button ui-button-success"
+                                             update="form:medicineDialogPanel form:dialogMessages"
+                                             actionListener="#{medicineBean.confirmEditButtonAction}" oncomplete="PF('manageMedicineDialog').show()">
+                                <f:setPropertyActionListener value="#{medicineRow}" target="#{medicineBean.selectedMedicine}"/>
+                            </p:commandButton>
+                            <p:commandButton icon="pi pi-trash" process="@this" styleClass="rounded-button ui-button-warning"
+                                             oncomplete="PF('deleteMedicineDialog').show()">
+                                <f:setPropertyActionListener value="#{medicineRow}" target="#{medicineBean.selectedMedicine}"/>
+                            </p:commandButton>
+                        </p:column>
+                    </p:dataTable>
+                </p:outputPanel>
+            </div>
+
+            <p:dialog header="#{medicineBean.addOperation ? 'Add Medicine' : 'Edit Medicine'}" widgetVar="manageMedicineDialog"
+                      modal="true" responsive="true" width="820">
+                <p:outputPanel id="medicineDialogPanel" class="ui-fluid">
+                    <p:messages id="dialogMessages" showDetail="true" closable="true"/>
+                    <div class="grid">
+                        <div class="col-12">
+                            <label>Organization *</label>
+                            <p:selectOneMenu value="#{medicineBean.formOrganizationId}" style="width:100%;">
+                                <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{medicineBean.organizationList}" var="organization"
+                                               itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
+                                <p:ajax listener="#{medicineBean.onFormOrganizationChange}" process="@this" update="form:medicineDialogPanel"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-12 md:col-4">
+                            <label>Medicine Code *</label>
+                            <p:inputText value="#{medicineBean.medicine.medicineCode}" maxlength="30"/>
+                        </div>
+                        <div class="col-12 md:col-8">
+                            <label>Medicine Name *</label>
+                            <p:inputText value="#{medicineBean.medicine.medicineName}" maxlength="150"/>
+                        </div>
+                        <div class="col-12 md:col-6">
+                            <label>Generic Name</label>
+                            <p:inputText value="#{medicineBean.medicine.genericName}" maxlength="150"/>
+                        </div>
+                        <div class="col-12 md:col-6">
+                            <label>Category</label>
+                            <p:selectOneMenu value="#{medicineBean.medicine.category}" style="width:100%;">
+                                <f:selectItem itemLabel="Select Category" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{medicineBean.availableCategories}"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-12 md:col-4">
+                            <label>Unit *</label>
+                            <p:selectOneMenu value="#{medicineBean.medicine.unit}" style="width:100%;">
+                                <f:selectItem itemLabel="Select Unit" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{medicineBean.availableUnits}"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-12 md:col-4">
+                            <label>Strength</label>
+                            <p:inputText value="#{medicineBean.medicine.strength}" maxlength="40"/>
+                        </div>
+                        <div class="col-12 md:col-4">
+                            <label>Manufacturer</label>
+                            <p:inputText value="#{medicineBean.medicine.manufacturer}" maxlength="120"/>
+                        </div>
+                        <div class="col-12 md:col-3">
+                            <label>Purchase Price</label>
+                            <p:inputNumber value="#{medicineBean.medicine.purchasePrice}" decimalPlaces="2" minValue="0"/>
+                        </div>
+                        <div class="col-12 md:col-3">
+                            <label>Selling Price</label>
+                            <p:inputNumber value="#{medicineBean.medicine.sellingPrice}" decimalPlaces="2" minValue="0"/>
+                        </div>
+                        <div class="col-12 md:col-3">
+                            <label>Stock Quantity</label>
+                            <p:spinner value="#{medicineBean.medicine.stockQuantity}" min="0" max="100000"/>
+                        </div>
+                        <div class="col-12 md:col-3">
+                            <label>Reorder Level</label>
+                            <p:spinner value="#{medicineBean.medicine.reorderLevel}" min="0" max="100000"/>
+                        </div>
+                        <div class="col-12">
+                            <div class="field-checkbox mb-0">
+                                <p:selectBooleanCheckbox id="medicineActive" value="#{medicineBean.medicine.active}"/>
+                                <p:outputLabel for="medicineActive" value="Active medicine"/>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label>Notes</label>
+                            <p:inputTextarea value="#{medicineBean.medicine.notes}" rows="4" autoResize="false" maxlength="500"/>
+                        </div>
+                    </div>
+                </p:outputPanel>
+                <f:facet name="footer">
+                    <p:commandButton value="Save Medicine" icon="pi pi-check" actionListener="#{medicineBean.saveMedicine}"
+                                     process="medicineDialogPanel @this" update="medicineDialogPanel :form:medicineMainPanel :form:messages"/>
+                    <p:commandButton value="Cancel" icon="pi pi-times" type="button"
+                                     onclick="PF('manageMedicineDialog').hide()" styleClass="ui-button-secondary"/>
+                </f:facet>
+            </p:dialog>
+
+            <p:confirmDialog widgetVar="deleteMedicineDialog" header="Confirm Delete" severity="warn"
+                             message="Delete the selected medicine?">
+                <p:commandButton value="Yes" icon="pi pi-check" actionListener="#{medicineBean.confirmDeleteMedicine}"
+                                 process="@this" update=":form:medicineMainPanel :form:messages"
+                                 oncomplete="PF('deleteMedicineDialog').hide()"/>
+                <p:commandButton value="No" type="button" icon="pi pi-times"
+                                 onclick="PF('deleteMedicineDialog').hide()" styleClass="ui-button-secondary"/>
+            </p:confirmDialog>
+        </h:form>
     </ui:define>
 </ui:composition>

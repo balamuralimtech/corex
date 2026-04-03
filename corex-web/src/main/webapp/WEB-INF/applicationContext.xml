@@ -56,6 +56,11 @@
                 <value>com.persist.carex.settings.PrescriptionSettings</value>
                 <value>com.persist.carex.settings.InvoiceSettings</value>
                 <value>com.persist.carex.settings.MedicalCertificateSettings</value>
+                <value>com.persist.carex.clinicmanagement.Doctor</value>
+                <value>com.persist.carex.clinicmanagement.Patient</value>
+                <value>com.persist.carex.clinicmanagement.Medicine</value>
+                <value>com.persist.carex.clinicmanagement.Consultation</value>
+                <value>com.persist.carex.clinicmanagement.ConsultationMedicine</value>
 
             </list>
         </property>
