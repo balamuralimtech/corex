@@ -1,5 +1,9 @@
 package com.web.coretix.menu;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class AppMenuItem {
 
     private final String id;
@@ -8,6 +12,7 @@ public class AppMenuItem {
     private final String url;
     private final int order;
     private final String renderedExpression;
+    private final List<AppMenuItem> items = new ArrayList<>();
 
     public AppMenuItem(String id, String label, String icon, String url, int order, String renderedExpression) {
         this.id = id;
@@ -16,6 +21,11 @@ public class AppMenuItem {
         this.url = url;
         this.order = order;
         this.renderedExpression = renderedExpression;
+    }
+
+    public AppMenuItem addItem(AppMenuItem item) {
+        items.add(item);
+        return this;
     }
 
     public String getId() {
@@ -40,5 +50,9 @@ public class AppMenuItem {
 
     public String getRenderedExpression() {
         return renderedExpression;
+    }
+
+    public List<AppMenuItem> getItems() {
+        return Collections.unmodifiableList(items);
     }
 }

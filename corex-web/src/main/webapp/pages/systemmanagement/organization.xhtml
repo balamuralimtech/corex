@@ -257,11 +257,12 @@
                                     <div class="field">
 
                                         <p:fileUpload mode="advanced"
-                                                      auto="false"
+                                                      auto="true"
                                                       multiple="false"
                                                       update="messages cropperPanel"
                                                       listener="#{organizationBean.handleFileUpload}"
-                                                      sizeLimit="102400"
+                                                      sizeLimit="512000"
+                                                      invalidSizeMessage="Organization logo must be 500 KB or smaller."
                                                       accept=".gif,.jpeg,.jpg,.png"/>
 
                                         <p:outputPanel id="cropperPanel">

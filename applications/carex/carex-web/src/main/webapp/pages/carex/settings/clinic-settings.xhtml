@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="content">
+        <f:event listener="#{clinicSettingsBean.initializePageAttributes}" type="preRenderView"/>
+
+        <h:form id="form">
+            <div class="card">
+                <p:messages id="messages" showDetail="true" closable="true"/>
+
+                <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-start gap-3 mb-4">
+                    <div>
+                        <h1 style="margin:0;">Clinic Settings</h1>
+                        <p style="margin:.5rem 0 0 0;color:#64748b;">
+                            Configure clinic operating hours, fee structure, invoice policy, and medical certificate handling.
+                        </p>
+                    </div>
+                    <div class="surface-100 border-round px-3 py-2">
+                        <label for="organizationSelect"><strong>Organization:</strong></label>
+                        <p:selectOneMenu id="organizationSelect" value="#{clinicSettingsBean.selectedOrganizationId}" style="display:block;min-width:18rem;margin-top:.35rem;">
+                            <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                            <f:selectItems value="#{clinicSettingsBean.organizationList}" var="organization"
+                                           itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
+                            <p:ajax listener="#{clinicSettingsBean.onOrganizationChange}" process="@this" update="form:clinicSettingsPanel form:messages"/>
+                        </p:selectOneMenu>
+                    </div>
+                </div>
+
+                <p:outputPanel id="clinicSettingsPanel">
+                    <div class="grid">
+                        <div class="col-12">
+                            <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
+                                <h3 style="margin-top:0;">Prescription Header and Footer Identity</h3>
+                                <div class="grid">
+                                    <div class="col-12 md:col-6">
+                                        <label>Clinic Name</label>
+                                        <p:inputText value="#{clinicSettingsBean.clinicSettings.clinicName}" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12 md:col-6">
+                                        <label>Clinic Tagline</label>
+                                        <p:inputText value="#{clinicSettingsBean.clinicSettings.clinicTagline}" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12 md:col-4">
+                                        <label>Doctor Name</label>
+                                        <p:inputText value="#{clinicSettingsBean.clinicSettings.doctorName}" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12 md:col-4">
+                                        <label>Doctor Qualification</label>
+                                        <p:inputText value="#{clinicSettingsBean.clinicSettings.doctorQualification}" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12 md:col-4">
+                                        <label>Registration Number</label>
+                                        <p:inputText value="#{clinicSettingsBean.clinicSettings.registrationNumber}" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12">
+                                        <label>Doctor Specialization / Credentials Line</label>
+                                        <p:inputText value="#{clinicSettingsBean.clinicSettings.doctorSpecialization}" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12 md:col-6">
+                                        <label>Clinic Email</label>
+                                        <p:inputText value="#{clinicSettingsBean.clinicSettings.clinicEmail}" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12 md:col-6">
+                                        <label>Appointment Contact</label>
+                                        <p:inputText value="#{clinicSettingsBean.clinicSettings.appointmentContact}" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12">
+                                        <label>Clinic Address</label>
+                                        <p:inputTextarea value="#{clinicSettingsBean.clinicSettings.clinicAddress}" rows="3" autoResize="false" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12">
+                                        <label>Schedule Footer Line 1</label>
+                                        <p:inputText value="#{clinicSettingsBean.clinicSettings.scheduleLineOne}" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12">
+                                        <label>Schedule Footer Line 2</label>
+                                        <p:inputText value="#{clinicSettingsBean.clinicSettings.scheduleLineTwo}" style="width:100%;"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 lg:col-6">
+                            <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
+                                <h3 style="margin-top:0;">Clinic Timings</h3>
+                                <div class="grid">
+                                    <div class="col-12 md:col-4">
+                                        <label>Weekdays Open</label>
+                                        <p:selectBooleanButton value="#{clinicSettingsBean.clinicSettings.weekdaysOpen}" onLabel="Yes" offLabel="No" style="display:block;"/>
+                                    </div>
+                                    <div class="col-12 md:col-4">
+                                        <label>Saturday Open</label>
+                                        <p:selectBooleanButton value="#{clinicSettingsBean.clinicSettings.saturdayOpen}" onLabel="Yes" offLabel="No" style="display:block;"/>
+                                    </div>
+                                    <div class="col-12 md:col-4">
+                                        <label>Sunday Open</label>
+                                        <p:selectBooleanButton value="#{clinicSettingsBean.clinicSettings.sundayOpen}" onLabel="Yes" offLabel="No" style="display:block;"/>
+                                    </div>
+                                    <div class="col-12 md:col-6">
+                                        <label>Opening Time</label>
+                                        <p:datePicker value="#{clinicSettingsBean.clinicSettings.openingTime}" timeOnly="true" pattern="hh:mm a" showIcon="true" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12 md:col-6">
+                                        <label>Closing Time</label>
+                                        <p:datePicker value="#{clinicSettingsBean.clinicSettings.closingTime}" timeOnly="true" pattern="hh:mm a" showIcon="true" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12 md:col-6">
+                                        <label>Break Start Time</label>
+                                        <p:datePicker value="#{clinicSettingsBean.clinicSettings.breakStartTime}" timeOnly="true" pattern="hh:mm a" showIcon="true" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12 md:col-6">
+                                        <label>Break End Time</label>
+                                        <p:datePicker value="#{clinicSettingsBean.clinicSettings.breakEndTime}" timeOnly="true" pattern="hh:mm a" showIcon="true" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12">
+                                        <label>Consultation Slot Duration (Minutes)</label>
+                                        <p:spinner value="#{clinicSettingsBean.clinicSettings.slotDurationMinutes}" min="1" stepFactor="5" style="width:100%;"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 lg:col-6">
+                            <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
+                                <h3 style="margin-top:0;">Fees Structure</h3>
+                                <div class="grid">
+                                    <div class="col-12">
+                                        <label>Base Currency</label>
+                                        <p:autoComplete value="#{clinicSettingsBean.selectedBaseCurrencyDisplay}"
+                                                        completeMethod="#{clinicSettingsBean.completeCurrency}"
+                                                        dropdown="true"
+                                                        forceSelection="true"
+                                                        scrollHeight="250"
+                                                        placeholder="Search by currency code, symbol, or name"
+                                                        style="width:100%;"/>
+                                        <small style="display:block;margin-top:.35rem;color:#64748b;">
+                                            #{clinicSettingsBean.baseCurrencySummary}
+                                        </small>
+                                    </div>
+                                    <div class="col-12 md:col-6">
+                                        <label>Consultation Fee</label>
+                                        <p:inputNumber value="#{clinicSettingsBean.clinicSettings.consultationFee}" decimalPlaces="2" minValue="0" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12 md:col-6">
+                                        <label>Follow-up Fee</label>
+                                        <p:inputNumber value="#{clinicSettingsBean.clinicSettings.followupFee}" decimalPlaces="2" minValue="0" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12 md:col-6">
+                                        <label>Registration Fee</label>
+                                        <p:inputNumber value="#{clinicSettingsBean.clinicSettings.registrationFee}" decimalPlaces="2" minValue="0" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12 md:col-6">
+                                        <label>Medical Certificate Fee</label>
+                                        <p:inputNumber value="#{clinicSettingsBean.clinicSettings.medicalCertificateFee}" decimalPlaces="2" minValue="0" style="width:100%;"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 lg:col-6">
+                            <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
+                                <h3 style="margin-top:0;">Operational Controls</h3>
+                                <div class="field-checkbox mb-3">
+                                    <p:selectBooleanCheckbox id="requireInvoice" value="#{clinicSettingsBean.clinicSettings.requireInvoice}"/>
+                                    <p:outputLabel for="requireInvoice" value="Require invoice generation for consultations"/>
+                                </div>
+                                <div class="field-checkbox mb-3">
+                                    <p:selectBooleanCheckbox id="requireMedicalCertificate" value="#{clinicSettingsBean.clinicSettings.requireMedicalCertificate}"/>
+                                    <p:outputLabel for="requireMedicalCertificate" value="Enable medical certificate issuance workflow"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 lg:col-6">
+                            <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
+                                <h3 style="margin-top:0;">Internal Notes</h3>
+                                <p:inputTextarea value="#{clinicSettingsBean.clinicSettings.notes}" rows="6" autoResize="false" maxlength="500" style="width:100%;"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <p:commandButton value="Save Clinic Settings" icon="pi pi-check"
+                                         actionListener="#{clinicSettingsBean.saveClinicSettings}"
+                                         process="@form"
+                                         update="form:messages form:clinicSettingsPanel"
+                                         styleClass="ui-button-success"/>
+                    </div>
+                </p:outputPanel>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

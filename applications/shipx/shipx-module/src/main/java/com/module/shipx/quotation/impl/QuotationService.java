@@ -101,7 +101,7 @@ public class QuotationService implements IQuotationService {
 
         try {
             sendMail(notificationSettings, persistentQuotation);
-            persistentQuotation.setStatus("SENT");
+            persistentQuotation.setStatus("Waiting For Acceptance");
             persistentQuotation.setSentAt(new Timestamp(System.currentTimeMillis()));
             persistentQuotation.setSentToEmail(persistentQuotation.getRecipientEmail());
             persistentQuotation.setUpdatedAt(new Timestamp(System.currentTimeMillis()));

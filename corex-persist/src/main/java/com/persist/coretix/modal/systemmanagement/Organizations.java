@@ -68,7 +68,7 @@ public class Organizations implements Serializable {
     private String website;
 
     @Lob
-    @Column(name = "image", columnDefinition = "BLOB")
+    @Column(name = "image", columnDefinition = "MEDIUMBLOB")
     private byte[] image;  // Storing the image as BLOB
 
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")

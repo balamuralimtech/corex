@@ -10,7 +10,7 @@ CREATE TABLE organizations (
     phone_number VARCHAR(50),                        -- Contact phone number for the organization
     email VARCHAR(255),                              -- Contact email for the organization
     website VARCHAR(255),                            -- Website of the organization
-    image BLOB,                                      -- Binary data for the organization's image
+    image MEDIUMBLOB,                                -- Binary data for the organization's image
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- When the record was created
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- Last updated time
     FOREIGN KEY (country_id) REFERENCES countries(id) ON DELETE CASCADE ON UPDATE CASCADE -- Foreign key linking to the countries table
@@ -60,3 +60,5 @@ VALUES
 -- Organization 10
 ('SmartTech Robotics', 10, 'Seoul', '17 Robot Valley', 'Suite 300', 
  'Seoul', '100-100', '+82-2-5551234', 'support@smarttechrobotics.kr', 'www.smarttechrobotics.kr', NULL);
+
+ALTER  TABLE organizations MODIFY  column image MEDIUMBLOB null;

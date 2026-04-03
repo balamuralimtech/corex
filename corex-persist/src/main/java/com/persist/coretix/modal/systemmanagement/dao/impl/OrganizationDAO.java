@@ -32,6 +32,8 @@ import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.exception.ConstraintViolationException;
 
+import java.sql.Timestamp;
+
 @Named
 public class OrganizationDAO implements IOrganizationDAO {
     
@@ -64,6 +66,12 @@ public class OrganizationDAO implements IOrganizationDAO {
             if (count != null && count > 0) {
                 return GeneralConstants.ENTRY_ALREADY_EXISTS;
             }
+
+            Timestamp now = new Timestamp(System.currentTimeMillis());
+            if (organization.getCreatedAt() == null) {
+                organization.setCreatedAt(now);
+            }
+            organization.setUpdatedAt(now);
 
             session.save(organization);
             trans.commit();
@@ -107,8 +115,31 @@ public class OrganizationDAO implements IOrganizationDAO {
                 return GeneralConstants.ENTRY_ALREADY_EXISTS;
             }
 
+            Organizations existingOrganization = session.get(Organizations.class, organization.getId());
+            if (existingOrganization == null) {
+                return GeneralConstants.ENTRY_NOT_EXISTS;
+            }
+
+            existingOrganization.setOrganizationName(organization.getOrganizationName());
+            existingOrganization.setCountry(organization.getCountry());
+            existingOrganization.setState(organization.getState());
+            existingOrganization.setAddressLine1(organization.getAddressLine1());
+            existingOrganization.setAddressLine2(organization.getAddressLine2());
+            existingOrganization.setCity(organization.getCity());
+            existingOrganization.setPostalCode(organization.getPostalCode());
+            existingOrganization.setPhoneNumber(organization.getPhoneNumber());
+            existingOrganization.setEmail(organization.getEmail());
+            existingOrganization.setWebsite(organization.getWebsite());
+            if (organization.getImage() != null && organization.getImage().length > 0) {
+                existingOrganization.setImage(organization.getImage());
+            }
+            if (existingOrganization.getCreatedAt() == null) {
+                existingOrganization.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+            }
+            existingOrganization.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+
             logger.debug("crossed and before update");
-            session.update(organization);
+            session.update(existingOrganization);
             trans.commit();
             return GeneralConstants.SUCCESSFUL;
         } catch (ConstraintViolationException e) {

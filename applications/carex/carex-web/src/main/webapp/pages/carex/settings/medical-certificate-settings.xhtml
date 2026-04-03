@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="content">
+        <f:event listener="#{medicalCertificateSettingsBean.initializePageAttributes}" type="preRenderView"/>
+
+        <h:form id="form">
+            <p:remoteCommand name="refreshMedicalCertificatePreview" process="@form" update="form:previewPanel"/>
+            <h:outputScript target="body">
+                (function() {
+                    let previewTimer = null;
+                    function bindMedicalCertificateToolbarPreview() {
+                        const toolbar = document.querySelector("[id='form:medicalCertificateToolbar']");
+                        if (!toolbar || toolbar.dataset.previewBound === 'true') { return; }
+                        toolbar.dataset.previewBound = 'true';
+                        function schedulePreview(event) {
+                            if (event &amp;&amp; event.target &amp;&amp; event.target.closest('.ui-button')) { return; }
+                            if (previewTimer) { clearTimeout(previewTimer); }
+                            previewTimer = setTimeout(function() {
+                                if (typeof refreshMedicalCertificatePreview === 'function') { refreshMedicalCertificatePreview(); }
+                            }, 180);
+                        }
+                        toolbar.addEventListener('input', schedulePreview);
+                        toolbar.addEventListener('change', schedulePreview);
+                    }
+                    if (document.readyState === 'loading') {
+                        document.addEventListener('DOMContentLoaded', bindMedicalCertificateToolbarPreview);
+                    } else {
+                        bindMedicalCertificateToolbarPreview();
+                    }
+                    document.addEventListener('pfAjaxComplete', bindMedicalCertificateToolbarPreview);
+                })();
+            </h:outputScript>
+            <h:inputHidden id="downloadPreviewBodyHtml" value="#{medicalCertificateSettingsBean.downloadPreviewBodyHtml}"/>
+            <h:inputHidden id="downloadPreviewFooterHtml" value="#{medicalCertificateSettingsBean.downloadPreviewFooterHtml}"/>
+
+            <div class="card">
+                <p:messages id="messages" showDetail="true" closable="true"/>
+                <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-start gap-3 mb-4">
+                    <div>
+                        <h1 style="margin:0;">Medical Certificate Settings</h1>
+                        <p style="margin:.5rem 0 0 0;color:#64748b;">Configure certificate content, preview, print, and download from one workspace.</p>
+                    </div>
+                    <div class="surface-100 border-round px-3 py-2">
+                        <label for="organizationSelect"><strong>Organization:</strong></label>
+                        <p:selectOneMenu id="organizationSelect" value="#{medicalCertificateSettingsBean.selectedOrganizationId}" style="display:block;min-width:18rem;margin-top:.35rem;">
+                            <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                            <f:selectItems value="#{medicalCertificateSettingsBean.organizationList}" var="organization" itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
+                            <p:ajax listener="#{medicalCertificateSettingsBean.onOrganizationChange}" process="@this" update="form:medicalCertificateSettingsPanel form:messages"/>
+                        </p:selectOneMenu>
+                    </div>
+                </div>
+
+                <p:outputPanel id="medicalCertificateSettingsPanel">
+                    <div class="flex flex-column lg:flex-row gap-4 align-items-start">
+                        <div style="width:100%;order:1;flex:0 0 70%;">
+                            <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;background:#f8fafc;">
+                                <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-3">
+                                    <div>
+                                        <h3 style="margin:0;">Live Preview</h3>
+                                        <div style="margin-top:.35rem;color:#64748b;font-size:.9rem;">Preview, print, and download from this panel.</div>
+                                    </div>
+                                    <div class="flex flex-wrap gap-2">
+                                        <p:commandButton value="Save" icon="pi pi-check" actionListener="#{medicalCertificateSettingsBean.saveMedicalCertificateSettings}" process="@form" update="form:messages form:medicalCertificateSettingsPanel" styleClass="ui-button-success ui-button-sm"/>
+                                        <p:commandButton value="Refresh" icon="pi pi-eye" process="@form" update="form:previewPanel" styleClass="ui-button-info ui-button-sm"/>
+                                        <p:commandButton value="Print" type="button" icon="pi pi-print"
+                                                         onclick="(function(){const preview=document.querySelector(&quot;[id='form:previewPanel']&quot;);const bodyField=document.getElementById('form:downloadPreviewBodyHtml');const footerField=document.getElementById('form:downloadPreviewFooterHtml');if(!preview||!bodyField||!footerField){return false;}const previewClone=preview.cloneNode(true);const footer=previewClone.querySelector('.medical-certificate-preview-footer');footerField.value=footer?footer.outerHTML:'';if(footer&amp;&amp;footer.parentNode){footer.parentNode.removeChild(footer);}bodyField.value=previewClone.innerHTML;const iframe=document.createElement('iframe');iframe.style.position='fixed';iframe.style.right='0';iframe.style.bottom='0';iframe.style.width='0';iframe.style.height='0';iframe.style.border='0';document.body.appendChild(iframe);const printDocument=iframe.contentWindow.document;printDocument.open();printDocument.write('&lt;html&gt;&lt;head&gt;&lt;title&gt;Medical Certificate Sample&lt;/title&gt;&lt;style&gt;html,body{font-family:Helvetica,Arial,sans-serif;margin:0;padding:0;background:#fff;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;overflow:hidden !important;}body{background:#fff;overflow:hidden !important;}.preview-shell{position:relative;box-sizing:border-box;width:186mm;height:272mm;max-height:272mm;margin:0 auto;padding:0;overflow:hidden !important;border:none !important;outline:none !important;box-shadow:none !important;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;}.preview-shell *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;box-sizing:border-box;}.print-body{padding-bottom:42mm;overflow:hidden !important;max-height:230mm;}.print-body .medical-certificate-preview,.print-body .card{border:none !important;outline:none !important;box-shadow:none !important;background:#fff !important;}.print-footer{position:absolute;left:24px;right:24px;bottom:18px;}.print-footer .medical-certificate-preview-footer{border:none !important;outline:none !important;box-shadow:none !important;}@page{size:A4 portrait;margin:12mm;}@media print{html,body{background:#fff !important;overflow:hidden !important;}body{padding:0;margin:0;overflow:hidden !important;}}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;div class=&quot;preview-shell&quot;&gt;&lt;div class=&quot;print-body&quot;&gt;'+bodyField.value+'&lt;/div&gt;'+(footerField.value?'&lt;div class=&quot;print-footer&quot;&gt;'+footerField.value+'&lt;/div&gt;':'')+'&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;');printDocument.close();setTimeout(function(){iframe.contentWindow.focus();iframe.contentWindow.print();setTimeout(function(){document.body.removeChild(iframe);},1000);},250);return false;})(); return false;"
+                                                         styleClass="ui-button-secondary ui-button-sm"/>
+                                        <p:commandButton value="Download" ajax="false" icon="pi pi-download" process="@form" actionListener="#{medicalCertificateSettingsBean.prepareSampleMedicalCertificateDownload}"
+                                                         onclick="(function(){const preview=document.querySelector(&quot;[id='form:previewPanel']&quot;);const bodyField=document.getElementById('form:downloadPreviewBodyHtml');const footerField=document.getElementById('form:downloadPreviewFooterHtml');if(!preview||!bodyField||!footerField){return false;}const previewClone=preview.cloneNode(true);const footer=previewClone.querySelector('.medical-certificate-preview-footer');footerField.value=footer?footer.outerHTML:'';if(footer&amp;&amp;footer.parentNode){footer.parentNode.removeChild(footer);}bodyField.value=previewClone.innerHTML;return true;})();"
+                                                         styleClass="ui-button-help ui-button-sm">
+                                            <p:fileDownload value="#{medicalCertificateSettingsBean.sampleMedicalCertificatePdf}"/>
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                                <p:outputPanel id="previewPanel" layout="block">
+                                    <div class="medical-certificate-preview" style="position:relative;margin-top:1rem;background:#fff;border:1px solid #cbd5e1;border-radius:12px;padding:24px;color:#{medicalCertificateSettingsBean.previewTextColor};font-family:'#{medicalCertificateSettingsBean.previewFontFamily}', Helvetica, Arial, sans-serif;font-size:#{medicalCertificateSettingsBean.medicalCertificateSettings.fontSize}px;min-height:1120px;display:flex;flex-direction:column;overflow:hidden;">
+                                        <h:panelGroup rendered="#{medicalCertificateSettingsBean.medicalCertificateSettings.showWatermark}">
+                                            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:.08;font-size:4rem;font-weight:700;transform:rotate(-24deg);color:#{medicalCertificateSettingsBean.previewThemeColor};">#{medicalCertificateSettingsBean.previewWatermarkText}</div>
+                                        </h:panelGroup>
+                                        <div style="position:relative;z-index:1;display:flex;flex-direction:column;flex:1;">
+                                            <div>
+                                                <div style="display:grid;grid-template-columns:1.5fr .8fr 1.5fr;align-items:start;gap:1rem;padding-bottom:10px;">
+                                                    <div>
+                                                        <div style="font-size:1.3rem;font-weight:700;">#{medicalCertificateSettingsBean.previewClinicName}</div>
+                                                        <div style="margin-top:4px;font-size:.85rem;">#{medicalCertificateSettingsBean.previewClinicTagline}</div>
+                                                    </div>
+                                                    <div style="display:flex;justify-content:center;">
+                                                        <h:panelGroup rendered="#{medicalCertificateSettingsBean.medicalCertificateSettings.showClinicLogo}">
+                                                            <h:panelGroup rendered="#{medicalCertificateSettingsBean.previewOrganizationLogoAvailable}">
+                                                                <img src="#{medicalCertificateSettingsBean.previewOrganizationLogoDataUri}" alt="Organization Logo" style="width:#{medicalCertificateSettingsBean.previewLogoSizePx}px;height:#{medicalCertificateSettingsBean.previewLogoSizePx}px;object-fit:contain;display:block;"/>
+                                                            </h:panelGroup>
+                                                            <h:panelGroup rendered="#{not medicalCertificateSettingsBean.previewOrganizationLogoAvailable}">
+                                                                <div style="width:#{medicalCertificateSettingsBean.previewLogoSizePx}px;height:#{medicalCertificateSettingsBean.previewLogoSizePx}px;border:2px solid #9ca3af;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:.8rem;">LOGO</div>
+                                                            </h:panelGroup>
+                                                        </h:panelGroup>
+                                                    </div>
+                                                    <div style="text-align:right;font-size:.84rem;line-height:1.5;">
+                                                        <div style="font-size:1.3rem;font-weight:700;">#{medicalCertificateSettingsBean.previewDoctorName}</div>
+                                                        <div>#{medicalCertificateSettingsBean.previewDoctorQualification}</div>
+                                                        <div>#{medicalCertificateSettingsBean.previewDoctorSpecialization}</div>
+                                                        <div>Email: #{medicalCertificateSettingsBean.previewClinicEmail}</div>
+                                                        <div>Reg. No: #{medicalCertificateSettingsBean.previewRegistrationNumber}</div>
+                                                    </div>
+                                                </div>
+                                                <div style="margin-top:20px;text-align:center;font-size:1.55rem;font-weight:700;letter-spacing:.06em;color:#{medicalCertificateSettingsBean.previewThemeColor};text-transform:uppercase;">#{medicalCertificateSettingsBean.medicalCertificateSettings.certificateTitle}</div>
+                                                <div style="margin-top:28px;line-height:2;text-align:justify;">#{medicalCertificateSettingsBean.medicalCertificateSettings.introLine}</div>
+                                                <div style="margin-top:18px;line-height:2;text-align:justify;">#{medicalCertificateSettingsBean.medicalCertificateSettings.bodyParagraphOne}</div>
+                                                <h:panelGroup rendered="#{not empty medicalCertificateSettingsBean.medicalCertificateSettings.bodyParagraphTwo}">
+                                                    <div style="margin-top:18px;line-height:2;text-align:justify;">#{medicalCertificateSettingsBean.medicalCertificateSettings.bodyParagraphTwo}</div>
+                                                </h:panelGroup>
+                                                <div style="margin-top:30px;line-height:2.6;">
+                                                    <div><strong>#{medicalCertificateSettingsBean.medicalCertificateSettings.diseaseLabel}:</strong> ............................................................</div>
+                                                    <div><strong>#{medicalCertificateSettingsBean.medicalCertificateSettings.treatmentDurationLabel}:</strong> ............................................................</div>
+                                                    <div><strong>#{medicalCertificateSettingsBean.medicalCertificateSettings.patientSignatureLabel}:</strong> ............................................................</div>
+                                                </div>
+                                                <div style="margin-top:26px;line-height:2.1;">
+                                                    <div>#{medicalCertificateSettingsBean.medicalCertificateSettings.placeLabel}: ...............</div>
+                                                    <div>#{medicalCertificateSettingsBean.medicalCertificateSettings.dateLabel}: ...............</div>
+                                                </div>
+                                            </div>
+                                            <div class="medical-certificate-preview-footer" style="margin-top:auto;padding-top:24px;">
+                                                <div style="text-align:center;font-size:.9rem;">#{medicalCertificateSettingsBean.previewClinicAddress}</div>
+                                                <div style="text-align:center;font-size:1rem;font-weight:700;margin-top:4px;">For Appointment : #{medicalCertificateSettingsBean.previewAppointmentContact}</div>
+                                                <div style="margin-top:6px;text-align:center;background:#{medicalCertificateSettingsBean.previewThemeColor};color:#fff;padding:6px 10px;font-size:.8rem;">#{medicalCertificateSettingsBean.previewScheduleLineOne}</div>
+                                                <div style="text-align:center;background:#{medicalCertificateSettingsBean.previewThemeColor};color:#fff;padding:6px 10px;font-size:.8rem;border-top:1px solid rgba(255,255,255,.35);">#{medicalCertificateSettingsBean.previewScheduleLineTwo}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </p:outputPanel>
+                            </div>
+                        </div>
+
+                        <div id="medicalCertificateToolbar" style="width:100%;order:2;flex:0 0 30%;position:sticky;top:1rem;">
+                            <div class="grid">
+                                <div class="col-12">
+                                    <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
+                                        <h3 style="margin-top:0;">Layout</h3>
+                                        <div class="grid">
+                                            <div class="col-12 md:col-6 lg:col-12">
+                                                <label>Page Size</label>
+                                                <p:selectOneMenu value="#{medicalCertificateSettingsBean.medicalCertificateSettings.pageSize}" style="width:100%;">
+                                                    <f:selectItems value="#{medicalCertificateSettingsBean.availablePageSizes}"/>
+                                                    <p:ajax process="@this" update="form:previewPanel"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                            <div class="col-12 md:col-6 lg:col-12">
+                                                <label>Template</label>
+                                                <p:selectOneMenu value="#{medicalCertificateSettingsBean.medicalCertificateSettings.templateName}" style="width:100%;">
+                                                    <f:selectItems value="#{medicalCertificateSettingsBean.availableTemplates}"/>
+                                                    <p:ajax process="@this" update="form:previewPanel"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                            <div class="col-12">
+                                                <label>Certificate Title</label>
+                                                <p:inputText value="#{medicalCertificateSettingsBean.medicalCertificateSettings.certificateTitle}" style="width:100%;"/>
+                                            </div>
+                                            <div class="col-12 md:col-6 lg:col-12">
+                                                <label>Font Family</label>
+                                                <p:selectOneMenu value="#{medicalCertificateSettingsBean.medicalCertificateSettings.fontFamily}" style="width:100%;">
+                                                    <f:selectItems value="#{medicalCertificateSettingsBean.availableFontFamilies}"/>
+                                                    <p:ajax process="@this" update="form:previewPanel"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                            <div class="col-12 md:col-6 lg:col-12">
+                                                <label>Font Size</label>
+                                                <p:spinner value="#{medicalCertificateSettingsBean.medicalCertificateSettings.fontSize}" min="8" max="24" style="width:100%;">
+                                                    <p:ajax process="@this" update="form:previewPanel"/>
+                                                </p:spinner>
+                                            </div>
+                                            <div class="col-12 md:col-6 lg:col-12">
+                                                <label>Logo Size</label>
+                                                <p:selectOneMenu value="#{medicalCertificateSettingsBean.medicalCertificateSettings.logoSize}" style="width:100%;">
+                                                    <f:selectItems value="#{medicalCertificateSettingsBean.availableLogoSizes}"/>
+                                                    <p:ajax process="@this" update="form:previewPanel"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
+                                        <h3 style="margin-top:0;">Colors</h3>
+                                        <div class="grid">
+                                            <div class="col-12 md:col-6 lg:col-12">
+                                                <label>Theme Color</label>
+                                                <p:colorPicker value="#{medicalCertificateSettingsBean.medicalCertificateSettings.themeColor}" format="hex" style="width:100%;">
+                                                    <p:ajax event="change" process="@this" update="form:previewPanel"/>
+                                                </p:colorPicker>
+                                            </div>
+                                            <div class="col-12 md:col-6 lg:col-12">
+                                                <label>Text Color</label>
+                                                <p:colorPicker value="#{medicalCertificateSettingsBean.medicalCertificateSettings.textColor}" format="hex" style="width:100%;">
+                                                    <p:ajax event="change" process="@this" update="form:previewPanel"/>
+                                                </p:colorPicker>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
+                                        <h3 style="margin-top:0;">Content</h3>
+                                        <div class="grid">
+                                            <div class="col-12">
+                                                <label>Intro Line</label>
+                                                <p:inputTextarea value="#{medicalCertificateSettingsBean.medicalCertificateSettings.introLine}" rows="6" autoResize="false" maxlength="255" style="width:100%;"/>
+                                            </div>
+                                            <div class="col-12">
+                                                <label>Body Paragraph One</label>
+                                                <p:inputTextarea value="#{medicalCertificateSettingsBean.medicalCertificateSettings.bodyParagraphOne}" rows="6" autoResize="false" maxlength="1000" style="width:100%;"/>
+                                            </div>
+                                            <div class="col-12">
+                                                <label>Body Paragraph Two</label>
+                                                <p:inputTextarea value="#{medicalCertificateSettingsBean.medicalCertificateSettings.bodyParagraphTwo}" rows="4" autoResize="false" maxlength="1000" style="width:100%;"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
+                                        <h3 style="margin-top:0;">Field Labels</h3>
+                                        <div class="grid">
+                                            <div class="col-12">
+                                                <label>Disease Label</label>
+                                                <p:inputText value="#{medicalCertificateSettingsBean.medicalCertificateSettings.diseaseLabel}" style="width:100%;"/>
+                                            </div>
+                                            <div class="col-12">
+                                                <label>Treatment Duration Label</label>
+                                                <p:inputText value="#{medicalCertificateSettingsBean.medicalCertificateSettings.treatmentDurationLabel}" style="width:100%;"/>
+                                            </div>
+                                            <div class="col-12">
+                                                <label>Patient Signature Label</label>
+                                                <p:inputText value="#{medicalCertificateSettingsBean.medicalCertificateSettings.patientSignatureLabel}" style="width:100%;"/>
+                                            </div>
+                                            <div class="col-12 md:col-6 lg:col-12">
+                                                <label>Place Label</label>
+                                                <p:inputText value="#{medicalCertificateSettingsBean.medicalCertificateSettings.placeLabel}" style="width:100%;"/>
+                                            </div>
+                                            <div class="col-12 md:col-6 lg:col-12">
+                                                <label>Date Label</label>
+                                                <p:inputText value="#{medicalCertificateSettingsBean.medicalCertificateSettings.dateLabel}" style="width:100%;"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
+                                        <h3 style="margin-top:0;">Visibility</h3>
+                                        <div class="field-checkbox mb-3">
+                                            <p:selectBooleanCheckbox id="showCertificateLogo" value="#{medicalCertificateSettingsBean.medicalCertificateSettings.showClinicLogo}">
+                                                <p:ajax process="@this" update="form:previewPanel"/>
+                                            </p:selectBooleanCheckbox>
+                                            <p:outputLabel for="showCertificateLogo" value="Show clinic logo"/>
+                                        </div>
+                                        <div class="field-checkbox mb-3">
+                                            <p:selectBooleanCheckbox id="showCertificateWatermark" value="#{medicalCertificateSettingsBean.medicalCertificateSettings.showWatermark}">
+                                                <p:ajax process="@this" update="form:previewPanel"/>
+                                            </p:selectBooleanCheckbox>
+                                            <p:outputLabel for="showCertificateWatermark" value="Show watermark"/>
+                                        </div>
+                                        <div class="col-12" style="padding:0;">
+                                            <label>Watermark Text</label>
+                                            <p:inputText value="#{medicalCertificateSettingsBean.medicalCertificateSettings.watermarkText}" style="width:100%;"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
+                                        <h3 style="margin-top:0;">Notes</h3>
+                                        <p:inputTextarea value="#{medicalCertificateSettingsBean.medicalCertificateSettings.notes}" rows="4" autoResize="false" maxlength="500" style="width:100%;"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </p:outputPanel>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

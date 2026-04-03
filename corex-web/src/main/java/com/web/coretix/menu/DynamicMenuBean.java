@@ -65,15 +65,7 @@ public class DynamicMenuBean {
                     continue;
                 }
 
-                DefaultMenuItem menuItem = DefaultMenuItem.builder()
-                        .id(safeId(item.getId(), subMenu.getId() + "_item_" + renderedItems))
-                        .value(item.getLabel())
-                        .icon(item.getIcon())
-                        .url(buildContextRelativeUrl(item.getUrl()))
-                        .ajax(false)
-                        .rendered(true)
-                        .build();
-                subMenu.getElements().add(menuItem);
+                addMenuElement(subMenu, item, subMenu.getId() + "_item_" + renderedItems);
                 renderedItems++;
             }
 
@@ -103,12 +95,54 @@ public class DynamicMenuBean {
     }
 
     private ResolvedMenuItem resolveItem(AppMenuItem item) {
+        List<ResolvedMenuItem> items = item.getItems().stream()
+                .sorted(Comparator.comparingInt(AppMenuItem::getOrder))
+                .map(this::resolveItem)
+                .collect(Collectors.toList());
+
         return new ResolvedMenuItem(
                 item.getId(),
                 resolveText(item.getLabel()),
                 item.getIcon(),
                 item.getUrl(),
-                resolveBoolean(item.getRenderedExpression()));
+                resolveBoolean(item.getRenderedExpression()),
+                items);
+    }
+
+    private void addMenuElement(DefaultSubMenu parent, ResolvedMenuItem item, String fallbackId) {
+        if (!item.getItems().isEmpty()) {
+            DefaultSubMenu nestedMenu = DefaultSubMenu.builder()
+                    .id(safeId(item.getId(), fallbackId))
+                    .label(item.getLabel())
+                    .icon(item.getIcon())
+                    .rendered(true)
+                    .build();
+
+            int renderedChildren = 0;
+            for (ResolvedMenuItem child : item.getItems()) {
+                if (!child.isRendered()) {
+                    continue;
+                }
+
+                addMenuElement(nestedMenu, child, nestedMenu.getId() + "_item_" + renderedChildren);
+                renderedChildren++;
+            }
+
+            if (!nestedMenu.getElements().isEmpty()) {
+                parent.getElements().add(nestedMenu);
+            }
+            return;
+        }
+
+        DefaultMenuItem menuItem = DefaultMenuItem.builder()
+                .id(safeId(item.getId(), fallbackId))
+                .value(item.getLabel())
+                .icon(item.getIcon())
+                .url(buildContextRelativeUrl(item.getUrl()))
+                .ajax(false)
+                .rendered(true)
+                .build();
+        parent.getElements().add(menuItem);
     }
 
     private boolean resolveBoolean(String expression) {

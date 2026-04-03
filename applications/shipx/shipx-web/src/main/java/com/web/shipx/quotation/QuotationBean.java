@@ -8,11 +8,24 @@ import com.module.shipx.quotation.IQuotationService;
 import com.module.shipx.quotation.model.QuotationCostLine;
 import com.module.shipx.quotation.model.QuotationCostSection;
 import com.module.shipx.request.ICustomerRequestService;
+import com.lowagie.text.Document;
+import com.lowagie.text.Element;
+import com.lowagie.text.Font;
+import com.lowagie.text.Rectangle;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.Phrase;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfWriter;
 import com.persist.coretix.modal.constants.GeneralConstants;
 import com.persist.coretix.modal.systemmanagement.CurrencyDetails;
 import com.persist.shipx.quotation.Quotation;
 import com.persist.shipx.request.CustomerRequest;
+import com.web.shipx.constants.QuotationStatusConstants;
 import org.apache.commons.collections.CollectionUtils;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
 import org.springframework.context.annotation.Scope;
 
 import javax.faces.application.FacesMessage;
@@ -20,11 +33,16 @@ import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.awt.Color;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -58,6 +76,7 @@ public class QuotationBean implements Serializable {
     private boolean addOperation = true;
     private boolean viewMode;
     private boolean datatableRendered;
+    private boolean editorPanelRendered;
     private int recordsCount;
 
     private Integer selectedCustomerRequestId;
@@ -70,6 +89,7 @@ public class QuotationBean implements Serializable {
     private String originLocation;
     private String destinationLocation;
     private String cargoSummary;
+    private String quotationStatus = QuotationStatusConstants.DRAFT.getValue();
     private Date validUntil;
     private String emailSubject;
     private String emailBody;
@@ -96,6 +116,7 @@ public class QuotationBean implements Serializable {
         addOperation = true;
         viewMode = false;
         datatableRendered = false;
+        editorPanelRendered = false;
         recordsCount = 0;
         resetForm();
     }
@@ -103,6 +124,7 @@ public class QuotationBean implements Serializable {
     public void addButtonAction() {
         addOperation = true;
         viewMode = false;
+        editorPanelRendered = true;
         selectedQuotation = new Quotation();
         resetForm();
     }
@@ -190,6 +212,7 @@ public class QuotationBean implements Serializable {
 
         addOperation = false;
         viewMode = false;
+        editorPanelRendered = true;
         loadQuotationIntoForm(selectedQuotation.getId());
     }
 
@@ -200,6 +223,7 @@ public class QuotationBean implements Serializable {
 
         addOperation = false;
         viewMode = true;
+        editorPanelRendered = true;
         loadQuotationIntoForm(selectedQuotation.getId());
     }
 
@@ -207,7 +231,27 @@ public class QuotationBean implements Serializable {
         addButtonAction();
     }
 
+    public void closeEditorPanelAction() {
+        selectedQuotation = new Quotation();
+        addOperation = true;
+        viewMode = false;
+        editorPanelRendered = false;
+        resetForm();
+    }
+
     public void saveQuotation() {
+        saveQuotationWithStatus(addOperation ? quotationStatus : null);
+    }
+
+    public void saveQuotationAsDraft() {
+        saveQuotationWithStatus(QuotationStatusConstants.DRAFT.getValue());
+    }
+
+    public void saveQuotationAsNew() {
+        saveQuotationWithStatus(QuotationStatusConstants.NEW.getValue());
+    }
+
+    private void saveQuotationWithStatus(String targetStatus) {
         Quotation quotation = addOperation ? new Quotation() : quotationService.getQuotationById(selectedQuotation.getId());
         if (quotation == null) {
             addMessage(FacesMessage.SEVERITY_ERROR, "Error", "Quotation not found.");
@@ -223,7 +267,7 @@ public class QuotationBean implements Serializable {
 
         if (addOperation) {
             quotation.setQuotationReference(generateQuotationReference());
-            quotation.setStatus("DRAFT");
+            quotation.setStatus(resolveQuotationStatus(targetStatus));
             quotation.setCreatedAt(new Timestamp(System.currentTimeMillis()));
             quotation.setCreatedByUserId(userActivityTO.getUserId());
             quotation.setCreatedByUserName(userActivityTO.getUserName());
@@ -233,7 +277,7 @@ public class QuotationBean implements Serializable {
             quotation.setCreatedAt(selectedQuotation.getCreatedAt());
             quotation.setCreatedByUserId(selectedQuotation.getCreatedByUserId());
             quotation.setCreatedByUserName(selectedQuotation.getCreatedByUserName());
-            quotation.setStatus(selectedQuotation.getStatus());
+            quotation.setStatus(resolveQuotationStatus(quotationStatus));
             quotation.setSentAt(selectedQuotation.getSentAt());
             quotation.setSentToEmail(selectedQuotation.getSentToEmail());
             userActivityTO.setActivityType("Update");
@@ -266,6 +310,27 @@ public class QuotationBean implements Serializable {
                         "Unable to send quotation email. Check notification SMTP settings for the current organization.");
                 break;
         }
+    }
+
+    public StreamedContent downloadQuotationPdf(Quotation quotation) {
+        if (quotation == null || quotation.getId() == null) {
+            return null;
+        }
+
+        Quotation persistentQuotation = quotationService.getQuotationById(quotation.getId());
+        if (persistentQuotation == null) {
+            return null;
+        }
+
+        byte[] pdfBytes = buildQuotationPdf(persistentQuotation);
+        String reference = isBlank(persistentQuotation.getQuotationReference())
+                ? "quotation" : persistentQuotation.getQuotationReference().trim();
+
+        return DefaultStreamedContent.builder()
+                .name(reference + ".pdf")
+                .contentType("application/pdf")
+                .stream(() -> new ByteArrayInputStream(pdfBytes))
+                .build();
     }
 
     public void confirmDeleteQuotation() {
@@ -319,11 +384,11 @@ public class QuotationBean implements Serializable {
     }
 
     public int getDraftCount() {
-        return countByStatus("DRAFT");
+        return countByStatus(QuotationStatusConstants.DRAFT.getValue());
     }
 
     public int getSentCount() {
-        return countByStatus("SENT");
+        return countByStatus(QuotationStatusConstants.WAITING_FOR_ACCEPTANCE.getValue());
     }
 
     public int getLinkedRequestCount() {
@@ -366,6 +431,10 @@ public class QuotationBean implements Serializable {
 
     public boolean isDatatableRendered() {
         return datatableRendered;
+    }
+
+    public boolean isEditorPanelRendered() {
+        return editorPanelRendered;
     }
 
     public int getRecordsCount() {
@@ -460,6 +529,18 @@ public class QuotationBean implements Serializable {
         this.validUntil = validUntil;
     }
 
+    public String getQuotationStatus() {
+        return quotationStatus;
+    }
+
+    public void setQuotationStatus(String quotationStatus) {
+        this.quotationStatus = quotationStatus;
+    }
+
+    public List<String> getAvailableQuotationStatuses() {
+        return QuotationStatusConstants.getAllValues();
+    }
+
     public String getEmailSubject() {
         return emailSubject;
     }
@@ -503,6 +584,7 @@ public class QuotationBean implements Serializable {
 
     private void fetchQuotationList() {
         quotationList = new ArrayList<>(quotationService.getQuotationList());
+        synchronizeExpiredStatuses(quotationList);
         datatableRendered = CollectionUtils.isNotEmpty(quotationList);
         recordsCount = quotationList.size();
     }
@@ -514,6 +596,8 @@ public class QuotationBean implements Serializable {
             return;
         }
 
+        persistentQuotation = synchronizeExpiredStatus(persistentQuotation);
+
         selectedQuotation = persistentQuotation;
         selectedCustomerRequestId = persistentQuotation.getCustomerRequest() == null
                 ? null : persistentQuotation.getCustomerRequest().getId();
@@ -523,6 +607,7 @@ public class QuotationBean implements Serializable {
         contactPerson = persistentQuotation.getContactPerson();
         contactNumber = persistentQuotation.getContactNumber();
         recipientEmail = persistentQuotation.getRecipientEmail();
+        quotationStatus = persistentQuotation.getStatus();
         originLocation = persistentQuotation.getOriginLocation();
         destinationLocation = persistentQuotation.getDestinationLocation();
         cargoSummary = persistentQuotation.getCargoSummary();
@@ -551,6 +636,7 @@ public class QuotationBean implements Serializable {
         quotation.setContactPerson(trimToNull(contactPerson));
         quotation.setContactNumber(trimToNull(contactNumber));
         quotation.setRecipientEmail(recipientEmail.trim());
+        quotation.setStatus(resolveQuotationStatus(quotationStatus));
         quotation.setOriginLocation(trimToNull(originLocation));
         quotation.setDestinationLocation(trimToNull(destinationLocation));
         quotation.setCargoSummary(trimToNull(cargoSummary));
@@ -566,6 +652,9 @@ public class QuotationBean implements Serializable {
         quotation.setEmailBody(trimToNull(emailBody));
         quotation.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
         quotation.setFlag(true);
+        if (isExpiredDate(validUntil)) {
+            quotation.setStatus(QuotationStatusConstants.EXPIRED.getValue());
+        }
         return true;
     }
 
@@ -605,6 +694,7 @@ public class QuotationBean implements Serializable {
                 selectedQuotation = new Quotation();
                 addOperation = true;
                 viewMode = false;
+                editorPanelRendered = false;
                 resetForm();
                 break;
             case ENTRY_ALREADY_EXISTS:
@@ -725,6 +815,266 @@ public class QuotationBean implements Serializable {
                 .collect(Collectors.joining(" | "));
     }
 
+    private byte[] buildQuotationPdf(Quotation quotation) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        Document document = new Document(PageSize.A4, 36, 36, 36, 36);
+
+        try {
+            PdfWriter.getInstance(document, outputStream);
+            document.open();
+
+            Font companyFont = new Font(Font.HELVETICA, 13, Font.BOLD, new Color(59, 65, 72));
+            Font bodyFont = new Font(Font.HELVETICA, 10, Font.NORMAL, new Color(59, 65, 72));
+            Font labelFont = new Font(Font.HELVETICA, 10, Font.BOLD, new Color(59, 65, 72));
+            Font quoteTitleFont = new Font(Font.HELVETICA, 28, Font.BOLD, new Color(59, 65, 72));
+            Font tableHeaderFont = new Font(Font.HELVETICA, 10, Font.BOLD, Color.WHITE);
+            Font totalFont = new Font(Font.HELVETICA, 10, Font.BOLD, new Color(59, 65, 72));
+
+            PdfPTable headerTable = new PdfPTable(new float[]{1.1f, 0.9f});
+            headerTable.setWidthPercentage(100f);
+            headerTable.setSpacingAfter(18f);
+
+            PdfPCell leftHeader = new PdfPCell();
+            leftHeader.setBorder(Rectangle.NO_BORDER);
+            leftHeader.addElement(new Paragraph("Your Company Inc.", companyFont));
+            leftHeader.addElement(new Paragraph("1234 Company St,", bodyFont));
+            leftHeader.addElement(new Paragraph("Company Town, ST 12345", bodyFont));
+            leftHeader.setPaddingTop(10f);
+            headerTable.addCell(leftHeader);
+
+            PdfPCell rightHeader = new PdfPCell();
+            rightHeader.setBorder(Rectangle.NO_BORDER);
+            rightHeader.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            PdfPTable logoTable = new PdfPTable(1);
+            logoTable.setWidthPercentage(88f);
+            PdfPCell logoCell = new PdfPCell(new Phrase("Upload Logo", labelFont));
+            logoCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            logoCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+            logoCell.setFixedHeight(42f);
+            logoCell.setBorderColor(new Color(150, 150, 150));
+            logoCell.setPaddingTop(12f);
+            logoTable.addCell(logoCell);
+            rightHeader.addElement(logoTable);
+            headerTable.addCell(rightHeader);
+            document.add(headerTable);
+
+            PdfPTable quoteInfoTable = new PdfPTable(new float[]{1f, 1f});
+            quoteInfoTable.setWidthPercentage(100f);
+            quoteInfoTable.setSpacingAfter(18f);
+
+            PdfPCell billToCell = new PdfPCell();
+            billToCell.setBorder(Rectangle.NO_BORDER);
+            billToCell.addElement(new Paragraph("Bill To", labelFont));
+            billToCell.addElement(new Paragraph(safeText(quotation.getCustomerName(), "Customer Name"), new Font(Font.HELVETICA, 14, Font.BOLD, new Color(59, 65, 72))));
+            if (!isBlank(quotation.getRecipientEmail())) {
+                billToCell.addElement(new Paragraph(quotation.getRecipientEmail().trim(), bodyFont));
+            }
+            if (!isBlank(quotation.getContactPerson())) {
+                billToCell.addElement(new Paragraph(safeText(quotation.getContactPerson(), "-"), bodyFont));
+            }
+            if (!isBlank(quotation.getContactNumber())) {
+                billToCell.addElement(new Paragraph(safeText(quotation.getContactNumber(), "-"), bodyFont));
+            }
+            if (!isBlank(quotation.getOriginLocation()) || !isBlank(quotation.getDestinationLocation())) {
+                billToCell.addElement(new Paragraph(safeText(quotation.getOriginLocation(), "-")
+                        + " -> " + safeText(quotation.getDestinationLocation(), "-"), bodyFont));
+            }
+            quoteInfoTable.addCell(billToCell);
+
+            PdfPCell metaCell = new PdfPCell();
+            metaCell.setBorder(Rectangle.NO_BORDER);
+            Paragraph quoteHeading = new Paragraph("Quotation", quoteTitleFont);
+            quoteHeading.setAlignment(Element.ALIGN_RIGHT);
+            quoteHeading.setSpacingAfter(14f);
+            metaCell.addElement(quoteHeading);
+
+            PdfPTable metaTable = new PdfPTable(new float[]{1f, 1f});
+            metaTable.setWidthPercentage(70f);
+            metaTable.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            addMetaCell(metaTable, "Quote #", labelFont, Element.ALIGN_LEFT);
+            addMetaCell(metaTable, safeText(quotation.getQuotationReference(), "-"), bodyFont, Element.ALIGN_RIGHT);
+            addMetaCell(metaTable, "Quote date", labelFont, Element.ALIGN_LEFT);
+            addMetaCell(metaTable, formatDateValue(quotation.getCreatedAt() == null ? null : new Date(quotation.getCreatedAt().getTime())), bodyFont, Element.ALIGN_RIGHT);
+            addMetaCell(metaTable, "Due date", labelFont, Element.ALIGN_LEFT);
+            addMetaCell(metaTable, formatDateValue(quotation.getValidUntil()), bodyFont, Element.ALIGN_RIGHT);
+            metaCell.addElement(metaTable);
+            quoteInfoTable.addCell(metaCell);
+            document.add(quoteInfoTable);
+
+            PdfPTable itemsTable = new PdfPTable(new float[]{0.7f, 4.0f, 1.2f, 1.3f});
+            itemsTable.setWidthPercentage(100f);
+            itemsTable.setSpacingAfter(12f);
+            addStyledHeaderCell(itemsTable, "QTY", tableHeaderFont);
+            addStyledHeaderCell(itemsTable, "Description", tableHeaderFont);
+            addStyledHeaderCell(itemsTable, "Unit Price", tableHeaderFont);
+            addStyledHeaderCell(itemsTable, "Amount", tableHeaderFont);
+
+            List<QuotationCostSection> sections = cleanSections(deserializeSections(quotation.getPricingBreakdownJson()));
+            for (QuotationCostSection section : sections) {
+                PdfPCell sectionCell = new PdfPCell(new Phrase(safeText(section.getTitle(), "Costing Section"), labelFont));
+                sectionCell.setColspan(4);
+                sectionCell.setBorder(Rectangle.NO_BORDER);
+                sectionCell.setPaddingTop(8f);
+                sectionCell.setPaddingBottom(4f);
+                itemsTable.addCell(sectionCell);
+
+                for (QuotationCostLine line : section.getLines()) {
+                    itemsTable.addCell(buildLineCell(formatQtyValue(line.getQuantity()), Element.ALIGN_CENTER));
+                    itemsTable.addCell(buildLineCell(buildDescriptionValue(line), Element.ALIGN_LEFT));
+                    itemsTable.addCell(buildLineCell(formatOptionalAmount(line.getUnitPrice()), Element.ALIGN_RIGHT));
+                    itemsTable.addCell(buildLineCell(formatCurrencyAmount(line), Element.ALIGN_RIGHT));
+                }
+            }
+            document.add(itemsTable);
+
+            PdfPTable totalsTable = new PdfPTable(new float[]{1.3f, 0.7f});
+            totalsTable.setWidthPercentage(44f);
+            totalsTable.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            totalsTable.setSpacingAfter(20f);
+            addTotalRow(totalsTable, "Subtotal", safeText(quotation.getTotalSummaryLabel(), "No costing yet"), bodyFont, false);
+            addTotalRow(totalsTable, "Sales Tax (0%)", "$0.00", bodyFont, false);
+            addTotalRow(totalsTable, "Total (" + safeText(quotation.getCurrencyCode(), "USD") + ")", safeText(quotation.getTotalSummaryLabel(), "No costing yet"), totalFont, true);
+            document.add(totalsTable);
+
+            Paragraph termsTitle = new Paragraph("Terms and Conditions", labelFont);
+            termsTitle.setSpacingAfter(6f);
+            document.add(termsTitle);
+            List<String> notes = cleanNotes(deserializeNotes(quotation.getNoteLinesJson()));
+            if (notes.isEmpty()) {
+                document.add(new Paragraph("Payment is due on or before the validity date.", bodyFont));
+                document.add(new Paragraph("Please review the quotation details before confirmation.", bodyFont));
+            } else {
+                for (String note : notes) {
+                    document.add(new Paragraph(note, bodyFont));
+                }
+            }
+
+            PdfPTable signatureTable = new PdfPTable(1);
+            signatureTable.setWidthPercentage(40f);
+            signatureTable.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            signatureTable.setSpacingBefore(60f);
+            PdfPCell signatureLine = new PdfPCell(new Phrase("customer signature", bodyFont));
+            signatureLine.setHorizontalAlignment(Element.ALIGN_CENTER);
+            signatureLine.setBorder(Rectangle.TOP);
+            signatureLine.setPaddingTop(6f);
+            signatureLine.setBorderColorTop(new Color(80, 80, 80));
+            signatureLine.setBorderWidthTop(1f);
+            signatureLine.setBorderWidthLeft(0f);
+            signatureLine.setBorderWidthRight(0f);
+            signatureLine.setBorderWidthBottom(0f);
+            signatureTable.addCell(signatureLine);
+            document.add(signatureTable);
+        } catch (Exception exception) {
+            throw new IllegalStateException("Unable to generate quotation PDF.", exception);
+        } finally {
+            document.close();
+        }
+
+        return outputStream.toByteArray();
+    }
+
+    private void addPdfHeaderCell(PdfPTable table, String value) {
+        PdfPCell cell = new PdfPCell(new Phrase(value));
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cell.setPadding(6f);
+        table.addCell(cell);
+    }
+
+    private void addStyledHeaderCell(PdfPTable table, String value, Font font) {
+        PdfPCell cell = new PdfPCell(new Phrase(value, font));
+        cell.setHorizontalAlignment(Element.ALIGN_LEFT);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cell.setBackgroundColor(new Color(17, 43, 77));
+        cell.setBorder(Rectangle.NO_BORDER);
+        cell.setPadding(7f);
+        table.addCell(cell);
+    }
+
+    private void addMetaCell(PdfPTable table, String value, Font font, int alignment) {
+        PdfPCell cell = new PdfPCell(new Phrase(value, font));
+        cell.setBorder(Rectangle.NO_BORDER);
+        cell.setHorizontalAlignment(alignment);
+        cell.setPadding(3f);
+        table.addCell(cell);
+    }
+
+    private void addTotalRow(PdfPTable table, String label, String amount, Font font, boolean highlight) {
+        PdfPCell labelCell = new PdfPCell(new Phrase(label, font));
+        PdfPCell amountCell = new PdfPCell(new Phrase(amount, font));
+        labelCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+        amountCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        labelCell.setPadding(6f);
+        amountCell.setPadding(6f);
+        if (highlight) {
+            Color bg = new Color(240, 242, 245);
+            labelCell.setBackgroundColor(bg);
+            amountCell.setBackgroundColor(bg);
+            labelCell.setBorder(Rectangle.TOP | Rectangle.BOTTOM);
+            amountCell.setBorder(Rectangle.TOP | Rectangle.BOTTOM);
+        } else {
+            labelCell.setBorder(Rectangle.NO_BORDER);
+            amountCell.setBorder(Rectangle.NO_BORDER);
+        }
+        table.addCell(labelCell);
+        table.addCell(amountCell);
+    }
+
+    private PdfPCell buildLineCell(String value, int alignment) {
+        PdfPCell cell = new PdfPCell(new Phrase(value));
+        cell.setHorizontalAlignment(alignment);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cell.setPadding(6f);
+        cell.setBorder(Rectangle.NO_BORDER);
+        return cell;
+    }
+
+    private PdfPCell buildPdfCell(String value, int alignment) {
+        PdfPCell cell = new PdfPCell(new Phrase(value));
+        cell.setHorizontalAlignment(alignment);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        cell.setPadding(5f);
+        return cell;
+    }
+
+    private String formatOptionalAmount(BigDecimal value) {
+        return value == null ? "-" : formatAmount(value);
+    }
+
+    private String formatQtyValue(BigDecimal value) {
+        if (value == null) {
+            return "-";
+        }
+        BigDecimal normalized = value.stripTrailingZeros();
+        return normalized.scale() <= 0 ? normalized.toPlainString() : value.toPlainString();
+    }
+
+    private String buildDescriptionValue(QuotationCostLine line) {
+        StringBuilder builder = new StringBuilder(safeText(line.getDescription(), "-"));
+        if (!isBlank(line.getUnit())) {
+            builder.append(" (").append(line.getUnit().trim()).append(")");
+        }
+        if (!isBlank(line.getBasis())) {
+            builder.append("\n").append(line.getBasis().trim());
+        }
+        return builder.toString();
+    }
+
+    private String formatCurrencyAmount(QuotationCostLine line) {
+        if (line == null || line.getAmount() == null) {
+            return "-";
+        }
+        String currency = trimToNull(line.getCurrencyCode());
+        return (currency == null ? "" : currency + " ") + formatAmount(line.getAmount());
+    }
+
+    private String formatDateValue(Date value) {
+        return value == null ? "-" : new SimpleDateFormat("dd-MMM-yyyy").format(value);
+    }
+
+    private String safeText(String value, String fallback) {
+        return isBlank(value) ? fallback : value.trim();
+    }
+
     private void mergeCurrencyTotals(Map<String, BigDecimal> target, Map<String, BigDecimal> source) {
         for (Map.Entry<String, BigDecimal> entry : source.entrySet()) {
             target.merge(entry.getKey(), entry.getValue(), BigDecimal::add);
@@ -831,6 +1181,7 @@ public class QuotationBean implements Serializable {
         contactPerson = null;
         contactNumber = null;
         recipientEmail = null;
+        quotationStatus = QuotationStatusConstants.DRAFT.getValue();
         originLocation = null;
         destinationLocation = null;
         cargoSummary = null;
@@ -844,6 +1195,29 @@ public class QuotationBean implements Serializable {
 
     private void addMessage(FacesMessage.Severity severity, String summary, String detail) {
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, summary, detail));
+    }
+
+    private void synchronizeExpiredStatuses(List<Quotation> quotations) {
+        if (quotations == null) {
+            return;
+        }
+        for (int index = 0; index < quotations.size(); index++) {
+            quotations.set(index, synchronizeExpiredStatus(quotations.get(index)));
+        }
+    }
+
+    private Quotation synchronizeExpiredStatus(Quotation quotation) {
+        if (quotation == null || quotation.getId() == null || !isExpiredDate(quotation.getValidUntil())) {
+            return quotation;
+        }
+        if (QuotationStatusConstants.EXPIRED.getValue().equalsIgnoreCase(quotation.getStatus())) {
+            return quotation;
+        }
+
+        quotation.setStatus(QuotationStatusConstants.EXPIRED.getValue());
+        quotation.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+        quotationService.updateQuotation(populateExpiryUserActivity(), quotation);
+        return quotationService.getQuotationById(quotation.getId());
     }
 
     private boolean isBlank(String value) {
@@ -882,5 +1256,38 @@ public class QuotationBean implements Serializable {
 
     private BigDecimal sanitizeDecimal(BigDecimal value, int scale) {
         return value == null ? null : value.setScale(scale, RoundingMode.HALF_UP);
+    }
+
+    private String resolveQuotationStatus(String statusValue) {
+        if (isBlank(statusValue)) {
+            return QuotationStatusConstants.DRAFT.getValue();
+        }
+        try {
+            if (isExpiredDate(validUntil)) {
+                return QuotationStatusConstants.EXPIRED.getValue();
+            }
+            return QuotationStatusConstants.getByValue(statusValue).getValue();
+        } catch (IllegalArgumentException exception) {
+            return QuotationStatusConstants.DRAFT.getValue();
+        }
+    }
+
+    private boolean isExpiredDate(Date value) {
+        if (value == null) {
+            return false;
+        }
+        LocalDate validDate;
+        if (value instanceof java.sql.Date) {
+            validDate = ((java.sql.Date) value).toLocalDate();
+        } else {
+            validDate = value.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        }
+        return validDate.isBefore(LocalDate.now());
+    }
+
+    private UserActivityTO populateExpiryUserActivity() {
+        UserActivityTO userActivityTO = populateUserActivityTO();
+        userActivityTO.setActivityType("Auto Expire");
+        return userActivityTO;
     }
 }

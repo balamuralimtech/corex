@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="content">
+        <f:event listener="#{invoiceSettingsBean.initializePageAttributes}" type="preRenderView"/>
+
+        <h:form id="form">
+            <p:remoteCommand name="refreshInvoicePreview" process="@form" update="form:previewPanel"/>
+            <h:outputScript target="body">
+                (function() {
+                    let previewTimer = null;
+                    function bindInvoiceToolbarPreview() {
+                        const toolbar = document.querySelector("[id='form:invoiceToolbar']");
+                        if (!toolbar || toolbar.dataset.previewBound === 'true') { return; }
+                        toolbar.dataset.previewBound = 'true';
+                        function schedulePreview(event) {
+                            if (event &amp;&amp; event.target &amp;&amp; event.target.closest('.ui-button')) { return; }
+                            if (previewTimer) { clearTimeout(previewTimer); }
+                            previewTimer = setTimeout(function() {
+                                if (typeof refreshInvoicePreview === 'function') { refreshInvoicePreview(); }
+                            }, 180);
+                        }
+                        toolbar.addEventListener('input', schedulePreview);
+                        toolbar.addEventListener('change', schedulePreview);
+                    }
+                    if (document.readyState === 'loading') {
+                        document.addEventListener('DOMContentLoaded', bindInvoiceToolbarPreview);
+                    } else {
+                        bindInvoiceToolbarPreview();
+                    }
+                    document.addEventListener('pfAjaxComplete', bindInvoiceToolbarPreview);
+                })();
+            </h:outputScript>
+            <h:inputHidden id="downloadPreviewBodyHtml" value="#{invoiceSettingsBean.downloadPreviewBodyHtml}"/>
+            <h:inputHidden id="downloadPreviewFooterHtml" value="#{invoiceSettingsBean.downloadPreviewFooterHtml}"/>
+
+            <div class="card">
+                <p:messages id="messages" showDetail="true" closable="true"/>
+                <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-start gap-3 mb-4">
+                    <div>
+                        <h1 style="margin:0;">Invoice Settings</h1>
+                        <p style="margin:.5rem 0 0 0;color:#64748b;">
+                            Configure invoice presentation with the same clinic header and footer concept used in prescriptions.
+                        </p>
+                    </div>
+                    <div class="surface-100 border-round px-3 py-2">
+                        <label for="organizationSelect"><strong>Organization:</strong></label>
+                        <p:selectOneMenu id="organizationSelect" value="#{invoiceSettingsBean.selectedOrganizationId}" style="display:block;min-width:18rem;margin-top:.35rem;">
+                            <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                            <f:selectItems value="#{invoiceSettingsBean.organizationList}" var="organization" itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
+                            <p:ajax listener="#{invoiceSettingsBean.onOrganizationChange}" process="@this" update="form:invoiceSettingsPanel form:messages"/>
+                        </p:selectOneMenu>
+                    </div>
+                </div>
+
+                <p:outputPanel id="invoiceSettingsPanel">
+                    <div class="flex flex-column lg:flex-row gap-4 align-items-start">
+                        <div style="width:100%;order:1;flex:0 0 70%;">
+                            <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;background:#f8fafc;">
+                                <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-3">
+                                    <div>
+                                        <h3 style="margin:0;">Live Preview</h3>
+                                        <div style="margin-top:.35rem;color:#64748b;font-size:.9rem;">
+                                            Invoice preview updates while editing. Save when you are satisfied with the layout.
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-wrap gap-2">
+                                        <p:commandButton value="Save" icon="pi pi-check" actionListener="#{invoiceSettingsBean.saveInvoiceSettings}" process="@form" update="form:messages form:invoiceSettingsPanel" styleClass="ui-button-success ui-button-sm"/>
+                                        <p:commandButton value="Refresh" icon="pi pi-eye" process="@form" update="form:previewPanel" styleClass="ui-button-info ui-button-sm"/>
+                                        <p:commandButton value="Print" type="button" icon="pi pi-print"
+                                                         onclick="(function(){const preview=document.querySelector(&quot;[id='form:previewPanel']&quot;);const bodyField=document.getElementById('form:downloadPreviewBodyHtml');const footerField=document.getElementById('form:downloadPreviewFooterHtml');if(!preview||!bodyField||!footerField){return false;}const previewClone=preview.cloneNode(true);const footer=previewClone.querySelector('.invoice-preview-footer');footerField.value=footer?footer.outerHTML:'';if(footer&amp;&amp;footer.parentNode){footer.parentNode.removeChild(footer);}bodyField.value=previewClone.innerHTML;const iframe=document.createElement('iframe');iframe.style.position='fixed';iframe.style.right='0';iframe.style.bottom='0';iframe.style.width='0';iframe.style.height='0';iframe.style.border='0';document.body.appendChild(iframe);const printDocument=iframe.contentWindow.document;printDocument.open();printDocument.write('&lt;html&gt;&lt;head&gt;&lt;title&gt;Invoice Sample&lt;/title&gt;&lt;style&gt;html,body{font-family:Helvetica,Arial,sans-serif;margin:0;padding:0;background:#fff;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;overflow:hidden !important;}body{background:#fff;overflow:hidden !important;}.preview-shell{position:relative;box-sizing:border-box;width:186mm;height:272mm;max-height:272mm;margin:0 auto;padding:0;overflow:hidden !important;border:none !important;outline:none !important;box-shadow:none !important;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;}.preview-shell *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;box-sizing:border-box;}.print-body{padding-bottom:42mm;overflow:hidden !important;max-height:230mm;}.print-body .invoice-preview,.print-body .card{border:none !important;outline:none !important;box-shadow:none !important;background:#fff !important;}.print-footer{position:absolute;left:24px;right:24px;bottom:18px;}.print-footer .invoice-preview-footer{border:none !important;outline:none !important;box-shadow:none !important;}@page{size:A4 portrait;margin:12mm;}@media print{html,body{background:#fff !important;overflow:hidden !important;}body{padding:0;margin:0;overflow:hidden !important;}}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;div class=&quot;preview-shell&quot;&gt;&lt;div class=&quot;print-body&quot;&gt;'+bodyField.value+'&lt;/div&gt;'+(footerField.value?'&lt;div class=&quot;print-footer&quot;&gt;'+footerField.value+'&lt;/div&gt;':'')+'&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;');printDocument.close();setTimeout(function(){iframe.contentWindow.focus();iframe.contentWindow.print();setTimeout(function(){document.body.removeChild(iframe);},1000);},250);return false;})(); return false;"
+                                                         styleClass="ui-button-secondary ui-button-sm"/>
+                                        <p:commandButton value="Download" ajax="false" icon="pi pi-download" process="@form" actionListener="#{invoiceSettingsBean.prepareSampleInvoiceDownload}"
+                                                         onclick="(function(){const preview=document.querySelector(&quot;[id='form:previewPanel']&quot;);const bodyField=document.getElementById('form:downloadPreviewBodyHtml');const footerField=document.getElementById('form:downloadPreviewFooterHtml');if(!preview||!bodyField||!footerField){return false;}const previewClone=preview.cloneNode(true);const footer=previewClone.querySelector('.invoice-preview-footer');footerField.value=footer?footer.outerHTML:'';if(footer&amp;&amp;footer.parentNode){footer.parentNode.removeChild(footer);}bodyField.value=previewClone.innerHTML;return true;})();"
+                                                         styleClass="ui-button-help ui-button-sm">
+                                            <p:fileDownload value="#{invoiceSettingsBean.sampleInvoicePdf}"/>
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                                <p:outputPanel id="previewPanel" layout="block">
+                                    <div class="invoice-preview" style="position:relative;margin-top:1rem;background:#fff;border:1px solid #cbd5e1;border-radius:12px;padding:24px;color:#{invoiceSettingsBean.previewTextColor};font-family:'#{invoiceSettingsBean.previewFontFamily}', Helvetica, Arial, sans-serif;font-size:#{invoiceSettingsBean.invoiceSettings.fontSize}px;min-height:1120px;display:flex;flex-direction:column;overflow:hidden;">
+                                        <h:panelGroup rendered="#{invoiceSettingsBean.invoiceSettings.showWatermark}">
+                                            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:.08;font-size:4rem;font-weight:700;transform:rotate(-24deg);color:#{invoiceSettingsBean.previewThemeColor};">
+                                                #{invoiceSettingsBean.previewWatermarkText}
+                                            </div>
+                                        </h:panelGroup>
+                                        <div style="position:relative;z-index:1;display:flex;flex-direction:column;flex:1;">
+                                            <div>
+                                                <div style="display:grid;grid-template-columns:1.5fr .8fr 1.5fr;align-items:start;gap:1rem;padding-bottom:10px;">
+                                                    <div>
+                                                        <div style="font-size:1.3rem;font-weight:700;">#{invoiceSettingsBean.previewClinicName}</div>
+                                                        <div style="margin-top:4px;font-size:.85rem;">#{invoiceSettingsBean.previewClinicTagline}</div>
+                                                    </div>
+                                                    <div style="display:flex;justify-content:center;">
+                                                        <h:panelGroup rendered="#{invoiceSettingsBean.invoiceSettings.showClinicLogo}">
+                                                            <h:panelGroup rendered="#{invoiceSettingsBean.previewOrganizationLogoAvailable}">
+                                                                <img src="#{invoiceSettingsBean.previewOrganizationLogoDataUri}" alt="Organization Logo" style="width:#{invoiceSettingsBean.previewLogoSizePx}px;height:#{invoiceSettingsBean.previewLogoSizePx}px;object-fit:contain;display:block;"/>
+                                                            </h:panelGroup>
+                                                            <h:panelGroup rendered="#{not invoiceSettingsBean.previewOrganizationLogoAvailable}">
+                                                                <div style="width:#{invoiceSettingsBean.previewLogoSizePx}px;height:#{invoiceSettingsBean.previewLogoSizePx}px;border:2px solid #9ca3af;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:.8rem;">LOGO</div>
+                                                            </h:panelGroup>
+                                                        </h:panelGroup>
+                                                    </div>
+                                                    <div style="text-align:right;font-size:.84rem;line-height:1.5;">
+                                                        <div style="font-size:1.3rem;font-weight:700;">#{invoiceSettingsBean.previewDoctorName}</div>
+                                                        <div>#{invoiceSettingsBean.previewDoctorQualification}</div>
+                                                        <div>#{invoiceSettingsBean.previewDoctorSpecialization}</div>
+                                                        <div>Email: #{invoiceSettingsBean.previewClinicEmail}</div>
+                                                        <div>Reg. No: #{invoiceSettingsBean.previewRegistrationNumber}</div>
+                                                    </div>
+                                                </div>
+                                                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-top:18px;">
+                                                    <div>
+                                                        <div style="font-size:1.6rem;font-weight:700;color:#{invoiceSettingsBean.previewThemeColor};text-transform:uppercase;">#{invoiceSettingsBean.invoiceSettings.invoiceTitle}</div>
+                                                        <div style="margin-top:8px;font-size:.9rem;"><strong>#{invoiceSettingsBean.invoiceSettings.invoiceNumberLabel}:</strong> INV-XXX-0001</div>
+                                                    </div>
+                                                    <div style="text-align:right;font-size:.85rem;line-height:1.7;">
+                                                        <div><strong>#{invoiceSettingsBean.invoiceSettings.issueDateLabel}:</strong> XX/XX/XXXX</div>
+                                                        <div><strong>#{invoiceSettingsBean.invoiceSettings.dueDateLabel}:</strong> XX/XX/XXXX</div>
+                                                        <div><strong>#{invoiceSettingsBean.invoiceSettings.paidByLabel}:</strong> XXXX XXXX</div>
+                                                    </div>
+                                                </div>
+                                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:20px;">
+                                                    <div style="border:1px solid #d1d5db;border-radius:10px;padding:14px;">
+                                                        <div style="font-size:.82rem;font-weight:700;color:#{invoiceSettingsBean.previewThemeColor};text-transform:uppercase;">#{invoiceSettingsBean.invoiceSettings.billFromLabel}</div>
+                                                        <div style="margin-top:10px;font-size:.9rem;line-height:1.75;">
+                                                            <div><strong>#{invoiceSettingsBean.previewClinicName}</strong></div>
+                                                            <div>#{invoiceSettingsBean.previewClinicAddress}</div>
+                                                            <div>#{invoiceSettingsBean.previewClinicEmail}</div>
+                                                            <div>#{invoiceSettingsBean.previewAppointmentContact}</div>
+                                                        </div>
+                                                    </div>
+                                                    <div style="border:1px solid #d1d5db;border-radius:10px;padding:14px;">
+                                                        <div style="font-size:.82rem;font-weight:700;color:#{invoiceSettingsBean.previewThemeColor};text-transform:uppercase;">#{invoiceSettingsBean.invoiceSettings.billToLabel}</div>
+                                                        <div style="margin-top:10px;font-size:.9rem;line-height:1.75;">
+                                                            <div><strong>XXX XXXX XXXXX</strong></div>
+                                                            <div>XXX XXXXXXX XXXXX</div>
+                                                            <div>XXXXXX, XXXXXXX</div>
+                                                            <div>XXXX-XXX-XXXX</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div style="margin-top:20px;border:1px solid #9ca3af;overflow:hidden;border-radius:10px;">
+                                                    <div style="display:grid;grid-template-columns:.55fr 2.8fr .9fr 1.1fr 1.2fr;background:#{invoiceSettingsBean.previewThemeColor};color:#fff;font-weight:600;font-size:.85rem;">
+                                                        <div style="padding:10px 12px;">S.No</div>
+                                                        <div style="padding:10px 12px;">#{invoiceSettingsBean.invoiceSettings.descriptionColumnLabel}</div>
+                                                        <div style="padding:10px 12px;">#{invoiceSettingsBean.invoiceSettings.quantityColumnLabel}</div>
+                                                        <div style="padding:10px 12px;">#{invoiceSettingsBean.invoiceSettings.priceColumnLabel}</div>
+                                                        <div style="padding:10px 12px;">#{invoiceSettingsBean.invoiceSettings.totalColumnLabel}</div>
+                                                    </div>
+                                                    <div style="display:grid;grid-template-columns:.55fr 2.8fr .9fr 1.1fr 1.2fr;border-top:1px solid #d1d5db;font-size:.84rem;">
+                                                        <div style="padding:10px 12px;">1</div><div style="padding:10px 12px;">XXX XXXX XXXXX XXXXX</div><div style="padding:10px 12px;">1</div><div style="padding:10px 12px;">#{invoiceSettingsBean.previewCurrencySymbol} XXX.XX</div><div style="padding:10px 12px;">#{invoiceSettingsBean.previewCurrencySymbol} XXX.XX</div>
+                                                    </div>
+                                                    <div style="display:grid;grid-template-columns:.55fr 2.8fr .9fr 1.1fr 1.2fr;border-top:1px solid #d1d5db;font-size:.84rem;">
+                                                        <div style="padding:10px 12px;">2</div><div style="padding:10px 12px;">XXX XXXXX XXXXX XXXXX</div><div style="padding:10px 12px;">2</div><div style="padding:10px 12px;">#{invoiceSettingsBean.previewCurrencySymbol} XX.XX</div><div style="padding:10px 12px;">#{invoiceSettingsBean.previewCurrencySymbol} XXX.XX</div>
+                                                    </div>
+                                                    <div style="display:grid;grid-template-columns:.55fr 2.8fr .9fr 1.1fr 1.2fr;border-top:1px solid #d1d5db;font-size:.84rem;">
+                                                        <div style="padding:10px 12px;">3</div><div style="padding:10px 12px;">XXX XXXXXXX XXXXX</div><div style="padding:10px 12px;">1</div><div style="padding:10px 12px;">#{invoiceSettingsBean.previewCurrencySymbol} XX.XX</div><div style="padding:10px 12px;">#{invoiceSettingsBean.previewCurrencySymbol} XX.XX</div>
+                                                    </div>
+                                                    <div style="display:grid;grid-template-columns:4.25fr 1.2fr;border-top:1px solid #94a3b8;background:#f8fafc;font-size:.9rem;font-weight:700;">
+                                                        <div style="padding:12px;text-align:right;">#{invoiceSettingsBean.invoiceSettings.grandTotalLabel}</div>
+                                                        <div style="padding:12px;">#{invoiceSettingsBean.previewCurrencySymbol} XXX.XX</div>
+                                                    </div>
+                                                </div>
+                                                <div style="margin-top:14px;font-size:.86rem;line-height:1.7;">#{invoiceSettingsBean.invoiceSettings.footerNote}</div>
+                                            </div>
+                                            <div class="invoice-preview-footer" style="margin-top:auto;padding-top:24px;">
+                                                <div style="text-align:center;font-size:.9rem;">#{invoiceSettingsBean.previewClinicAddress}</div>
+                                                <div style="text-align:center;font-size:1rem;font-weight:700;margin-top:4px;">For Appointment : #{invoiceSettingsBean.previewAppointmentContact}</div>
+                                                <div style="margin-top:6px;text-align:center;background:#{invoiceSettingsBean.previewThemeColor};color:#fff;padding:6px 10px;font-size:.8rem;">#{invoiceSettingsBean.previewScheduleLineOne}</div>
+                                                <div style="text-align:center;background:#{invoiceSettingsBean.previewThemeColor};color:#fff;padding:6px 10px;font-size:.8rem;border-top:1px solid rgba(255,255,255,.35);">#{invoiceSettingsBean.previewScheduleLineTwo}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </p:outputPanel>
+                            </div>
+                        </div>
+
+                        <div id="invoiceToolbar" style="width:100%;order:2;flex:0 0 30%;position:sticky;top:1rem;">
+                            <div class="grid">
+                                <div class="col-12">
+                                    <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
+                                        <h3 style="margin-top:0;">Layout</h3>
+                                        <div class="grid">
+                                            <div class="col-12 md:col-6 lg:col-12">
+                                                <label>Page Size</label>
+                                                <p:selectOneMenu value="#{invoiceSettingsBean.invoiceSettings.pageSize}" style="width:100%;">
+                                                    <f:selectItems value="#{invoiceSettingsBean.availablePageSizes}"/>
+                                                    <p:ajax process="@this" update="form:previewPanel"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                            <div class="col-12 md:col-6 lg:col-12">
+                                                <label>Template</label>
+                                                <p:selectOneMenu value="#{invoiceSettingsBean.invoiceSettings.templateName}" style="width:100%;">
+                                                    <f:selectItems value="#{invoiceSettingsBean.availableTemplates}"/>
+                                                    <p:ajax process="@this" update="form:previewPanel"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                            <div class="col-12">
+                                                <label>Invoice Title</label>
+                                                <p:inputText value="#{invoiceSettingsBean.invoiceSettings.invoiceTitle}" style="width:100%;"/>
+                                            </div>
+                                            <div class="col-12 md:col-6 lg:col-12">
+                                                <label>Font Family</label>
+                                                <p:selectOneMenu value="#{invoiceSettingsBean.invoiceSettings.fontFamily}" style="width:100%;">
+                                                    <f:selectItems value="#{invoiceSettingsBean.availableFontFamilies}"/>
+                                                    <p:ajax process="@this" update="form:previewPanel"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                            <div class="col-12 md:col-6 lg:col-12">
+                                                <label>Font Size</label>
+                                                <p:spinner value="#{invoiceSettingsBean.invoiceSettings.fontSize}" min="8" max="24" style="width:100%;">
+                                                    <p:ajax process="@this" update="form:previewPanel"/>
+                                                </p:spinner>
+                                            </div>
+                                            <div class="col-12 md:col-6 lg:col-12">
+                                                <label>Logo Size</label>
+                                                <p:selectOneMenu value="#{invoiceSettingsBean.invoiceSettings.logoSize}" style="width:100%;">
+                                                    <f:selectItems value="#{invoiceSettingsBean.availableLogoSizes}"/>
+                                                    <p:ajax process="@this" update="form:previewPanel"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
+                                        <h3 style="margin-top:0;">Colors</h3>
+                                        <div class="grid">
+                                            <div class="col-12 md:col-6 lg:col-12">
+                                                <label>Theme Color</label>
+                                                <p:colorPicker value="#{invoiceSettingsBean.invoiceSettings.themeColor}" format="hex" style="width:100%;">
+                                                    <p:ajax event="change" process="@this" update="form:previewPanel"/>
+                                                </p:colorPicker>
+                                            </div>
+                                            <div class="col-12 md:col-6 lg:col-12">
+                                                <label>Text Color</label>
+                                                <p:colorPicker value="#{invoiceSettingsBean.invoiceSettings.textColor}" format="hex" style="width:100%;">
+                                                    <p:ajax event="change" process="@this" update="form:previewPanel"/>
+                                                </p:colorPicker>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
+                                        <h3 style="margin-top:0;">Invoice Labels</h3>
+                                        <div class="grid">
+                                            <div class="col-12">
+                                                <label>Invoice Number Label</label>
+                                                <p:inputText value="#{invoiceSettingsBean.invoiceSettings.invoiceNumberLabel}" style="width:100%;"/>
+                                            </div>
+                                            <div class="col-12 md:col-6 lg:col-12">
+                                                <label>Bill From Label</label>
+                                                <p:inputText value="#{invoiceSettingsBean.invoiceSettings.billFromLabel}" style="width:100%;"/>
+                                            </div>
+                                            <div class="col-12 md:col-6 lg:col-12">
+                                                <label>Bill To Label</label>
+                                                <p:inputText value="#{invoiceSettingsBean.invoiceSettings.billToLabel}" style="width:100%;"/>
+                                            </div>
+                                            <div class="col-12 md:col-6 lg:col-12">
+                                                <label>Issue Date Label</label>
+                                                <p:inputText value="#{invoiceSettingsBean.invoiceSettings.issueDateLabel}" style="width:100%;"/>
+                                            </div>
+                                            <div class="col-12 md:col-6 lg:col-12">
+                                                <label>Due Date Label</label>
+                                                <p:inputText value="#{invoiceSettingsBean.invoiceSettings.dueDateLabel}" style="width:100%;"/>
+                                            </div>
+                                            <div class="col-12">
+                                                <label>Paid By Label</label>
+                                                <p:inputText value="#{invoiceSettingsBean.invoiceSettings.paidByLabel}" style="width:100%;"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
+                                        <h3 style="margin-top:0;">Table Labels</h3>
+                                        <div class="grid">
+                                            <div class="col-12">
+                                                <label>Description Column</label>
+                                                <p:inputText value="#{invoiceSettingsBean.invoiceSettings.descriptionColumnLabel}" style="width:100%;"/>
+                                            </div>
+                                            <div class="col-12 md:col-4 lg:col-12">
+                                                <label>Quantity Column</label>
+                                                <p:inputText value="#{invoiceSettingsBean.invoiceSettings.quantityColumnLabel}" style="width:100%;"/>
+                                            </div>
+                                            <div class="col-12 md:col-4 lg:col-12">
+                                                <label>Price Column</label>
+                                                <p:inputText value="#{invoiceSettingsBean.invoiceSettings.priceColumnLabel}" style="width:100%;"/>
+                                            </div>
+                                            <div class="col-12 md:col-4 lg:col-12">
+                                                <label>Total Column</label>
+                                                <p:inputText value="#{invoiceSettingsBean.invoiceSettings.totalColumnLabel}" style="width:100%;"/>
+                                            </div>
+                                            <div class="col-12">
+                                                <label>Grand Total Label</label>
+                                                <p:inputText value="#{invoiceSettingsBean.invoiceSettings.grandTotalLabel}" style="width:100%;"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
+                                        <h3 style="margin-top:0;">Visibility</h3>
+                                        <div class="field-checkbox mb-3">
+                                            <p:selectBooleanCheckbox id="showInvoiceLogo" value="#{invoiceSettingsBean.invoiceSettings.showClinicLogo}">
+                                                <p:ajax process="@this" update="form:previewPanel"/>
+                                            </p:selectBooleanCheckbox>
+                                            <p:outputLabel for="showInvoiceLogo" value="Show clinic logo"/>
+                                        </div>
+                                        <div class="field-checkbox mb-3">
+                                            <p:selectBooleanCheckbox id="showInvoiceWatermark" value="#{invoiceSettingsBean.invoiceSettings.showWatermark}">
+                                                <p:ajax process="@this" update="form:previewPanel"/>
+                                            </p:selectBooleanCheckbox>
+                                            <p:outputLabel for="showInvoiceWatermark" value="Show watermark"/>
+                                        </div>
+                                        <div class="col-12" style="padding:0;">
+                                            <label>Watermark Text</label>
+                                            <p:inputText value="#{invoiceSettingsBean.invoiceSettings.watermarkText}" style="width:100%;"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
+                                        <h3 style="margin-top:0;">Notes</h3>
+                                        <div class="grid">
+                                            <div class="col-12">
+                                                <label>Footer Note</label>
+                                                <p:inputTextarea value="#{invoiceSettingsBean.invoiceSettings.footerNote}" rows="4" autoResize="false" maxlength="255" style="width:100%;"/>
+                                            </div>
+                                            <div class="col-12">
+                                                <label>Internal Notes</label>
+                                                <p:inputTextarea value="#{invoiceSettingsBean.invoiceSettings.notes}" rows="4" autoResize="false" maxlength="500" style="width:100%;"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </p:outputPanel>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

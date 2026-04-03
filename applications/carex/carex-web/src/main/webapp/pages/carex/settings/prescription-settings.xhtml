@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="content">
+        <f:event listener="#{prescriptionSettingsBean.initializePageAttributes}" type="preRenderView"/>
+
+        <h:form id="form">
+            <p:remoteCommand name="refreshPrescriptionPreview"
+                             process="@form"
+                             update="form:previewPanel"/>
+
+            <h:outputScript target="body">
+                (function() {
+                    let autoSaveTimer = null;
+
+                    function bindPrescriptionToolbarAutoSave() {
+                        const toolbar = document.querySelector("[id='form:prescriptionToolbar']");
+                        if (!toolbar || toolbar.dataset.autosaveBound === 'true') {
+                            return;
+                        }
+
+                        toolbar.dataset.autosaveBound = 'true';
+
+                        function schedulePreview(event) {
+                            if (event &amp;&amp; event.target &amp;&amp; event.target.closest('.ui-button')) {
+                                return;
+                            }
+                            if (autoSaveTimer) {
+                                clearTimeout(autoSaveTimer);
+                            }
+                            autoSaveTimer = setTimeout(function() {
+                                if (typeof refreshPrescriptionPreview === 'function') {
+                                    refreshPrescriptionPreview();
+                                }
+                            }, 200);
+                        }
+
+                        toolbar.addEventListener('input', schedulePreview);
+                        toolbar.addEventListener('change', schedulePreview);
+                    }
+
+                    if (document.readyState === 'loading') {
+                        document.addEventListener('DOMContentLoaded', bindPrescriptionToolbarAutoSave);
+                    } else {
+                        bindPrescriptionToolbarAutoSave();
+                    }
+
+                    document.addEventListener('pfAjaxComplete', bindPrescriptionToolbarAutoSave);
+                })();
+            </h:outputScript>
+            <h:inputHidden id="downloadPreviewBodyHtml" value="#{prescriptionSettingsBean.downloadPreviewBodyHtml}"/>
+            <h:inputHidden id="downloadPreviewFooterHtml" value="#{prescriptionSettingsBean.downloadPreviewFooterHtml}"/>
+            <div class="card">
+                <p:messages id="messages" showDetail="true" closable="true"/>
+
+                <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-start gap-3 mb-4">
+                    <div>
+                        <h1 style="margin:0;">Prescription Settings</h1>
+                        <p style="margin:.5rem 0 0 0;color:#64748b;">
+                            Preview-first workspace with a compact toolbar for layout and print controls.
+                        </p>
+                    </div>
+                    <div class="surface-100 border-round px-3 py-2">
+                        <label for="organizationSelect"><strong>Organization:</strong></label>
+                        <p:selectOneMenu id="organizationSelect" value="#{prescriptionSettingsBean.selectedOrganizationId}" style="display:block;min-width:18rem;margin-top:.35rem;">
+                            <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                            <f:selectItems value="#{prescriptionSettingsBean.organizationList}" var="organization"
+                                           itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
+                            <p:ajax listener="#{prescriptionSettingsBean.onOrganizationChange}" process="@this" update="form:prescriptionSettingsPanel form:messages"/>
+                        </p:selectOneMenu>
+                    </div>
+                </div>
+
+                <p:outputPanel id="prescriptionSettingsPanel">
+                    <div class="flex flex-column lg:flex-row gap-4 align-items-start">
+                        <div id="prescriptionToolbar" style="width:100%;order:2;flex:0 0 30%;position:sticky;top:1rem;">
+                    <div class="grid">
+                        <div class="col-12 lg:col-6">
+                            <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
+                                <h3 style="margin-top:0;">Layout</h3>
+                                <div class="grid">
+                                    <div class="col-12 md:col-6">
+                                        <label>Page Size</label>
+                                        <p:selectOneMenu value="#{prescriptionSettingsBean.prescriptionSettings.pageSize}" style="width:100%;">
+                                            <f:selectItems value="#{prescriptionSettingsBean.availablePageSizes}"/>
+                                            <p:ajax process="@this" update="form:previewPanel"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div class="col-12 md:col-6">
+                                        <label>Template</label>
+                                        <p:selectOneMenu value="#{prescriptionSettingsBean.prescriptionSettings.templateName}" style="width:100%;">
+                                            <f:selectItems value="#{prescriptionSettingsBean.availableTemplates}"/>
+                                            <p:ajax process="@this" update="form:previewPanel"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div class="col-12">
+                                        <label>Main Header Title</label>
+                                        <p:inputText value="#{prescriptionSettingsBean.prescriptionSettings.headerTitle}" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12">
+                                        <label>Follow Up Note</label>
+                                        <p:inputText value="#{prescriptionSettingsBean.prescriptionSettings.footerNote}" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12 md:col-6">
+                                        <label>Font Family</label>
+                                        <p:selectOneMenu value="#{prescriptionSettingsBean.prescriptionSettings.fontFamily}" style="width:100%;">
+                                            <f:selectItems value="#{prescriptionSettingsBean.availableFontFamilies}"/>
+                                            <p:ajax process="@this" update="form:previewPanel"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div class="col-12 md:col-6">
+                                        <label>Font Size</label>
+                                        <p:spinner value="#{prescriptionSettingsBean.prescriptionSettings.fontSize}" min="8" max="24" style="width:100%;">
+                                            <p:ajax process="@this" update="form:previewPanel"/>
+                                        </p:spinner>
+                                    </div>
+                                    <div class="col-12 md:col-6">
+                                        <label>Logo Size</label>
+                                        <p:selectOneMenu value="#{prescriptionSettingsBean.prescriptionSettings.logoSize}" style="width:100%;">
+                                            <f:selectItems value="#{prescriptionSettingsBean.availableLogoSizes}"/>
+                                            <p:ajax process="@this" update="form:previewPanel"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 lg:col-6">
+                            <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
+                                <h3 style="margin-top:0;">Colors</h3>
+                                <div class="grid">
+                                    <div class="col-12 md:col-6">
+                                        <label>Theme Color</label>
+                                        <p:colorPicker value="#{prescriptionSettingsBean.prescriptionSettings.themeColor}" format="hex" style="width:100%;">
+                                            <p:ajax event="change" process="@this" update="form:previewPanel"/>
+                                        </p:colorPicker>
+                                    </div>
+                                    <div class="col-12 md:col-6">
+                                        <label>Text Color</label>
+                                        <p:colorPicker value="#{prescriptionSettingsBean.prescriptionSettings.textColor}" format="hex" style="width:100%;">
+                                            <p:ajax event="change" process="@this" update="form:previewPanel"/>
+                                        </p:colorPicker>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
+                                <h3 style="margin-top:0;">Section Labels</h3>
+                                <div class="grid">
+                                    <div class="col-12 md:col-4">
+                                        <label>Clinical Notes Label</label>
+                                        <p:inputText value="#{prescriptionSettingsBean.prescriptionSettings.clinicalNotesLabel}" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12 md:col-4">
+                                        <label>Symptoms Label</label>
+                                        <p:inputText value="#{prescriptionSettingsBean.prescriptionSettings.symptomsLabel}" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12 md:col-4">
+                                        <label>Family History Label</label>
+                                        <p:inputText value="#{prescriptionSettingsBean.prescriptionSettings.familyHistoryLabel}" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12 md:col-4">
+                                        <label>Vitals Label</label>
+                                        <p:inputText value="#{prescriptionSettingsBean.prescriptionSettings.vitalsLabel}" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12 md:col-4">
+                                        <label>Findings Label</label>
+                                        <p:inputText value="#{prescriptionSettingsBean.prescriptionSettings.findingsLabel}" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12 md:col-4">
+                                        <label>Diagnosis Label</label>
+                                        <p:inputText value="#{prescriptionSettingsBean.prescriptionSettings.diagnosisLabel}" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12 md:col-6">
+                                        <label>Prescription Heading</label>
+                                        <p:inputText value="#{prescriptionSettingsBean.prescriptionSettings.prescriptionLabel}" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12 md:col-6">
+                                        <label>Follow Up Label</label>
+                                        <p:inputText value="#{prescriptionSettingsBean.prescriptionSettings.followUpLabel}" style="width:100%;"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
+                                <h3 style="margin-top:0;">Prescription Table Labels</h3>
+                                <div class="grid">
+                                    <div class="col-12 md:col-3">
+                                        <label>Medication Column</label>
+                                        <p:inputText value="#{prescriptionSettingsBean.prescriptionSettings.medicationColumnLabel}" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12 md:col-2">
+                                        <label>Dose Column</label>
+                                        <p:inputText value="#{prescriptionSettingsBean.prescriptionSettings.doseColumnLabel}" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12 md:col-3">
+                                        <label>Frequency Column</label>
+                                        <p:inputText value="#{prescriptionSettingsBean.prescriptionSettings.frequencyColumnLabel}" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12 md:col-2">
+                                        <label>Duration Column</label>
+                                        <p:inputText value="#{prescriptionSettingsBean.prescriptionSettings.durationColumnLabel}" style="width:100%;"/>
+                                    </div>
+                                    <div class="col-12 md:col-2">
+                                        <label>Remarks Column</label>
+                                        <p:inputText value="#{prescriptionSettingsBean.prescriptionSettings.remarksColumnLabel}" style="width:100%;"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 lg:col-6">
+                            <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
+                                <h3 style="margin-top:0;">Margins</h3>
+                                <div class="grid">
+                                    <div class="col-12 md:col-6">
+                                        <label>Top (mm)</label>
+                                        <p:spinner value="#{prescriptionSettingsBean.prescriptionSettings.marginTopMm}" min="0" max="50" style="width:100%;">
+                                            <p:ajax process="@this" update="form:previewPanel"/>
+                                        </p:spinner>
+                                    </div>
+                                    <div class="col-12 md:col-6">
+                                        <label>Right (mm)</label>
+                                        <p:spinner value="#{prescriptionSettingsBean.prescriptionSettings.marginRightMm}" min="0" max="50" style="width:100%;">
+                                            <p:ajax process="@this" update="form:previewPanel"/>
+                                        </p:spinner>
+                                    </div>
+                                    <div class="col-12 md:col-6">
+                                        <label>Bottom (mm)</label>
+                                        <p:spinner value="#{prescriptionSettingsBean.prescriptionSettings.marginBottomMm}" min="0" max="50" style="width:100%;">
+                                            <p:ajax process="@this" update="form:previewPanel"/>
+                                        </p:spinner>
+                                    </div>
+                                    <div class="col-12 md:col-6">
+                                        <label>Left (mm)</label>
+                                        <p:spinner value="#{prescriptionSettingsBean.prescriptionSettings.marginLeftMm}" min="0" max="50" style="width:100%;">
+                                            <p:ajax process="@this" update="form:previewPanel"/>
+                                        </p:spinner>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 lg:col-6">
+                            <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
+                                <h3 style="margin-top:0;">Visibility Options</h3>
+                                <div class="field-checkbox mb-3">
+                                    <p:selectBooleanCheckbox id="showClinicLogo" value="#{prescriptionSettingsBean.prescriptionSettings.showClinicLogo}"/>
+                                    <p:ajax process="@this" update="form:previewPanel"/>
+                                    <p:outputLabel for="showClinicLogo" value="Show clinic logo"/>
+                                </div>
+                                <div class="field-checkbox mb-3">
+                                    <p:selectBooleanCheckbox id="showDoctorSignature" value="#{prescriptionSettingsBean.prescriptionSettings.showDoctorSignature}"/>
+                                    <p:ajax process="@this" update="form:previewPanel"/>
+                                    <p:outputLabel for="showDoctorSignature" value="Show doctor signature"/>
+                                </div>
+                                <div class="field-checkbox mb-3">
+                                    <p:selectBooleanCheckbox id="showPatientAge" value="#{prescriptionSettingsBean.prescriptionSettings.showPatientAge}"/>
+                                    <p:ajax process="@this" update="form:previewPanel"/>
+                                    <p:outputLabel for="showPatientAge" value="Show patient age"/>
+                                </div>
+                                <div class="field-checkbox mb-3">
+                                    <p:selectBooleanCheckbox id="showPatientGender" value="#{prescriptionSettingsBean.prescriptionSettings.showPatientGender}"/>
+                                    <p:ajax process="@this" update="form:previewPanel"/>
+                                    <p:outputLabel for="showPatientGender" value="Show patient gender"/>
+                                </div>
+                                <div class="field-checkbox mb-3">
+                                    <p:selectBooleanCheckbox id="showSymptomsSection" value="#{prescriptionSettingsBean.prescriptionSettings.showSymptomsSection}"/>
+                                    <p:ajax process="@this" update="form:previewPanel"/>
+                                    <p:outputLabel for="showSymptomsSection" value="Show symptoms section"/>
+                                </div>
+                                <div class="field-checkbox mb-3">
+                                    <p:selectBooleanCheckbox id="showFamilyHistorySection" value="#{prescriptionSettingsBean.prescriptionSettings.showFamilyHistorySection}"/>
+                                    <p:ajax process="@this" update="form:previewPanel"/>
+                                    <p:outputLabel for="showFamilyHistorySection" value="Show family history section"/>
+                                </div>
+                                <div class="field-checkbox mb-3">
+                                    <p:selectBooleanCheckbox id="showVitalsSection" value="#{prescriptionSettingsBean.prescriptionSettings.showVitalsSection}"/>
+                                    <p:ajax process="@this" update="form:previewPanel"/>
+                                    <p:outputLabel for="showVitalsSection" value="Show vitals section"/>
+                                </div>
+                                <div class="field-checkbox mb-3">
+                                    <p:selectBooleanCheckbox id="showFindingsSection" value="#{prescriptionSettingsBean.prescriptionSettings.showFindingsSection}"/>
+                                    <p:ajax process="@this" update="form:previewPanel"/>
+                                    <p:outputLabel for="showFindingsSection" value="Show findings section"/>
+                                </div>
+                                <div class="field-checkbox mb-3">
+                                    <p:selectBooleanCheckbox id="showDiagnosisSection" value="#{prescriptionSettingsBean.prescriptionSettings.showDiagnosisSection}"/>
+                                    <p:ajax process="@this" update="form:previewPanel"/>
+                                    <p:outputLabel for="showDiagnosisSection" value="Show diagnosis section"/>
+                                </div>
+                                <div class="field-checkbox mb-3">
+                                    <p:selectBooleanCheckbox id="showQrCode" value="#{prescriptionSettingsBean.prescriptionSettings.showQrCode}"/>
+                                    <p:ajax process="@this" update="form:previewPanel"/>
+                                    <p:outputLabel for="showQrCode" value="Show QR code"/>
+                                </div>
+                                <div class="field-checkbox mb-3">
+                                    <p:selectBooleanCheckbox id="showWatermark" value="#{prescriptionSettingsBean.prescriptionSettings.showWatermark}"/>
+                                    <p:ajax process="@this" update="form:previewPanel"/>
+                                    <p:outputLabel for="showWatermark" value="Show watermark"/>
+                                </div>
+                                <div class="col-12" style="padding:0;">
+                                    <label>Watermark Text</label>
+                                    <p:inputText value="#{prescriptionSettingsBean.prescriptionSettings.watermarkText}" style="width:100%;"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
+                                <h3 style="margin-top:0;">Notes</h3>
+                                <p:inputTextarea value="#{prescriptionSettingsBean.prescriptionSettings.notes}" rows="5" autoResize="false" maxlength="500" style="width:100%;"/>
+                            </div>
+                        </div>
+                    </div>
+
+                        </div>
+
+                        <div style="width:100%;order:1;flex:0 0 70%;">
+                    <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;background:#f8fafc;">
+                        <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-3">
+                            <div>
+                                <h3 style="margin:0;">Live Preview</h3>
+                                <div style="margin-top:.35rem;color:#64748b;font-size:.9rem;">Preview, print, and download from this panel.</div>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <p:commandButton value="Save" icon="pi pi-check"
+                                                 actionListener="#{prescriptionSettingsBean.savePrescriptionSettings}"
+                                                 process="@form"
+                                                 update="form:messages form:prescriptionSettingsPanel"
+                                                 styleClass="ui-button-success ui-button-sm"/>
+                                <p:commandButton value="Refresh" icon="pi pi-eye"
+                                                 process="@form"
+                                                 update="form:previewPanel"
+                                                 styleClass="ui-button-info ui-button-sm"/>
+                                <p:commandButton value="Print" type="button" icon="pi pi-print"
+                                                 onclick="(function(){const preview=document.querySelector(&quot;[id='form:previewPanel']&quot;);const bodyField=document.getElementById('form:downloadPreviewBodyHtml');const footerField=document.getElementById('form:downloadPreviewFooterHtml');if(!preview||!bodyField||!footerField){return false;}const previewClone=preview.cloneNode(true);const footer=previewClone.querySelector('.prescription-preview-footer');footerField.value=footer?footer.outerHTML:'';if(footer&amp;&amp;footer.parentNode){footer.parentNode.removeChild(footer);}bodyField.value=previewClone.innerHTML;const iframe=document.createElement('iframe');iframe.style.position='fixed';iframe.style.right='0';iframe.style.bottom='0';iframe.style.width='0';iframe.style.height='0';iframe.style.border='0';document.body.appendChild(iframe);const printDocument=iframe.contentWindow.document;printDocument.open();printDocument.write('&lt;html&gt;&lt;head&gt;&lt;title&gt;Prescription Sample&lt;/title&gt;&lt;style&gt;html,body{font-family:Helvetica,Arial,sans-serif;margin:0;padding:0;background:#fff;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;overflow:hidden !important;}body{background:#fff;overflow:hidden !important;}.preview-shell{position:relative;box-sizing:border-box;width:186mm;height:272mm;max-height:272mm;margin:0 auto;padding:0;overflow:hidden !important;border:none !important;outline:none !important;box-shadow:none !important;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;}.preview-shell *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;box-sizing:border-box;}.print-body{padding-bottom:42mm;overflow:hidden !important;max-height:230mm;}.print-body .prescription-preview,.print-body .card{border:none !important;outline:none !important;box-shadow:none !important;background:#fff !important;}.print-footer{position:absolute;left:24px;right:24px;bottom:18px;}.print-footer .prescription-preview-footer{border:none !important;outline:none !important;box-shadow:none !important;}@page{size:A4 portrait;margin:12mm;}@media print{html,body{background:#fff !important;overflow:hidden !important;}body{padding:0;margin:0;overflow:hidden !important;}}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;div class=&quot;preview-shell&quot;&gt;&lt;div class=&quot;print-body&quot;&gt;'+bodyField.value+'&lt;/div&gt;'+(footerField.value?'&lt;div class=&quot;print-footer&quot;&gt;'+footerField.value+'&lt;/div&gt;':'')+'&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;');printDocument.close();setTimeout(function(){iframe.contentWindow.focus();iframe.contentWindow.print();setTimeout(function(){document.body.removeChild(iframe);},1000);},250);return false;})(); return false;"
+                                                 styleClass="ui-button-secondary ui-button-sm"/>
+                                <p:commandButton value="Download" ajax="false" icon="pi pi-download"
+                                                 process="@form"
+                                                 actionListener="#{prescriptionSettingsBean.prepareSamplePrescriptionDownload}"
+                                                 onclick="(function(){const preview=document.querySelector(&quot;[id='form:previewPanel']&quot;);const bodyField=document.getElementById('form:downloadPreviewBodyHtml');const footerField=document.getElementById('form:downloadPreviewFooterHtml');if(!preview||!bodyField||!footerField){return false;}const previewClone=preview.cloneNode(true);const footer=previewClone.querySelector('.prescription-preview-footer');footerField.value=footer?footer.outerHTML:'';if(footer&amp;&amp;footer.parentNode){footer.parentNode.removeChild(footer);}bodyField.value=previewClone.innerHTML;return true;})();"
+                                                 styleClass="ui-button-help ui-button-sm">
+                                    <p:fileDownload value="#{prescriptionSettingsBean.samplePrescriptionPdf}"/>
+                                </p:commandButton>
+                            </div>
+                        </div>
+                        <p:outputPanel id="previewPanel" layout="block">
+                        <div class="prescription-preview" style="position:relative;margin-top:1rem;background:#fff;border:1px solid #cbd5e1;border-radius:12px;padding:24px;color:#{prescriptionSettingsBean.previewTextColor};font-family:'#{prescriptionSettingsBean.previewFontFamily}', Helvetica, Arial, sans-serif;min-height:1120px;display:flex;flex-direction:column;">
+                            <h:panelGroup rendered="#{prescriptionSettingsBean.prescriptionSettings.showWatermark}">
+                                <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:.08;font-size:4rem;font-weight:700;transform:rotate(-24deg);color:#{prescriptionSettingsBean.previewThemeColor};">
+                                    #{prescriptionSettingsBean.previewWatermarkText}
+                                </div>
+                            </h:panelGroup>
+
+                            <div class="prescription-preview-body" style="position:relative;z-index:1;display:flex;flex-direction:column;flex:1;">
+                                <div>
+                                <div style="display:grid;grid-template-columns:1.5fr .8fr 1.5fr;align-items:start;gap:1rem;padding-bottom:10px;">
+                                    <div>
+                                        <div style="font-size:1.3rem;font-weight:700;">
+                                            #{prescriptionSettingsBean.previewClinicName}
+                                        </div>
+                                        <div style="margin-top:4px;font-size:.85rem;">
+                                            #{prescriptionSettingsBean.previewClinicTagline}
+                                        </div>
+                                    </div>
+                                    <div style="display:flex;justify-content:center;">
+                                        <h:panelGroup rendered="#{prescriptionSettingsBean.prescriptionSettings.showClinicLogo}">
+                                            <h:panelGroup rendered="#{prescriptionSettingsBean.previewOrganizationLogoAvailable}">
+                                                <img src="#{prescriptionSettingsBean.previewOrganizationLogoDataUri}"
+                                                     alt="Organization Logo"
+                                                     style="width:#{prescriptionSettingsBean.previewLogoSizePx}px;height:#{prescriptionSettingsBean.previewLogoSizePx}px;object-fit:contain;display:block;"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{not prescriptionSettingsBean.previewOrganizationLogoAvailable}">
+                                                <div style="width:#{prescriptionSettingsBean.previewLogoSizePx}px;height:#{prescriptionSettingsBean.previewLogoSizePx}px;border:2px solid #9ca3af;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:.8rem;">
+                                                    LOGO
+                                                </div>
+                                            </h:panelGroup>
+                                        </h:panelGroup>
+                                    </div>
+                                    <div style="text-align:right;font-size:.84rem;line-height:1.5;">
+                                        <div style="font-size:1.3rem;font-weight:700;">#{prescriptionSettingsBean.previewDoctorName}</div>
+                                        <div>#{prescriptionSettingsBean.previewDoctorQualification}</div>
+                                        <div>#{prescriptionSettingsBean.previewDoctorSpecialization}</div>
+                                        <div>Email: #{prescriptionSettingsBean.previewClinicEmail}</div>
+                                        <div>Reg. No: #{prescriptionSettingsBean.previewRegistrationNumber}</div>
+                                    </div>
+                                </div>
+
+                                <div style="margin-top:16px;font-size:.92rem;font-weight:700;text-transform:uppercase;color:#{prescriptionSettingsBean.previewThemeColor};">
+                                    #{prescriptionSettingsBean.prescriptionSettings.clinicalNotesLabel}
+                                </div>
+
+                                <div style="margin-top:8px;font-size:.92rem;font-style:italic;font-weight:600;">
+                                    XXX XXXX XXXXX, Xxxxxx, X year(s) XX month(s) XX day(s)
+                                </div>
+
+                                <div style="margin-top:6px;display:flex;justify-content:space-between;font-size:.85rem;">
+                                    <div>UHID: XXX000XX</div>
+                                    <div>XX/XX/XXXX, XX:XX</div>
+                                </div>
+
+                                <h:panelGroup rendered="#{prescriptionSettingsBean.prescriptionSettings.showSymptomsSection}">
+                                    <div style="margin-top:10px;font-size:.86rem;"><strong>#{prescriptionSettingsBean.prescriptionSettings.symptomsLabel.toUpperCase()}:</strong> XXXxx xxxxx X xxxx, Xxxxxxx xxxx xxxxx XXXXX</div>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{prescriptionSettingsBean.prescriptionSettings.showFamilyHistorySection}">
+                                    <div style="margin-top:4px;font-size:.86rem;"><strong>#{prescriptionSettingsBean.prescriptionSettings.familyHistoryLabel.toUpperCase()}:</strong> Xxxxxx xxxxxxx : XXXXX XXXX xxxxxxx (Xxxxxx: xxxxxx)</div>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{prescriptionSettingsBean.prescriptionSettings.showVitalsSection}">
+                                    <div style="margin-top:4px;font-size:.86rem;"><strong>#{prescriptionSettingsBean.prescriptionSettings.vitalsLabel.toUpperCase()}:</strong> XXXXX XXXXXX - XX.XXXxx | XXXXX XXXXXX - XXxxx | XXX - XX.Xxxx | XXX - XX.XX</div>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{prescriptionSettingsBean.prescriptionSettings.showFindingsSection}">
+                                    <div style="margin-top:4px;font-size:.86rem;"><strong>#{prescriptionSettingsBean.prescriptionSettings.findingsLabel.toUpperCase()}:</strong> xxxxxx - xx, xxxx xxxxxx xxxxx, xxxxx xxxxx, xxx - xxxx+, xxxxxxx xxxx, xx xxxxxxxxxxxx</div>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{prescriptionSettingsBean.prescriptionSettings.showDiagnosisSection}">
+                                    <div style="margin-top:4px;font-size:.86rem;"><strong>#{prescriptionSettingsBean.prescriptionSettings.diagnosisLabel.toUpperCase()}:</strong> XXXX - XXXXX xxxxx xxxxxxxxxxx xxxxx xxxxxxxxx</div>
+                                </h:panelGroup>
+
+                                <div style="margin-top:10px;text-align:center;font-weight:700;font-style:italic;">
+                                    #{prescriptionSettingsBean.prescriptionSettings.prescriptionLabel}
+                                </div>
+
+                                <div style="margin-top:10px;border:1px solid #9ca3af;overflow:hidden;">
+                                    <div style="display:grid;grid-template-columns:.45fr 2.2fr .8fr 1.1fr .9fr 2.4fr;background:#{prescriptionSettingsBean.previewThemeColor};color:#fff;font-weight:600;font-size:.85rem;">
+                                        <div style="padding:8px 10px;">#</div>
+                                        <div style="padding:8px 10px;">#{prescriptionSettingsBean.prescriptionSettings.medicationColumnLabel}</div>
+                                        <div style="padding:8px 10px;">#{prescriptionSettingsBean.prescriptionSettings.doseColumnLabel}</div>
+                                        <div style="padding:8px 10px;">#{prescriptionSettingsBean.prescriptionSettings.frequencyColumnLabel}</div>
+                                        <div style="padding:8px 10px;">#{prescriptionSettingsBean.prescriptionSettings.durationColumnLabel}</div>
+                                        <div style="padding:8px 10px;">#{prescriptionSettingsBean.prescriptionSettings.remarksColumnLabel}</div>
+                                    </div>
+                                    <div style="display:grid;grid-template-columns:.45fr 2.2fr .8fr 1.1fr .9fr 2.4fr;border-top:1px solid #d1d5db;font-size:.82rem;">
+                                        <div style="padding:8px 10px;">1</div>
+                                        <div style="padding:8px 10px;">XXXxxxx Xxxxx</div>
+                                        <div style="padding:8px 10px;">X.X xx</div>
+                                        <div style="padding:8px 10px;">X-X-X<br/>Xxxxx XX</div>
+                                        <div style="padding:8px 10px;">X XXXX</div>
+                                        <div style="padding:8px 10px;">Xxxxx x xxxx, xxxx xxxxxxxxx xxx xxxxx xxxxxx.</div>
+                                    </div>
+                                    <div style="display:grid;grid-template-columns:.45fr 2.2fr .8fr 1.1fr .9fr 2.4fr;border-top:1px solid #d1d5db;font-size:.82rem;">
+                                        <div style="padding:8px 10px;">2</div>
+                                        <div style="padding:8px 10px;">Xxxxxxx Xxxxx</div>
+                                        <div style="padding:8px 10px;">X.X xx</div>
+                                        <div style="padding:8px 10px;">X-X-X<br/>Xxxxx Xxxx</div>
+                                        <div style="padding:8px 10px;">X XXXX</div>
+                                        <div style="padding:8px 10px;">Xxxxx xxxxx x xxxx xxxxx xxxxx.</div>
+                                    </div>
+                                    <div style="display:grid;grid-template-columns:.45fr 2.2fr .8fr 1.1fr .9fr 2.4fr;border-top:1px solid #d1d5db;font-size:.82rem;">
+                                        <div style="padding:8px 10px;">3</div>
+                                        <div style="padding:8px 10px;">Xxxxxxxx Xxxxxx Xxxxx</div>
+                                        <div style="padding:8px 10px;">X xxxxx</div>
+                                        <div style="padding:8px 10px;">Xxxxx X xxxxxx</div>
+                                        <div style="padding:8px 10px;">X XXXX</div>
+                                        <div style="padding:8px 10px;">Xxxxx X xxxxxx xxxxx X xxxxx, xxx X xxxx.</div>
+                                    </div>
+                                </div>
+
+                                <div style="margin-top:10px;font-size:.85rem;">
+                                    <strong>#{prescriptionSettingsBean.prescriptionSettings.followUpLabel.toUpperCase()}:</strong>
+                                    #{prescriptionSettingsBean.prescriptionSettings.footerNote}
+                                </div>
+
+                                <h:panelGroup rendered="#{prescriptionSettingsBean.prescriptionSettings.showQrCode}">
+                                    <div style="margin-top:16px;font-size:.9rem;color:#64748b;">QR code placeholder enabled for verification.</div>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{prescriptionSettingsBean.prescriptionSettings.showDoctorSignature}">
+                                    <div style="margin-top:42px;display:flex;justify-content:flex-end;">
+                                        <div style="width:220px;text-align:center;border-top:1px solid #111827;padding-top:8px;">
+                                            Doctor Signature
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+                                </div>
+
+                                <div class="prescription-preview-footer" style="margin-top:auto;padding-top:24px;">
+                                <div style="text-align:center;font-size:.9rem;">
+                                    #{prescriptionSettingsBean.previewClinicAddress}
+                                </div>
+                                <div style="text-align:center;font-size:1rem;font-weight:700;margin-top:4px;">
+                                    For Appointment : #{prescriptionSettingsBean.previewAppointmentContact}
+                                </div>
+                                <div style="margin-top:6px;text-align:center;background:#{prescriptionSettingsBean.previewThemeColor};color:#fff;padding:6px 10px;font-size:.8rem;">
+                                    #{prescriptionSettingsBean.previewScheduleLineOne}
+                                </div>
+                                <div style="text-align:center;background:#{prescriptionSettingsBean.previewThemeColor};color:#fff;padding:6px 10px;font-size:.8rem;border-top:1px solid rgba(255,255,255,.35);">
+                                    #{prescriptionSettingsBean.previewScheduleLineTwo}
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+                        </p:outputPanel>
+                    </div>
+                        </div>
+                    </div>
+                </p:outputPanel>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

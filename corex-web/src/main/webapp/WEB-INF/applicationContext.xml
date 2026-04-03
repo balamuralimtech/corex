@@ -52,6 +52,10 @@
                 <value>com.persist.coretix.modal.coretix.ApplicationTheme</value>
                 <value>com.persist.coretix.modal.coretix.ApplicationNotification</value>
                 <value>com.persist.coretix.modal.coretix.UserNotificationReceipt</value>
+                <value>com.persist.carex.settings.ClinicSettings</value>
+                <value>com.persist.carex.settings.PrescriptionSettings</value>
+                <value>com.persist.carex.settings.InvoiceSettings</value>
+                <value>com.persist.carex.settings.MedicalCertificateSettings</value>
 
             </list>
         </property>
@@ -74,7 +78,7 @@
               class="org.springframework.orm.hibernate5.HibernateTransactionManager">
         <property name="sessionFactory" ref="SessionFactory" />
     </bean>
-    <context:component-scan base-package="com.persist.coretix, com.web.coretix, com.module.coretix">
+    <context:component-scan base-package="com.persist.coretix, com.web.coretix, com.module.coretix, com.persist.carex, com.web.carex, com.module.carex">
         <context:exclude-filter type="regex" expression="com\.web\.coretix\.menu\..*"/>
     </context:component-scan>
 
