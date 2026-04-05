@@ -29,7 +29,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 
 /**
  *
@@ -54,32 +53,16 @@ public class UserActivityDAO implements IUserActivityDAO
 
     public void addUserActivity(UserActivities useractivity) {
         logger.debug("inside dao save useractivity !!");
-        Session session = getSessionFactory().openSession();
-        Transaction trans = null;
-        try {
-            trans = session.beginTransaction();
-            session.save(useractivity);
-            trans.commit();
-        } catch (Exception e) {
-            if (trans != null) {
-                trans.rollback();
-            }
-            logger.error("Error saving user activity", e);
-        } finally {
-            session.close();
-        }
+        Session session = getSessionFactory().getCurrentSession();
+        session.save(useractivity);
     }
 
 
     public Map<String, Integer> getActivityTypeCounts() {
         Session session = getSessionFactory().getCurrentSession();
-        Transaction trans = null;
         Map<String, Integer> activityTypeCounts = new HashMap<>();
 
         try {
-            trans = session.beginTransaction();
-
-            // Optimized query to get count of each activity type
             List<Object[]> results = session.createQuery(
                     "SELECT LOWER(activityType), COUNT(activityType) FROM UserActivities " +
                             "WHERE LOWER(activityType) IN ('login', 'logout', 'add', 'update', 'delete') " +
@@ -97,11 +80,8 @@ public class UserActivityDAO implements IUserActivityDAO
             Arrays.asList("login", "logout", "add", "update", "delete").forEach(
                     type -> activityTypeCounts.putIfAbsent(type.toLowerCase(), 0)
             );
-
-            trans.commit();
         } catch (Exception e) {
-            if (trans != null) trans.rollback();
-            e.printStackTrace();
+            logger.error("Error fetching activity type counts", e);
         }
 
         return activityTypeCounts;
@@ -109,21 +89,9 @@ public class UserActivityDAO implements IUserActivityDAO
 
 
     public List<UserActivities> getUserActivitiesList() {
-        Session session = getSessionFactory().openSession();
-        Transaction trans = null;
-        List<UserActivities> list = null;
-        try {
-            trans = session.beginTransaction();
-            list = (List<UserActivities>) session.createQuery("from UserActivities order by createdAt desc").list();
-            trans.commit();
-        } catch (Exception e) {
-            if (trans != null) {
-                trans.rollback();
-            }
-            logger.error("Error fetching user activities list", e);
-        } finally {
-            session.close();
-        }
+        Session session = getSessionFactory().getCurrentSession();
+        @SuppressWarnings("unchecked")
+        List<UserActivities> list = (List<UserActivities>) session.createQuery("from UserActivities order by createdAt desc").list();
         return list;
     }
     

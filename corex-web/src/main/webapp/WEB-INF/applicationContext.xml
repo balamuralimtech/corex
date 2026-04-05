@@ -15,11 +15,33 @@
     </bean>
 
     <bean id="DataSource"
-              class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+              class="com.zaxxer.hikari.HikariDataSource"
+              destroy-method="close">
         <property name="driverClassName" value="${jdbc.driverClassName}" />
-        <property name="url" value="${jdbc.url}" />
+        <property name="jdbcUrl" value="${jdbc.url}" />
         <property name="username" value="${jdbc.username}" />
         <property name="password" value="${jdbc.password}" />
+        <property name="poolName" value="corexHikariPool" />
+        <property name="maximumPoolSize" value="20" />
+        <property name="minimumIdle" value="5" />
+        <property name="autoCommit" value="false" />
+        <property name="connectionTimeout" value="30000" />
+        <property name="idleTimeout" value="600000" />
+        <property name="maxLifetime" value="1800000" />
+        <property name="validationTimeout" value="5000" />
+        <property name="dataSourceProperties">
+            <props>
+                <prop key="cachePrepStmts">true</prop>
+                <prop key="prepStmtCacheSize">250</prop>
+                <prop key="prepStmtCacheSqlLimit">2048</prop>
+                <prop key="useServerPrepStmts">true</prop>
+                <prop key="useLocalSessionState">true</prop>
+                <prop key="rewriteBatchedStatements">true</prop>
+                <prop key="cacheResultSetMetadata">true</prop>
+                <prop key="cacheServerConfiguration">true</prop>
+                <prop key="maintainTimeStats">false</prop>
+            </props>
+        </property>
     </bean>
 
     <!-- Session Factory Declaration -->
@@ -68,9 +90,12 @@
             <props>
                 <prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
                 <prop key="hibernate.show_sql">false</prop>
-                <prop key="hibernate.connection.pool_size">10</prop>
                 <prop key="show_sql">false</prop>
-                <prop key="hibernate.current_session_context_class">thread</prop>
+                <prop key="hibernate.current_session_context_class">org.springframework.orm.hibernate5.SpringSessionContext</prop>
+                <prop key="hibernate.jdbc.batch_size">25</prop>
+                <prop key="hibernate.order_inserts">true</prop>
+                <prop key="hibernate.order_updates">true</prop>
+                <prop key="hibernate.jdbc.fetch_size">50</prop>
             </props>
         </property>
     </bean>

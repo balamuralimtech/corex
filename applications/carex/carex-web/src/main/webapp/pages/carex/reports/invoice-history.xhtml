@@ -1,15 +1,296 @@
 <!DOCTYPE html>
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 template="/WEB-INF/template.xhtml">
 
     <ui:define name="content">
-        <div class="card">
-            <h1>Invoice History</h1>
-            <p>Report scope: all patients or a specific patient with daily, weekly, monthly, and yearly invoice filtering.</p>
-            <p>This placeholder will support viewing invoice history and downloading invoice copies.</p>
-        </div>
+        <f:event listener="#{invoiceHistoryReportBean.initializePageAttributes}" type="preRenderView"/>
+
+        <h:outputScript library="avalon-layout" name="highcharts/highcharts.js" target="head"/>
+
+        <h:outputStylesheet>
+            .report-shell { display:flex; flex-direction:column; gap:1.25rem; }
+            .report-hero { position:relative; overflow:hidden; padding:1.75rem; border-radius:22px; background:linear-gradient(135deg,#4338ca 0%,#1d4ed8 100%); color:#eff6ff; box-shadow:0 22px 70px rgba(29,78,216,.22); }
+            .report-hero:before { content:''; position:absolute; inset:auto -10% -45% auto; width:320px; height:320px; border-radius:50%; background:radial-gradient(circle,rgba(255,255,255,.16) 0%,rgba(255,255,255,0) 72%); }
+            .report-title { margin:0; font-size:1.95rem; font-weight:700; letter-spacing:-.03em; }
+            .report-copy { margin-top:.7rem; max-width:780px; color:rgba(219,234,254,.92); line-height:1.6; }
+            .report-panel { padding:1rem; border-radius:20px; background:#fff; box-shadow:0 10px 40px rgba(15,23,42,.08); border:1px solid rgba(148,163,184,.18); }
+            .report-panel-title { margin:0; font-size:1.05rem; font-weight:700; color:#0f172a; }
+            .report-panel-subtitle { margin-top:.2rem; color:#64748b; font-size:.9rem; }
+            .report-metric-card { height:100%; padding:1.1rem; border-radius:18px; background:#fff; box-shadow:0 10px 40px rgba(15,23,42,.08); border:1px solid rgba(148,163,184,.18); }
+            .report-metric-muted { color:#64748b; font-size:.82rem; text-transform:uppercase; letter-spacing:.08em; }
+            .report-metric-value { margin-top:.55rem; font-size:2rem; font-weight:700; color:#0f172a; line-height:1; }
+            .report-metric-foot { margin-top:.75rem; color:#475569; font-size:.92rem; line-height:1.5; }
+            .report-chart { min-height:320px; }
+            .report-chip { display:inline-flex; align-items:center; gap:.35rem; padding:.35rem .65rem; border-radius:999px; font-size:.82rem; font-weight:600; }
+            .report-chip-success { background:#dcfce7; color:#166534; }
+            .report-chip-info { background:#dbeafe; color:#1d4ed8; }
+            .report-preview-shell { max-height:70vh; overflow:auto; background:#f8fafc; padding:1rem; border-radius:14px; }
+        </h:outputStylesheet>
+
+        <h:form id="form">
+            <div class="report-shell">
+                <p:messages id="messages" showDetail="true" closable="true"/>
+
+                <div class="report-hero">
+                    <div class="grid align-items-start">
+                        <div class="col-12 lg:col-8">
+                            <h1 class="report-title">Invoice History</h1>
+                            <div class="report-copy">
+                                Review invoice history for all patients or a selected patient, with daily, weekly, monthly, and yearly filtering plus direct preview and PDF download.
+                            </div>
+                        </div>
+                        <div class="col-12 lg:col-4">
+                            <div style="padding:1rem;border-radius:18px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);">
+                                <div style="font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(191,219,254,.9);">Current Window</div>
+                                <div style="margin-top:.45rem;font-size:1.3rem;font-weight:700;">#{invoiceHistoryReportBean.reportWindowLabel}</div>
+                                <div style="margin-top:.5rem;font-size:.92rem;color:rgba(219,234,254,.92);">#{invoiceHistoryReportBean.selectedPatientName}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-panel">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
+                        <div>
+                            <h3 class="report-panel-title">Report Filters</h3>
+                            <div class="report-panel-subtitle">Choose organization, patient scope, and period before fetching invoice history.</div>
+                        </div>
+                    </div>
+                    <div class="grid">
+                        <div class="col-12 md:col-3">
+                            <label>Organization</label>
+                            <p:selectOneMenu value="#{invoiceHistoryReportBean.selectedOrganizationId}" style="width:100%;">
+                                <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{invoiceHistoryReportBean.organizationList}" var="organization"
+                                               itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
+                                <p:ajax listener="#{invoiceHistoryReportBean.onOrganizationChange}" process="@this" update="form"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-12 md:col-3">
+                            <label>Patient Scope</label>
+                            <p:selectOneMenu value="#{invoiceHistoryReportBean.patientScope}" style="width:100%;">
+                                <f:selectItem itemLabel="All Patients" itemValue="ALL"/>
+                                <f:selectItem itemLabel="Specific Patient" itemValue="SPECIFIC"/>
+                                <p:ajax listener="#{invoiceHistoryReportBean.onPatientScopeChange}" process="@this" update="form"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-12 md:col-3">
+                            <label>Patient</label>
+                            <p:selectOneMenu value="#{invoiceHistoryReportBean.selectedPatientId}" style="width:100%;" disabled="#{invoiceHistoryReportBean.patientScope ne 'SPECIFIC'}">
+                                <f:selectItem itemLabel="Select Patient" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{invoiceHistoryReportBean.patientList}" var="patient"
+                                               itemValue="#{patient.id}" itemLabel="#{patient.patientCode} - #{patient.patientName}"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-12 md:col-3">
+                            <label>Period Scope</label>
+                            <p:selectOneMenu value="#{invoiceHistoryReportBean.periodScope}" style="width:100%;">
+                                <f:selectItem itemLabel="Daily" itemValue="DAILY"/>
+                                <f:selectItem itemLabel="Weekly" itemValue="WEEKLY"/>
+                                <f:selectItem itemLabel="Monthly" itemValue="MONTHLY"/>
+                                <f:selectItem itemLabel="Yearly" itemValue="YEARLY"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-12 md:col-3">
+                            <label>Reference Date</label>
+                            <p:datePicker value="#{invoiceHistoryReportBean.reportReferenceDate}" pattern="dd/MM/yyyy" style="width:100%;"/>
+                        </div>
+                        <div class="col-12 md:col-9" style="display:flex;align-items:flex-end;">
+                            <p:commandButton value="Fetch Invoice History" icon="pi pi-search"
+                                             actionListener="#{invoiceHistoryReportBean.fetchReport}"
+                                             process="@form"
+                                             update="form"
+                                             styleClass="ui-button-success"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid">
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Invoices</span><div class="report-metric-value">#{invoiceHistoryReportBean.invoiceCount}</div><div class="report-metric-foot">Issued invoice records inside the selected reporting period.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Patients Covered</span><div class="report-metric-value">#{invoiceHistoryReportBean.uniquePatientCount}</div><div class="report-metric-foot">Distinct patient accounts represented in the invoice history slice.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Total Invoice Value</span><div class="report-metric-value">#{invoiceHistoryReportBean.formatAmount(invoiceHistoryReportBean.totalInvoiceValue)}</div><div class="report-metric-foot">Combined billed amount across all matching invoices.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Avg Invoice Value</span><div class="report-metric-value">#{invoiceHistoryReportBean.formatAmount(invoiceHistoryReportBean.averageInvoiceValue)}</div><div class="report-metric-foot">Average billed amount per invoice in the selected period.</div></div></div>
+                </div>
+
+                <div class="grid">
+                    <div class="col-12 xl:col-6">
+                        <div class="report-panel">
+                            <div style="margin-bottom:.75rem;">
+                                <h3 class="report-panel-title">Invoice Value Trend</h3>
+                                <div class="report-panel-subtitle">Invoice total progression across the selected reporting window.</div>
+                            </div>
+                            <div id="invoiceTrendChart" class="report-chart"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-6">
+                        <div class="report-panel">
+                            <div style="margin-bottom:.75rem;">
+                                <h3 class="report-panel-title">Payment Mode Mix</h3>
+                                <div class="report-panel-subtitle">How invoice history is distributed by settlement mode.</div>
+                            </div>
+                            <div id="paymentModeChart" class="report-chart"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-6">
+                        <div class="report-panel">
+                            <div style="margin-bottom:.75rem;">
+                                <h3 class="report-panel-title">Top Patients By Invoice Value</h3>
+                                <div class="report-panel-subtitle">Patients with the highest billed totals in the current invoice slice.</div>
+                            </div>
+                            <div id="topPatientsChart" class="report-chart"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-6">
+                        <div class="report-panel">
+                            <div style="margin-bottom:.75rem;">
+                                <h3 class="report-panel-title">Invoice Status Signals</h3>
+                                <div class="report-panel-subtitle">Issued, due-today, and overdue invoice counts.</div>
+                            </div>
+                            <div id="invoiceStatusChart" class="report-chart"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-panel">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
+                        <div>
+                            <h3 class="report-panel-title">Invoice Ledger</h3>
+                            <div class="report-panel-subtitle">Consultation-level invoice history with preview and PDF download actions.</div>
+                        </div>
+                    </div>
+                    <p:dataTable value="#{invoiceHistoryReportBean.reportConsultations}" var="consultationRow" paginator="true" rows="10"
+                                 rowsPerPageTemplate="10,25,50" paginatorPosition="bottom"
+                                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords}" reflow="true"
+                                 emptyMessage="No invoice history found for the selected criteria.">
+                        <p:column headerText="Invoice">
+                            <div style="font-weight:700;">#{consultationRow.consultationNumber}</div>
+                            <div style="font-size:.84rem;color:#64748b;">
+                                <h:outputText value="#{consultationRow.invoiceIssueDate != null ? consultationRow.invoiceIssueDate : consultationRow.consultationDate}">
+                                    <f:convertDateTime pattern="dd/MM/yyyy"/>
+                                </h:outputText>
+                            </div>
+                        </p:column>
+                        <p:column headerText="Patient">
+                            <div>#{consultationRow.patient.patientName}</div>
+                            <div style="font-size:.84rem;color:#64748b;">#{consultationRow.patient.patientCode}</div>
+                        </p:column>
+                        <p:column headerText="Doctor">
+                            <div>#{consultationRow.doctor.doctorName}</div>
+                            <div style="font-size:.84rem;color:#64748b;">#{consultationRow.doctor.specialization}</div>
+                        </p:column>
+                        <p:column headerText="Paid By">
+                            <span class="report-chip report-chip-info">#{empty consultationRow.invoicePaidBy ? 'Unspecified' : consultationRow.invoicePaidBy}</span>
+                        </p:column>
+                        <p:column headerText="Due Date">
+                            <h:outputText value="#{consultationRow.invoiceDueDate}">
+                                <f:convertDateTime pattern="dd/MM/yyyy"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Amount">
+                            <div style="font-weight:700;">#{invoiceHistoryReportBean.formatAmount(consultationRow.invoiceTotal)}</div>
+                        </p:column>
+                        <p:column headerText="Actions">
+                            <p:commandButton value="View" icon="pi pi-eye"
+                                             actionListener="#{invoiceHistoryReportBean.openInvoicePreview}"
+                                             process="@this" update=":form:invoicePreviewDialogPanel"
+                                             styleClass="ui-button-info ui-button-sm">
+                                <f:setPropertyActionListener target="#{invoiceHistoryReportBean.selectedInvoiceConsultationId}" value="#{consultationRow.id}"/>
+                            </p:commandButton>
+                            <p:commandButton value="Download" icon="pi pi-download"
+                                             actionListener="#{invoiceHistoryReportBean.openInvoicePreview}"
+                                             process="@this" update=":form:invoicePreviewDialogPanel"
+                                             oncomplete="document.getElementById('form:downloadInvoiceBtn').click();"
+                                             style="margin-left:.5rem;" styleClass="ui-button-success ui-button-sm">
+                                <f:setPropertyActionListener target="#{invoiceHistoryReportBean.selectedInvoiceConsultationId}" value="#{consultationRow.id}"/>
+                            </p:commandButton>
+                        </p:column>
+                    </p:dataTable>
+                </div>
+
+                <p:commandButton id="downloadInvoiceBtn" style="display:none"
+                                 actionListener="#{invoiceHistoryReportBean.prepareInvoiceDownload}"
+                                 ajax="false" process="@this">
+                    <p:fileDownload value="#{invoiceHistoryReportBean.consultationInvoicePdf}"/>
+                </p:commandButton>
+
+                <p:dialog header="Invoice Preview" widgetVar="invoiceHistoryPreviewDialog" modal="true" resizable="false"
+                          width="980" appendTo="@(body)">
+                    <p:outputPanel id="invoicePreviewDialogPanel">
+                        <div class="report-preview-shell">
+                            <h:outputText value="#{invoiceHistoryReportBean.previewHtml}" escape="false"/>
+                        </div>
+                        <div style="margin-top:1rem;display:flex;justify-content:flex-end;">
+                            <p:commandButton value="Download PDF" icon="pi pi-download"
+                                             actionListener="#{invoiceHistoryReportBean.prepareInvoiceDownload}"
+                                             ajax="false" process="@this"
+                                             styleClass="ui-button-success">
+                                <p:fileDownload value="#{invoiceHistoryReportBean.consultationInvoicePdf}"/>
+                            </p:commandButton>
+                        </div>
+                    </p:outputPanel>
+                </p:dialog>
+
+                <h:outputScript>
+                    //<![CDATA[
+                    function renderInvoiceHistoryCharts() {
+                        if (typeof Highcharts === 'undefined') {
+                            return;
+                        }
+
+                        Highcharts.setOptions({
+                            lang: { thousandsSep: ',' },
+                            credits: { enabled: false },
+                            colors: ['#1d4ed8', '#0f766e', '#f97316', '#7c3aed', '#ef4444', '#14b8a6']
+                        });
+
+                        Highcharts.chart('invoiceTrendChart', {
+                            chart: { type: 'areaspline', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            xAxis: { type: 'category' },
+                            yAxis: { min: 0, title: { text: 'Invoice Value' } },
+                            legend: { enabled: false },
+                            plotOptions: { areaspline: { fillOpacity: .24, lineWidth: 3, marker: { radius: 4 } } },
+                            series: [{ name: 'Invoice Value', data: #{invoiceHistoryReportBean.invoiceTrendJson} }]
+                        });
+
+                        Highcharts.chart('paymentModeChart', {
+                            chart: { type: 'column', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            xAxis: { type: 'category' },
+                            yAxis: { min: 0, title: { text: 'Invoices' } },
+                            legend: { enabled: false },
+                            plotOptions: { column: { borderRadius: 8, colorByPoint: true } },
+                            series: [{ name: 'Invoices', data: #{invoiceHistoryReportBean.paymentModeJson} }]
+                        });
+
+                        Highcharts.chart('topPatientsChart', {
+                            chart: { type: 'bar', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            xAxis: { type: 'category' },
+                            yAxis: { min: 0, title: { text: 'Invoice Value' } },
+                            legend: { enabled: false },
+                            plotOptions: { bar: { borderRadius: 8, colorByPoint: true } },
+                            series: [{ name: 'Invoice Value', data: #{invoiceHistoryReportBean.topPatientsInvoiceJson} }]
+                        });
+
+                        Highcharts.chart('invoiceStatusChart', {
+                            chart: { type: 'pie', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            plotOptions: { pie: { innerSize: '58%', dataLabels: { enabled: true, format: '{point.name}' } } },
+                            series: [{ name: 'Invoices', data: #{invoiceHistoryReportBean.invoiceStatusJson} }]
+                        });
+                    }
+
+                    window.addEventListener('load', function() {
+                        renderInvoiceHistoryCharts();
+                    });
+                    //]]>
+                </h:outputScript>
+            </div>
+        </h:form>
     </ui:define>
 </ui:composition>

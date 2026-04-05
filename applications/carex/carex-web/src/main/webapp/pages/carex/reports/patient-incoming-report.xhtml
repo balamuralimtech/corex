@@ -1,15 +1,266 @@
 <!DOCTYPE html>
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 template="/WEB-INF/template.xhtml">
 
     <ui:define name="content">
-        <div class="card">
-            <h1>Patient Incoming Report</h1>
-            <p>Report scope: hour-based patient inflow with daily, weekly, monthly, and yearly filtering.</p>
-            <p>This placeholder is designed for traffic patterns, peak-hour analysis, and clinic capacity planning.</p>
-        </div>
+        <f:event listener="#{patientIncomingReportBean.initializePageAttributes}" type="preRenderView"/>
+
+        <h:outputScript library="avalon-layout" name="highcharts/highcharts.js" target="head"/>
+
+        <h:outputStylesheet>
+            .report-shell { display:flex; flex-direction:column; gap:1.25rem; }
+            .report-hero { position:relative; overflow:hidden; padding:1.75rem; border-radius:22px; background:linear-gradient(135deg,#0f172a 0%,#1d4ed8 100%); color:#eff6ff; box-shadow:0 22px 70px rgba(29,78,216,.22); }
+            .report-hero:before { content:''; position:absolute; inset:auto -10% -45% auto; width:320px; height:320px; border-radius:50%; background:radial-gradient(circle,rgba(255,255,255,.16) 0%,rgba(255,255,255,0) 72%); }
+            .report-title { margin:0; font-size:1.95rem; font-weight:700; letter-spacing:-.03em; }
+            .report-copy { margin-top:.7rem; max-width:780px; color:rgba(219,234,254,.92); line-height:1.6; }
+            .report-panel { padding:1rem; border-radius:20px; background:#fff; box-shadow:0 10px 40px rgba(15,23,42,.08); border:1px solid rgba(148,163,184,.18); }
+            .report-panel-title { margin:0; font-size:1.05rem; font-weight:700; color:#0f172a; }
+            .report-panel-subtitle { margin-top:.2rem; color:#64748b; font-size:.9rem; }
+            .report-metric-card { height:100%; padding:1.1rem; border-radius:18px; background:#fff; box-shadow:0 10px 40px rgba(15,23,42,.08); border:1px solid rgba(148,163,184,.18); }
+            .report-metric-muted { color:#64748b; font-size:.82rem; text-transform:uppercase; letter-spacing:.08em; }
+            .report-metric-value { margin-top:.55rem; font-size:2rem; font-weight:700; color:#0f172a; line-height:1; }
+            .report-metric-foot { margin-top:.75rem; color:#475569; font-size:.92rem; line-height:1.5; }
+            .report-chart { min-height:320px; }
+            .report-chip { display:inline-flex; align-items:center; gap:.35rem; padding:.35rem .65rem; border-radius:999px; font-size:.82rem; font-weight:600; }
+            .report-chip-primary { background:#dbeafe; color:#1d4ed8; }
+            .report-chip-success { background:#dcfce7; color:#166534; }
+        </h:outputStylesheet>
+
+        <h:form id="form">
+            <div class="report-shell">
+                <p:messages id="messages" showDetail="true" closable="true"/>
+
+                <div class="report-hero">
+                    <div class="grid align-items-start">
+                        <div class="col-12 lg:col-8">
+                            <h1 class="report-title">Patient Incoming Report</h1>
+                            <div class="report-copy">
+                                Analyze incoming patient traffic by hour with daily, weekly, monthly, and yearly windows for peak-load planning.
+                            </div>
+                        </div>
+                        <div class="col-12 lg:col-4">
+                            <div style="padding:1rem;border-radius:18px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);">
+                                <div style="font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(191,219,254,.9);">Current Window</div>
+                                <div style="margin-top:.45rem;font-size:1.3rem;font-weight:700;">#{patientIncomingReportBean.reportWindowLabel}</div>
+                                <div style="margin-top:.5rem;font-size:.92rem;color:rgba(219,234,254,.92);">#{patientIncomingReportBean.selectedPatientName}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-panel">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
+                        <div>
+                            <h3 class="report-panel-title">Report Filters</h3>
+                            <div class="report-panel-subtitle">Choose organization, patient scope, and period before loading incoming traffic.</div>
+                        </div>
+                    </div>
+                    <div class="grid">
+                        <div class="col-12 md:col-3">
+                            <label>Organization</label>
+                            <p:selectOneMenu value="#{patientIncomingReportBean.selectedOrganizationId}" style="width:100%;">
+                                <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{patientIncomingReportBean.organizationList}" var="organization"
+                                               itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
+                                <p:ajax listener="#{patientIncomingReportBean.onOrganizationChange}" process="@this" update="form"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-12 md:col-3">
+                            <label>Patient Scope</label>
+                            <p:selectOneMenu value="#{patientIncomingReportBean.patientScope}" style="width:100%;">
+                                <f:selectItem itemLabel="All Patients" itemValue="ALL"/>
+                                <f:selectItem itemLabel="Specific Patient" itemValue="SPECIFIC"/>
+                                <p:ajax listener="#{patientIncomingReportBean.onPatientScopeChange}" process="@this" update="form"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-12 md:col-3">
+                            <label>Patient</label>
+                            <p:selectOneMenu value="#{patientIncomingReportBean.selectedPatientId}" style="width:100%;" disabled="#{patientIncomingReportBean.patientScope ne 'SPECIFIC'}">
+                                <f:selectItem itemLabel="Select Patient" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{patientIncomingReportBean.patientList}" var="patient"
+                                               itemValue="#{patient.id}" itemLabel="#{patient.patientCode} - #{patient.patientName}"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-12 md:col-3">
+                            <label>Period Scope</label>
+                            <p:selectOneMenu value="#{patientIncomingReportBean.periodScope}" style="width:100%;">
+                                <f:selectItem itemLabel="Daily" itemValue="DAILY"/>
+                                <f:selectItem itemLabel="Weekly" itemValue="WEEKLY"/>
+                                <f:selectItem itemLabel="Monthly" itemValue="MONTHLY"/>
+                                <f:selectItem itemLabel="Yearly" itemValue="YEARLY"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-12 md:col-3">
+                            <label>Reference Date</label>
+                            <p:datePicker value="#{patientIncomingReportBean.reportReferenceDate}" pattern="dd/MM/yyyy" style="width:100%;"/>
+                        </div>
+                        <div class="col-12 md:col-9" style="display:flex;align-items:flex-end;">
+                            <p:commandButton value="Fetch Patient Incoming Report" icon="pi pi-search"
+                                             actionListener="#{patientIncomingReportBean.fetchReport}"
+                                             process="@form"
+                                             update="form"
+                                             styleClass="ui-button-success"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid">
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Incoming Visits</span><div class="report-metric-value">#{patientIncomingReportBean.incomingCount}</div><div class="report-metric-foot">Consultation arrivals captured inside the selected report window.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Patients Covered</span><div class="report-metric-value">#{patientIncomingReportBean.uniquePatientCount}</div><div class="report-metric-foot">Distinct patient records contributing to this incoming traffic report.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Peak Hour</span><div class="report-metric-value" style="font-size:1.35rem;">#{patientIncomingReportBean.peakHourLabel}</div><div class="report-metric-foot">#{patientIncomingReportBean.peakHourCount} arrivals were recorded in the busiest hour slot.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Avg / Active Hour</span><div class="report-metric-value">#{patientIncomingReportBean.averageIncomingPerHourLabel}</div><div class="report-metric-foot">Average number of arrivals across hour slots that recorded traffic.</div></div></div>
+                    <div class="col-12 xl:col-6"><div class="report-metric-card"><span class="report-metric-muted">Busiest Day</span><div class="report-metric-value" style="font-size:1.35rem;">#{patientIncomingReportBean.busiestDayLabel}</div><div class="report-metric-foot">Highest-volume day inside the current incoming period.</div></div></div>
+                    <div class="col-12 xl:col-6"><div class="report-metric-card"><span class="report-metric-muted">Selected Scope</span><div class="report-metric-value" style="font-size:1.35rem;">#{patientIncomingReportBean.selectedPatientName}</div><div class="report-metric-foot">Incoming flow can be reviewed across all patients or isolated to a specific patient account.</div></div></div>
+                </div>
+
+                <div class="grid">
+                    <div class="col-12 xl:col-6">
+                        <div class="report-panel">
+                            <div style="margin-bottom:.75rem;">
+                                <h3 class="report-panel-title">Hourly Incoming Volume</h3>
+                                <div class="report-panel-subtitle">Hour-by-hour arrival distribution across the selected time slice.</div>
+                            </div>
+                            <div id="hourlyIncomingChart" class="report-chart"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-6">
+                        <div class="report-panel">
+                            <div style="margin-bottom:.75rem;">
+                                <h3 class="report-panel-title">Daily Incoming Trend</h3>
+                                <div class="report-panel-subtitle">Arrival volume grouped by calendar day inside the current report window.</div>
+                            </div>
+                            <div id="dailyIncomingChart" class="report-chart"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-6">
+                        <div class="report-panel">
+                            <div style="margin-bottom:.75rem;">
+                                <h3 class="report-panel-title">Weekday Traffic Mix</h3>
+                                <div class="report-panel-subtitle">Which weekdays are carrying the highest incoming load.</div>
+                            </div>
+                            <div id="weekdayIncomingChart" class="report-chart"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-6">
+                        <div class="report-panel">
+                            <div style="margin-bottom:.75rem;">
+                                <h3 class="report-panel-title">Top Returning Patients</h3>
+                                <div class="report-panel-subtitle">Patients with the highest number of incoming visits in the selected period.</div>
+                            </div>
+                            <div id="topPatientsChart" class="report-chart"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-panel">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
+                        <div>
+                            <h3 class="report-panel-title">Incoming Visit Ledger</h3>
+                            <div class="report-panel-subtitle">Consultation-level arrival listing for front-desk flow and capacity review.</div>
+                        </div>
+                    </div>
+                        <p:dataTable value="#{patientIncomingReportBean.reportConsultations}" var="consultationRow" paginator="true" rows="10"
+                                 rowsPerPageTemplate="10,25,50" paginatorPosition="bottom"
+                                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords}" reflow="true"
+                                 emptyMessage="No incoming patient records found for the selected criteria.">
+                        <p:column headerText="Consultation">
+                            <div style="font-weight:700;">#{consultationRow.consultationNumber}</div>
+                            <div style="font-size:.84rem;color:#64748b;">
+                                <h:outputText value="#{consultationRow.consultationDate}">
+                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/>
+                                </h:outputText>
+                            </div>
+                        </p:column>
+                        <p:column headerText="Arrival Hour">
+                            <span class="report-chip report-chip-primary">
+                                <h:outputText value="#{consultationRow.consultationDate}">
+                                    <f:convertDateTime pattern="HH:00"/>
+                                </h:outputText>
+                            </span>
+                        </p:column>
+                        <p:column headerText="Patient">
+                            <div>#{consultationRow.patient.patientName}</div>
+                            <div style="font-size:.84rem;color:#64748b;">#{consultationRow.patient.patientCode}</div>
+                        </p:column>
+                        <p:column headerText="Doctor">
+                            <div>#{consultationRow.doctor.doctorName}</div>
+                            <div style="font-size:.84rem;color:#64748b;">#{consultationRow.doctor.specialization}</div>
+                        </p:column>
+                        <p:column headerText="Documents">
+                            <span class="report-chip #{consultationRow.issueInvoice ? 'report-chip-success' : 'report-chip-primary'}">Invoice: #{consultationRow.issueInvoice ? 'Yes' : 'No'}</span>
+                            <br/>
+                            <span class="report-chip #{consultationRow.issueMedicalCertificate ? 'report-chip-success' : 'report-chip-primary'}" style="margin-top:.35rem;">MC: #{consultationRow.issueMedicalCertificate ? 'Yes' : 'No'}</span>
+                        </p:column>
+                        <p:column headerText="Status">
+                            <p:tag value="#{consultationRow.status}" severity="info"/>
+                        </p:column>
+                    </p:dataTable>
+                </div>
+
+                <h:outputScript>
+                    //<![CDATA[
+                    function renderPatientIncomingCharts() {
+                        if (typeof Highcharts === 'undefined') {
+                            return;
+                        }
+
+                        Highcharts.setOptions({
+                            lang: { thousandsSep: ',' },
+                            credits: { enabled: false },
+                            colors: ['#1d4ed8', '#0f766e', '#f97316', '#7c3aed', '#ef4444', '#14b8a6']
+                        });
+
+                        Highcharts.chart('hourlyIncomingChart', {
+                            chart: { type: 'column', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            xAxis: { type: 'category' },
+                            yAxis: { min: 0, title: { text: 'Arrivals' } },
+                            legend: { enabled: false },
+                            plotOptions: { column: { borderRadius: 8, colorByPoint: true } },
+                            series: [{ name: 'Arrivals', data: #{patientIncomingReportBean.hourlyIncomingJson} }]
+                        });
+
+                        Highcharts.chart('dailyIncomingChart', {
+                            chart: { type: 'areaspline', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            xAxis: { type: 'category' },
+                            yAxis: { min: 0, title: { text: 'Arrivals' } },
+                            legend: { enabled: false },
+                            plotOptions: { areaspline: { fillOpacity: .24, lineWidth: 3, marker: { radius: 4 } } },
+                            series: [{ name: 'Arrivals', data: #{patientIncomingReportBean.dailyIncomingJson} }]
+                        });
+
+                        Highcharts.chart('weekdayIncomingChart', {
+                            chart: { type: 'bar', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            xAxis: { type: 'category' },
+                            yAxis: { min: 0, title: { text: 'Arrivals' } },
+                            legend: { enabled: false },
+                            plotOptions: { bar: { borderRadius: 8, colorByPoint: true } },
+                            series: [{ name: 'Arrivals', data: #{patientIncomingReportBean.weekdayIncomingJson} }]
+                        });
+
+                        Highcharts.chart('topPatientsChart', {
+                            chart: { type: 'bar', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            xAxis: { type: 'category' },
+                            yAxis: { min: 0, title: { text: 'Visits' } },
+                            legend: { enabled: false },
+                            plotOptions: { bar: { borderRadius: 8, colorByPoint: true } },
+                            series: [{ name: 'Visits', data: #{patientIncomingReportBean.topPatientsJson} }]
+                        });
+                    }
+
+                    window.addEventListener('load', function() {
+                        renderPatientIncomingCharts();
+                    });
+                    //]]>
+                </h:outputScript>
+            </div>
+        </h:form>
     </ui:define>
 </ui:composition>

@@ -22,7 +22,6 @@ import com.persist.coretix.modal.license.dao.ILicenseDAO;
 import com.persist.coretix.modal.systemmanagement.Organizations;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.hibernate.exception.ConstraintViolationException;
 
 import javax.inject.Inject;
@@ -37,12 +36,8 @@ public class LicenseDAO implements ILicenseDAO {
     private SessionFactory sessionFactory;
 
     public GeneralConstants addLicense(Licenses license) {
-        Session session = null;
-        Transaction trans = null;
+        Session session = sessionFactory.getCurrentSession();
         try {
-            session = sessionFactory.openSession();
-            trans = session.beginTransaction();
-
             Long count = (Long) session.createQuery(
                             "select count(l) from Licenses l where l.organization.id = :organizationId")
                     .setParameter("organizationId", license.getOrganization().getId())
@@ -55,27 +50,15 @@ public class LicenseDAO implements ILicenseDAO {
             Organizations organization = (Organizations) session.get(Organizations.class, license.getOrganization().getId());
             license.setOrganization(organization);
             session.save(license);
-            trans.commit();
             return GeneralConstants.SUCCESSFUL;
         } catch (Exception e) {
-            if (trans != null) {
-                trans.rollback();
-            }
             return GeneralConstants.FAILED;
-        } finally {
-            if (session != null) {
-                session.close();
-            }
         }
     }
 
     public GeneralConstants updateLicense(Licenses license) {
-        Session session = null;
-        Transaction trans = null;
+        Session session = sessionFactory.getCurrentSession();
         try {
-            session = sessionFactory.openSession();
-            trans = session.beginTransaction();
-
             Long countById = (Long) session.createQuery(
                             "select count(l) from Licenses l where l.id = :id")
                     .setParameter("id", license.getId())
@@ -96,32 +79,17 @@ public class LicenseDAO implements ILicenseDAO {
             Organizations organization = (Organizations) session.get(Organizations.class, license.getOrganization().getId());
             license.setOrganization(organization);
             session.merge(license);
-            trans.commit();
             return GeneralConstants.SUCCESSFUL;
         } catch (ConstraintViolationException e) {
-            if (trans != null) {
-                trans.rollback();
-            }
             return GeneralConstants.ENTRY_IN_USE;
         } catch (Exception e) {
-            if (trans != null) {
-                trans.rollback();
-            }
             return GeneralConstants.FAILED;
-        } finally {
-            if (session != null) {
-                session.close();
-            }
         }
     }
 
     public GeneralConstants deleteLicense(Licenses license) {
-        Session session = null;
-        Transaction trans = null;
+        Session session = sessionFactory.getCurrentSession();
         try {
-            session = sessionFactory.openSession();
-            trans = session.beginTransaction();
-
             Long count = (Long) session.createQuery(
                             "select count(l) from Licenses l where l.id = :id")
                     .setParameter("id", license.getId())
@@ -132,108 +100,49 @@ public class LicenseDAO implements ILicenseDAO {
 
             Licenses persistedLicense = (Licenses) session.get(Licenses.class, license.getId());
             session.delete(persistedLicense);
-            trans.commit();
             return GeneralConstants.SUCCESSFUL;
         } catch (ConstraintViolationException e) {
-            if (trans != null) {
-                trans.rollback();
-            }
             return GeneralConstants.ENTRY_IN_USE;
         } catch (Exception e) {
-            if (trans != null) {
-                trans.rollback();
-            }
             return GeneralConstants.FAILED;
-        } finally {
-            if (session != null) {
-                session.close();
-            }
         }
     }
 
     public Licenses getLicense(int id) {
-        Session session = null;
-        Transaction trans = null;
-        try {
-            session = sessionFactory.openSession();
-            trans = session.beginTransaction();
-
-            @SuppressWarnings("unchecked")
-            List<Licenses> list = session.createQuery("from Licenses l where l.id = :id")
-                    .setParameter("id", id)
-                    .list();
-
-            trans.commit();
-            return list.isEmpty() ? null : list.get(0);
-        } finally {
-            if (session != null) {
-                session.close();
-            }
-        }
+        Session session = sessionFactory.getCurrentSession();
+        @SuppressWarnings("unchecked")
+        List<Licenses> list = session.createQuery("from Licenses l where l.id = :id")
+                .setParameter("id", id)
+                .list();
+        return list.isEmpty() ? null : list.get(0);
     }
 
     public Licenses getLicenseByOrganizationId(int organizationId) {
-        Session session = null;
-        Transaction trans = null;
-        try {
-            session = sessionFactory.openSession();
-            trans = session.beginTransaction();
-
-            @SuppressWarnings("unchecked")
-            List<Licenses> list = session.createQuery(
-                            "from Licenses l where l.organization.id = :organizationId")
-                    .setParameter("organizationId", organizationId)
-                    .list();
-
-            trans.commit();
-            return list.isEmpty() ? null : list.get(0);
-        } finally {
-            if (session != null) {
-                session.close();
-            }
-        }
+        Session session = sessionFactory.getCurrentSession();
+        @SuppressWarnings("unchecked")
+        List<Licenses> list = session.createQuery(
+                        "from Licenses l where l.organization.id = :organizationId")
+                .setParameter("organizationId", organizationId)
+                .list();
+        return list.isEmpty() ? null : list.get(0);
     }
 
     public List<Licenses> getLicenseList() {
-        Session session = null;
-        Transaction trans = null;
-        try {
-            session = sessionFactory.openSession();
-            trans = session.beginTransaction();
-
-            @SuppressWarnings("unchecked")
-            List<Licenses> list = session.createQuery("from Licenses l order by l.id desc").list();
-
-            trans.commit();
-            return list;
-        } finally {
-            if (session != null) {
-                session.close();
-            }
-        }
+        Session session = sessionFactory.getCurrentSession();
+        @SuppressWarnings("unchecked")
+        List<Licenses> list = session.createQuery("from Licenses l order by l.id desc").list();
+        return list;
     }
 
     public boolean isLicenseActiveForOrganization(int organizationId) {
-        Session session = null;
-        Transaction trans = null;
-        try {
-            session = sessionFactory.openSession();
-            trans = session.beginTransaction();
-
-            Date currentDate = new Date(System.currentTimeMillis());
-            Long count = (Long) session.createQuery(
-                            "select count(l) from Licenses l where l.organization.id = :organizationId and :currentDate between l.startDate and l.endDate")
-                    .setParameter("organizationId", organizationId)
-                    .setParameter("currentDate", currentDate)
-                    .uniqueResult();
-
-            trans.commit();
-            return count != null && count > 0;
-        } finally {
-            if (session != null) {
-                session.close();
-            }
-        }
+        Session session = sessionFactory.getCurrentSession();
+        Date currentDate = new Date(System.currentTimeMillis());
+        Long count = (Long) session.createQuery(
+                        "select count(l) from Licenses l where l.organization.id = :organizationId and :currentDate between l.startDate and l.endDate")
+                .setParameter("organizationId", organizationId)
+                .setParameter("currentDate", currentDate)
+                .uniqueResult();
+        return count != null && count > 0;
     }
 }
 

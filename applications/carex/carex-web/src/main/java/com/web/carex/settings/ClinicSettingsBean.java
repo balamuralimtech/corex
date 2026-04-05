@@ -8,13 +8,18 @@ import com.persist.carex.settings.ClinicSettings;
 import com.persist.coretix.modal.constants.GeneralConstants;
 import com.persist.coretix.modal.systemmanagement.CurrencyDetails;
 import com.persist.coretix.modal.systemmanagement.Organizations;
+import org.primefaces.event.FileUploadEvent;
 import org.primefaces.PrimeFaces;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
+import org.primefaces.model.file.UploadedFile;
 import org.springframework.context.annotation.Scope;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -101,6 +106,32 @@ public class ClinicSettingsBean implements Serializable {
         PrimeFaces.current().ajax().update("form:messages", "form:clinicSettingsPanel");
     }
 
+    public void handleSealUpload(FileUploadEvent event) {
+        UploadedFile file = event == null ? null : event.getFile();
+        if (file == null || file.getContent() == null || file.getContent().length == 0) {
+            addMessage(FacesMessage.SEVERITY_ERROR, "Upload failed", "Choose a valid seal image.");
+            return;
+        }
+
+        clinicSettings.setSealImage(file.getContent());
+        clinicSettings.setSealImageMimeType(safeText(file.getContentType(), detectSealMimeType(file.getFileName())));
+        if (clinicSettings.getSealSizePx() == null || clinicSettings.getSealSizePx() <= 0) {
+            clinicSettings.setSealSizePx(96);
+        }
+        if (isBlank(clinicSettings.getSealDisplayMode())) {
+            clinicSettings.setSealDisplayMode("Header");
+        }
+        addMessage(FacesMessage.SEVERITY_INFO, "Seal uploaded", safeText(file.getFileName(), "Seal image uploaded successfully."));
+        PrimeFaces.current().ajax().update("form:messages", "form:clinicSettingsPanel");
+    }
+
+    public void clearSeal() {
+        clinicSettings.setSealImage(null);
+        clinicSettings.setSealImageMimeType(null);
+        addMessage(FacesMessage.SEVERITY_INFO, "Seal removed", "Clinic seal removed from settings.");
+        PrimeFaces.current().ajax().update("form:messages", "form:clinicSettingsPanel");
+    }
+
     public ClinicSettings getClinicSettings() {
         return clinicSettings;
     }
@@ -154,6 +185,28 @@ public class ClinicSettingsBean implements Serializable {
         return organization == null ? "Unknown Organization" : organization.getOrganizationName();
     }
 
+    public boolean isSealAvailable() {
+        return clinicSettings.getSealImage() != null && clinicSettings.getSealImage().length > 0;
+    }
+
+    public StreamedContent getSealPreview() {
+        if (!isSealAvailable()) {
+            return null;
+        }
+        return DefaultStreamedContent.builder()
+                .contentType(safeText(clinicSettings.getSealImageMimeType(), "image/png"))
+                .stream(() -> new ByteArrayInputStream(clinicSettings.getSealImage()))
+                .build();
+    }
+
+    public List<String> getSealDisplayModes() {
+        List<String> modes = new ArrayList<>();
+        modes.add("Header");
+        modes.add("Watermark");
+        modes.add("Footer");
+        return modes;
+    }
+
     private void loadClinicSettings() {
         Integer organizationId = selectedOrganizationId;
         ClinicSettings existing = organizationId == null ? null : clinicSettingsService.getClinicSettingsByOrganizationId(organizationId);
@@ -183,6 +236,9 @@ public class ClinicSettingsBean implements Serializable {
         settings.setFollowupFee(BigDecimal.ZERO);
         settings.setRegistrationFee(BigDecimal.ZERO);
         settings.setMedicalCertificateFee(BigDecimal.ZERO);
+        settings.setShowOfficialSeal(true);
+        settings.setSealDisplayMode("Header");
+        settings.setSealSizePx(96);
         selectedBaseCurrencyDisplay = "";
         return settings;
     }
@@ -240,6 +296,11 @@ public class ClinicSettingsBean implements Serializable {
         }
         if (resolveCurrencyByDisplay(selectedBaseCurrencyDisplay) == null) {
             addMessage(FacesMessage.SEVERITY_ERROR, "Invalid base currency", "Select a valid currency from the list.");
+            return false;
+        }
+        if (clinicSettings.getSealSizePx() != null
+                && (clinicSettings.getSealSizePx() < 48 || clinicSettings.getSealSizePx() > 180)) {
+            addMessage(FacesMessage.SEVERITY_ERROR, "Invalid seal size", "Seal size must be between 48 and 180 pixels.");
             return false;
         }
         return true;
@@ -309,6 +370,17 @@ public class ClinicSettingsBean implements Serializable {
 
     private BigDecimal normalizeAmount(BigDecimal value) {
         return value == null ? BigDecimal.ZERO : value.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private String detectSealMimeType(String fileName) {
+        String lowerName = fileName == null ? "" : fileName.trim().toLowerCase();
+        if (lowerName.endsWith(".jpg") || lowerName.endsWith(".jpeg")) {
+            return "image/jpeg";
+        }
+        if (lowerName.endsWith(".gif")) {
+            return "image/gif";
+        }
+        return "image/png";
     }
 
     private Integer resolveCurrentOrganizationId() {

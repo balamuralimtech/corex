@@ -42,6 +42,7 @@ public class PatientBean implements Serializable {
     private java.util.Date patientDateOfBirth;
     private boolean addOperation = true;
     private boolean initialized;
+    private boolean patientResultsLoaded;
 
     public void initializePageAttributes() {
         FacesContext facesContext = FacesContext.getCurrentInstance();
@@ -55,12 +56,14 @@ public class PatientBean implements Serializable {
         if (formOrganizationId == null) {
             formOrganizationId = selectedOrganizationId;
         }
-        fetchPatientList();
+        patientList = new ArrayList<>();
+        patientResultsLoaded = false;
         initialized = true;
     }
 
     public void onOrganizationChange() {
-        fetchPatientList();
+        patientList = new ArrayList<>();
+        patientResultsLoaded = false;
         PrimeFaces.current().ajax().update("form:patientMainPanel", "form:messages");
     }
 
@@ -152,6 +155,7 @@ public class PatientBean implements Serializable {
         patientList = selectedOrganizationId == null
                 ? new ArrayList<>()
                 : new ArrayList<>(patientService.getPatientsByOrganizationId(selectedOrganizationId));
+        patientResultsLoaded = true;
     }
 
     public List<String> getAvailableGenders() { return Arrays.asList("Male", "Female", "Other"); }
@@ -177,6 +181,7 @@ public class PatientBean implements Serializable {
     public java.util.Date getPatientDateOfBirth() { return patientDateOfBirth; }
     public void setPatientDateOfBirth(java.util.Date patientDateOfBirth) { this.patientDateOfBirth = patientDateOfBirth; }
     public boolean isAddOperation() { return addOperation; }
+    public boolean isPatientResultsLoaded() { return patientResultsLoaded; }
 
     private boolean validateForm() {
         if (formOrganizationId == null) {

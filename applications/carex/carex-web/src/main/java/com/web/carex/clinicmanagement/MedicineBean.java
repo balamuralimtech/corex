@@ -40,6 +40,7 @@ public class MedicineBean implements Serializable {
     private Integer formOrganizationId;
     private boolean addOperation = true;
     private boolean initialized;
+    private boolean medicineResultsLoaded;
 
     public void initializePageAttributes() {
         FacesContext facesContext = FacesContext.getCurrentInstance();
@@ -53,12 +54,14 @@ public class MedicineBean implements Serializable {
         if (formOrganizationId == null) {
             formOrganizationId = selectedOrganizationId;
         }
-        fetchMedicineList();
+        medicineList = new ArrayList<>();
+        medicineResultsLoaded = false;
         initialized = true;
     }
 
     public void onOrganizationChange() {
-        fetchMedicineList();
+        medicineList = new ArrayList<>();
+        medicineResultsLoaded = false;
         PrimeFaces.current().ajax().update("form:medicineMainPanel", "form:messages");
     }
 
@@ -151,6 +154,7 @@ public class MedicineBean implements Serializable {
         medicineList = selectedOrganizationId == null
                 ? new ArrayList<>()
                 : new ArrayList<>(medicineService.getMedicinesByOrganizationId(selectedOrganizationId));
+        medicineResultsLoaded = true;
     }
 
     public List<String> getAvailableUnits() {
@@ -172,6 +176,7 @@ public class MedicineBean implements Serializable {
     public Integer getFormOrganizationId() { return formOrganizationId; }
     public void setFormOrganizationId(Integer formOrganizationId) { this.formOrganizationId = formOrganizationId; }
     public boolean isAddOperation() { return addOperation; }
+    public boolean isMedicineResultsLoaded() { return medicineResultsLoaded; }
 
     private boolean validateForm() {
         if (formOrganizationId == null) {

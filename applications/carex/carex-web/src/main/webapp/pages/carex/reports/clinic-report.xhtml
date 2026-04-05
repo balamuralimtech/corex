@@ -1,15 +1,260 @@
 <!DOCTYPE html>
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 template="/WEB-INF/template.xhtml">
 
     <ui:define name="content">
-        <div class="card">
-            <h1>Clinic Report</h1>
-            <p>Analytics page for patient age groups, gender mix, visit frequency, and other clinic-level operating metrics.</p>
-            <p>This placeholder is ready for management charts and summary insights.</p>
-        </div>
+        <f:event listener="#{clinicReportBean.initializePageAttributes}" type="preRenderView"/>
+
+        <h:outputScript library="avalon-layout" name="highcharts/highcharts.js" target="head"/>
+
+        <h:outputStylesheet>
+            .report-shell { display:flex; flex-direction:column; gap:1.25rem; }
+            .report-hero { position:relative; overflow:hidden; padding:1.75rem; border-radius:22px; background:linear-gradient(135deg,#14532d 0%,#0f766e 100%); color:#ecfdf5; box-shadow:0 22px 70px rgba(15,118,110,.22); }
+            .report-hero:before { content:''; position:absolute; inset:auto -10% -45% auto; width:320px; height:320px; border-radius:50%; background:radial-gradient(circle,rgba(255,255,255,.16) 0%,rgba(255,255,255,0) 72%); }
+            .report-title { margin:0; font-size:1.95rem; font-weight:700; letter-spacing:-.03em; }
+            .report-copy { margin-top:.7rem; max-width:780px; color:rgba(220,252,231,.92); line-height:1.6; }
+            .report-panel { padding:1rem; border-radius:20px; background:#fff; box-shadow:0 10px 40px rgba(15,23,42,.08); border:1px solid rgba(148,163,184,.18); }
+            .report-panel-title { margin:0; font-size:1.05rem; font-weight:700; color:#0f172a; }
+            .report-panel-subtitle { margin-top:.2rem; color:#64748b; font-size:.9rem; }
+            .report-metric-card { height:100%; padding:1.1rem; border-radius:18px; background:#fff; box-shadow:0 10px 40px rgba(15,23,42,.08); border:1px solid rgba(148,163,184,.18); }
+            .report-metric-muted { color:#64748b; font-size:.82rem; text-transform:uppercase; letter-spacing:.08em; }
+            .report-metric-value { margin-top:.55rem; font-size:2rem; font-weight:700; color:#0f172a; line-height:1; }
+            .report-metric-foot { margin-top:.75rem; color:#475569; font-size:.92rem; line-height:1.5; }
+            .report-chart { min-height:320px; }
+            .report-chip { display:inline-flex; align-items:center; gap:.35rem; padding:.35rem .65rem; border-radius:999px; font-size:.82rem; font-weight:600; }
+            .report-chip-emerald { background:#dcfce7; color:#166534; }
+            .report-chip-cyan { background:#cffafe; color:#155e75; }
+        </h:outputStylesheet>
+
+        <h:form id="form">
+            <div class="report-shell">
+                <p:messages id="messages" showDetail="true" closable="true"/>
+
+                <div class="report-hero">
+                    <div class="grid align-items-start">
+                        <div class="col-12 lg:col-8">
+                            <h1 class="report-title">Clinic Report</h1>
+                            <div class="report-copy">
+                                Review patient age groups, gender mix, visit frequency, and clinic traffic patterns for the selected reporting window.
+                            </div>
+                        </div>
+                        <div class="col-12 lg:col-4">
+                            <div style="padding:1rem;border-radius:18px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);">
+                                <div style="font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(187,247,208,.9);">Current Window</div>
+                                <div style="margin-top:.45rem;font-size:1.3rem;font-weight:700;">#{clinicReportBean.reportWindowLabel}</div>
+                                <div style="margin-top:.5rem;font-size:.92rem;color:rgba(220,252,231,.92);">Organization-level clinic analytics</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-panel">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
+                        <div>
+                            <h3 class="report-panel-title">Report Filters</h3>
+                            <div class="report-panel-subtitle">Choose organization and period before fetching clinic-level patient and visit analytics.</div>
+                        </div>
+                    </div>
+                    <div class="grid">
+                        <div class="col-12 md:col-4">
+                            <label>Organization</label>
+                            <p:selectOneMenu value="#{clinicReportBean.selectedOrganizationId}" style="width:100%;">
+                                <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{clinicReportBean.organizationList}" var="organization"
+                                               itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
+                                <p:ajax listener="#{clinicReportBean.onOrganizationChange}" process="@this" update="form"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-12 md:col-4">
+                            <label>Period Scope</label>
+                            <p:selectOneMenu value="#{clinicReportBean.periodScope}" style="width:100%;">
+                                <f:selectItem itemLabel="Daily" itemValue="DAILY"/>
+                                <f:selectItem itemLabel="Weekly" itemValue="WEEKLY"/>
+                                <f:selectItem itemLabel="Monthly" itemValue="MONTHLY"/>
+                                <f:selectItem itemLabel="Yearly" itemValue="YEARLY"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-12 md:col-4">
+                            <label>Reference Date</label>
+                            <p:datePicker value="#{clinicReportBean.reportReferenceDate}" pattern="dd/MM/yyyy" style="width:100%;"/>
+                        </div>
+                        <div class="col-12" style="display:flex;align-items:flex-end;">
+                            <p:commandButton value="Fetch Clinic Report" icon="pi pi-search"
+                                             actionListener="#{clinicReportBean.fetchReport}"
+                                             process="@form"
+                                             update="form"
+                                             styleClass="ui-button-success"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid">
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Patients</span><div class="report-metric-value">#{clinicReportBean.totalPatients}</div><div class="report-metric-foot">Total patient records registered under the selected organization.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Active Patients</span><div class="report-metric-value">#{clinicReportBean.activePatients}</div><div class="report-metric-foot">Currently active patient records available for clinical operations.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Consultations</span><div class="report-metric-value">#{clinicReportBean.consultationCount}</div><div class="report-metric-foot">Consultations recorded during the selected report window.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Patients Visited</span><div class="report-metric-value">#{clinicReportBean.patientsVisitedCount}</div><div class="report-metric-foot">Distinct patients who had at least one consultation in this window.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Returning Patients</span><div class="report-metric-value">#{clinicReportBean.returningPatientsCount}</div><div class="report-metric-foot">Patients with more than one consultation inside the current period.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Avg Visits / Patient</span><div class="report-metric-value">#{clinicReportBean.averageVisitsPerPatientLabel}</div><div class="report-metric-foot">Average consultation count across patients who visited in the current window.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Top Age Group</span><div class="report-metric-value" style="font-size:1.35rem;">#{clinicReportBean.mostCommonAgeGroupLabel}</div><div class="report-metric-foot">Largest age-band concentration from the patient master list.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Top Gender</span><div class="report-metric-value" style="font-size:1.35rem;">#{clinicReportBean.mostCommonGenderLabel}</div><div class="report-metric-foot">Most represented gender classification in the clinic population.</div></div></div>
+                </div>
+
+                <div class="grid">
+                    <div class="col-12 xl:col-6">
+                        <div class="report-panel">
+                            <div style="margin-bottom:.75rem;">
+                                <h3 class="report-panel-title">Patient Age Groups</h3>
+                                <div class="report-panel-subtitle">Age-band distribution across all patient records in the selected organization.</div>
+                            </div>
+                            <div id="ageGroupChart" class="report-chart"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-6">
+                        <div class="report-panel">
+                            <div style="margin-bottom:.75rem;">
+                                <h3 class="report-panel-title">Patient Gender Mix</h3>
+                                <div class="report-panel-subtitle">Gender balance across the patient base.</div>
+                            </div>
+                            <div id="genderMixChart" class="report-chart"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-6">
+                        <div class="report-panel">
+                            <div style="margin-bottom:.75rem;">
+                                <h3 class="report-panel-title">Visit Frequency</h3>
+                                <div class="report-panel-subtitle">How many patients visited once versus repeatedly in the selected period.</div>
+                            </div>
+                            <div id="visitFrequencyChart" class="report-chart"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-6">
+                        <div class="report-panel">
+                            <div style="margin-bottom:.75rem;">
+                                <h3 class="report-panel-title">Consultation Trend</h3>
+                                <div class="report-panel-subtitle">Consultation volume trend for the selected daily, weekly, monthly, or yearly window.</div>
+                            </div>
+                            <div id="consultationTrendChart" class="report-chart"></div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="report-panel">
+                            <div style="margin-bottom:.75rem;">
+                                <h3 class="report-panel-title">Top Patients By Visits</h3>
+                                <div class="report-panel-subtitle">Patients with the highest visit counts inside the selected reporting period.</div>
+                            </div>
+                            <div id="topVisitsChart" class="report-chart"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-panel">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
+                        <div>
+                            <h3 class="report-panel-title">Patient Visit Summary</h3>
+                            <div class="report-panel-subtitle">Per-patient consultation frequency and visit timing inside the selected period.</div>
+                        </div>
+                    </div>
+                    <p:dataTable value="#{clinicReportBean.patientSummaryRows}" var="row" paginator="true" rows="10"
+                                 rowsPerPageTemplate="10,25,50" paginatorPosition="bottom"
+                                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords}" reflow="true"
+                                 emptyMessage="No clinic summary data found for the selected criteria.">
+                        <p:column headerText="Patient">
+                            <div style="font-weight:700;">#{row.patientName}</div>
+                            <div style="font-size:.84rem;color:#64748b;">#{row.patientCode}</div>
+                        </p:column>
+                        <p:column headerText="Demographics">
+                            <span class="report-chip report-chip-cyan">#{row.gender}</span>
+                            <br/>
+                            <span class="report-chip report-chip-emerald" style="margin-top:.35rem;">Age #{row.ageLabel} | #{row.ageGroup}</span>
+                        </p:column>
+                        <p:column headerText="Visits">
+                            <div style="font-weight:700;">#{row.consultationCount}</div>
+                            <div style="font-size:.84rem;color:#64748b;">consultations</div>
+                        </p:column>
+                        <p:column headerText="First Visit">
+                            <h:outputText value="#{row.firstVisit}">
+                                <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Last Visit">
+                            <h:outputText value="#{row.lastVisit}">
+                                <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/>
+                            </h:outputText>
+                        </p:column>
+                    </p:dataTable>
+                </div>
+
+                <h:outputScript>
+                    //<![CDATA[
+                    function renderClinicReportCharts() {
+                        if (typeof Highcharts === 'undefined') {
+                            return;
+                        }
+
+                        Highcharts.setOptions({
+                            lang: { thousandsSep: ',' },
+                            credits: { enabled: false },
+                            colors: ['#0f766e', '#1d4ed8', '#f97316', '#7c3aed', '#ef4444', '#14b8a6']
+                        });
+
+                        Highcharts.chart('ageGroupChart', {
+                            chart: { type: 'column', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            xAxis: { type: 'category' },
+                            yAxis: { min: 0, title: { text: 'Patients' } },
+                            legend: { enabled: false },
+                            plotOptions: { column: { borderRadius: 8, colorByPoint: true } },
+                            series: [{ name: 'Patients', data: #{clinicReportBean.ageGroupJson} }]
+                        });
+
+                        Highcharts.chart('genderMixChart', {
+                            chart: { type: 'pie', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            plotOptions: { pie: { innerSize: '58%', dataLabels: { enabled: true, format: '{point.name}' } } },
+                            series: [{ name: 'Patients', data: #{clinicReportBean.genderMixJson} }]
+                        });
+
+                        Highcharts.chart('visitFrequencyChart', {
+                            chart: { type: 'bar', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            xAxis: { type: 'category' },
+                            yAxis: { min: 0, title: { text: 'Patients' } },
+                            legend: { enabled: false },
+                            plotOptions: { bar: { borderRadius: 8, colorByPoint: true } },
+                            series: [{ name: 'Patients', data: #{clinicReportBean.visitFrequencyJson} }]
+                        });
+
+                        Highcharts.chart('consultationTrendChart', {
+                            chart: { type: 'areaspline', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            xAxis: { type: 'category' },
+                            yAxis: { min: 0, title: { text: 'Consultations' } },
+                            legend: { enabled: false },
+                            plotOptions: { areaspline: { fillOpacity: .24, lineWidth: 3, marker: { radius: 4 } } },
+                            series: [{ name: 'Consultations', data: #{clinicReportBean.consultationTrendJson} }]
+                        });
+
+                        Highcharts.chart('topVisitsChart', {
+                            chart: { type: 'bar', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            xAxis: { type: 'category' },
+                            yAxis: { min: 0, title: { text: 'Visits' } },
+                            legend: { enabled: false },
+                            plotOptions: { bar: { borderRadius: 8, colorByPoint: true } },
+                            series: [{ name: 'Visits', data: #{clinicReportBean.topPatientVisitsJson} }]
+                        });
+                    }
+
+                    window.addEventListener('load', function() {
+                        renderClinicReportCharts();
+                    });
+                    //]]>
+                </h:outputScript>
+            </div>
+        </h:form>
     </ui:define>
 </ui:composition>

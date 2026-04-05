@@ -33,6 +33,8 @@ import java.sql.Timestamp;
 public final class SessionAuditSupport {
 
     private static final Logger logger = LoggerFactory.getLogger(SessionAuditSupport.class);
+    private static final long LAST_SEEN_UPDATE_INTERVAL_MILLIS = 60_000L;
+    private static final String LAST_PERSISTED_ACTIVITY_AT = "lastPersistedActivityAt";
 
     private SessionAuditSupport() {
     }
@@ -42,15 +44,23 @@ public final class SessionAuditSupport {
             return;
         }
 
-        session.setAttribute(SessionAttributes.LAST_ACTIVITY_AT.getName(), System.currentTimeMillis());
+        long currentTime = System.currentTimeMillis();
+        session.setAttribute(SessionAttributes.LAST_ACTIVITY_AT.getName(), currentTime);
 
         Integer userId = (Integer) session.getAttribute(SessionAttributes.USER_ACCOUNT_ID.getName());
         if (userId == null) {
             return;
         }
 
+        Object lastPersistedAtValue = session.getAttribute(LAST_PERSISTED_ACTIVITY_AT);
+        long lastPersistedAt = lastPersistedAtValue instanceof Long ? (Long) lastPersistedAtValue : 0L;
+        if ((currentTime - lastPersistedAt) < LAST_SEEN_UPDATE_INTERVAL_MILLIS) {
+            return;
+        }
+
         try {
             getUserAdministrationService(session.getServletContext()).touchUserSession(userId, session.getId());
+            session.setAttribute(LAST_PERSISTED_ACTIVITY_AT, currentTime);
         } catch (Exception ex) {
             logger.error("Unable to update last seen for session {}", session.getId(), ex);
         }

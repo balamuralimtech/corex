@@ -8,6 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -120,6 +121,22 @@ public class ClinicSettings implements Serializable {
     @Column(name = "notes", length = 500)
     private String notes;
 
+    @Lob
+    @Column(name = "seal_image")
+    private byte[] sealImage;
+
+    @Column(name = "seal_image_mime_type", length = 100)
+    private String sealImageMimeType;
+
+    @Column(name = "show_official_seal", nullable = false)
+    private boolean showOfficialSeal = true;
+
+    @Column(name = "seal_display_mode", length = 20)
+    private String sealDisplayMode = "Header";
+
+    @Column(name = "seal_size_px", nullable = false)
+    private Integer sealSizePx = 96;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Timestamp createdAt;
 
@@ -188,6 +205,16 @@ public class ClinicSettings implements Serializable {
     public void setSlotDurationMinutes(Integer slotDurationMinutes) { this.slotDurationMinutes = slotDurationMinutes; }
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }
+    public byte[] getSealImage() { return sealImage; }
+    public void setSealImage(byte[] sealImage) { this.sealImage = sealImage; }
+    public String getSealImageMimeType() { return sealImageMimeType; }
+    public void setSealImageMimeType(String sealImageMimeType) { this.sealImageMimeType = sealImageMimeType; }
+    public boolean isShowOfficialSeal() { return showOfficialSeal; }
+    public void setShowOfficialSeal(boolean showOfficialSeal) { this.showOfficialSeal = showOfficialSeal; }
+    public String getSealDisplayMode() { return sealDisplayMode; }
+    public void setSealDisplayMode(String sealDisplayMode) { this.sealDisplayMode = sealDisplayMode; }
+    public Integer getSealSizePx() { return sealSizePx; }
+    public void setSealSizePx(Integer sealSizePx) { this.sealSizePx = sealSizePx; }
     public Timestamp getCreatedAt() { return createdAt; }
     public void setCreatedAt(Timestamp createdAt) { this.createdAt = createdAt; }
     public Timestamp getUpdatedAt() { return updatedAt; }

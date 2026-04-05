@@ -145,7 +145,10 @@ public class ConsultationDAO implements IConsultationDAO {
                 return new ArrayList<>();
             }
             return session.createQuery(
-                            "from Consultation c where c.organization.id = :organizationId order by c.consultationDate desc, c.id desc",
+                            "select distinct c from Consultation c " +
+                                    "left join fetch c.consultationMedicines " +
+                                    "where c.organization.id = :organizationId " +
+                                    "order by c.consultationDate desc, c.id desc",
                             Consultation.class)
                     .setParameter("organizationId", organizationId)
                     .list();

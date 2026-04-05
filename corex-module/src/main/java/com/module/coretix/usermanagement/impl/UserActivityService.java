@@ -41,7 +41,9 @@ public class UserActivityService  implements IUserActivityService{
     public List<UserActivities> getUserActivitiesList() {
         return getUserActivityDAO().getUserActivitiesList();
     }
-        public void addUserActivity(UserActivities userActivity) {
+
+    @Transactional(readOnly = false)
+    public void addUserActivity(UserActivities userActivity) {
         getUserActivityDAO().addUserActivity(userActivity);
     }
 

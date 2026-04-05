@@ -1,15 +1,239 @@
 <!DOCTYPE html>
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 template="/WEB-INF/template.xhtml">
 
     <ui:define name="content">
-        <div class="card">
-            <h1>Prescription History Report</h1>
-            <p>Report scope: all patients with daily, weekly, monthly, and yearly filtering for prescription activity.</p>
-            <p>This placeholder is intended for prescription trend analysis and download-ready reporting.</p>
-        </div>
+        <f:event listener="#{prescriptionHistoryReportBean.initializePageAttributes}" type="preRenderView"/>
+
+        <h:outputScript library="avalon-layout" name="highcharts/highcharts.js" target="head"/>
+
+        <h:outputStylesheet>
+            .report-shell { display:flex; flex-direction:column; gap:1.25rem; }
+            .report-hero { position:relative; overflow:hidden; padding:1.75rem; border-radius:22px; background:linear-gradient(135deg,#1d4ed8 0%,#1e40af 100%); color:#f8fafc; box-shadow:0 22px 70px rgba(29,78,216,.22); }
+            .report-hero:before { content:''; position:absolute; inset:auto -10% -45% auto; width:320px; height:320px; border-radius:50%; background:radial-gradient(circle,rgba(255,255,255,.16) 0%,rgba(255,255,255,0) 72%); }
+            .report-title { margin:0; font-size:1.95rem; font-weight:700; letter-spacing:-.03em; }
+            .report-copy { margin-top:.7rem; max-width:780px; color:rgba(219,234,254,.92); line-height:1.6; }
+            .report-panel { padding:1rem; border-radius:20px; background:#fff; box-shadow:0 10px 40px rgba(15,23,42,.08); border:1px solid rgba(148,163,184,.18); }
+            .report-panel-title { margin:0; font-size:1.05rem; font-weight:700; color:#0f172a; }
+            .report-panel-subtitle { margin-top:.2rem; color:#64748b; font-size:.9rem; }
+            .report-metric-card { height:100%; padding:1.1rem; border-radius:18px; background:#fff; box-shadow:0 10px 40px rgba(15,23,42,.08); border:1px solid rgba(148,163,184,.18); }
+            .report-metric-muted { color:#64748b; font-size:.82rem; text-transform:uppercase; letter-spacing:.08em; }
+            .report-metric-value { margin-top:.55rem; font-size:2rem; font-weight:700; color:#0f172a; line-height:1; }
+            .report-metric-foot { margin-top:.75rem; color:#475569; font-size:.92rem; line-height:1.5; }
+            .report-chart { min-height:320px; }
+        </h:outputStylesheet>
+
+        <h:form id="form">
+            <div class="report-shell">
+                <p:messages id="messages" showDetail="true" closable="true"/>
+
+                <div class="report-hero">
+                    <div class="grid align-items-start">
+                        <div class="col-12 lg:col-8">
+                            <h1 class="report-title">Prescription History Report</h1>
+                            <div class="report-copy">
+                                Explore prescription activity for all patients or a selected patient using daily, weekly, monthly, and yearly views.
+                            </div>
+                        </div>
+                        <div class="col-12 lg:col-4">
+                            <div style="padding:1rem;border-radius:18px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);">
+                                <div style="font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(219,234,254,.84);">Current Window</div>
+                                <div style="margin-top:.45rem;font-size:1.3rem;font-weight:700;">#{prescriptionHistoryReportBean.reportWindowLabel}</div>
+                                <div style="margin-top:.5rem;font-size:.92rem;color:rgba(219,234,254,.9);">#{prescriptionHistoryReportBean.selectedPatientName}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-panel">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
+                        <div>
+                            <h3 class="report-panel-title">Report Filters</h3>
+                            <div class="report-panel-subtitle">Choose the organization, patient scope, and reporting period for prescription history.</div>
+                        </div>
+                    </div>
+                    <div class="grid">
+                        <div class="col-12 md:col-3">
+                            <label>Organization</label>
+                            <p:selectOneMenu value="#{prescriptionHistoryReportBean.selectedOrganizationId}" style="width:100%;">
+                                <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{prescriptionHistoryReportBean.organizationList}" var="organization"
+                                               itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
+                                <p:ajax listener="#{prescriptionHistoryReportBean.onOrganizationChange}" process="@this" update="form"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-12 md:col-3">
+                            <label>Patient Scope</label>
+                            <p:selectOneMenu value="#{prescriptionHistoryReportBean.patientScope}" style="width:100%;">
+                                <f:selectItem itemLabel="All Patients" itemValue="ALL"/>
+                                <f:selectItem itemLabel="Specific Patient" itemValue="SPECIFIC"/>
+                                <p:ajax listener="#{prescriptionHistoryReportBean.onPatientScopeChange}" process="@this" update="form"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-12 md:col-3">
+                            <label>Patient</label>
+                            <p:selectOneMenu value="#{prescriptionHistoryReportBean.selectedPatientId}" style="width:100%;" disabled="#{prescriptionHistoryReportBean.patientScope ne 'SPECIFIC'}">
+                                <f:selectItem itemLabel="Select Patient" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{prescriptionHistoryReportBean.patientList}" var="patient"
+                                               itemValue="#{patient.id}" itemLabel="#{patient.patientCode} - #{patient.patientName}"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-12 md:col-3">
+                            <label>Period Scope</label>
+                            <p:selectOneMenu value="#{prescriptionHistoryReportBean.periodScope}" style="width:100%;">
+                                <f:selectItem itemLabel="Daily" itemValue="DAILY"/>
+                                <f:selectItem itemLabel="Weekly" itemValue="WEEKLY"/>
+                                <f:selectItem itemLabel="Monthly" itemValue="MONTHLY"/>
+                                <f:selectItem itemLabel="Yearly" itemValue="YEARLY"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-12 md:col-3">
+                            <label>Reference Date</label>
+                            <p:datePicker value="#{prescriptionHistoryReportBean.reportReferenceDate}" pattern="dd/MM/yyyy" style="width:100%;"/>
+                        </div>
+                        <div class="col-12 md:col-9" style="display:flex;align-items:flex-end;">
+                            <p:commandButton value="Fetch Prescription History" icon="pi pi-search"
+                                             actionListener="#{prescriptionHistoryReportBean.fetchReport}"
+                                             process="@form"
+                                             update="form"
+                                             styleClass="ui-button-success"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid">
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Prescription Lines</span><div class="report-metric-value">#{prescriptionHistoryReportBean.prescriptionLineCount}</div><div class="report-metric-foot">Total medicine lines prescribed in the selected history window.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Consultations</span><div class="report-metric-value">#{prescriptionHistoryReportBean.consultationCount}</div><div class="report-metric-foot">Distinct consultations that generated prescription records.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Patients Covered</span><div class="report-metric-value">#{prescriptionHistoryReportBean.uniquePatientCount}</div><div class="report-metric-foot">Patients represented in the current prescription history slice.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Medicines Used</span><div class="report-metric-value">#{prescriptionHistoryReportBean.uniqueMedicineCount}</div><div class="report-metric-foot">Unique medicines appearing across matching prescription lines.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Total Prescription Value</span><div class="report-metric-value">#{prescriptionHistoryReportBean.formatAmount(prescriptionHistoryReportBean.totalPrescriptionValue)}</div><div class="report-metric-foot">Combined value of all prescription lines in this report.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Average Line Value</span><div class="report-metric-value">#{prescriptionHistoryReportBean.formatAmount(prescriptionHistoryReportBean.averageLineValue)}</div><div class="report-metric-foot">Average amount per prescribed line item.</div></div></div>
+                </div>
+
+                <div class="grid">
+                    <div class="col-12 xl:col-6">
+                        <div class="report-panel">
+                            <div style="margin-bottom:.75rem;">
+                                <h3 class="report-panel-title">Medicine Mix</h3>
+                                <div class="report-panel-subtitle">Most prescribed medicines inside the selected period.</div>
+                            </div>
+                            <div id="medicineMixChart" class="report-chart"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-6">
+                        <div class="report-panel">
+                            <div style="margin-bottom:.75rem;">
+                                <h3 class="report-panel-title">Prescription Line Volume</h3>
+                                <div class="report-panel-subtitle">Prescription line count grouped by consultation date.</div>
+                            </div>
+                            <div id="prescriptionVolumeChart" class="report-chart"></div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="report-panel">
+                            <div style="margin-bottom:.75rem;">
+                                <h3 class="report-panel-title">Prescription Value Trend</h3>
+                                <div class="report-panel-subtitle">Value generated by prescription lines across the selected period.</div>
+                            </div>
+                            <div id="prescriptionValueChart" class="report-chart"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-panel">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
+                        <div>
+                            <h3 class="report-panel-title">Prescription Line History</h3>
+                            <div class="report-panel-subtitle">Each record reflects a prescribed medicine line from the matched consultations.</div>
+                        </div>
+                    </div>
+                    <p:dataTable value="#{prescriptionHistoryReportBean.prescriptionRows}" var="row" paginator="true" rows="10"
+                                 rowsPerPageTemplate="10,25,50" paginatorPosition="bottom"
+                                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords}" reflow="true"
+                                 emptyMessage="No prescription history found for the selected criteria.">
+                        <p:column headerText="Consultation">
+                            <div style="font-weight:700;">#{row.consultation.consultationNumber}</div>
+                            <div style="font-size:.84rem;color:#64748b;">
+                                <h:outputText value="#{row.consultation.consultationDate}">
+                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/>
+                                </h:outputText>
+                            </div>
+                        </p:column>
+                        <p:column headerText="Patient">
+                            <div>#{row.consultation.patient.patientName}</div>
+                            <div style="font-size:.84rem;color:#64748b;">#{row.consultation.patient.patientCode}</div>
+                        </p:column>
+                        <p:column headerText="Medicine">
+                            <div>#{empty row.consultationMedicine.medicine ? row.consultationMedicine.descriptionText : row.consultationMedicine.medicine.medicineName}</div>
+                            <div style="font-size:.84rem;color:#64748b;">#{row.consultationMedicine.descriptionText}</div>
+                        </p:column>
+                        <p:column headerText="Instruction">
+                            <div><strong>Dose:</strong> #{empty row.consultationMedicine.dose ? '-' : row.consultationMedicine.dose}</div>
+                            <div><strong>Frequency:</strong> #{empty row.consultationMedicine.frequency ? '-' : row.consultationMedicine.frequency}</div>
+                            <div><strong>Duration:</strong> #{empty row.consultationMedicine.durationText ? '-' : row.consultationMedicine.durationText}</div>
+                        </p:column>
+                        <p:column headerText="Remarks">
+                            #{empty row.consultationMedicine.remarks ? '-' : row.consultationMedicine.remarks}
+                        </p:column>
+                        <p:column headerText="Qty">#{row.consultationMedicine.quantity}</p:column>
+                        <p:column headerText="Line Value">#{prescriptionHistoryReportBean.formatAmount(row.consultationMedicine.lineTotal)}</p:column>
+                    </p:dataTable>
+                </div>
+
+                <h:outputScript>
+                    //<![CDATA[
+                    function renderPrescriptionHistoryCharts() {
+                        if (typeof Highcharts === 'undefined') {
+                            return;
+                        }
+
+                        Highcharts.setOptions({
+                            lang: { thousandsSep: ',' },
+                            credits: { enabled: false },
+                            colors: ['#1d4ed8', '#0f766e', '#f97316', '#7c3aed', '#ef4444', '#14b8a6']
+                        });
+
+                        Highcharts.chart('medicineMixChart', {
+                            chart: { type: 'bar', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            xAxis: { type: 'category' },
+                            yAxis: { min: 0, title: { text: 'Prescription Lines' } },
+                            legend: { enabled: false },
+                            plotOptions: { bar: { borderRadius: 8, colorByPoint: true } },
+                            series: [{ name: 'Lines', data: #{prescriptionHistoryReportBean.medicineMixJson} }]
+                        });
+
+                        Highcharts.chart('prescriptionVolumeChart', {
+                            chart: { type: 'column', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            xAxis: { type: 'category' },
+                            yAxis: { min: 0, title: { text: 'Prescription Lines' } },
+                            legend: { enabled: false },
+                            plotOptions: { column: { borderRadius: 8, colorByPoint: true } },
+                            series: [{ name: 'Lines', data: #{prescriptionHistoryReportBean.dailyPrescriptionJson} }]
+                        });
+
+                        Highcharts.chart('prescriptionValueChart', {
+                            chart: { type: 'areaspline', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            xAxis: { type: 'category' },
+                            yAxis: { min: 0, title: { text: 'Value' } },
+                            legend: { enabled: false },
+                            plotOptions: { areaspline: { fillOpacity: .24, lineWidth: 3, marker: { radius: 4 } } },
+                            series: [{ name: 'Value', data: #{prescriptionHistoryReportBean.prescriptionValueJson} }]
+                        });
+                    }
+
+                    window.addEventListener('load', function() {
+                        renderPrescriptionHistoryCharts();
+                    });
+                    //]]>
+                </h:outputScript>
+            </div>
+        </h:form>
     </ui:define>
 </ui:composition>

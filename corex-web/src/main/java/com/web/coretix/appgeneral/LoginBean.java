@@ -34,6 +34,9 @@ import com.web.coretix.general.SessionAuditSupport;
 import org.primefaces.PrimeFaces;
 import org.springframework.context.annotation.Scope;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.OAEPParameterSpec;
+import javax.crypto.spec.PSource;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
@@ -41,10 +44,16 @@ import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.PrivateKey;
+import java.security.spec.MGF1ParameterSpec;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Base64;
 
 @Named("loginBean")
 @Scope("session")
@@ -55,7 +64,10 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
 
     private String username;
     private String password;
+    private String encryptedPassword;
+    private String loginEncryptionPublicKey;
     private String year;
+    private transient PrivateKey loginEncryptionPrivateKey;
 
     @Inject
     private IUserAdministrationService userAdministrationService;
@@ -74,10 +86,9 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
 
     public String login() throws Exception {
         username = username == null ? null : username.trim();
-        password = password == null ? null : password.trim();
+        password = resolveSubmittedPassword();
 
         logger.debug("username : " + username);
-        logger.debug("password : " + password);
 
         if (StringUtils.isNotEmpty(username) && StringUtils.isNotEmpty(password)) {
             logger.debug("username and password is not empty");
@@ -150,6 +161,48 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
         }
 
         return null;
+    }
+
+    private String resolveSubmittedPassword() {
+        try {
+            if (StringUtils.isNotBlank(encryptedPassword)) {
+                return decryptSubmittedPassword(encryptedPassword).trim();
+            }
+        } catch (Exception exception) {
+            logger.warn("Unable to decrypt submitted password", exception);
+            return null;
+        } finally {
+            encryptedPassword = null;
+        }
+        return password == null ? null : password.trim();
+    }
+
+    private String decryptSubmittedPassword(String encryptedValue) throws Exception {
+        if (loginEncryptionPrivateKey == null) {
+            throw new IllegalStateException("Login encryption key is not initialized.");
+        }
+        Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
+        cipher.init(Cipher.DECRYPT_MODE, loginEncryptionPrivateKey, new OAEPParameterSpec(
+                "SHA-256",
+                "MGF1",
+                MGF1ParameterSpec.SHA256,
+                PSource.PSpecified.DEFAULT));
+        byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedValue));
+        return new String(decryptedBytes, StandardCharsets.UTF_8);
+    }
+
+    private void initializeLoginEncryption() {
+        try {
+            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+            keyPairGenerator.initialize(2048);
+            KeyPair keyPair = keyPairGenerator.generateKeyPair();
+            loginEncryptionPrivateKey = keyPair.getPrivate();
+            loginEncryptionPublicKey = Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded());
+        } catch (Exception exception) {
+            loginEncryptionPrivateKey = null;
+            loginEncryptionPublicKey = null;
+            logger.error("Unable to initialize login encryption keys", exception);
+        }
     }
 
     public void onIdle() {
@@ -288,6 +341,8 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
 
         username = null;
         password = null;
+        encryptedPassword = null;
+        initializeLoginEncryption();
 
         year = String.valueOf(java.time.Year.now());
 
@@ -310,6 +365,18 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getEncryptedPassword() {
+        return encryptedPassword;
+    }
+
+    public void setEncryptedPassword(String encryptedPassword) {
+        this.encryptedPassword = encryptedPassword;
+    }
+
+    public String getLoginEncryptionPublicKey() {
+        return loginEncryptionPublicKey;
     }
 
     public String getYear() {

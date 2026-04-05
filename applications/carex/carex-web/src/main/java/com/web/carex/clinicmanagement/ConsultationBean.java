@@ -25,7 +25,6 @@ import org.primefaces.PrimeFaces;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 import org.springframework.context.annotation.Scope;
-
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
@@ -110,6 +109,7 @@ public class ConsultationBean implements Serializable {
     private boolean initialized;
     private boolean searchMode = true;
     private boolean readOnlyMode;
+    private boolean consultationResultsLoaded;
     private int activePreviewTabIndex;
     private Organizations selectedOrganization;
     private Doctor selectedDoctor;
@@ -139,7 +139,9 @@ public class ConsultationBean implements Serializable {
         if (selectedOrganizationId == null) {
             selectedOrganizationId = resolveCurrentOrganizationId();
         }
-        loadScopedData();
+        loadScopedReferenceData();
+        consultationList = new ArrayList<>();
+        consultationResultsLoaded = false;
         addButtonAction();
         searchMode = true;
         initialized = true;
@@ -148,6 +150,7 @@ public class ConsultationBean implements Serializable {
     public void onOrganizationChange() {
         loadScopedReferenceData();
         consultationList = new ArrayList<>();
+        consultationResultsLoaded = false;
         addButtonAction();
         searchMode = true;
         PrimeFaces.current().ajax().update("form:contentModePanel", "form:messages");
@@ -440,6 +443,7 @@ public class ConsultationBean implements Serializable {
         consultationList = selectedOrganizationId == null
                 ? new ArrayList<>()
                 : new ArrayList<>(consultationService.getConsultationsByOrganizationId(selectedOrganizationId));
+        consultationResultsLoaded = true;
     }
 
     public void preparePrescriptionDownload() {
@@ -552,6 +556,36 @@ public class ConsultationBean implements Serializable {
     public String getPreviewInvoiceWatermarkText() { return safeText(invoiceSettings.getWatermarkText(), "INVOICE"); }
     public String getPreviewMedicalCertificateWatermarkText() { return safeText(medicalCertificateSettings.getWatermarkText(), "CERTIFICATE"); }
 
+    public boolean isPreviewClinicSealAvailable() {
+        return clinicSettings.getSealImage() != null && clinicSettings.getSealImage().length > 0;
+    }
+
+    public String getPreviewClinicSealDataUri() {
+        if (!isPreviewClinicSealAvailable()) {
+            return "";
+        }
+        String mimeType = safeText(clinicSettings.getSealImageMimeType(), resolveImageMimeType(clinicSettings.getSealImage()));
+        return "data:" + mimeType + ";base64," + Base64.getEncoder().encodeToString(clinicSettings.getSealImage());
+    }
+
+    public boolean isPreviewClinicSealHeaderVisible() {
+        return clinicSettings.isShowOfficialSeal()
+                && isPreviewClinicSealAvailable()
+                && "Header".equalsIgnoreCase(safeText(clinicSettings.getSealDisplayMode(), "Header"));
+    }
+
+    public boolean isPreviewClinicSealFooterVisible() {
+        return clinicSettings.isShowOfficialSeal()
+                && isPreviewClinicSealAvailable()
+                && "Footer".equalsIgnoreCase(safeText(clinicSettings.getSealDisplayMode(), "Header"));
+    }
+
+    public boolean isPreviewClinicSealWatermarkVisible() {
+        return clinicSettings.isShowOfficialSeal()
+                && isPreviewClinicSealAvailable()
+                && "Watermark".equalsIgnoreCase(safeText(clinicSettings.getSealDisplayMode(), "Header"));
+    }
+
     public boolean isPreviewOrganizationLogoAvailable() {
         return selectedOrganization != null && selectedOrganization.getImage() != null && selectedOrganization.getImage().length > 0;
     }
@@ -572,6 +606,14 @@ public class ConsultationBean implements Serializable {
             return 116;
         }
         return 90;
+    }
+
+    public int getPreviewSealSizePx() {
+        Integer sealSizePx = clinicSettings.getSealSizePx();
+        if (sealSizePx == null) {
+            return 96;
+        }
+        return Math.max(48, Math.min(180, sealSizePx));
     }
 
     public BigDecimal getComputedMedicineTotal() {
@@ -643,11 +685,7 @@ public class ConsultationBean implements Serializable {
     public StreamedContent getConsultationPrescriptionPdf() { return consultationPrescriptionPdf; }
     public StreamedContent getConsultationInvoicePdf() { return consultationInvoicePdf; }
     public StreamedContent getConsultationMedicalCertificatePdf() { return consultationMedicalCertificatePdf; }
-
-    private void loadScopedData() {
-        loadScopedReferenceData();
-        fetchConsultationList();
-    }
+    public boolean isConsultationResultsLoaded() { return consultationResultsLoaded; }
 
     private boolean loadSelectedConsultation(Integer consultationId) {
         if (consultationId == null) {

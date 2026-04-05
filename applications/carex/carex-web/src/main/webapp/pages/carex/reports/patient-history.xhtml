@@ -1,15 +1,247 @@
 <!DOCTYPE html>
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 template="/WEB-INF/template.xhtml">
 
     <ui:define name="content">
-        <div class="card">
-            <h1>Patient History Report</h1>
-            <p>Report scope: all patients or a specific patient with daily, weekly, monthly, and yearly filtering.</p>
-            <p>This placeholder will support patient visit history, consultation summaries, and export options.</p>
-        </div>
+        <f:event listener="#{patientHistoryReportBean.initializePageAttributes}" type="preRenderView"/>
+
+        <h:outputScript library="avalon-layout" name="highcharts/highcharts.js" target="head"/>
+
+        <h:outputStylesheet>
+            .report-shell { display:flex; flex-direction:column; gap:1.25rem; }
+            .report-hero { position:relative; overflow:hidden; padding:1.75rem; border-radius:22px; background:linear-gradient(135deg,#0f766e 0%,#155e75 100%); color:#f8fafc; box-shadow:0 22px 70px rgba(15,118,110,.22); }
+            .report-hero:before { content:''; position:absolute; inset:auto -10% -45% auto; width:320px; height:320px; border-radius:50%; background:radial-gradient(circle,rgba(255,255,255,.16) 0%,rgba(255,255,255,0) 72%); }
+            .report-title { margin:0; font-size:1.95rem; font-weight:700; letter-spacing:-.03em; }
+            .report-copy { margin-top:.7rem; max-width:780px; color:rgba(240,253,250,.9); line-height:1.6; }
+            .report-panel { padding:1rem; border-radius:20px; background:#fff; box-shadow:0 10px 40px rgba(15,23,42,.08); border:1px solid rgba(148,163,184,.18); }
+            .report-panel-title { margin:0; font-size:1.05rem; font-weight:700; color:#0f172a; }
+            .report-panel-subtitle { margin-top:.2rem; color:#64748b; font-size:.9rem; }
+            .report-metric-card { height:100%; padding:1.1rem; border-radius:18px; background:#fff; box-shadow:0 10px 40px rgba(15,23,42,.08); border:1px solid rgba(148,163,184,.18); }
+            .report-metric-muted { color:#64748b; font-size:.82rem; text-transform:uppercase; letter-spacing:.08em; }
+            .report-metric-value { margin-top:.55rem; font-size:2rem; font-weight:700; color:#0f172a; line-height:1; }
+            .report-metric-foot { margin-top:.75rem; color:#475569; font-size:.92rem; line-height:1.5; }
+            .report-chart { min-height:320px; }
+            .report-chip { display:inline-flex; align-items:center; gap:.35rem; padding:.35rem .65rem; border-radius:999px; font-size:.82rem; font-weight:600; }
+            .report-chip-success { background:#dcfce7; color:#166534; }
+            .report-chip-warn { background:#fef3c7; color:#92400e; }
+        </h:outputStylesheet>
+
+        <h:form id="form">
+            <div class="report-shell">
+                <p:messages id="messages" showDetail="true" closable="true"/>
+
+                <div class="report-hero">
+                    <div class="grid align-items-start">
+                        <div class="col-12 lg:col-8">
+                            <h1 class="report-title">Patient History Report</h1>
+                            <div class="report-copy">
+                                Track consultation history for all patients or a selected patient with daily, weekly, monthly, or yearly time windows.
+                            </div>
+                        </div>
+                        <div class="col-12 lg:col-4">
+                            <div style="padding:1rem;border-radius:18px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);">
+                                <div style="font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(204,251,241,.82);">Current Window</div>
+                                <div style="margin-top:.45rem;font-size:1.3rem;font-weight:700;">#{patientHistoryReportBean.reportWindowLabel}</div>
+                                <div style="margin-top:.5rem;font-size:.92rem;color:rgba(240,253,250,.88);">#{patientHistoryReportBean.selectedPatientName}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-panel">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
+                        <div>
+                            <h3 class="report-panel-title">Report Filters</h3>
+                            <div class="report-panel-subtitle">Choose organization, patient scope, and reporting period before fetching history.</div>
+                        </div>
+                    </div>
+                    <div class="grid">
+                        <div class="col-12 md:col-3">
+                            <label>Organization</label>
+                            <p:selectOneMenu value="#{patientHistoryReportBean.selectedOrganizationId}" style="width:100%;">
+                                <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{patientHistoryReportBean.organizationList}" var="organization"
+                                               itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
+                                <p:ajax listener="#{patientHistoryReportBean.onOrganizationChange}" process="@this" update="form"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-12 md:col-3">
+                            <label>Patient Scope</label>
+                            <p:selectOneMenu value="#{patientHistoryReportBean.patientScope}" style="width:100%;">
+                                <f:selectItem itemLabel="All Patients" itemValue="ALL"/>
+                                <f:selectItem itemLabel="Specific Patient" itemValue="SPECIFIC"/>
+                                <p:ajax listener="#{patientHistoryReportBean.onPatientScopeChange}" process="@this" update="form"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-12 md:col-3">
+                            <label>Patient</label>
+                            <p:selectOneMenu value="#{patientHistoryReportBean.selectedPatientId}" style="width:100%;" disabled="#{patientHistoryReportBean.patientScope ne 'SPECIFIC'}">
+                                <f:selectItem itemLabel="Select Patient" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{patientHistoryReportBean.patientList}" var="patient"
+                                               itemValue="#{patient.id}" itemLabel="#{patient.patientCode} - #{patient.patientName}"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-12 md:col-3">
+                            <label>Period Scope</label>
+                            <p:selectOneMenu value="#{patientHistoryReportBean.periodScope}" style="width:100%;">
+                                <f:selectItem itemLabel="Daily" itemValue="DAILY"/>
+                                <f:selectItem itemLabel="Weekly" itemValue="WEEKLY"/>
+                                <f:selectItem itemLabel="Monthly" itemValue="MONTHLY"/>
+                                <f:selectItem itemLabel="Yearly" itemValue="YEARLY"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-12 md:col-3">
+                            <label>Reference Date</label>
+                            <p:datePicker value="#{patientHistoryReportBean.reportReferenceDate}" pattern="dd/MM/yyyy" style="width:100%;"/>
+                        </div>
+                        <div class="col-12 md:col-9" style="display:flex;align-items:flex-end;">
+                            <p:commandButton value="Fetch Patient History" icon="pi pi-search"
+                                             actionListener="#{patientHistoryReportBean.fetchReport}"
+                                             process="@form"
+                                             update="form"
+                                             styleClass="ui-button-success"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid">
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Consultations</span><div class="report-metric-value">#{patientHistoryReportBean.consultationCount}</div><div class="report-metric-foot">Consultations captured in the selected report window.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Patients Covered</span><div class="report-metric-value">#{patientHistoryReportBean.uniquePatientCount}</div><div class="report-metric-foot">Distinct patient records covered by the report criteria.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Total Revenue</span><div class="report-metric-value">#{patientHistoryReportBean.formatAmount(patientHistoryReportBean.totalRevenue)}</div><div class="report-metric-foot">Invoice value generated across matching consultation records.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Avg Revenue</span><div class="report-metric-value">#{patientHistoryReportBean.formatAmount(patientHistoryReportBean.averageRevenue)}</div><div class="report-metric-foot">Average revenue generated per consultation in this slice.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Invoices</span><div class="report-metric-value">#{patientHistoryReportBean.invoiceCount}</div><div class="report-metric-foot">Consultations that resulted in invoice generation.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Medical Certificates</span><div class="report-metric-value">#{patientHistoryReportBean.medicalCertificateCount}</div><div class="report-metric-foot">Consultations where medical certificate issuance was requested.</div></div></div>
+                </div>
+
+                <div class="grid">
+                    <div class="col-12 xl:col-6">
+                        <div class="report-panel">
+                            <div style="margin-bottom:.75rem;">
+                                <h3 class="report-panel-title">Patient Mix</h3>
+                                <div class="report-panel-subtitle">Most frequent patients within the current history slice.</div>
+                            </div>
+                            <div id="patientMixChart" class="report-chart"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-6">
+                        <div class="report-panel">
+                            <div style="margin-bottom:.75rem;">
+                                <h3 class="report-panel-title">Consultation Volume</h3>
+                                <div class="report-panel-subtitle">Consultation count grouped by consultation date inside the selected period.</div>
+                            </div>
+                            <div id="consultationVolumeChart" class="report-chart"></div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="report-panel">
+                            <div style="margin-bottom:.75rem;">
+                                <h3 class="report-panel-title">Revenue Trend</h3>
+                                <div class="report-panel-subtitle">Revenue movement across the same patient-history window.</div>
+                            </div>
+                            <div id="revenueTrendChart" class="report-chart"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-panel">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
+                        <div>
+                            <h3 class="report-panel-title">Patient Consultation History</h3>
+                            <div class="report-panel-subtitle">All consultations matching the selected patient and period scope.</div>
+                        </div>
+                    </div>
+                    <p:dataTable value="#{patientHistoryReportBean.reportConsultations}" var="consultationRow" paginator="true" rows="10"
+                                 rowsPerPageTemplate="10,25,50" paginatorPosition="bottom"
+                                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords}" reflow="true"
+                                 emptyMessage="No patient history found for the selected criteria.">
+                        <p:column headerText="Consultation">
+                            <div style="font-weight:700;">#{consultationRow.consultationNumber}</div>
+                            <div style="font-size:.84rem;color:#64748b;">
+                                <h:outputText value="#{consultationRow.consultationDate}">
+                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/>
+                                </h:outputText>
+                            </div>
+                        </p:column>
+                        <p:column headerText="Patient">
+                            <div>#{consultationRow.patient.patientName}</div>
+                            <div style="font-size:.84rem;color:#64748b;">#{consultationRow.patient.patientCode}</div>
+                        </p:column>
+                        <p:column headerText="Doctor">
+                            <div>#{consultationRow.doctor.doctorName}</div>
+                            <div style="font-size:.84rem;color:#64748b;">#{consultationRow.doctor.specialization}</div>
+                        </p:column>
+                        <p:column headerText="Clinical Notes">
+                            <div><strong>Symptoms:</strong> #{empty consultationRow.symptoms ? '-' : consultationRow.symptoms}</div>
+                            <div style="margin-top:.35rem;"><strong>Diagnosis:</strong> #{empty consultationRow.diagnosis ? '-' : consultationRow.diagnosis}</div>
+                        </p:column>
+                        <p:column headerText="Documents">
+                            <span class="report-chip #{consultationRow.issueInvoice ? 'report-chip-success' : 'report-chip-warn'}">Invoice: #{consultationRow.issueInvoice ? 'Yes' : 'No'}</span>
+                            <br/>
+                            <span class="report-chip #{consultationRow.issueMedicalCertificate ? 'report-chip-success' : 'report-chip-warn'}" style="margin-top:.35rem;">MC: #{consultationRow.issueMedicalCertificate ? 'Yes' : 'No'}</span>
+                        </p:column>
+                        <p:column headerText="Revenue">
+                            #{patientHistoryReportBean.formatAmount(consultationRow.invoiceTotal)}
+                        </p:column>
+                        <p:column headerText="Status">
+                            <p:tag value="#{consultationRow.status}" severity="info"/>
+                        </p:column>
+                    </p:dataTable>
+                </div>
+
+                <h:outputScript>
+                    //<![CDATA[
+                    function renderPatientHistoryCharts() {
+                        if (typeof Highcharts === 'undefined') {
+                            return;
+                        }
+
+                        Highcharts.setOptions({
+                            lang: { thousandsSep: ',' },
+                            credits: { enabled: false },
+                            colors: ['#0f766e', '#f97316', '#0ea5e9', '#7c3aed', '#ef4444', '#14b8a6']
+                        });
+
+                        Highcharts.chart('patientMixChart', {
+                            chart: { type: 'bar', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            xAxis: { type: 'category' },
+                            yAxis: { min: 0, title: { text: 'Consultations' } },
+                            legend: { enabled: false },
+                            plotOptions: { bar: { borderRadius: 8, colorByPoint: true } },
+                            series: [{ name: 'Consultations', data: #{patientHistoryReportBean.patientMixJson} }]
+                        });
+
+                        Highcharts.chart('consultationVolumeChart', {
+                            chart: { type: 'column', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            xAxis: { type: 'category' },
+                            yAxis: { min: 0, title: { text: 'Volume' } },
+                            legend: { enabled: false },
+                            plotOptions: { column: { borderRadius: 8, colorByPoint: true } },
+                            series: [{ name: 'Consultations', data: #{patientHistoryReportBean.dailyVolumeJson} }]
+                        });
+
+                        Highcharts.chart('revenueTrendChart', {
+                            chart: { type: 'areaspline', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            xAxis: { type: 'category' },
+                            yAxis: { min: 0, title: { text: 'Revenue' } },
+                            legend: { enabled: false },
+                            plotOptions: { areaspline: { fillOpacity: .24, lineWidth: 3, marker: { radius: 4 } } },
+                            series: [{ name: 'Revenue', data: #{patientHistoryReportBean.revenueTrendJson} }]
+                        });
+                    }
+
+                    window.addEventListener('load', function() {
+                        renderPatientHistoryCharts();
+                    });
+                    //]]>
+                </h:outputScript>
+            </div>
+        </h:form>
     </ui:define>
 </ui:composition>

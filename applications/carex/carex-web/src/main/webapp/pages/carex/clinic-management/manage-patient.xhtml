@@ -45,7 +45,13 @@
                         </p:toolbarGroup>
                     </p:toolbar>
 
+                    <p:outputPanel rendered="#{not patientBean.patientResultsLoaded}">
+                        <div style="padding:1rem 0;color:#64748b;">
+                            Patient records are not loaded by default. Select an organization and click <strong>Fetch Patients</strong> when you want to view the list.
+                        </div>
+                    </p:outputPanel>
                     <p:dataTable id="patientTable" widgetVar="patientTableWidget" var="patientRow" value="#{patientBean.patientList}"
+                                 rendered="#{patientBean.patientResultsLoaded}"
                                  paginator="true" rows="10" reflow="true" rowKey="#{patientRow.id}"
                                  emptyMessage="No patients found for the selected organization.">
                         <f:facet name="header">

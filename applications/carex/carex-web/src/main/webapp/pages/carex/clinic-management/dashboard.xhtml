@@ -14,7 +14,7 @@
 
         <h:outputStylesheet>
             .clinic-dashboard-shell { display:flex; flex-direction:column; gap:1.25rem; }
-            .clinic-dashboard-hero { position:relative; overflow:hidden; padding:1.9rem; border-radius:24px; background:linear-gradient(135deg,#0f766e 0%,#0f766e 38%,#155e75 100%); color:#f8fafc; box-shadow:0 24px 80px rgba(15,118,110,.26); }
+            .clinic-dashboard-hero { position:relative; overflow:hidden; padding:1.9rem; border-radius:24px; background:linear-gradient(135deg,var(--dashboard-hero-primary, #1e3c72) 0%, var(--dashboard-hero-primary, #1e3c72) 42%, var(--dashboard-hero-secondary, #2a5298) 100%); color:#f8fafc; box-shadow:0 24px 80px rgba(15,23,42,.22); }
             .clinic-dashboard-hero:before { content:''; position:absolute; inset:auto auto -42% -8%; width:360px; height:360px; border-radius:50%; background:radial-gradient(circle,rgba(255,255,255,.15) 0%,rgba(255,255,255,0) 72%); }
             .clinic-dashboard-hero:after { content:''; position:absolute; inset:-15% -10% auto auto; width:280px; height:280px; border-radius:40px; transform:rotate(18deg); background:linear-gradient(135deg,rgba(255,255,255,.11),rgba(255,255,255,0)); }
             .clinic-dashboard-title { margin:0; font-size:2rem; font-weight:700; letter-spacing:-.03em; }
@@ -240,6 +240,53 @@
 
                 <h:outputScript>
                     //<![CDATA[
+                    var carexDashboardThemeColors = {
+                        amber: ['#7A5E06', '#B28708'],
+                        blue: ['#146fd7', '#1d4ed8'],
+                        brown: ['#593E22', '#8B5E34'],
+                        cyan: ['#0A616F', '#17A2B8'],
+                        darkgrey: ['#343A40', '#495057'],
+                        deeppurple: ['#341A64', '#612FBE'],
+                        green: ['#1F8E38', '#28A745'],
+                        indigo: ['#470EA2', '#6610F2'],
+                        lightblue: ['#14569D', '#4DA3FF'],
+                        lightgreen: ['#2E8942', '#61CC79'],
+                        lime: ['#407916', '#74CD32'],
+                        orange: ['#904100', '#FD7E14'],
+                        pink: ['#771340', '#E83E8C'],
+                        purple: ['#391F68', '#883cae'],
+                        teal: ['#136E52', '#20C997'],
+                        calm: ['#5f2c82', '#0DA9A4'],
+                        crimson: ['#521c52', '#c6426e'],
+                        firewatch: ['#cb2d3e', '#ef473a'],
+                        influenza: ['#a83279', '#f38e00'],
+                        joomla: ['#1e3c72', '#2a5298'],
+                        littleleaf: ['#4DB865', '#80D293'],
+                        night: ['#2c0747', '#6441a5'],
+                        skyline: ['#2b32b2', '#1488cc'],
+                        sunkist: ['#ee8a21', '#f2c94c'],
+                        suzy: ['#834d9b', '#d04ed6']
+                    };
+
+                    function applyCarexDashboardHeroColors(layoutTheme) {
+                        var colors = carexDashboardThemeColors[layoutTheme] || carexDashboardThemeColors['joomla'];
+                        document.documentElement.style.setProperty('--dashboard-hero-primary', colors[0]);
+                        document.documentElement.style.setProperty('--dashboard-hero-secondary', colors[1]);
+                    }
+
+                    function wireCarexDashboardThemeSync() {
+                        if (!PrimeFaces || !PrimeFaces.AvalonConfigurator || PrimeFaces.AvalonConfigurator._carexDashboardThemeHooked) {
+                            return;
+                        }
+
+                        var originalChangeLayout = PrimeFaces.AvalonConfigurator.changeLayout;
+                        PrimeFaces.AvalonConfigurator.changeLayout = function(layoutTheme) {
+                            originalChangeLayout.call(this, layoutTheme);
+                            applyCarexDashboardHeroColors(layoutTheme);
+                        };
+                        PrimeFaces.AvalonConfigurator._carexDashboardThemeHooked = true;
+                    }
+
                     function renderCarexDashboardCharts() {
                         if (typeof Highcharts === 'undefined') {
                             return;
@@ -337,6 +384,8 @@
                     }
 
                     window.addEventListener('load', function() {
+                        applyCarexDashboardHeroColors('#{guestPreferences.layout}');
+                        wireCarexDashboardThemeSync();
                         renderCarexDashboardCharts();
                     });
                     //]]>

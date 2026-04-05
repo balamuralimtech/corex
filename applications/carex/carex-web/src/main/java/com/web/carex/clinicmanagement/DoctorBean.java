@@ -48,6 +48,7 @@ public class DoctorBean implements Serializable {
     private Integer selectedUserId;
     private boolean addOperation = true;
     private boolean initialized;
+    private boolean doctorResultsLoaded;
 
     public void initializePageAttributes() {
         FacesContext facesContext = FacesContext.getCurrentInstance();
@@ -61,12 +62,14 @@ public class DoctorBean implements Serializable {
         if (formOrganizationId == null) {
             formOrganizationId = selectedOrganizationId;
         }
-        fetchDoctorList();
+        doctorList = new ArrayList<>();
+        doctorResultsLoaded = false;
         initialized = true;
     }
 
     public void onOrganizationChange() {
-        fetchDoctorList();
+        doctorList = new ArrayList<>();
+        doctorResultsLoaded = false;
         PrimeFaces.current().ajax().update("form:doctorMainPanel", "form:messages");
     }
 
@@ -161,6 +164,7 @@ public class DoctorBean implements Serializable {
         doctorList = selectedOrganizationId == null
                 ? new ArrayList<>()
                 : new ArrayList<>(doctorService.getDoctorsByOrganizationId(selectedOrganizationId));
+        doctorResultsLoaded = true;
     }
 
     public List<String> getAvailableGenders() {
@@ -224,6 +228,7 @@ public class DoctorBean implements Serializable {
     public Integer getSelectedUserId() { return selectedUserId; }
     public void setSelectedUserId(Integer selectedUserId) { this.selectedUserId = selectedUserId; }
     public boolean isAddOperation() { return addOperation; }
+    public boolean isDoctorResultsLoaded() { return doctorResultsLoaded; }
 
     private boolean validateForm() {
         if (formOrganizationId == null) {

@@ -1,272 +1,656 @@
-<!--
-  Copyright (c) 2026 company.name. All rights reserved.
-
-  This file and its associated content are proprietary to company.name.
-  Unauthorized copying, distribution, modification, or use of this file,
-  via any medium, is strictly prohibited without prior written permission.
-
-  This software is provided "as is", without warranty of any kind, express or implied,
-  including but not limited to the warranties of merchantability, fitness for a
-  particular purpose, and noninfringement. In no event shall the authors or copyright
-  holders be liable for any claim, damages, or other liability arising from the use
-  of this software.
-
-  Author: Balamurali
-  Project: 'app.name'
--->
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
-      xmlns:ui="http://java.sun.com/jsf/facelets"
       xmlns:p="http://primefaces.org/ui">
 
-    <h:head>
-        <title>#{appInfo.appName}</title>
-        <link rel="shortcut icon" href="#{request.contextPath}/resources/demo/images/coretix/coretixfavicon.png" type="image/x-icon" />
-        <h:outputStylesheet name="css/bootstrap.min.css" library="avalon-layout"/>
-        <h:outputStylesheet name="css/bootstrap-icons.css" library="avalon-layout"/>
-        <h:outputStylesheet name="css/templatemo-festava-live.css" library="avalon-layout"/>
-        <style>
-            body, html {
-                height: 100%;
-                margin: 0;
-                font-family: 'Arial', sans-serif;
-            }
+<h:head>
+    <f:facet name="first">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+        <meta name="apple-mobile-web-app-capable" content="yes"/>
+    </f:facet>
 
-            /* Centered login panel */
-            .login-panel {
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                width: 400px;
-                padding: 30px;
-                background-color: rgba(255, 255, 255, 1);
-                box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
-                text-align: center;
-            }
+    <title>#{appInfo.appName}</title>
+    <link rel="shortcut icon" href="#{request.contextPath}/resources/demo/images/coretix/coretixfavicon.png" type="image/x-icon"/>
 
-            /* Title styling */
-            h2 {
-                font-size: 24px;
-                margin-bottom: 20px;
-                color: #333;
-                font-weight: bold;
-            }
+    <h:outputStylesheet name="css/primeflex.min.css" library="avalon-layout"/>
+    <h:outputStylesheet name="css/primeicons.css" library="avalon-layout"/>
+    <h:outputStylesheet name="css/layout-#{guestPreferences.layout}.css" library="avalon-layout"/>
+    <h:outputStylesheet name="css/demo.css" library="demo"/>
 
-            /* Input field styling */
-            .login-panel input {
-                width: 100%;
-                padding: 15px;
-                margin: 10px 0;
-                box-sizing: border-box;
-                border: 1px solid #ccc;
-                border-radius: 4px;
-                font-size: 14px;
-            }
+    <style>
+        :root {
+            --login-shell-bg: #f3f4f6;
+            --login-card-bg: rgba(255, 255, 255, 0.94);
+            --login-card-border: rgba(15, 23, 42, 0.08);
+            --login-text-main: #111827;
+            --login-text-muted: #6b7280;
+            --login-accent: #2f9e83;
+            --login-accent-dark: #257e68;
+            --login-overlay: linear-gradient(180deg, rgba(15, 23, 42, 0.08) 0%, rgba(15, 23, 42, 0.52) 100%);
+        }
 
-            /* Checkbox and Forgot Password link container */
-            .login-panel .options {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 20px;
-                font-size: 14px;
-            }
+        * {
+            box-sizing: border-box;
+        }
 
-            .login-panel .checkbox-container {
-                display: flex;
-                align-items: center;
-            }
+        html, body {
+            height: 100%;
+            margin: 0;
+            background: var(--login-shell-bg);
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+            color: var(--login-text-main);
+            overflow: hidden;
+        }
 
-            .login-panel .checkbox-container input[type="checkbox"] {
-                margin-right: 8px;
-            }
+        .login-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
-            .login-panel a {
-                color: #007bff;
-                text-decoration: none;
-            }
+        .login-frame {
+            width: 100vw;
+            height: 100vh;
+            min-height: 100vh;
+            background: #ffffff;
+            display: grid;
+            grid-template-columns: minmax(0, 1.8fr) minmax(360px, .9fr);
+            gap: 0;
+            box-shadow: none;
+        }
 
-            .login-panel a:hover {
-                text-decoration: underline;
-            }
+        .login-showcase {
+            position: relative;
+            min-height: 100vh;
+            overflow: hidden;
+            background: #0f172a;
+            display: flex;
+            align-items: flex-end;
+        }
 
-            /* Footer text styling */
-            .login-panel .footer-text {
-                font-size: 12px;
-                color: #666;
-                margin-top: 20px;
-            }
+        .login-video {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
 
-            .login-panel .footer-text strong {
-                font-weight: bold;
-            }
+        .login-showcase::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: var(--login-overlay);
+        }
 
-            /* Icon styling (optional, can use a logo here) */
-            .login-panel .footer-icon {
-                display: block;
-                margin: 10px auto 0;
-            }
+        .login-brand {
+            position: absolute;
+            top: 1.5rem;
+            left: 1.75rem;
+            z-index: 2;
+            display: inline-flex;
+            align-items: center;
+            gap: .7rem;
+            text-decoration: none;
+            color: #ffffff;
+        }
 
-            #logo {
-                position: absolute;
-                top: 32px;
-                left: 50px;
-                width: 210px;
-                height: 30px;
-                display: inline-flex;
-                align-items: center;
-                font-family: "Roboto", sans-serif;
-                font-size: 30px;
-                font-weight: 700;
-                letter-spacing: 0.04em;
-                line-height: 1;
-                color: #2d3436;
-                text-decoration: none;
-            }
+        .login-brand-mark {
+            width: 2.4rem;
+            height: 2.4rem;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 700;
+            backdrop-filter: blur(10px);
+        }
 
-            #organizationlogo{
-                position: absolute;
-                top: 32px;
-                right: 50px;
+        .login-brand-text {
+            font-size: 1.7rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+        }
+
+        .login-copy {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            padding: 2rem 2rem 2.1rem;
+            color: #ffffff;
+        }
+
+        .login-copy-kicker {
+            display: inline-flex;
+            align-items: center;
+            padding: .45rem .8rem;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            font-size: .84rem;
+            letter-spacing: .05em;
+            text-transform: uppercase;
+            backdrop-filter: blur(10px);
+        }
+
+        .login-copy h1 {
+            margin: 1.15rem 0 0;
+            max-width: 720px;
+            font-size: clamp(2.1rem, 3vw, 3.45rem);
+            line-height: 1.02;
+            letter-spacing: -0.05em;
+            font-weight: 800;
+        }
+
+        .login-copy p {
+            margin: 1rem 0 0;
+            max-width: 640px;
+            font-size: 1rem;
+            line-height: 1.7;
+            color: rgba(255, 255, 255, 0.84);
+        }
+
+        .login-copy-meta {
+            margin-top: 1.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .login-copy-meta-text {
+            font-size: .95rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .login-copy-link {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-panel {
+            position: relative;
+            min-height: 100vh;
+            background: var(--login-card-bg);
+            border: none;
+            padding: 1.7rem 2rem 1.55rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .login-panel-top {
+            position: absolute;
+            top: 1.5rem;
+            left: 1.7rem;
+            right: 1.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .login-panel-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: .55rem;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--login-text-main);
+        }
+
+        .login-panel-brand-icon {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 12px;
+            background: #111827;
+            color: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .login-back {
+            width: 2.1rem;
+            height: 2.1rem;
+            border-radius: 999px;
+            border: 1px solid #e5e7eb;
+            background: #ffffff;
+            color: #374151;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .login-panel-content {
+            width: 100%;
+            max-width: 360px;
+            margin: 0 auto;
+        }
+
+        .login-panel-title {
+            margin: 0;
+            font-size: 2.1rem;
+            line-height: 1.05;
+            letter-spacing: -0.04em;
+            font-weight: 800;
+            color: var(--login-text-main);
+        }
+
+        .login-panel-description {
+            margin: .85rem 0 0;
+            color: var(--login-text-muted);
+            line-height: 1.6;
+            font-size: .97rem;
+        }
+
+        .login-pill-row {
+            display: flex;
+            gap: .55rem;
+            margin: 1.4rem 0 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .login-pill {
+            border-radius: 999px;
+            padding: .65rem 1rem;
+            font-size: .88rem;
+            font-weight: 600;
+            border: 1px solid #e5e7eb;
+            color: #4b5563;
+            background: #ffffff;
+        }
+
+        .login-pill.is-active {
+            background: #2b2e35;
+            border-color: #2b2e35;
+            color: #ffffff;
+        }
+
+        .login-label {
+            display: block;
+            margin-bottom: .5rem;
+            font-size: .88rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .login-field-group {
+            margin-top: 1rem;
+        }
+
+        .login-input,
+        .login-password {
+            width: 100%;
+        }
+
+        .login-input .ui-inputfield,
+        .login-password .ui-inputfield {
+            width: 100%;
+            height: 3rem;
+            border-radius: 14px !important;
+            border: 1px solid #dbe1ea !important;
+            box-shadow: none !important;
+            padding: 0 1rem !important;
+            font-size: .95rem;
+            background: #ffffff !important;
+        }
+
+        .login-actions {
+            margin-top: 1.25rem;
+        }
+
+        .login-submit.ui-button {
+            width: 100%;
+            border-radius: 999px !important;
+            border: none !important;
+            background: linear-gradient(135deg, var(--login-accent) 0%, #49b097 100%) !important;
+            box-shadow: none !important;
+        }
+
+        .login-submit.ui-button .ui-button-text {
+            padding: .95rem 1rem !important;
+            font-weight: 600;
+            font-size: .96rem;
+        }
+
+        .login-submit.ui-button:hover,
+        .login-submit.ui-button:focus {
+            background: linear-gradient(135deg, var(--login-accent-dark) 0%, var(--login-accent) 100%) !important;
+        }
+
+        .login-help {
+            margin-top: 1.35rem;
+            font-size: .84rem;
+            color: #9ca3af;
+        }
+
+        .login-growl {
+            margin-bottom: 1rem;
+        }
+
+        .login-footer {
+            position: absolute;
+            left: 1.7rem;
+            right: 1.7rem;
+            bottom: 1.45rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: .75rem;
+            font-size: .8rem;
+            color: #9ca3af;
+        }
+
+        #loadingOverlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            backdrop-filter: blur(5px);
+        }
+
+        #loadingOverlay.active {
+            display: flex;
+        }
+
+        .loader {
+            width: 62px;
+            height: 62px;
+            border-radius: 50%;
+            border: 7px solid #dbeafe;
+            border-top-color: var(--login-accent);
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+            margin-top: 1rem;
+            font-size: 1rem;
+            color: #374151;
+            font-weight: 600;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 1080px) {
+            .login-frame {
+                grid-template-columns: 1fr;
                 height: auto;
+                min-height: 100vh;
             }
 
-            /* Loading overlay */
-            #loadingOverlay {
-                display: none;
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(255, 255, 255, 0.95);
-                z-index: 9999;
-                justify-content: center;
-                align-items: center;
-                flex-direction: column;
+            .login-showcase,
+            .login-panel {
+                min-height: 50vh;
             }
 
-            #loadingOverlay.active {
-                display: flex;
+            .login-panel-top,
+            .login-footer {
+                position: static;
             }
 
-            .loader {
-                border: 8px solid #f3f3f3;
-                border-top: 8px solid #007bff;
-                border-radius: 50%;
-                width: 60px;
-                height: 60px;
-                animation: spin 1s linear infinite;
+            .login-panel {
+                justify-content: flex-start;
+                gap: 1.5rem;
             }
 
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
+            .login-panel-content {
+                max-width: 100%;
+                margin: 0;
             }
 
-            .loading-text {
-                margin-top: 20px;
-                font-size: 18px;
-                color: #333;
-                font-weight: 500;
+            .login-footer {
+                margin-top: auto;
+                padding-top: 1rem;
             }
-        </style>
-    </h:head>
+        }
 
-    <h:body>
-        <!-- Loading Overlay -->
-        <div id="loadingOverlay">
-            <div class="loader"></div>
-            <div class="loading-text">Authenticating, please wait...</div>
-        </div>
+        @media (max-width: 640px) {
+            .login-showcase {
+                min-height: 440px;
+            }
 
-        <nav class="navbar navbar-expand-lg">
-            <div class="container">
-                <h:outputLink value="#{request.contextPath}/login" id="logo" styleClass="navbar-brand">
-                    <h:outputText value="#{appInfo.appName}" />
+            .login-copy {
+                padding: 1.35rem;
+            }
+
+            .login-copy h1 {
+                font-size: 2rem;
+            }
+
+            .login-panel {
+                min-height: auto;
+                padding: 1.2rem;
+            }
+
+            .login-brand {
+                left: 1.2rem;
+                top: 1.2rem;
+            }
+        }
+    </style>
+</h:head>
+
+<h:body>
+    <f:event listener="#{loginBean.initializePageAttributes}" type="preRenderComponent"/>
+
+    <div id="loadingOverlay">
+        <div class="loader"></div>
+        <div class="loading-text">Authenticating, please wait...</div>
+    </div>
+
+    <div class="login-page">
+        <div class="login-frame">
+            <section class="login-showcase">
+                <h:outputLink value="#{request.contextPath}/login" styleClass="login-brand">
+                    <span class="login-brand-mark">C</span>
+                    <span class="login-brand-text">#{appInfo.appName}</span>
                 </h:outputLink>
 
-                <a class="navbar-brand">
-                    <!--<p:graphicImage id="organizationlogo" name="images/logo-sm.jpg" library="avalon-layout"/>-->
+                <video autoplay="autoplay" muted="muted" loop="loop" playsinline="playsinline" class="login-video">
+                    <source src="#{request.contextPath}#{appInfo.loginVideo}" type="video/mp4"/>
+                </video>
 
-                </a>
-            </div>
-        </nav>
-        <!-- Centered login panel -->
-        <div class="login-panel">
-
-            <h2>Sign In</h2>
-            <f:event listener="#{loginBean.initializePageAttributes}" type="preRenderComponent"/>
-            <h:form id="form">
-
-                <p:growl id="messages" showDetail="true" />
-                <!-- Email field -->
-                <p:inputText id="email"  value="#{loginBean.username}" placeholder="Username" />
-
-                <!-- Password field -->
-                <p:password id="password"  placeholder="Password" value="#{loginBean.password}" />
-
-                <!-- Remember me and Forgot Password link -->
-                <div class="options">
-                    <div class="checkbox-container" style="display: none">
-                        <h:selectBooleanCheckbox id="rememberMe" />
-                        <label for="rememberMe" style="text-wrap: nowrap;">Remember me</label>
+                <div class="login-copy">
+                    <span class="login-copy-kicker">Operational Platform</span>
+                    <h1>#{appInfo.loginHeadline}</h1>
+                    <p>#{appInfo.loginDescription}</p>
+                    <div class="login-copy-meta">
+                        <div class="login-copy-meta-text">Secure access for clinics, hospitals, and internal teams.</div>
+                        <h:outputLink value="#{request.contextPath}/login" styleClass="login-copy-link">
+                            Learn more <i class="pi pi-arrow-right" style="font-size:.8rem;"></i>
+                        </h:outputLink>
                     </div>
-                    <p:link outcome="/pages/home/homePage">Forget Password?</p:link>
+                </div>
+            </section>
+
+            <section class="login-panel">
+                <div class="login-panel-top">
+                    <div class="login-panel-brand">
+                        <span class="login-panel-brand-icon">S</span>
+                        <span>#{appInfo.appName}</span>
+                    </div>
+                    <h:outputLink value="#{request.contextPath}/login" styleClass="login-back">
+                        <i class="pi pi-angle-left"></i>
+                    </h:outputLink>
                 </div>
 
-                <!-- Sign In button -->
-                <p:commandButton value="Sign In" icon="pi pi-sign-in"
-                                 action="#{loginBean.login}"
-                                 style="width: 100%;"
-                                 styleClass="ui-button-raised mr-2 mb-2"
-                                 ajax="false"
-                                 onclick="showLoader()"
-                                 oncomplete="hideLoaderIfLoginPage()"/>
+                <div class="login-panel-content">
+                    <h:form id="form">
+                        <p:growl id="messages" showDetail="true" styleClass="login-growl"/>
 
-                <!--<p:button outcome="/pages/home/homePage" value="Sign In" icon="pi pi-sign-in" />-->
-                <!-- Footer text -->
-                <div class="footer-text">
-                    <p>Â© CoreX Logic. <h:outputText value="#{loginBean.year}"/> </p>
+                        <h2 class="login-panel-title">Let&apos;s join with us</h2>
+                        <div class="login-panel-description">
+                            Application name, application content, and secure login are now combined into one single entry page.
+                        </div>
+
+                        <div class="login-pill-row">
+                            <span class="login-pill is-active">Username</span>
+                            <span class="login-pill">Access</span>
+                            <span class="login-pill">Secure</span>
+                        </div>
+
+                        <div class="login-field-group">
+                            <label class="login-label" for="form:username">Username</label>
+                            <p:inputText id="username" value="#{loginBean.username}" styleClass="login-input" placeholder="Enter your username"/>
+                        </div>
+
+                        <div class="login-field-group">
+                            <label class="login-label" for="form:password">Password</label>
+                            <p:password id="password" value="#{loginBean.password}" styleClass="login-password" placeholder="Enter your password" feedback="false"/>
+                        </div>
+
+                        <h:inputHidden id="encryptedPassword" value="#{loginBean.encryptedPassword}"/>
+
+                        <div class="login-actions">
+                            <p:commandButton value="Continue"
+                                             icon="pi pi-sign-in"
+                                             type="button"
+                                             onclick="encryptAndSubmitLogin(); return false;"
+                                             styleClass="login-submit"/>
+                            <h:commandButton id="encryptedSubmit"
+                                             value="Encrypted Submit"
+                                             action="#{loginBean.login}"
+                                             style="display:none;"/>
+                        </div>
+
+                        <div class="login-help">Password is encrypted in the browser before submit.</div>
+                    </h:form>
                 </div>
-            </h:form>
+
+                <div class="login-footer">
+                    <span>© CoreX Logic #{loginBean.year}</span>
+                    <span>One login page only</span>
+                </div>
+            </section>
         </div>
+    </div>
 
-        <script type="text/javascript">
-            //<![CDATA[
-            function showLoader() {
-                // Show loader when sign in button is clicked
-                document.getElementById('loadingOverlay').classList.add('active');
+    <script type="text/javascript">
+        //<![CDATA[
+        const loginEncryptionPublicKey = "#{loginBean.loginEncryptionPublicKey}";
 
-                // Store flag in sessionStorage to persist during page navigation
-                sessionStorage.setItem('showingLoader', 'true');
+        function showLoader() {
+            document.getElementById('loadingOverlay').classList.add('active');
+            sessionStorage.setItem('showingLoader', 'true');
+        }
+
+        function hideLoader() {
+            sessionStorage.removeItem('showingLoader');
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+
+        function hideLoaderIfLoginPage() {
+            if (window.location.pathname.includes('login')) {
+                hideLoader();
             }
+        }
 
-            function hideLoader() {
-                sessionStorage.removeItem('showingLoader');
-                document.getElementById('loadingOverlay').classList.remove('active');
+        function decodeBase64ToUint8Array(base64Value) {
+            const binaryValue = window.atob(base64Value);
+            const bytes = new Uint8Array(binaryValue.length);
+            for (let index = 0; index < binaryValue.length; index++) {
+                bytes[index] = binaryValue.charCodeAt(index);
             }
+            return bytes;
+        }
 
-            function hideLoaderIfLoginPage() {
-                if (window.location.pathname.includes('login')) {
-                    hideLoader();
-                }
-            }
+        function canEncryptPasswordInBrowser() {
+            return Boolean(
+                loginEncryptionPublicKey &&
+                window.crypto &&
+                window.crypto.subtle &&
+                window.isSecureContext
+            );
+        }
 
-            // Check if we're returning from a failed login
-            window.addEventListener('load', function() {
-                // If login failed, hide the loader
-                if (sessionStorage.getItem('showingLoader') === 'true' && window.location.pathname.includes('login')) {
-                    hideLoader();
-                }
+        async function encryptPasswordForSubmit(plainPassword) {
+            const publicKeyBytes = decodeBase64ToUint8Array(loginEncryptionPublicKey);
+            const publicKey = await window.crypto.subtle.importKey(
+                'spki',
+                publicKeyBytes.buffer,
+                {
+                    name: 'RSA-OAEP',
+                    hash: 'SHA-256'
+                },
+                false,
+                ['encrypt']
+            );
+
+            const encryptedBytes = await window.crypto.subtle.encrypt(
+                {
+                    name: 'RSA-OAEP'
+                },
+                publicKey,
+                new TextEncoder().encode(plainPassword)
+            );
+
+            const encryptedArray = new Uint8Array(encryptedBytes);
+            let binaryValue = '';
+            encryptedArray.forEach(function(currentByte) {
+                binaryValue += String.fromCharCode(currentByte);
             });
-            //]]>
-        </script>
-    </h:body>
-    <h:outputStylesheet name="css/layout-#{guestPreferences.layout}.css" library="avalon-layout" />
-    <h:outputStylesheet name="css/demo.css" library="demo" />
+            return window.btoa(binaryValue);
+        }
+
+        async function encryptAndSubmitLogin() {
+            const passwordInput = document.getElementById('form:password');
+            const encryptedPasswordInput = document.getElementById('form:encryptedPassword');
+            const submitButton = document.getElementById('form:encryptedSubmit');
+
+            if (!passwordInput || !encryptedPasswordInput || !submitButton) {
+                window.alert('Login controls are not available. Refresh the page and try again.');
+                return false;
+            }
+
+            if (!passwordInput.value) {
+                submitButton.click();
+                return false;
+            }
+
+            if (!canEncryptPasswordInBrowser()) {
+                encryptedPasswordInput.value = '';
+                submitButton.click();
+                return false;
+            }
+
+            try {
+                showLoader();
+                encryptedPasswordInput.value = await encryptPasswordForSubmit(passwordInput.value);
+                passwordInput.value = '';
+                submitButton.click();
+            } catch (error) {
+                hideLoader();
+                encryptedPasswordInput.value = '';
+                submitButton.click();
+            }
+            return false;
+        }
+
+        window.addEventListener('load', function() {
+            if (sessionStorage.getItem('showingLoader') === 'true' && window.location.pathname.includes('login')) {
+                hideLoader();
+            }
+        });
+        //]]>
+    </script>
+</h:body>
 </html>
-
-

@@ -45,7 +45,13 @@
                         </p:toolbarGroup>
                     </p:toolbar>
 
+                    <p:outputPanel rendered="#{not medicineBean.medicineResultsLoaded}">
+                        <div style="padding:1rem 0;color:#64748b;">
+                            Medicine records are not loaded by default. Select an organization and click <strong>Fetch Medicines</strong> when you want to view the list.
+                        </div>
+                    </p:outputPanel>
                     <p:dataTable id="medicineTable" widgetVar="medicineTableWidget" var="medicineRow" value="#{medicineBean.medicineList}"
+                                 rendered="#{medicineBean.medicineResultsLoaded}"
                                  paginator="true" rows="10" reflow="true" rowKey="#{medicineRow.id}"
                                  emptyMessage="No medicines found for the selected organization.">
                         <f:facet name="header">

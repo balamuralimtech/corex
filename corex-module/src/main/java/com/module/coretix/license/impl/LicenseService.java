@@ -44,6 +44,7 @@ public class LicenseService implements ILicenseService {
     @Inject
     private UserActivityDAO userActivityDAO;
 
+    @Transactional(readOnly = false)
     public GeneralConstants addLicense(UserActivityTO userActivityTO, Licenses license) {
         GeneralConstants generalConstants = licenseDAO.addLicense(license);
         userActivityTO.setActivityDescription("Add license - (" + license.getOrganization().getOrganizationName() + ") - " + generalConstants.getName());
@@ -51,6 +52,7 @@ public class LicenseService implements ILicenseService {
         return generalConstants;
     }
 
+    @Transactional(readOnly = false)
     public GeneralConstants updateLicense(UserActivityTO userActivityTO, Licenses license) {
         GeneralConstants generalConstants = licenseDAO.updateLicense(license);
         userActivityTO.setActivityDescription("Edit license - (" + license.getOrganization().getOrganizationName() + ") - " + generalConstants.getName());
@@ -58,6 +60,7 @@ public class LicenseService implements ILicenseService {
         return generalConstants;
     }
 
+    @Transactional(readOnly = false)
     public GeneralConstants deleteLicense(UserActivityTO userActivityTO, Licenses license) {
         GeneralConstants generalConstants = licenseDAO.deleteLicense(license);
         userActivityTO.setActivityDescription("Delete license - (" + license.getOrganization().getOrganizationName() + ") - " + generalConstants.getName());

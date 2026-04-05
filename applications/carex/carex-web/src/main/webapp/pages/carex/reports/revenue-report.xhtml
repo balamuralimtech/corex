@@ -1,15 +1,266 @@
 <!DOCTYPE html>
 <ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://java.sun.com/jsf/core"
                 xmlns:ui="http://java.sun.com/jsf/facelets"
                 xmlns:h="http://java.sun.com/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 template="/WEB-INF/template.xhtml">
 
     <ui:define name="content">
-        <div class="card">
-            <h1>Revenue Report</h1>
-            <p>Report scope: all patients or a specific patient with daily, weekly, monthly, and yearly revenue filtering.</p>
-            <p>This placeholder can later show fee collection, consultation income, and invoice totals.</p>
-        </div>
+        <f:event listener="#{revenueReportBean.initializePageAttributes}" type="preRenderView"/>
+
+        <h:outputScript library="avalon-layout" name="highcharts/highcharts.js" target="head"/>
+
+        <h:outputStylesheet>
+            .report-shell { display:flex; flex-direction:column; gap:1.25rem; }
+            .report-hero { position:relative; overflow:hidden; padding:1.75rem; border-radius:22px; background:linear-gradient(135deg,#7c2d12 0%,#b45309 100%); color:#fff7ed; box-shadow:0 22px 70px rgba(180,83,9,.22); }
+            .report-hero:before { content:''; position:absolute; inset:auto -10% -45% auto; width:320px; height:320px; border-radius:50%; background:radial-gradient(circle,rgba(255,255,255,.16) 0%,rgba(255,255,255,0) 72%); }
+            .report-title { margin:0; font-size:1.95rem; font-weight:700; letter-spacing:-.03em; }
+            .report-copy { margin-top:.7rem; max-width:780px; color:rgba(255,247,237,.9); line-height:1.6; }
+            .report-panel { padding:1rem; border-radius:20px; background:#fff; box-shadow:0 10px 40px rgba(15,23,42,.08); border:1px solid rgba(148,163,184,.18); }
+            .report-panel-title { margin:0; font-size:1.05rem; font-weight:700; color:#0f172a; }
+            .report-panel-subtitle { margin-top:.2rem; color:#64748b; font-size:.9rem; }
+            .report-metric-card { height:100%; padding:1.1rem; border-radius:18px; background:#fff; box-shadow:0 10px 40px rgba(15,23,42,.08); border:1px solid rgba(148,163,184,.18); }
+            .report-metric-muted { color:#64748b; font-size:.82rem; text-transform:uppercase; letter-spacing:.08em; }
+            .report-metric-value { margin-top:.55rem; font-size:2rem; font-weight:700; color:#0f172a; line-height:1; }
+            .report-metric-foot { margin-top:.75rem; color:#475569; font-size:.92rem; line-height:1.5; }
+            .report-chart { min-height:320px; }
+            .report-chip { display:inline-flex; align-items:center; gap:.35rem; padding:.35rem .65rem; border-radius:999px; font-size:.82rem; font-weight:600; }
+            .report-chip-success { background:#dcfce7; color:#166534; }
+            .report-chip-warn { background:#fef3c7; color:#92400e; }
+        </h:outputStylesheet>
+
+        <h:form id="form">
+            <div class="report-shell">
+                <p:messages id="messages" showDetail="true" closable="true"/>
+
+                <div class="report-hero">
+                    <div class="grid align-items-start">
+                        <div class="col-12 lg:col-8">
+                            <h1 class="report-title">Revenue Report</h1>
+                            <div class="report-copy">
+                                Track billing performance for all patients or a selected patient with daily, weekly, monthly, and yearly revenue windows.
+                            </div>
+                        </div>
+                        <div class="col-12 lg:col-4">
+                            <div style="padding:1rem;border-radius:18px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);">
+                                <div style="font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(254,215,170,.9);">Current Window</div>
+                                <div style="margin-top:.45rem;font-size:1.3rem;font-weight:700;">#{revenueReportBean.reportWindowLabel}</div>
+                                <div style="margin-top:.5rem;font-size:.92rem;color:rgba(255,247,237,.9);">#{revenueReportBean.selectedPatientName}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-panel">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
+                        <div>
+                            <h3 class="report-panel-title">Report Filters</h3>
+                            <div class="report-panel-subtitle">Choose organization, patient scope, and reporting period before fetching revenue data.</div>
+                        </div>
+                    </div>
+                    <div class="grid">
+                        <div class="col-12 md:col-3">
+                            <label>Organization</label>
+                            <p:selectOneMenu value="#{revenueReportBean.selectedOrganizationId}" style="width:100%;">
+                                <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{revenueReportBean.organizationList}" var="organization"
+                                               itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
+                                <p:ajax listener="#{revenueReportBean.onOrganizationChange}" process="@this" update="form"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-12 md:col-3">
+                            <label>Patient Scope</label>
+                            <p:selectOneMenu value="#{revenueReportBean.patientScope}" style="width:100%;">
+                                <f:selectItem itemLabel="All Patients" itemValue="ALL"/>
+                                <f:selectItem itemLabel="Specific Patient" itemValue="SPECIFIC"/>
+                                <p:ajax listener="#{revenueReportBean.onPatientScopeChange}" process="@this" update="form"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-12 md:col-3">
+                            <label>Patient</label>
+                            <p:selectOneMenu value="#{revenueReportBean.selectedPatientId}" style="width:100%;" disabled="#{revenueReportBean.patientScope ne 'SPECIFIC'}">
+                                <f:selectItem itemLabel="Select Patient" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{revenueReportBean.patientList}" var="patient"
+                                               itemValue="#{patient.id}" itemLabel="#{patient.patientCode} - #{patient.patientName}"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-12 md:col-3">
+                            <label>Period Scope</label>
+                            <p:selectOneMenu value="#{revenueReportBean.periodScope}" style="width:100%;">
+                                <f:selectItem itemLabel="Daily" itemValue="DAILY"/>
+                                <f:selectItem itemLabel="Weekly" itemValue="WEEKLY"/>
+                                <f:selectItem itemLabel="Monthly" itemValue="MONTHLY"/>
+                                <f:selectItem itemLabel="Yearly" itemValue="YEARLY"/>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="col-12 md:col-3">
+                            <label>Reference Date</label>
+                            <p:datePicker value="#{revenueReportBean.reportReferenceDate}" pattern="dd/MM/yyyy" style="width:100%;"/>
+                        </div>
+                        <div class="col-12 md:col-9" style="display:flex;align-items:flex-end;">
+                            <p:commandButton value="Fetch Revenue Report" icon="pi pi-search"
+                                             actionListener="#{revenueReportBean.fetchReport}"
+                                             process="@form"
+                                             update="form"
+                                             styleClass="ui-button-success"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid">
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Total Revenue</span><div class="report-metric-value">#{revenueReportBean.formatAmount(revenueReportBean.totalRevenue)}</div><div class="report-metric-foot">Combined invoice value across all matched consultations.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Consultation Revenue</span><div class="report-metric-value">#{revenueReportBean.formatAmount(revenueReportBean.totalConsultationRevenue)}</div><div class="report-metric-foot">Revenue earned from consultation fees in the selected period.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Medicine Revenue</span><div class="report-metric-value">#{revenueReportBean.formatAmount(revenueReportBean.totalMedicineRevenue)}</div><div class="report-metric-foot">Prescription and medicine value captured in invoices.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">MC Revenue</span><div class="report-metric-value">#{revenueReportBean.formatAmount(revenueReportBean.totalMedicalCertificateRevenue)}</div><div class="report-metric-foot">Medical certificate fee contribution for the selected time slice.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Consultations</span><div class="report-metric-value">#{revenueReportBean.consultationCount}</div><div class="report-metric-foot">Consultation records contributing to the current revenue report.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Invoices</span><div class="report-metric-value">#{revenueReportBean.invoiceCount}</div><div class="report-metric-foot">Matched visits that resulted in invoice generation.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Avg Per Consultation</span><div class="report-metric-value">#{revenueReportBean.formatAmount(revenueReportBean.averageRevenuePerConsultation)}</div><div class="report-metric-foot">Average revenue generated per consultation in this report.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="report-metric-card"><span class="report-metric-muted">Avg Invoice Value</span><div class="report-metric-value">#{revenueReportBean.formatAmount(revenueReportBean.averageInvoiceValue)}</div><div class="report-metric-foot">Average billed value for consultations where invoices were issued.</div></div></div>
+                </div>
+
+                <div class="grid">
+                    <div class="col-12 xl:col-6">
+                        <div class="report-panel">
+                            <div style="margin-bottom:.75rem;">
+                                <h3 class="report-panel-title">Revenue Trend</h3>
+                                <div class="report-panel-subtitle">Revenue movement across the selected period window.</div>
+                            </div>
+                            <div id="revenueTrendChart" class="report-chart"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-6">
+                        <div class="report-panel">
+                            <div style="margin-bottom:.75rem;">
+                                <h3 class="report-panel-title">Revenue Composition</h3>
+                                <div class="report-panel-subtitle">Split of total revenue by consultation, medicines, and medical certificates.</div>
+                            </div>
+                            <div id="revenueCompositionChart" class="report-chart"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-6">
+                        <div class="report-panel">
+                            <div style="margin-bottom:.75rem;">
+                                <h3 class="report-panel-title">Payment Mode Mix</h3>
+                                <div class="report-panel-subtitle">How revenue-carrying consultations are being settled.</div>
+                            </div>
+                            <div id="paymentModeChart" class="report-chart"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-6">
+                        <div class="report-panel">
+                            <div style="margin-bottom:.75rem;">
+                                <h3 class="report-panel-title">Top Patients By Revenue</h3>
+                                <div class="report-panel-subtitle">Highest contributing patient accounts in the current report window.</div>
+                            </div>
+                            <div id="topPatientRevenueChart" class="report-chart"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="report-panel">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
+                        <div>
+                            <h3 class="report-panel-title">Revenue Ledger</h3>
+                            <div class="report-panel-subtitle">Consultation-level revenue view with patient, doctor, fee, and billing composition details.</div>
+                        </div>
+                    </div>
+                    <p:dataTable value="#{revenueReportBean.reportConsultations}" var="consultationRow" paginator="true" rows="10"
+                                 rowsPerPageTemplate="10,25,50" paginatorPosition="bottom"
+                                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords}" reflow="true"
+                                 emptyMessage="No revenue records found for the selected criteria.">
+                        <p:column headerText="Consultation">
+                            <div style="font-weight:700;">#{consultationRow.consultationNumber}</div>
+                            <div style="font-size:.84rem;color:#64748b;">
+                                <h:outputText value="#{consultationRow.consultationDate}">
+                                    <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/>
+                                </h:outputText>
+                            </div>
+                        </p:column>
+                        <p:column headerText="Patient">
+                            <div>#{consultationRow.patient.patientName}</div>
+                            <div style="font-size:.84rem;color:#64748b;">#{consultationRow.patient.patientCode}</div>
+                        </p:column>
+                        <p:column headerText="Doctor">
+                            <div>#{consultationRow.doctor.doctorName}</div>
+                            <div style="font-size:.84rem;color:#64748b;">#{consultationRow.doctor.specialization}</div>
+                        </p:column>
+                        <p:column headerText="Paid By">
+                            #{empty consultationRow.invoicePaidBy ? 'Unspecified' : consultationRow.invoicePaidBy}
+                        </p:column>
+                        <p:column headerText="Fee Breakdown">
+                            <div><strong>Consultation:</strong> #{revenueReportBean.formatAmount(consultationRow.consultationFee)}</div>
+                            <div><strong>Medicines:</strong> #{revenueReportBean.formatAmount(consultationRow.medicineTotal)}</div>
+                            <div><strong>MC:</strong> #{revenueReportBean.formatAmount(consultationRow.medicalCertificateFee)}</div>
+                        </p:column>
+                        <p:column headerText="Invoice">
+                            <span class="report-chip #{consultationRow.issueInvoice ? 'report-chip-success' : 'report-chip-warn'}">#{consultationRow.issueInvoice ? 'Issued' : 'Not Issued'}</span>
+                            <div style="margin-top:.45rem;font-weight:700;">#{revenueReportBean.formatAmount(consultationRow.invoiceTotal)}</div>
+                        </p:column>
+                        <p:column headerText="Status">
+                            <p:tag value="#{consultationRow.status}" severity="info"/>
+                        </p:column>
+                    </p:dataTable>
+                </div>
+
+                <h:outputScript>
+                    //<![CDATA[
+                    function renderRevenueCharts() {
+                        if (typeof Highcharts === 'undefined') {
+                            return;
+                        }
+
+                        Highcharts.setOptions({
+                            lang: { thousandsSep: ',' },
+                            credits: { enabled: false },
+                            colors: ['#b45309', '#0f766e', '#1d4ed8', '#ef4444', '#7c3aed', '#14b8a6']
+                        });
+
+                        Highcharts.chart('revenueTrendChart', {
+                            chart: { type: 'areaspline', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            xAxis: { type: 'category' },
+                            yAxis: { min: 0, title: { text: 'Revenue' } },
+                            legend: { enabled: false },
+                            plotOptions: { areaspline: { fillOpacity: .24, lineWidth: 3, marker: { radius: 4 } } },
+                            series: [{ name: 'Revenue', data: #{revenueReportBean.revenueTrendJson} }]
+                        });
+
+                        Highcharts.chart('revenueCompositionChart', {
+                            chart: { type: 'pie', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            tooltip: { pointFormat: '<b>{point.y:.2f}</b>' },
+                            plotOptions: { pie: { innerSize: '58%', dataLabels: { enabled: true, format: '{point.name}' } } },
+                            series: [{ name: 'Revenue', data: #{revenueReportBean.revenueCompositionJson} }]
+                        });
+
+                        Highcharts.chart('paymentModeChart', {
+                            chart: { type: 'column', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            xAxis: { type: 'category' },
+                            yAxis: { min: 0, title: { text: 'Consultations' } },
+                            legend: { enabled: false },
+                            plotOptions: { column: { borderRadius: 8, colorByPoint: true } },
+                            series: [{ name: 'Payment Mode', data: #{revenueReportBean.paymentModeJson} }]
+                        });
+
+                        Highcharts.chart('topPatientRevenueChart', {
+                            chart: { type: 'bar', backgroundColor: 'transparent' },
+                            title: { text: null },
+                            xAxis: { type: 'category' },
+                            yAxis: { min: 0, title: { text: 'Revenue' } },
+                            legend: { enabled: false },
+                            plotOptions: { bar: { borderRadius: 8, colorByPoint: true } },
+                            series: [{ name: 'Revenue', data: #{revenueReportBean.topPatientRevenueJson} }]
+                        });
+                    }
+
+                    window.addEventListener('load', function() {
+                        renderRevenueCharts();
+                    });
+                    //]]>
+                </h:outputScript>
+            </div>
+        </h:form>
     </ui:define>
 </ui:composition>

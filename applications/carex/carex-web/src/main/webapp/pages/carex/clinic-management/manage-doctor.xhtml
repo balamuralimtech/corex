@@ -45,7 +45,13 @@
                         </p:toolbarGroup>
                     </p:toolbar>
 
+                    <p:outputPanel rendered="#{not doctorBean.doctorResultsLoaded}">
+                        <div style="padding:1rem 0;color:#64748b;">
+                            Doctor records are not loaded by default. Select an organization and click <strong>Fetch Doctors</strong> when you want to view the list.
+                        </div>
+                    </p:outputPanel>
                     <p:dataTable id="doctorTable" widgetVar="doctorTableWidget" var="doctorRow" value="#{doctorBean.doctorList}"
+                                 rendered="#{doctorBean.doctorResultsLoaded}"
                                  paginator="true" rows="10" reflow="true" rowKey="#{doctorRow.id}"
                                  emptyMessage="No doctors found for the selected organization.">
                         <f:facet name="header">

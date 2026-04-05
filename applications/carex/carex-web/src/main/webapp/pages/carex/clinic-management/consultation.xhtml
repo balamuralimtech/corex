@@ -144,8 +144,15 @@
                         </div>
 
                         <p:outputPanel id="consultationMainPanel" styleClass="card" style="margin-top:1rem;border:1px solid #e2e8f0;box-shadow:none;">
+                            <p:outputPanel rendered="#{not consultationBean.consultationResultsLoaded}">
+                                <div style="padding:1rem 0;color:#64748b;">
+                                    Consultation history is not loaded by default. Select an organization and click <strong>Fetch Consultations</strong> when you want to search existing visits.
+                                </div>
+                            </p:outputPanel>
                             <p:dataTable value="#{consultationBean.consultationList}" var="consultationRow" widgetVar="consultationTableWidget"
-                                         paginator="true" rows="10" reflow="true" rowKey="#{consultationRow.id}"
+                                         rendered="#{consultationBean.consultationResultsLoaded}"
+                                         paginator="true" rows="10" rowsPerPageTemplate="10,25,50" paginatorPosition="bottom"
+                                         currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords}" reflow="true" rowKey="#{consultationRow.id}"
                                          emptyMessage="No consultations found for the selected organization.">
                                 <f:facet name="header">
                                     <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-2">

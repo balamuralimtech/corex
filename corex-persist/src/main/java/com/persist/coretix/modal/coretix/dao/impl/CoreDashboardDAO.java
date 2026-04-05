@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -49,19 +48,11 @@ public class CoreDashboardDAO implements ICoreDashboardDAO {
      */
     public long fetchOrganizationCount() {
         long count = 0;
-        Session session = null;
-        Transaction trans = null;
         try {
-            session = getSessionFactory().openSession();
-            trans = session.beginTransaction();
+            Session session = getSessionFactory().getCurrentSession();
             count = (long) session.createQuery("SELECT COUNT(*) FROM Organizations").uniqueResult();
         } catch (Exception e) {
             logger.error("Error fetching organization count", e);
-        }
-        finally {
-            if (session != null) {
-                session.close();
-            }
         }
         return count;
     }
@@ -73,19 +64,11 @@ public class CoreDashboardDAO implements ICoreDashboardDAO {
      */
     public long fetchBranchCount() {
         long count = 0;
-        Session session = null;
-        Transaction trans = null;
         try {
-            session = getSessionFactory().openSession();
-            trans = session.beginTransaction();
+            Session session = getSessionFactory().getCurrentSession();
             count = (long) session.createQuery("SELECT COUNT(*) FROM Branches").uniqueResult();
         } catch (Exception e) {
             logger.error("Error fetching branch count", e);
-        }
-        finally {
-            if (session != null) {
-                session.close();
-            }
         }
         return count;
     }
@@ -97,19 +80,11 @@ public class CoreDashboardDAO implements ICoreDashboardDAO {
      */
     public long fetchDepartmentCount() {
         long count = 0;
-        Session session = null;
-        Transaction trans = null;
         try {
-            session = getSessionFactory().openSession();
-            trans = session.beginTransaction();
+            Session session = getSessionFactory().getCurrentSession();
             count = (long) session.createQuery("SELECT COUNT(*) FROM Departments").uniqueResult();
         } catch (Exception e) {
             logger.error("Error fetching department count", e);
-        }
-        finally {
-            if (session != null) {
-                session.close();
-            }
         }
         return count;
     }
@@ -121,19 +96,11 @@ public class CoreDashboardDAO implements ICoreDashboardDAO {
      */
     public long fetchDesignationCount() {
         long count = 0;
-        Session session = null;
-        Transaction trans = null;
         try {
-            session = getSessionFactory().openSession();
-            trans = session.beginTransaction();
+            Session session = getSessionFactory().getCurrentSession();
             count = (long) session.createQuery("SELECT COUNT(*) FROM Designations").uniqueResult();
         } catch (Exception e) {
             logger.error("Error fetching designation count", e);
-        }
-        finally {
-            if (session != null) {
-                session.close();
-            }
         }
         return count;
     }
@@ -145,19 +112,11 @@ public class CoreDashboardDAO implements ICoreDashboardDAO {
      */
     public long fetchCountryCount() {
         long count = 0;
-        Session session = null;
-        Transaction trans = null;
         try {
-            session = getSessionFactory().openSession();
-            trans = session.beginTransaction();
+            Session session = getSessionFactory().getCurrentSession();
             count = (long) session.createQuery("SELECT COUNT(*) FROM Countries").uniqueResult();
         } catch (Exception e) {
             logger.error("Error fetching country count", e);
-        }
-        finally {
-            if (session != null) {
-                session.close();
-            }
         }
         return count;
     }
@@ -169,19 +128,11 @@ public class CoreDashboardDAO implements ICoreDashboardDAO {
      */
     public long fetchStateCount() {
         long count = 0;
-        Session session = null;
-        Transaction trans = null;
         try {
-            session = getSessionFactory().openSession();
-            trans = session.beginTransaction();
+            Session session = getSessionFactory().getCurrentSession();
             count = (long) session.createQuery("SELECT COUNT(*) FROM States").uniqueResult();
         } catch (Exception e) {
             logger.error("Error fetching state count", e);
-        }
-        finally {
-            if (session != null) {
-                session.close();
-            }
         }
         return count;
     }
@@ -193,19 +144,11 @@ public class CoreDashboardDAO implements ICoreDashboardDAO {
      */
     public long fetchCityCount() {
         long count = 0;
-        Session session = null;
-        Transaction trans = null;
         try {
-            session = getSessionFactory().openSession();
-            trans = session.beginTransaction();
+            Session session = getSessionFactory().getCurrentSession();
             count = (long) session.createQuery("SELECT COUNT(*) FROM Cities").uniqueResult();
         } catch (Exception e) {
             logger.error("Error fetching city count", e);
-        }
-        finally {
-            if (session != null) {
-                session.close();
-            }
         }
         return count;
     }
@@ -217,19 +160,11 @@ public class CoreDashboardDAO implements ICoreDashboardDAO {
      */
     public long fetchCurrencyCount() {
         long count = 0;
-        Session session = null;
-        Transaction trans = null;
         try {
-            session = getSessionFactory().openSession();
-            trans = session.beginTransaction();
+            Session session = getSessionFactory().getCurrentSession();
             count = (long) session.createQuery("SELECT COUNT(*) FROM CurrencyDetails").uniqueResult();
         } catch (Exception e) {
             logger.error("Error fetching currency count", e);
-        }
-        finally {
-            if (session != null) {
-                session.close();
-            }
         }
         return count;
     }
@@ -241,19 +176,11 @@ public class CoreDashboardDAO implements ICoreDashboardDAO {
      */
     public long fetchRoleCount() {
         long count = 0;
-        Session session = null;
-        Transaction trans = null;
         try {
-            session = getSessionFactory().openSession();
-            trans = session.beginTransaction();
+            Session session = getSessionFactory().getCurrentSession();
             count = (long) session.createQuery("SELECT COUNT(*) FROM Roles").uniqueResult();
         } catch (Exception e) {
             logger.error("Error fetching role count", e);
-        }
-        finally {
-            if (session != null) {
-                session.close();
-            }
         }
         return count;
     }
@@ -265,19 +192,11 @@ public class CoreDashboardDAO implements ICoreDashboardDAO {
      */
     public long fetchUserCount() {
         long count = 0;
-        Session session = null;
-        Transaction trans = null;
         try {
-            session = getSessionFactory().openSession();
-            trans = session.beginTransaction();
+            Session session = getSessionFactory().getCurrentSession();
             count = (long) session.createQuery("SELECT COUNT(*) FROM UserDetails").uniqueResult();
         } catch (Exception e) {
             logger.error("Error fetching user count", e);
-        }
-        finally {
-            if (session != null) {
-                session.close();
-            }
         }
         return count;
     }
@@ -289,19 +208,11 @@ public class CoreDashboardDAO implements ICoreDashboardDAO {
      */
     public long fetchUserActivityCount() {
         long count = 0;
-        Session session = null;
-        Transaction trans = null;
         try {
-            session = getSessionFactory().openSession();
-            trans = session.beginTransaction();
+            Session session = getSessionFactory().getCurrentSession();
             count = (long) session.createQuery("SELECT COUNT(*) FROM UserActivities").uniqueResult();
         } catch (Exception e) {
             logger.error("Error fetching user count", e);
-        }
-        finally {
-            if (session != null) {
-                session.close();
-            }
         }
         return count;
     }

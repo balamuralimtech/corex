@@ -85,6 +85,75 @@
                             </div>
                         </div>
 
+                        <div class="col-12">
+                            <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
+                                <h3 style="margin-top:0;">Official Seal / Stamp</h3>
+                                <p style="margin-top:0;color:#64748b;">
+                                    Upload a dedicated clinic or hospital seal to use independently from the organization logo on generated documents.
+                                </p>
+                                <div class="grid">
+                                    <div class="col-12 lg:col-7">
+                                        <div class="field-checkbox mb-3">
+                                            <p:selectBooleanCheckbox id="showOfficialSeal" value="#{clinicSettingsBean.clinicSettings.showOfficialSeal}"/>
+                                            <p:outputLabel for="showOfficialSeal" value="Display official seal on Carex documents"/>
+                                        </div>
+                                        <div class="mb-3">
+                                            <p:fileUpload mode="advanced"
+                                                          auto="true"
+                                                          multiple="false"
+                                                          update="form:clinicSettingsPanel form:messages"
+                                                          listener="#{clinicSettingsBean.handleSealUpload}"
+                                                          sizeLimit="512000"
+                                                          invalidSizeMessage="Clinic seal must be 500 KB or smaller."
+                                                          accept=".gif,.jpeg,.jpg,.png"/>
+                                        </div>
+                                        <div class="grid">
+                                            <div class="col-12 md:col-6">
+                                                <label>Seal Placement</label>
+                                                <p:selectOneMenu value="#{clinicSettingsBean.clinicSettings.sealDisplayMode}" style="width:100%;">
+                                                    <f:selectItems value="#{clinicSettingsBean.sealDisplayModes}"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                            <div class="col-12 md:col-6">
+                                                <label>Seal Size (px)</label>
+                                                <p:spinner value="#{clinicSettingsBean.clinicSettings.sealSizePx}" min="48" max="180" stepFactor="4" style="width:100%;"/>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <p:commandButton value="Remove Seal"
+                                                             icon="pi pi-trash"
+                                                             actionListener="#{clinicSettingsBean.clearSeal}"
+                                                             process="@this"
+                                                             update="form:clinicSettingsPanel form:messages"
+                                                             styleClass="ui-button-secondary"
+                                                             rendered="#{clinicSettingsBean.sealAvailable}"/>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 lg:col-5">
+                                        <div style="border:1px dashed #cbd5e1;border-radius:12px;padding:1rem;background:#f8fafc;min-height:240px;display:flex;align-items:center;justify-content:center;">
+                                            <h:panelGroup rendered="#{clinicSettingsBean.sealAvailable}">
+                                                <div style="text-align:center;">
+                                                    <p:graphicImage value="#{clinicSettingsBean.sealPreview}" cache="false"
+                                                                    style="max-width:180px;max-height:180px;object-fit:contain;display:block;margin:0 auto;"/>
+                                                    <div style="margin-top:.75rem;font-size:.85rem;color:#64748b;">
+                                                        Mode: #{clinicSettingsBean.clinicSettings.sealDisplayMode} | Size: #{clinicSettingsBean.clinicSettings.sealSizePx}px
+                                                    </div>
+                                                </div>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{not clinicSettingsBean.sealAvailable}">
+                                                <div style="text-align:center;color:#94a3b8;">
+                                                    <div style="width:132px;height:132px;border:2px dashed #cbd5e1;border-radius:999px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem auto;font-weight:700;">
+                                                        SEAL
+                                                    </div>
+                                                    <div>No official seal uploaded</div>
+                                                </div>
+                                            </h:panelGroup>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="col-12 lg:col-6">
                             <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
                                 <h3 style="margin-top:0;">Clinic Timings</h3>
