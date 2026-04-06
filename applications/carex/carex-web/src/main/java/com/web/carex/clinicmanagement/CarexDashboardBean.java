@@ -38,6 +38,7 @@ public class CarexDashboardBean extends CarexManagedBean implements Serializable
 
     private static final long serialVersionUID = 1L;
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH);
+    private static final Integer ALL_ORGANIZATIONS_ID = -1;
 
     @Inject
     private IOrganizationService organizationService;
@@ -74,7 +75,7 @@ public class CarexDashboardBean extends CarexManagedBean implements Serializable
             return;
         }
         organizationList = new ArrayList<>(getAccessibleOrganizations(organizationService));
-        selectedOrganizationId = resolveDefaultOrganizationId(organizationList, selectedOrganizationId);
+        selectedOrganizationId = resolveDashboardOrganizationId(selectedOrganizationId);
         refreshDashboard();
         initialized = true;
     }
@@ -89,18 +90,47 @@ public class CarexDashboardBean extends CarexManagedBean implements Serializable
             clinicSettings = new ClinicSettings();
             return;
         }
-        doctorList = new ArrayList<>(doctorService.getDoctorsByOrganizationId(selectedOrganizationId));
-        patientList = new ArrayList<>(patientService.getPatientsByOrganizationId(selectedOrganizationId));
-        medicineList = new ArrayList<>(medicineService.getMedicinesByOrganizationId(selectedOrganizationId));
-        consultationList = new ArrayList<>(consultationService.getConsultationsByOrganizationId(selectedOrganizationId));
+
+        if (isAllOrganizationsSelected()) {
+            doctorList = new ArrayList<>();
+            patientList = new ArrayList<>();
+            medicineList = new ArrayList<>();
+            consultationList = new ArrayList<>();
+
+            for (Organizations organization : organizationList) {
+                if (organization == null) {
+                    continue;
+                }
+                doctorList.addAll(doctorService.getDoctorsByOrganizationId(organization.getId()));
+                patientList.addAll(patientService.getPatientsByOrganizationId(organization.getId()));
+                medicineList.addAll(medicineService.getMedicinesByOrganizationId(organization.getId()));
+                consultationList.addAll(consultationService.getConsultationsByOrganizationId(organization.getId()));
+            }
+            clinicSettings = new ClinicSettings();
+        } else {
+            doctorList = new ArrayList<>(doctorService.getDoctorsByOrganizationId(selectedOrganizationId));
+            patientList = new ArrayList<>(patientService.getPatientsByOrganizationId(selectedOrganizationId));
+            medicineList = new ArrayList<>(medicineService.getMedicinesByOrganizationId(selectedOrganizationId));
+            consultationList = new ArrayList<>(consultationService.getConsultationsByOrganizationId(selectedOrganizationId));
+            clinicSettings = fallbackClinicSettings(clinicSettingsService.getClinicSettingsByOrganizationId(selectedOrganizationId));
+        }
+
         consultationList.sort(Comparator.comparing(Consultation::getConsultationDate, Comparator.nullsLast(Comparator.naturalOrder())).reversed());
         recentConsultations = consultationList.stream().limit(8).collect(Collectors.toList());
-        clinicSettings = fallbackClinicSettings(clinicSettingsService.getClinicSettingsByOrganizationId(selectedOrganizationId));
     }
 
     public String getDashboardInsights() {
         if (selectedOrganizationId == null) {
             return "Select an organization to surface clinic performance, patient flow, document volume, and stock signals.";
+        }
+        if (isAllOrganizationsSelected()) {
+            return String.format(Locale.US,
+                    "All organizations are currently tracking %d consultations, %d active doctors, and %d active patients. Portfolio revenue stands at %s with %d low-stock medicines needing action across the network.",
+                    getTotalConsultations(),
+                    getActiveDoctors(),
+                    getActivePatients(),
+                    formatCurrency(getTotalRevenue()),
+                    getLowStockMedicines());
         }
         return String.format(Locale.US,
                 "%s is currently tracking %d consultations, %d active doctors, and %d active patients. %s revenue conversion sits at %s with %d low-stock medicines already requiring attention.",
@@ -114,6 +144,9 @@ public class CarexDashboardBean extends CarexManagedBean implements Serializable
     }
 
     public String getSelectedOrganizationName() {
+        if (isAllOrganizationsSelected()) {
+            return "All Organizations";
+        }
         if (selectedOrganizationId == null) {
             return "Clinic";
         }
@@ -126,6 +159,9 @@ public class CarexDashboardBean extends CarexManagedBean implements Serializable
     }
 
     public String getPreviewCurrencySymbol() {
+        if (isAllOrganizationsSelected()) {
+            return "";
+        }
         return safeText(clinicSettings.getBaseCurrencySymbol(), "");
     }
 
@@ -407,7 +443,7 @@ public class CarexDashboardBean extends CarexManagedBean implements Serializable
     }
 
     public void setSelectedOrganizationId(Integer selectedOrganizationId) {
-        this.selectedOrganizationId = resolveAccessibleOrganizationId(selectedOrganizationId);
+        this.selectedOrganizationId = resolveDashboardOrganizationId(selectedOrganizationId);
     }
 
     public List<Organizations> getOrganizationList() {
@@ -420,6 +456,23 @@ public class CarexDashboardBean extends CarexManagedBean implements Serializable
 
     private ClinicSettings fallbackClinicSettings(ClinicSettings settings) {
         return settings == null ? new ClinicSettings() : settings;
+    }
+
+    private Integer resolveDashboardOrganizationId(Integer requestedOrganizationId) {
+        if (isApplicationAdmin()) {
+            if (ALL_ORGANIZATIONS_ID.equals(requestedOrganizationId)) {
+                return ALL_ORGANIZATIONS_ID;
+            }
+            if (requestedOrganizationId != null) {
+                return requestedOrganizationId;
+            }
+            return organizationList == null || organizationList.isEmpty() ? null : ALL_ORGANIZATIONS_ID;
+        }
+        return resolveAccessibleOrganizationId(requestedOrganizationId);
+    }
+
+    private boolean isAllOrganizationsSelected() {
+        return isApplicationAdmin() && ALL_ORGANIZATIONS_ID.equals(selectedOrganizationId);
     }
 
     private String safeText(String value, String fallback) {

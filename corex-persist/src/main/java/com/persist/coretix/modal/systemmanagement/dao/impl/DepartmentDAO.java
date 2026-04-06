@@ -174,20 +174,30 @@ public class DepartmentDAO implements IDepartmentDAO {
     }
     public Departments getDepartment(int id) {
         Session session = getSessionFactory().getCurrentSession();
-        Transaction trans = session.beginTransaction();
+        Transaction trans = session.getTransaction();
+        boolean startedTransaction = trans == null || !trans.isActive();
+        if (startedTransaction) {
+            trans = session.beginTransaction();
+        }
 
         List<?> list = session
                 .createQuery("from Departments where id=?1").setParameter(1, id)
                 .list();
 
-        trans.commit();
+        if (startedTransaction && trans != null && trans.isActive()) {
+            trans.commit();
+        }
         return (Departments) list.get(0);
     }
 
     public List<Departments> getDepartmentsList() {
         logger.debug("inside DAO getDepartmentsList");
         Session session = getSessionFactory().getCurrentSession();
-        Transaction trans = session.beginTransaction();
+        Transaction trans = session.getTransaction();
+        boolean startedTransaction = trans == null || !trans.isActive();
+        if (startedTransaction) {
+            trans = session.beginTransaction();
+        }
 
         @SuppressWarnings("unchecked")
         List<Departments> list = (List<Departments>) session.createQuery("from Departments").list();
@@ -195,7 +205,9 @@ public class DepartmentDAO implements IDepartmentDAO {
         for (Departments departments : list) {
             logger.debug("departments getDepartmentName  : "+departments.getDepartmentName());
         }
-        trans.commit();
+        if (startedTransaction && trans != null && trans.isActive()) {
+            trans.commit();
+        }
         return list;
     }
 

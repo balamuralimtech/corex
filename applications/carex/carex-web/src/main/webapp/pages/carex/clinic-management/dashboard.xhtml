@@ -90,7 +90,7 @@
                                 <label for="organizationSelect" style="display:block;font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(204,251,241,.82);">Organization Scope</label>
                                 <h:panelGroup rendered="#{carexDashboardBean.applicationAdmin}" layout="block">
                                     <p:selectOneMenu id="organizationSelect" value="#{carexDashboardBean.selectedOrganizationId}" style="display:block;width:100%;margin-top:.55rem;">
-                                        <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                        <f:selectItem itemLabel="All Organizations" itemValue="-1"/>
                                         <f:selectItems value="#{carexDashboardBean.organizationList}" var="organization"
                                                        itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
                                         <p:ajax event="change"

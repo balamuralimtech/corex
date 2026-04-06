@@ -184,24 +184,36 @@ public class DesignationDAO implements IDesignationDAO {
 
     public Designations getDesignation(int id) {
         Session session = getSessionFactory().getCurrentSession();
-        Transaction trans = session.beginTransaction();
+        Transaction trans = session.getTransaction();
+        boolean startedTransaction = trans == null || !trans.isActive();
+        if (startedTransaction) {
+            trans = session.beginTransaction();
+        }
 
         List<?> list = session
                 .createQuery("from Designations where id=?1").setParameter(1, id)
                 .list();
 
-        trans.commit();
+        if (startedTransaction && trans != null && trans.isActive()) {
+            trans.commit();
+        }
         return (Designations) list.get(0);
     }
 
     public List<Designations> getDesignationsList() {
         Session session = getSessionFactory().getCurrentSession();
-        Transaction trans = session.beginTransaction();
+        Transaction trans = session.getTransaction();
+        boolean startedTransaction = trans == null || !trans.isActive();
+        if (startedTransaction) {
+            trans = session.beginTransaction();
+        }
 
         @SuppressWarnings("unchecked")
         List<Designations> list = (List<Designations>) session.createQuery("from Designations").list();
 
-        trans.commit();
+        if (startedTransaction && trans != null && trans.isActive()) {
+            trans.commit();
+        }
         return list;
     }
 

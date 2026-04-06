@@ -86,6 +86,26 @@
                                 <span class="hero-chip-label">Auto Refresh</span>
                                 <span class="hero-chip-value"><span id="countdownDisplay">60</span><span id="countdownSuffix">s</span></span>
                             </div>
+                            <div style="margin-top:1rem;">
+                                <label for="organizationSelect" style="display:block;font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(226,232,240,.75);">Organization Scope</label>
+                                <h:panelGroup rendered="#{homePageBean.applicationAdmin}" layout="block">
+                                    <p:selectOneMenu id="organizationSelect" value="#{homePageBean.selectedOrganizationId}" style="display:block;width:100%;margin-top:.55rem;">
+                                        <f:selectItem itemLabel="All Organizations" itemValue="-1"/>
+                                        <f:selectItems value="#{homePageBean.organizationList}" var="organization"
+                                                       itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
+                                        <p:ajax event="change"
+                                                process="@form"
+                                                update="@form"
+                                                onstart="beginDashboardRefresh();"
+                                                listener="#{homePageBean.refreshForm}"
+                                                oncomplete="restartDashboardCountdown(); renderDashboardCharts();"/>
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{not homePageBean.applicationAdmin}" layout="block"
+                                              style="margin-top:.55rem;font-weight:700;color:#f8fafc;">
+                                    <h:outputText value="#{homePageBean.currentOrganizationName}"/>
+                                </h:panelGroup>
+                            </div>
                             <div class="dashboard-hero-actions">
                                 <p:commandButton value="Refresh Now"
                                                  action="#{homePageBean.refreshForm}"

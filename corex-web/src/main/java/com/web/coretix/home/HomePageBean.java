@@ -19,9 +19,23 @@ package com.web.coretix.home;
 import com.module.coretix.commonto.CoreDashboardTO;
 import com.module.coretix.coretix.ICoreDashboardService;
 import com.module.coretix.license.ILicenseService;
+import com.module.coretix.systemmanagement.IBranchService;
+import com.module.coretix.systemmanagement.IDepartmentService;
+import com.module.coretix.systemmanagement.IDesignationService;
+import com.module.coretix.systemmanagement.IOrganizationService;
+import com.module.coretix.usermanagement.IRoleAdministrationService;
+import com.module.coretix.usermanagement.IUserActivityService;
 import com.module.coretix.usermanagement.IUserAdministrationService;
 import com.persist.coretix.modal.license.Licenses;
+import com.persist.coretix.modal.systemmanagement.Branches;
+import com.persist.coretix.modal.systemmanagement.Departments;
+import com.persist.coretix.modal.systemmanagement.Designations;
+import com.persist.coretix.modal.systemmanagement.Organizations;
+import com.persist.coretix.modal.usermanagement.Roles;
+import com.persist.coretix.modal.license.Licenses;
 import com.persist.coretix.modal.usermanagement.UserDetails;
+import com.persist.coretix.modal.usermanagement.UserActivities;
+import com.web.coretix.appgeneral.GenericManagedBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
@@ -30,19 +44,23 @@ import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 @Named("homePageBean")
 @Scope("session")
-public class HomePageBean implements Serializable {
+public class HomePageBean extends GenericManagedBean implements Serializable {
 
     private static final long serialVersionUID = 13543439334535435L;
     private static final Logger logger = LoggerFactory.getLogger(HomePageBean.class);
+    private static final Integer ALL_ORGANIZATIONS_ID = -1;
     private ResourceBundle resourceBundle;
     @Inject
     private ICoreDashboardService coreDashboardService;
@@ -53,8 +71,27 @@ public class HomePageBean implements Serializable {
     @Inject
     private IUserAdministrationService userAdministrationService;
 
-    private CoreDashboardTO coreDashboardTO;
+    @Inject
+    private IOrganizationService organizationService;
 
+    @Inject
+    private IBranchService branchService;
+
+    @Inject
+    private IDepartmentService departmentService;
+
+    @Inject
+    private IDesignationService designationService;
+
+    @Inject
+    private IRoleAdministrationService roleAdministrationService;
+
+    @Inject
+    private IUserActivityService userActivityService;
+
+    private CoreDashboardTO coreDashboardTO;
+    private Integer selectedOrganizationId;
+    private List<Organizations> organizationList = new ArrayList<>();
 
     private boolean timerEnabled = true;  // Timer is enabled by default
 
@@ -67,7 +104,7 @@ public class HomePageBean implements Serializable {
     }
 
     public void refreshForm() {
-        coreDashboardTO = coreDashboardService.fetchDashboardData();
+        coreDashboardTO = buildDashboardData();
         logger.info("Dashboard refreshed at: " + System.currentTimeMillis());
     }
 
@@ -79,10 +116,11 @@ public class HomePageBean implements Serializable {
     public void initializePageAttributes() {
         resourceBundle = ResourceBundle.getBundle("messages",
                 FacesContext.getCurrentInstance().getViewRoot().getLocale());
+        organizationList = new ArrayList<>(getAccessibleOrganizations(organizationService));
+        selectedOrganizationId = resolveDashboardOrganizationId(selectedOrganizationId);
 
-        // Only load dashboard data if not already loaded (cached in session)
         if (coreDashboardTO == null) {
-            coreDashboardTO = coreDashboardService.fetchDashboardData();
+            refreshForm();
             logger.info("Dashboard data loaded");
         }
     }
@@ -93,6 +131,33 @@ public class HomePageBean implements Serializable {
 
     public void setCoreDashboardTO(CoreDashboardTO coreDashboardTO) {
         this.coreDashboardTO = coreDashboardTO;
+    }
+
+    public Integer getSelectedOrganizationId() {
+        return selectedOrganizationId;
+    }
+
+    public void setSelectedOrganizationId(Integer selectedOrganizationId) {
+        this.selectedOrganizationId = resolveDashboardOrganizationId(selectedOrganizationId);
+    }
+
+    public List<Organizations> getOrganizationList() {
+        return organizationList;
+    }
+
+    public String getSelectedOrganizationName() {
+        if (isAllOrganizationsSelected()) {
+            return "All Organizations";
+        }
+        if (selectedOrganizationId == null) {
+            return getCurrentOrganizationName().isEmpty() ? "Organization" : getCurrentOrganizationName();
+        }
+        for (Organizations organization : organizationList) {
+            if (organization != null && organization.getId() == selectedOrganizationId) {
+                return organization.getOrganizationName();
+            }
+        }
+        return "Organization";
     }
 
     public long getTotalStructureCount() {
@@ -315,6 +380,15 @@ public class HomePageBean implements Serializable {
     }
 
     public String getDashboardInsights() {
+        if (!isAllOrganizationsSelected() && selectedOrganizationId != null) {
+            return String.format(Locale.US,
+                    "%s currently has %.1f%% active users, %.1f%% role utilization, %.2f tracked activities per user, and %d active licenses in view.",
+                    getSelectedOrganizationName(),
+                    getActiveUserRate(),
+                    getRoleUsageRate(),
+                    getAverageActivitiesPerUser(),
+                    getActiveLicenseCount());
+        }
         return String.format(Locale.US,
                 "Active users are %.1f%% of the tracked user base. Roles are utilized at %.1f%%, each user generates %.2f tracked activities on average, and %d organizations currently have active licenses.",
                 getActiveUserRate(),
@@ -403,7 +477,101 @@ public class HomePageBean implements Serializable {
     }
 
     private java.util.List<Licenses> getAllLicenses() {
-        return licenseService.getLicenseList();
+        List<Licenses> licenses = licenseService.getLicenseList();
+        if (isAllOrganizationsSelected()) {
+            return licenses;
+        }
+        return licenses.stream()
+                .filter(license -> license != null
+                        && license.getOrganization() != null
+                        && selectedOrganizationId != null
+                        && license.getOrganization().getId() == selectedOrganizationId)
+                .collect(Collectors.toList());
+    }
+
+    private CoreDashboardTO buildDashboardData() {
+        if (isAllOrganizationsSelected()) {
+            return coreDashboardService.fetchDashboardData();
+        }
+
+        CoreDashboardTO scopedDashboard = new CoreDashboardTO();
+        Integer organizationId = selectedOrganizationId;
+        if (organizationId == null) {
+            return scopedDashboard;
+        }
+
+        List<UserDetails> scopedUsers = userAdministrationService.getUserDetailsList().stream()
+                .filter(user -> user != null && user.getOrganization() != null && user.getOrganization().getId() == organizationId)
+                .collect(Collectors.toList());
+        Set<Integer> scopedUserIds = scopedUsers.stream().map(UserDetails::getUserId).collect(Collectors.toSet());
+
+        List<Branches> scopedBranches = branchService.getBranchesListByOrgId(organizationId);
+        List<Departments> scopedDepartments = departmentService.getDepartmentsList().stream()
+                .filter(department -> department != null && department.getOrganization() != null && department.getOrganization().getId() == organizationId)
+                .collect(Collectors.toList());
+        List<Designations> scopedDesignations = designationService.getDesignationsList().stream()
+                .filter(designation -> designation != null && designation.getOrganization() != null && designation.getOrganization().getId() == organizationId)
+                .collect(Collectors.toList());
+        List<UserActivities> scopedActivities = userActivityService.getUserActivitiesList().stream()
+                .filter(activity -> activity != null && scopedUserIds.contains(activity.getUserId()))
+                .collect(Collectors.toList());
+
+        Set<Integer> scopedRoleIds = scopedUsers.stream()
+                .filter(user -> user.getRole() != null)
+                .map(user -> user.getRole().getId())
+                .collect(Collectors.toSet());
+        List<Roles> allRoles = roleAdministrationService.getRolesList();
+
+        scopedDashboard.setOrganizationCount(1);
+        scopedDashboard.setBranchCount(scopedBranches.size());
+        scopedDashboard.setDepartmentCount(scopedDepartments.size());
+        scopedDashboard.setDesignationCount(scopedDesignations.size());
+        scopedDashboard.setCountryCount(coreDashboardService.fetchDashboardData().getCountryCount());
+        scopedDashboard.setStateCount(coreDashboardService.fetchDashboardData().getStateCount());
+        scopedDashboard.setCityCount(coreDashboardService.fetchDashboardData().getCityCount());
+        scopedDashboard.setCurrencyCount(coreDashboardService.fetchDashboardData().getCurrencyCount());
+        scopedDashboard.setRoleCount(scopedRoleIds.size());
+        scopedDashboard.setUserCount(scopedUsers.size());
+        scopedDashboard.setUserActivityCount(scopedActivities.size());
+
+        scopedDashboard.setLoginCount(countActivities(scopedActivities, "login"));
+        scopedDashboard.setLogoutCount(countActivities(scopedActivities, "logout"));
+        scopedDashboard.setAddCount(countActivities(scopedActivities, "add"));
+        scopedDashboard.setUpdateCount(countActivities(scopedActivities, "update"));
+        scopedDashboard.setDeleteCount(countActivities(scopedActivities, "delete"));
+
+        scopedDashboard.setUsersLoggedInCount((int) scopedUsers.stream().filter(user -> user.getStatus() == 1).count());
+        scopedDashboard.setUsersLoggedOutCount((int) scopedUsers.stream().filter(user -> user.getStatus() == 2).count());
+        scopedDashboard.setUsersNeverLoggedinCount((int) scopedUsers.stream().filter(user -> user.getLastSuccessfulLogin() == null).count());
+
+        scopedDashboard.setRolesUsedCount(scopedRoleIds.size());
+        scopedDashboard.setRolesNotUsedCount((int) allRoles.stream()
+                .filter(role -> role != null && !scopedRoleIds.contains(role.getId()))
+                .count());
+        return scopedDashboard;
+    }
+
+    private int countActivities(List<UserActivities> activities, String type) {
+        return (int) activities.stream()
+                .filter(activity -> activity.getActivityType() != null && type.equalsIgnoreCase(activity.getActivityType()))
+                .count();
+    }
+
+    private Integer resolveDashboardOrganizationId(Integer requestedOrganizationId) {
+        if (isApplicationAdmin()) {
+            if (ALL_ORGANIZATIONS_ID.equals(requestedOrganizationId)) {
+                return ALL_ORGANIZATIONS_ID;
+            }
+            if (requestedOrganizationId != null) {
+                return requestedOrganizationId;
+            }
+            return organizationList == null || organizationList.isEmpty() ? null : ALL_ORGANIZATIONS_ID;
+        }
+        return resolveAccessibleOrganizationId(requestedOrganizationId);
+    }
+
+    public boolean isAllOrganizationsSelected() {
+        return isApplicationAdmin() && ALL_ORGANIZATIONS_ID.equals(selectedOrganizationId);
     }
 
     private double ratio(double numerator, double denominator) {
