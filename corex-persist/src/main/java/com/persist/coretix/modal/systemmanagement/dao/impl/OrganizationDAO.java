@@ -199,64 +199,31 @@ public class OrganizationDAO implements IOrganizationDAO {
     }
 
     public Organizations getOrganization(int id) {
-        Session session = null;
-        Transaction trans = null;
-        try {
-            session = getSessionFactory().openSession();
-            trans = session.beginTransaction();
+        Session session = getSessionFactory().getCurrentSession();
+        List<?> list = session
+                .createQuery("from Organizations where id=?1")
+                .setParameter(1, id)
+                .list();
 
-            List<?> list = session
-                    .createQuery("from Organizations where id=?1")
-                    .setParameter(1, id)
-                    .list();
-
-            trans.commit();
-            return (Organizations) list.get(0);
-        } finally {
-            if (session != null) {
-                session.close();
-            }
-        }
+        return list.isEmpty() ? null : (Organizations) list.get(0);
     }
 
     public Organizations getOrganizationsEntityByOrganizationName(String organizationName) {
-        Session session = null;
-        Transaction trans = null;
-        try {
-            session = getSessionFactory().openSession();
-            trans = session.beginTransaction();
+        Session session = getSessionFactory().getCurrentSession();
+        List<?> list = session
+                .createQuery("from Organizations where organization_name=?1")
+                .setParameter(1, organizationName)
+                .list();
 
-            List<?> list = session
-                    .createQuery("from Organizations where organization_name=?1")
-                    .setParameter(1, organizationName)
-                    .list();
-
-            trans.commit();
-            return (Organizations) list.get(0);
-        } finally {
-            if (session != null) {
-                session.close();
-            }
-        }
+        return list.isEmpty() ? null : (Organizations) list.get(0);
     }
 
     public List<Organizations> getOrganizationsList() {
-        Session session = null;
-        Transaction trans = null;
-        try {
-            session = getSessionFactory().openSession();
-            trans = session.beginTransaction();
+        Session session = getSessionFactory().getCurrentSession();
+        @SuppressWarnings("unchecked")
+        List<Organizations> list = (List<Organizations>) session.createQuery("from Organizations").list();
 
-            @SuppressWarnings("unchecked")
-            List<Organizations> list = (List<Organizations>) session.createQuery("from Organizations").list();
-
-            trans.commit();
-            return list;
-        } finally {
-            if (session != null) {
-                session.close();
-            }
-        }
+        return list;
     }
 }
 

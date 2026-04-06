@@ -119,7 +119,7 @@ public class RoleAdministrationDAO implements IRoleAdministrationDAO {
                 .createQuery("from Roles where roleName=?1").setParameter(1, roleName)
                 .list();
 
-        return (Roles) list.get(0);
+        return list.isEmpty() ? null : (Roles) list.get(0);
     }
     
     public List<Roles> getRolesList() {

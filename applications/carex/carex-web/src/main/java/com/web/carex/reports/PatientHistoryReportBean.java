@@ -8,6 +8,7 @@ import com.persist.carex.clinicmanagement.Consultation;
 import com.persist.carex.clinicmanagement.Patient;
 import com.persist.carex.settings.ClinicSettings;
 import com.persist.coretix.modal.systemmanagement.Organizations;
+import com.web.carex.appgeneral.CarexManagedBean;
 import org.springframework.context.annotation.Scope;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -32,7 +33,7 @@ import java.util.stream.Collectors;
 
 @Named("patientHistoryReportBean")
 @Scope("session")
-public class PatientHistoryReportBean implements Serializable {
+public class PatientHistoryReportBean extends CarexManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final DateTimeFormatter DATE_LABEL_FORMATTER = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH);
@@ -66,15 +67,14 @@ public class PatientHistoryReportBean implements Serializable {
         if (facesContext != null && facesContext.isPostback() && initialized) {
             return;
         }
-        organizationList = new ArrayList<>(organizationService.getOrganizationsList());
-        if (selectedOrganizationId == null) {
-            selectedOrganizationId = resolveCurrentOrganizationId();
-        }
+        organizationList = new ArrayList<>(getAccessibleOrganizations(organizationService));
+        selectedOrganizationId = resolveDefaultOrganizationId(organizationList, selectedOrganizationId);
         onOrganizationChange();
         initialized = true;
     }
 
     public void onOrganizationChange() {
+        selectedOrganizationId = resolveAccessibleOrganizationId(selectedOrganizationId);
         patientList = selectedOrganizationId == null
                 ? new ArrayList<>()
                 : new ArrayList<>(patientService.getPatientsByOrganizationId(selectedOrganizationId));

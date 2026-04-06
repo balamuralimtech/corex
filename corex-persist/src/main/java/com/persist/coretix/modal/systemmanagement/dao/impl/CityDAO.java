@@ -172,43 +172,32 @@ public class CityDAO implements ICityDAO {
 
     public Cities getCity(int id) {
         Session session = getSessionFactory().getCurrentSession();
-        Transaction trans = session.beginTransaction();
-
         List<?> list = session
                 .createQuery("from Cities where id=?1").setParameter(1, id)
                 .list();
 
-        trans.commit();
         return list.isEmpty() ? null : (Cities) list.get(0);
     }
 
     public Cities getCityEntityByCityName(String cityName) {
         Session session = getSessionFactory().getCurrentSession();
-        Transaction trans = session.beginTransaction();
-
         List<?> list = session
                 .createQuery("from Cities where name=?1").setParameter(1, cityName)
                 .list();
 
-        trans.commit();
-        return (Cities) list.get(0);
+        return list.isEmpty() ? null : (Cities) list.get(0);
     }
 
     public List<Cities> getCitiesList() {
         Session session = getSessionFactory().getCurrentSession();
-        Transaction trans = session.beginTransaction();
-
         @SuppressWarnings("unchecked")
         List<Cities> list = (List<Cities>) session.createQuery("from Cities").list();
 
-        trans.commit();
         return list;
     }
     
     public List<Cities> getCitiesListByCountryIdAndStateId(int countryId, int stateId) {
         Session session = getSessionFactory().getCurrentSession();
-        Transaction trans = session.beginTransaction();
-
         @SuppressWarnings("unchecked")
         List<Cities> list = (List<Cities>) session
                 .createQuery("from Cities where country_id = ?1 and state_id = ?2")
@@ -216,7 +205,6 @@ public class CityDAO implements ICityDAO {
                 .setParameter(2, stateId)
                 .list();
 
-        trans.commit();
         return list;
     }
 

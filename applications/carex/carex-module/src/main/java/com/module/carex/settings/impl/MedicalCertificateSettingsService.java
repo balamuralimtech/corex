@@ -24,6 +24,7 @@ public class MedicalCertificateSettingsService implements IMedicalCertificateSet
     private UserActivityDAO userActivityDAO;
 
     @Override
+    @Transactional(readOnly = false)
     public GeneralConstants saveMedicalCertificateSettings(UserActivityTO userActivityTO,
                                                            MedicalCertificateSettings medicalCertificateSettings) {
         GeneralConstants result = medicalCertificateSettingsDAO.saveMedicalCertificateSettings(medicalCertificateSettings);

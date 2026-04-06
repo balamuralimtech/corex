@@ -8,6 +8,7 @@ import com.persist.carex.settings.ClinicSettings;
 import com.persist.carex.settings.PrescriptionSettings;
 import com.persist.coretix.modal.constants.GeneralConstants;
 import com.persist.coretix.modal.systemmanagement.Organizations;
+import com.web.carex.appgeneral.CarexManagedBean;
 import org.primefaces.PrimeFaces;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -35,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 
 @Named("prescriptionSettingsBean")
 @Scope("session")
-public class PrescriptionSettingsBean implements Serializable {
+public class PrescriptionSettingsBean extends CarexManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -62,14 +63,13 @@ public class PrescriptionSettingsBean implements Serializable {
             return;
         }
         loadOrganizations();
-        if (selectedOrganizationId == null) {
-            selectedOrganizationId = resolveCurrentOrganizationId();
-        }
+        selectedOrganizationId = resolveDefaultOrganizationId(organizationList, selectedOrganizationId);
         loadPrescriptionSettings();
         initialized = true;
     }
 
     public void onOrganizationChange() {
+        selectedOrganizationId = resolveAccessibleOrganizationId(selectedOrganizationId);
         loadPrescriptionSettings();
         resetPreparedDownload();
         PrimeFaces.current().ajax().update("form:prescriptionSettingsPanel", "form:messages");
@@ -275,7 +275,7 @@ public class PrescriptionSettingsBean implements Serializable {
     }
 
     private void loadOrganizations() {
-        organizationList = new ArrayList<>(organizationService.getOrganizationsList());
+        organizationList = new ArrayList<>(getAccessibleOrganizations(organizationService));
     }
 
     private Organizations getSelectedOrganizationEntity() {

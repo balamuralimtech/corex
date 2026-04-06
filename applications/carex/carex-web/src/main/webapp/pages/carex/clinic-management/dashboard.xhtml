@@ -72,7 +72,8 @@
                 <p:remoteCommand name="refreshCarexDashboard"
                                  action="#{carexDashboardBean.refreshDashboard}"
                                  update="dashboardFormId"
-                                 oncomplete="renderCarexDashboardCharts();"/>
+                                 onstart="beginCarexDashboardRefresh();"
+                                 oncomplete="restartCarexDashboardCountdown(); renderCarexDashboardCharts();"/>
 
                 <div class="clinic-dashboard-hero">
                     <div class="grid align-items-start">
@@ -82,19 +83,46 @@
                         </div>
                         <div class="col-12 lg:col-4">
                             <div class="clinic-control-card">
+                                <div class="clinic-hero-chip" style="margin-bottom:1rem;">
+                                    <span class="clinic-hero-chip-label">Auto Refresh</span>
+                                    <span class="clinic-hero-chip-value"><span id="carexCountdownDisplay">60</span><span id="carexCountdownSuffix">s</span></span>
+                                </div>
                                 <label for="organizationSelect" style="display:block;font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(204,251,241,.82);">Organization Scope</label>
-                                <p:selectOneMenu id="organizationSelect" value="#{carexDashboardBean.selectedOrganizationId}" style="display:block;width:100%;margin-top:.55rem;">
-                                    <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
-                                    <f:selectItems value="#{carexDashboardBean.organizationList}" var="organization"
-                                                   itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
-                                    <p:ajax listener="#{carexDashboardBean.refreshDashboard}" process="@this" update="dashboardFormId" oncomplete="renderCarexDashboardCharts();"/>
-                                </p:selectOneMenu>
+                                <h:panelGroup rendered="#{carexDashboardBean.applicationAdmin}" layout="block">
+                                    <p:selectOneMenu id="organizationSelect" value="#{carexDashboardBean.selectedOrganizationId}" style="display:block;width:100%;margin-top:.55rem;">
+                                        <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                        <f:selectItems value="#{carexDashboardBean.organizationList}" var="organization"
+                                                       itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
+                                        <p:ajax event="change"
+                                                process="@form"
+                                                update="@form"
+                                                onstart="beginCarexDashboardRefresh();"
+                                                listener="#{carexDashboardBean.refreshDashboard}"
+                                                oncomplete="restartCarexDashboardCountdown(); renderCarexDashboardCharts();"/>
+                                    </p:selectOneMenu>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{not carexDashboardBean.applicationAdmin}" layout="block"
+                                              style="margin-top:.55rem;font-weight:700;color:#f8fafc;">
+                                    <h:outputText value="#{carexDashboardBean.currentOrganizationName}"/>
+                                </h:panelGroup>
                                 <div class="clinic-dashboard-actions" style="margin-top:1rem;">
                                     <p:commandButton value="Refresh Now"
                                                      action="#{carexDashboardBean.refreshDashboard}"
                                                      update="dashboardFormId"
-                                                     oncomplete="renderCarexDashboardCharts();"
+                                                     onstart="beginCarexDashboardRefresh();"
+                                                     oncomplete="restartCarexDashboardCountdown(); renderCarexDashboardCharts();"
                                                      styleClass="clinic-refresh-btn"/>
+                                    <div style="display:flex;align-items:center;gap:.5rem;padding:.55rem .8rem;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);">
+                                        <span style="font-size:.9rem;font-weight:600;color:#f8fafc;">Auto Refresh</span>
+                                        <p:inputSwitch value="#{carexDashboardBean.timerEnabled}"
+                                                       onLabel="On"
+                                                       offLabel="Off"
+                                                       onchange="applyCarexDashboardAutoRefreshState(this.checked);">
+                                            <p:ajax process="@this"
+                                                    update="@none"
+                                                    global="false"/>
+                                        </p:inputSwitch>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -267,6 +295,12 @@
                         sunkist: ['#ee8a21', '#f2c94c'],
                         suzy: ['#834d9b', '#d04ed6']
                     };
+                    var CAREX_DASHBOARD_REFRESH_SECONDS = 60;
+                    var CAREX_DASHBOARD_TIMER_STORAGE_KEY = 'carex.dashboard.nextRefreshAt';
+                    var carexDashboardCountdownInterval;
+                    var carexDashboardNextRefreshAt = 0;
+                    var carexDashboardRefreshInFlight = false;
+                    var carexDashboardAutoRefreshEnabled = #{carexDashboardBean.timerEnabled};
 
                     function applyCarexDashboardHeroColors(layoutTheme) {
                         var colors = carexDashboardThemeColors[layoutTheme] || carexDashboardThemeColors['joomla'];
@@ -285,6 +319,111 @@
                             applyCarexDashboardHeroColors(layoutTheme);
                         };
                         PrimeFaces.AvalonConfigurator._carexDashboardThemeHooked = true;
+                    }
+
+                    function updateCarexDashboardCountdownDisplay(value, suffix) {
+                        var countdownNode = document.getElementById('carexCountdownDisplay');
+                        var suffixNode = document.getElementById('carexCountdownSuffix');
+                        if (countdownNode) {
+                            countdownNode.innerText = value;
+                        }
+                        if (suffixNode) {
+                            suffixNode.innerText = suffix || '';
+                        }
+                    }
+
+                    function persistCarexDashboardNextRefreshAt() {
+                        sessionStorage.setItem(CAREX_DASHBOARD_TIMER_STORAGE_KEY, String(carexDashboardNextRefreshAt || 0));
+                    }
+
+                    function readPersistedCarexDashboardNextRefreshAt() {
+                        var storedValue = sessionStorage.getItem(CAREX_DASHBOARD_TIMER_STORAGE_KEY);
+                        var parsedValue = storedValue ? parseInt(storedValue, 10) : 0;
+                        return isNaN(parsedValue) ? 0 : parsedValue;
+                    }
+
+                    function clearCarexDashboardCountdown() {
+                        if (carexDashboardCountdownInterval) {
+                            clearInterval(carexDashboardCountdownInterval);
+                            carexDashboardCountdownInterval = null;
+                        }
+                    }
+
+                    function stopCarexDashboardAutoRefresh() {
+                        carexDashboardRefreshInFlight = false;
+                        carexDashboardNextRefreshAt = 0;
+                        sessionStorage.removeItem(CAREX_DASHBOARD_TIMER_STORAGE_KEY);
+                        clearCarexDashboardCountdown();
+                        updateCarexDashboardCountdownDisplay('-', '');
+                    }
+
+                    function tickCarexDashboardCountdown() {
+                        if (!carexDashboardAutoRefreshEnabled) {
+                            stopCarexDashboardAutoRefresh();
+                            return;
+                        }
+
+                        if (carexDashboardRefreshInFlight) {
+                            updateCarexDashboardCountdownDisplay('...', '');
+                            return;
+                        }
+
+                        var secondsRemaining = Math.max(0, Math.ceil((carexDashboardNextRefreshAt - Date.now()) / 1000));
+                        updateCarexDashboardCountdownDisplay(secondsRemaining, 's');
+
+                        if (secondsRemaining <= 0) {
+                            clearCarexDashboardCountdown();
+                            beginCarexDashboardRefresh();
+                            refreshCarexDashboard();
+                        }
+                    }
+
+                    function restartCarexDashboardCountdown() {
+                        if (!carexDashboardAutoRefreshEnabled) {
+                            stopCarexDashboardAutoRefresh();
+                            return;
+                        }
+
+                        carexDashboardRefreshInFlight = false;
+                        carexDashboardNextRefreshAt = Date.now() + (CAREX_DASHBOARD_REFRESH_SECONDS * 1000);
+                        persistCarexDashboardNextRefreshAt();
+                        clearCarexDashboardCountdown();
+                        tickCarexDashboardCountdown();
+                        carexDashboardCountdownInterval = setInterval(tickCarexDashboardCountdown, 1000);
+                    }
+
+                    function beginCarexDashboardRefresh() {
+                        carexDashboardRefreshInFlight = true;
+                        clearCarexDashboardCountdown();
+                        updateCarexDashboardCountdownDisplay('...', '');
+                    }
+
+                    function restoreCarexDashboardCountdown() {
+                        if (!carexDashboardAutoRefreshEnabled) {
+                            stopCarexDashboardAutoRefresh();
+                            return;
+                        }
+
+                        carexDashboardRefreshInFlight = false;
+                        carexDashboardNextRefreshAt = readPersistedCarexDashboardNextRefreshAt();
+
+                        if (!carexDashboardNextRefreshAt || carexDashboardNextRefreshAt <= Date.now()) {
+                            carexDashboardNextRefreshAt = Date.now() + (CAREX_DASHBOARD_REFRESH_SECONDS * 1000);
+                            persistCarexDashboardNextRefreshAt();
+                        }
+
+                        clearCarexDashboardCountdown();
+                        tickCarexDashboardCountdown();
+                        carexDashboardCountdownInterval = setInterval(tickCarexDashboardCountdown, 1000);
+                    }
+
+                    function applyCarexDashboardAutoRefreshState(enabled) {
+                        carexDashboardAutoRefreshEnabled = enabled === true || enabled === 'true';
+                        if (carexDashboardAutoRefreshEnabled) {
+                            restartCarexDashboardCountdown();
+                        } else {
+                            stopCarexDashboardAutoRefresh();
+                        }
                     }
 
                     function renderCarexDashboardCharts() {
@@ -387,6 +526,7 @@
                         applyCarexDashboardHeroColors('#{guestPreferences.layout}');
                         wireCarexDashboardThemeSync();
                         renderCarexDashboardCharts();
+                        restoreCarexDashboardCountdown();
                     });
                     //]]>
                 </h:outputScript>

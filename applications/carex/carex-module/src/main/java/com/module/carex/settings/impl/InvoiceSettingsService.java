@@ -24,6 +24,7 @@ public class InvoiceSettingsService implements IInvoiceSettingsService {
     private UserActivityDAO userActivityDAO;
 
     @Override
+    @Transactional(readOnly = false)
     public GeneralConstants saveInvoiceSettings(UserActivityTO userActivityTO, InvoiceSettings invoiceSettings) {
         GeneralConstants result = invoiceSettingsDAO.saveInvoiceSettings(invoiceSettings);
         userActivityTO.setActivityDescription("Save invoice settings - (" + resolveOrganizationName(invoiceSettings) + ") - " + result.getName());

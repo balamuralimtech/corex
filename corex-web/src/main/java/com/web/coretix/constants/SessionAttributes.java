@@ -19,6 +19,7 @@ package com.web.coretix.constants;
 public enum SessionAttributes {
     USERNAME("username"),
     ROLE("role"),
+    USER_TYPE("userType"),
     LOGIN_TIME("loginTime"),
     LOGIN_STATUS("Login Status"),
     NETWORK_ADDRESS("networkAddress"),

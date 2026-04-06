@@ -22,12 +22,18 @@
                     </div>
                     <div class="surface-100 border-round px-3 py-2">
                         <label for="organizationSelect"><strong>Organization:</strong></label>
-                        <p:selectOneMenu id="organizationSelect" value="#{clinicSettingsBean.selectedOrganizationId}" style="display:block;min-width:18rem;margin-top:.35rem;">
-                            <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
-                            <f:selectItems value="#{clinicSettingsBean.organizationList}" var="organization"
-                                           itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
-                            <p:ajax listener="#{clinicSettingsBean.onOrganizationChange}" process="@this" update="form:clinicSettingsPanel form:messages"/>
-                        </p:selectOneMenu>
+                        <h:panelGroup rendered="#{clinicSettingsBean.applicationAdmin}" layout="block">
+                            <p:selectOneMenu id="organizationSelect" value="#{clinicSettingsBean.selectedOrganizationId}" style="display:block;min-width:18rem;margin-top:.35rem;">
+                                <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{clinicSettingsBean.organizationList}" var="organization"
+                                               itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
+                                <p:ajax listener="#{clinicSettingsBean.onOrganizationChange}" process="@this" update="form:clinicSettingsPanel form:messages"/>
+                            </p:selectOneMenu>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{not clinicSettingsBean.applicationAdmin}" layout="block"
+                                      style="margin-top:.45rem;font-weight:700;">
+                            <h:outputText value="#{clinicSettingsBean.currentOrganizationName}"/>
+                        </h:panelGroup>
                     </div>
                 </div>
 

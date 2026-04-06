@@ -200,12 +200,18 @@ public class CurrencyDetailsDAO implements ICurrencyDetailsDAO {
 
     public List<CurrencyDetails> getCurrencyDetailsList() {
         Session session = getSessionFactory().getCurrentSession();
-        Transaction trans = session.beginTransaction();
+        Transaction trans = session.getTransaction();
+        boolean startedTransaction = !trans.isActive();
+        if (startedTransaction) {
+            trans.begin();
+        }
 
         @SuppressWarnings("unchecked")
         List<CurrencyDetails> list = (List<CurrencyDetails>) session.createQuery("from CurrencyDetails").list();
 
-        trans.commit();
+        if (startedTransaction) {
+            trans.commit();
+        }
         return list;
     }
 

@@ -69,6 +69,10 @@ public class UserAdministrationService implements IUserAdministrationService {
         return getUserDetailDAO().getUserDetailsList();
     }
 
+    public long getUserCount() {
+        return getUserDetailDAO().getUserCount();
+    }
+
     @Transactional(readOnly = false)
     public void updateUserPassword(int userId, String newPassword){
         getUserDetailDAO().updateUserPassword(userId, newPassword);

@@ -47,6 +47,7 @@ public class FriendlyUrlFilter implements Filter {
             "/",
             "/landing",
             "/login",
+            "/setup",
             "/customer-request-form",
             "/error",
             "/bad-request",
@@ -118,6 +119,7 @@ public class FriendlyUrlFilter implements Filter {
         paths.put("/", "/login2.xhtml");
         paths.put("/landing", "/login2.xhtml");
         paths.put("/login", "/login.xhtml");
+        paths.put("/setup", "/setup.xhtml");
         paths.put("/home", "/pages/home/homePage.xhtml");
 
         paths.put("/user-profile", "/pages/usermanagement/userprofile.xhtml");

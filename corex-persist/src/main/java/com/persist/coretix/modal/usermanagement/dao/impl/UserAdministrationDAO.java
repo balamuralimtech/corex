@@ -63,7 +63,7 @@ private static final Logger logger = LoggerFactory.getLogger(UserAdministrationD
     public void updateUserDetail(UserDetails entity) {
         logger.debug("inside CountryDAO updateCountry");
         Session session = getSessionFactory().getCurrentSession();
-        session.update(entity);
+        session.merge(entity);
     }
 
     public UserDetails getUserDetail(int id) {
@@ -90,6 +90,12 @@ private static final Logger logger = LoggerFactory.getLogger(UserAdministrationD
         @SuppressWarnings("unchecked")
         List<UserDetails> list = (List<UserDetails>) session.createQuery("from UserDetails").list();
         return list;
+    }
+
+    public long getUserCount() {
+        Session session = getSessionFactory().getCurrentSession();
+        Long count = (Long) session.createQuery("select count(*) from UserDetails").uniqueResult();
+        return count == null ? 0L : count;
     }
 
 

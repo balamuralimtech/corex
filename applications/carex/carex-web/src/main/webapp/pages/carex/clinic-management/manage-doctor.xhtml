@@ -22,12 +22,18 @@
                     </div>
                     <div class="surface-100 border-round px-3 py-2">
                         <label for="organizationFilter"><strong>Organization:</strong></label>
-                        <p:selectOneMenu id="organizationFilter" value="#{doctorBean.selectedOrganizationId}" style="display:block;min-width:18rem;margin-top:.35rem;">
-                            <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
-                            <f:selectItems value="#{doctorBean.organizationList}" var="organization"
-                                           itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
-                            <p:ajax listener="#{doctorBean.onOrganizationChange}" update="form:doctorMainPanel form:messages" process="@this"/>
-                        </p:selectOneMenu>
+                        <h:panelGroup rendered="#{doctorBean.applicationAdmin}" layout="block">
+                            <p:selectOneMenu id="organizationFilter" value="#{doctorBean.selectedOrganizationId}" style="display:block;min-width:18rem;margin-top:.35rem;">
+                                <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{doctorBean.organizationList}" var="organization"
+                                               itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
+                                <p:ajax listener="#{doctorBean.onOrganizationChange}" update="form:doctorMainPanel form:messages" process="@this"/>
+                            </p:selectOneMenu>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{not doctorBean.applicationAdmin}" layout="block"
+                                      style="margin-top:.45rem;font-weight:700;">
+                            <h:outputText value="#{doctorBean.currentOrganizationName}"/>
+                        </h:panelGroup>
                     </div>
                 </div>
 
@@ -116,13 +122,19 @@
                     <div class="grid">
                         <div class="col-12">
                             <label>Organization *</label>
-                            <p:selectOneMenu value="#{doctorBean.formOrganizationId}" style="width:100%;">
-                                <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
-                                <f:selectItems value="#{doctorBean.organizationList}" var="organization"
-                                               itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
-                                <p:ajax listener="#{doctorBean.onFormOrganizationChange}" process="@this"
-                                        update="form:doctorDialogPanel"/>
-                            </p:selectOneMenu>
+                            <h:panelGroup rendered="#{doctorBean.applicationAdmin}" layout="block">
+                                <p:selectOneMenu value="#{doctorBean.formOrganizationId}" style="width:100%;">
+                                    <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                    <f:selectItems value="#{doctorBean.organizationList}" var="organization"
+                                                   itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
+                                    <p:ajax listener="#{doctorBean.onFormOrganizationChange}" process="@this"
+                                            update="form:doctorDialogPanel"/>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{not doctorBean.applicationAdmin}" layout="block"
+                                          style="font-weight:700;padding-top:.6rem;">
+                                <h:outputText value="#{doctorBean.currentOrganizationName}"/>
+                            </h:panelGroup>
                         </div>
                         <div class="col-12 md:col-4">
                             <label>Doctor Code *</label>

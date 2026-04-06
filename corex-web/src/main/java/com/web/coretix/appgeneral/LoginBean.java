@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import com.web.coretix.constants.AccessRightConstants;
 import com.web.coretix.constants.LoginConstants;
 import com.web.coretix.constants.SessionAttributes;
+import com.web.coretix.constants.UserTypeConstants;
 import com.web.coretix.general.SessionAuditSupport;
 import org.primefaces.PrimeFaces;
 import org.springframework.context.annotation.Scope;
@@ -67,6 +68,7 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
     private String encryptedPassword;
     private String loginEncryptionPublicKey;
     private String year;
+    private boolean bootstrapRequired;
     private transient PrivateKey loginEncryptionPrivateKey;
 
     @Inject
@@ -85,6 +87,13 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
     }
 
     public String login() throws Exception {
+        if (isBootstrapRequired()) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_WARN, "Setup Required", "Create the first application admin before logging in."));
+            PrimeFaces.current().ajax().update("form:messages");
+            return null;
+        }
+
         username = username == null ? null : username.trim();
         password = resolveSubmittedPassword();
 
@@ -220,6 +229,11 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
     }
 
     private String getLicenseValidationMessage(UserDetails userDetails) {
+        if (userDetails != null
+                && UserTypeConstants.APPLICATION_ADMIN == UserTypeConstants.fromValue(userDetails.getUserType())) {
+            return null;
+        }
+
         if (userDetails == null || userDetails.getOrganization() == null) {
             return "No license details found. Please contact admin for license registration.";
         }
@@ -301,7 +315,17 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
 
     private void setSessionAttributes(UserDetails userDetails) {
         FacesContext facesContext = FacesContext.getCurrentInstance();
-        HttpSession session = (HttpSession) facesContext.getExternalContext().getSession(false);
+        HttpSession existingSession = (HttpSession) facesContext.getExternalContext().getSession(false);
+        if (existingSession != null) {
+            try {
+                existingSession.invalidate();
+            } catch (IllegalStateException ex) {
+                logger.debug("Anonymous session was already invalidated before login completion", ex);
+            }
+        }
+
+        HttpServletRequest request = (HttpServletRequest) facesContext.getExternalContext().getRequest();
+        HttpSession session = request.getSession(true);
         session.setMaxInactiveInterval(30 * 60);
 
         // Set all attributes using the cached userDetails object
@@ -311,14 +335,18 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
         session.setAttribute(SessionAttributes.LOGIN_TIME.getName(), System.currentTimeMillis());
         session.setAttribute(SessionAttributes.ROLE_ID.getName(), userDetails.getRole().getId());
         session.setAttribute(SessionAttributes.ROLE.getName(), userDetails.getRole().getRoleName());
+        session.setAttribute(SessionAttributes.USER_TYPE.getName(), UserTypeConstants.fromValue(userDetails.getUserType()).getValue());
         session.setAttribute(SessionAttributes.ACCESS_RIGHT.getName(), AccessRightConstants.getById(userDetails.getAccessRight()).getValue());
         session.setAttribute(SessionAttributes.ACCESS_RIGHT_ID.getName(), userDetails.getAccessRight());
-        session.setAttribute(SessionAttributes.ORGANIZATION_ID.getName(), userDetails.getOrganization().getId());
-        session.setAttribute(SessionAttributes.ORGANIZATION_NAME.getName(), userDetails.getOrganization().getOrganizationName());
+        session.setAttribute(SessionAttributes.ORGANIZATION_ID.getName(),
+                userDetails.getOrganization() == null ? null : userDetails.getOrganization().getId());
+        session.setAttribute(SessionAttributes.ORGANIZATION_NAME.getName(),
+                userDetails.getOrganization() == null ? null : userDetails.getOrganization().getOrganizationName());
         session.setAttribute(SessionAttributes.MACHINE_IP.getName(), getMachineIP());
         session.setAttribute(SessionAttributes.MACHINE_NAME.getName(), getMachineName());
         session.setAttribute(SessionAttributes.BROWSER_CLIENT_INFO.getName(), getBrowserClientInfo());
-        session.setAttribute(SessionAttributes.COUNTRY_ID.getName(), userDetails.getCountry().getId());
+        session.setAttribute(SessionAttributes.COUNTRY_ID.getName(),
+                userDetails.getCountry() == null ? null : userDetails.getCountry().getId());
         session.setAttribute(SessionAttributes.SESSION_AUDIT_COMPLETED.getName(), Boolean.FALSE);
 
         SessionListeners.updateSessionMap(session);
@@ -343,6 +371,7 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
         password = null;
         encryptedPassword = null;
         initializeLoginEncryption();
+        bootstrapRequired = userAdministrationService.getUserCount() == 0;
 
         year = String.valueOf(java.time.Year.now());
 
@@ -385,6 +414,10 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
 
     public void setYear(String year) {
         this.year = year;
+    }
+
+    public boolean isBootstrapRequired() {
+        return bootstrapRequired;
     }
 
 }

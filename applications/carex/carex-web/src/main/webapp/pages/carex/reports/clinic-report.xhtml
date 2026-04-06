@@ -62,12 +62,18 @@
                     <div class="grid">
                         <div class="col-12 md:col-4">
                             <label>Organization</label>
-                            <p:selectOneMenu value="#{clinicReportBean.selectedOrganizationId}" style="width:100%;">
-                                <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
-                                <f:selectItems value="#{clinicReportBean.organizationList}" var="organization"
-                                               itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
-                                <p:ajax listener="#{clinicReportBean.onOrganizationChange}" process="@this" update="form"/>
-                            </p:selectOneMenu>
+                            <h:panelGroup rendered="#{clinicReportBean.applicationAdmin}" layout="block">
+                                <p:selectOneMenu value="#{clinicReportBean.selectedOrganizationId}" style="width:100%;">
+                                    <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                    <f:selectItems value="#{clinicReportBean.organizationList}" var="organization"
+                                                   itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
+                                    <p:ajax listener="#{clinicReportBean.onOrganizationChange}" process="@this" update="form"/>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{not clinicReportBean.applicationAdmin}" layout="block"
+                                          style="margin-top:.55rem;font-weight:700;">
+                                <h:outputText value="#{clinicReportBean.currentOrganizationName}"/>
+                            </h:panelGroup>
                         </div>
                         <div class="col-12 md:col-4">
                             <label>Period Scope</label>

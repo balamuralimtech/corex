@@ -244,10 +244,16 @@
                                     </div>
                                     <div class="field">
                                         <p:outputLabel for="@next" value="#{msg['organizationNameLabel']}*"/>
-                                        <p:autoComplete id="organizationlist" dropdown="true"
-                                                        value="#{branchBean.branchOrganizationName}"
-                                                        completeMethod="#{branchBean.completeOrganization}"
-                                                        scrollHeight="250" onfocus="clearErrorStyles()"/>
+                                        <h:panelGroup rendered="#{branchBean.applicationAdmin}" layout="block">
+                                            <p:autoComplete id="organizationlist" dropdown="true"
+                                                            value="#{branchBean.branchOrganizationName}"
+                                                            completeMethod="#{branchBean.completeOrganization}"
+                                                            scrollHeight="250" onfocus="clearErrorStyles()"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{not branchBean.applicationAdmin}" layout="block"
+                                                      style="font-weight:700;padding-top:.6rem;">
+                                            <h:outputText value="#{branchBean.currentOrganizationName}"/>
+                                        </h:panelGroup>
                                     </div>
                                     <div class="field">
                                         <p:outputLabel for="@next" value="#{msg['countryLabel']}*"/>

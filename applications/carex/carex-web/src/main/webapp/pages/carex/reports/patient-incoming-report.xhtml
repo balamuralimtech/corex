@@ -62,12 +62,18 @@
                     <div class="grid">
                         <div class="col-12 md:col-3">
                             <label>Organization</label>
-                            <p:selectOneMenu value="#{patientIncomingReportBean.selectedOrganizationId}" style="width:100%;">
-                                <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
-                                <f:selectItems value="#{patientIncomingReportBean.organizationList}" var="organization"
-                                               itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
-                                <p:ajax listener="#{patientIncomingReportBean.onOrganizationChange}" process="@this" update="form"/>
-                            </p:selectOneMenu>
+                            <h:panelGroup rendered="#{patientIncomingReportBean.applicationAdmin}" layout="block">
+                                <p:selectOneMenu value="#{patientIncomingReportBean.selectedOrganizationId}" style="width:100%;">
+                                    <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                    <f:selectItems value="#{patientIncomingReportBean.organizationList}" var="organization"
+                                                   itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
+                                    <p:ajax listener="#{patientIncomingReportBean.onOrganizationChange}" process="@this" update="form"/>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{not patientIncomingReportBean.applicationAdmin}" layout="block"
+                                          style="margin-top:.55rem;font-weight:700;">
+                                <h:outputText value="#{patientIncomingReportBean.currentOrganizationName}"/>
+                            </h:panelGroup>
                         </div>
                         <div class="col-12 md:col-3">
                             <label>Patient Scope</label>

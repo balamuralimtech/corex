@@ -8,6 +8,7 @@ import com.persist.carex.settings.ClinicSettings;
 import com.persist.carex.settings.MedicalCertificateSettings;
 import com.persist.coretix.modal.constants.GeneralConstants;
 import com.persist.coretix.modal.systemmanagement.Organizations;
+import com.web.carex.appgeneral.CarexManagedBean;
 import org.primefaces.PrimeFaces;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -35,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 
 @Named("medicalCertificateSettingsBean")
 @Scope("session")
-public class MedicalCertificateSettingsBean implements Serializable {
+public class MedicalCertificateSettingsBean extends CarexManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -62,14 +63,13 @@ public class MedicalCertificateSettingsBean implements Serializable {
             return;
         }
         loadOrganizations();
-        if (selectedOrganizationId == null) {
-            selectedOrganizationId = resolveCurrentOrganizationId();
-        }
+        selectedOrganizationId = resolveDefaultOrganizationId(organizationList, selectedOrganizationId);
         loadMedicalCertificateSettings();
         initialized = true;
     }
 
     public void onOrganizationChange() {
+        selectedOrganizationId = resolveAccessibleOrganizationId(selectedOrganizationId);
         loadMedicalCertificateSettings();
         resetPreparedDownload();
         PrimeFaces.current().ajax().update("form:medicalCertificateSettingsPanel", "form:messages");
@@ -173,7 +173,7 @@ public class MedicalCertificateSettingsBean implements Serializable {
     }
 
     private void loadOrganizations() {
-        organizationList = new ArrayList<>(organizationService.getOrganizationsList());
+        organizationList = new ArrayList<>(getAccessibleOrganizations(organizationService));
     }
 
     private Organizations getSelectedOrganizationEntity() {

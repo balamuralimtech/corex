@@ -16,6 +16,8 @@
  */
 package com.web.coretix.usermanagement;
 
+import com.module.coretix.usermanagement.IUserActivityService;
+import com.persist.coretix.modal.usermanagement.UserActivities;
 import com.persist.coretix.modal.usermanagement.UserDetails;
 import com.module.coretix.usermanagement.IUserAdministrationService;
 import org.slf4j.Logger;
@@ -28,6 +30,11 @@ import org.springframework.context.annotation.Scope;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;
+import java.util.Base64;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import javax.servlet.http.HttpSession;
 
 @Named("userProfileBean")
@@ -40,8 +47,12 @@ public class userProfileBean implements Serializable {
     @Inject
     private IUserAdministrationService userAdministrationService;
 
+    @Inject
+    private IUserActivityService userActivityService;
+
     private UserDetails userDetails;
     private String accessRight;
+    private List<UserActivities> profileActivities = new ArrayList<>();
 
     public void initializePageAttributes() {
         HttpSession session = SessionUtils.getSession();
@@ -53,6 +64,7 @@ public class userProfileBean implements Serializable {
             logger.warn("No user id found in session while loading user profile");
             userDetails = null;
             accessRight = null;
+            profileActivities = Collections.emptyList();
             return;
         }
 
@@ -60,13 +72,50 @@ public class userProfileBean implements Serializable {
         if (userDetails == null) {
             logger.warn("No user details found for user id {}", userId);
             accessRight = null;
+            profileActivities = Collections.emptyList();
             return;
         }
 
         accessRight = AccessRightConstants.getById(userDetails.getAccessRight()).getValue();
+        loadProfileActivities(userId);
         logger.debug("{}", userDetails.getUserName());
         logger.debug("accessRight : " + accessRight);
 
+    }
+
+    private void loadProfileActivities(Integer userId) {
+        List<UserActivities> filteredActivities = new ArrayList<>();
+        List<UserActivities> allActivities = userActivityService.getUserActivitiesList();
+
+        if (allActivities != null) {
+            for (UserActivities activity : allActivities) {
+                if (activity != null && activity.getUserId() == userId) {
+                    filteredActivities.add(activity);
+                }
+            }
+        }
+
+        filteredActivities.sort(new Comparator<UserActivities>() {
+            @Override
+            public int compare(UserActivities left, UserActivities right) {
+                if (left.getCreatedAt() == null && right.getCreatedAt() == null) {
+                    return 0;
+                }
+                if (left.getCreatedAt() == null) {
+                    return 1;
+                }
+                if (right.getCreatedAt() == null) {
+                    return -1;
+                }
+                return right.getCreatedAt().compareTo(left.getCreatedAt());
+            }
+        });
+
+        if (filteredActivities.size() > 10) {
+            profileActivities = new ArrayList<>(filteredActivities.subList(0, 10));
+        } else {
+            profileActivities = filteredActivities;
+        }
     }
 
     public UserDetails getUserDetails() {
@@ -85,6 +134,139 @@ public class userProfileBean implements Serializable {
     public void setAccessRight(String accessRight) {
         this.accessRight = accessRight;
     };
+
+    public List<UserActivities> getProfileActivities() {
+        return profileActivities;
+    }
+
+    public String activityIcon(String activityType) {
+        if (activityType == null) {
+            return "pi pi-history";
+        }
+
+        String normalizedType = activityType.trim().toLowerCase();
+        switch (normalizedType) {
+            case "login":
+                return "pi pi-sign-in";
+            case "logout":
+                return "pi pi-sign-out";
+            case "add":
+                return "pi pi-plus-circle";
+            case "update":
+                return "pi pi-pencil";
+            case "delete":
+                return "pi pi-trash";
+            default:
+                return "pi pi-clock";
+        }
+    }
+
+    public String activityTitle(UserActivities activity) {
+        if (activity == null || activity.getActivityType() == null || activity.getActivityType().trim().isEmpty()) {
+            return "Activity";
+        }
+
+        String normalizedType = activity.getActivityType().trim().toLowerCase();
+        switch (normalizedType) {
+            case "login":
+                return "Signed in";
+            case "logout":
+                return "Signed out";
+            case "add":
+                return "Created a record";
+            case "update":
+                return "Updated account data";
+            case "delete":
+                return "Deleted a record";
+            default:
+                return activity.getActivityType();
+        }
+    }
+
+    public String activitySummary(UserActivities activity) {
+        if (activity == null) {
+            return "";
+        }
+
+        StringBuilder summary = new StringBuilder();
+
+        if (activity.getActivityDescription() != null && !activity.getActivityDescription().trim().isEmpty()) {
+            summary.append(activity.getActivityDescription().trim());
+        } else {
+            summary.append(activityTitle(activity));
+        }
+
+        if (activity.getDeviceInfo() != null && !activity.getDeviceInfo().trim().isEmpty()) {
+            summary.append(" | Device: ").append(activity.getDeviceInfo().trim());
+        }
+
+        if (activity.getIpAddress() != null && !activity.getIpAddress().trim().isEmpty()) {
+            summary.append(" | IP: ").append(activity.getIpAddress().trim());
+        }
+
+        if (activity.getLocationInfo() != null && !activity.getLocationInfo().trim().isEmpty()) {
+            summary.append(" | Location: ").append(activity.getLocationInfo().trim());
+        }
+
+        if (activity.getTerminationReason() != null && !activity.getTerminationReason().trim().isEmpty()) {
+            summary.append(" | Reason: ").append(activity.getTerminationReason().trim());
+        }
+
+        return summary.toString();
+    }
+
+    public String getProfileImageSrc() {
+        if (userDetails == null || userDetails.getProfileImage() == null || userDetails.getProfileImage().length == 0
+                || userDetails.getProfileImageContentType() == null) {
+            return null;
+        }
+
+        return "data:" + userDetails.getProfileImageContentType() + ";base64,"
+                + Base64.getEncoder().encodeToString(userDetails.getProfileImage());
+    }
+
+    public String getOrganizationName() {
+        if (userDetails == null || userDetails.getOrganization() == null) {
+            return "Application-wide access";
+        }
+        return userDetails.getOrganization().getOrganizationName();
+    }
+
+    public String getBranchName() {
+        if (userDetails == null || userDetails.getBranch() == null) {
+            return "Not assigned";
+        }
+        return userDetails.getBranch().getBranchName();
+    }
+
+    public String getContactValue() {
+        if (userDetails == null || userDetails.getContact() == null || userDetails.getContact().trim().isEmpty()) {
+            return "Not provided";
+        }
+        return userDetails.getContact();
+    }
+
+    public String getAddressSummary() {
+        if (userDetails == null) {
+            return "Not provided";
+        }
+
+        List<String> parts = new ArrayList<>();
+        if (userDetails.getAddress() != null && !userDetails.getAddress().trim().isEmpty()) {
+            parts.add(userDetails.getAddress().trim());
+        }
+        if (userDetails.getCity() != null && userDetails.getCity().getName() != null && !userDetails.getCity().getName().trim().isEmpty()) {
+            parts.add(userDetails.getCity().getName().trim());
+        }
+        if (userDetails.getState() != null && userDetails.getState().getName() != null && !userDetails.getState().getName().trim().isEmpty()) {
+            parts.add(userDetails.getState().getName().trim());
+        }
+        if (userDetails.getCountry() != null && userDetails.getCountry().getName() != null && !userDetails.getCountry().getName().trim().isEmpty()) {
+            parts.add(userDetails.getCountry().getName().trim());
+        }
+
+        return parts.isEmpty() ? "Not provided" : String.join(", ", parts);
+    }
 
 }
 

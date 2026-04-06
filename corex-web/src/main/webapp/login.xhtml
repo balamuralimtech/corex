@@ -3,7 +3,6 @@
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:p="http://primefaces.org/ui">
-
 <h:head>
     <f:facet name="first">
         <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
@@ -11,645 +10,156 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
         <meta name="apple-mobile-web-app-capable" content="yes"/>
     </f:facet>
-
     <title>#{appInfo.appName}</title>
     <link rel="shortcut icon" href="#{request.contextPath}/resources/demo/images/coretix/coretixfavicon.png" type="image/x-icon"/>
-
     <h:outputStylesheet name="css/primeflex.min.css" library="avalon-layout"/>
     <h:outputStylesheet name="css/primeicons.css" library="avalon-layout"/>
     <h:outputStylesheet name="css/layout-#{guestPreferences.layout}.css" library="avalon-layout"/>
     <h:outputStylesheet name="css/demo.css" library="demo"/>
-
     <style>
-        :root {
-            --login-shell-bg: #f3f4f6;
-            --login-card-bg: rgba(255, 255, 255, 0.94);
-            --login-card-border: rgba(15, 23, 42, 0.08);
-            --login-text-main: #111827;
-            --login-text-muted: #6b7280;
-            --login-accent: #2f9e83;
-            --login-accent-dark: #257e68;
-            --login-overlay: linear-gradient(180deg, rgba(15, 23, 42, 0.08) 0%, rgba(15, 23, 42, 0.52) 100%);
+        :root{
+            --bg:#fbfcfd;--surface:#fff;--line:#e5e7eb;--line2:rgba(148,163,184,.2);--text:#111827;--muted:#6b7280;
+            --deep:#{guestPreferences.activeLayoutColor};--accent:#{guestPreferences.activeLayoutColor};--accent2:#{guestPreferences.activeLayoutColor};--soft:#eef5f7;--soft2:#dcecf3;--warm:#ff6b6b;
+            --shadow:0 28px 70px rgba(15,23,42,.08);
         }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        html, body {
-            height: 100%;
-            margin: 0;
-            background: var(--login-shell-bg);
-            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-            color: var(--login-text-main);
-            overflow: hidden;
-        }
-
-        .login-page {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .login-frame {
-            width: 100vw;
-            height: 100vh;
-            min-height: 100vh;
-            background: #ffffff;
-            display: grid;
-            grid-template-columns: minmax(0, 1.8fr) minmax(360px, .9fr);
-            gap: 0;
-            box-shadow: none;
-        }
-
-        .login-showcase {
-            position: relative;
-            min-height: 100vh;
-            overflow: hidden;
-            background: #0f172a;
-            display: flex;
-            align-items: flex-end;
-        }
-
-        .login-video {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .login-showcase::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background: var(--login-overlay);
-        }
-
-        .login-brand {
-            position: absolute;
-            top: 1.5rem;
-            left: 1.75rem;
-            z-index: 2;
-            display: inline-flex;
-            align-items: center;
-            gap: .7rem;
-            text-decoration: none;
-            color: #ffffff;
-        }
-
-        .login-brand-mark {
-            width: 2.4rem;
-            height: 2.4rem;
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.14);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            font-weight: 700;
-            backdrop-filter: blur(10px);
-        }
-
-        .login-brand-text {
-            font-size: 1.7rem;
-            font-weight: 700;
-            letter-spacing: -0.03em;
-        }
-
-        .login-copy {
-            position: relative;
-            z-index: 2;
-            width: 100%;
-            padding: 2rem 2rem 2.1rem;
-            color: #ffffff;
-        }
-
-        .login-copy-kicker {
-            display: inline-flex;
-            align-items: center;
-            padding: .45rem .8rem;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.14);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            font-size: .84rem;
-            letter-spacing: .05em;
-            text-transform: uppercase;
-            backdrop-filter: blur(10px);
-        }
-
-        .login-copy h1 {
-            margin: 1.15rem 0 0;
-            max-width: 720px;
-            font-size: clamp(2.1rem, 3vw, 3.45rem);
-            line-height: 1.02;
-            letter-spacing: -0.05em;
-            font-weight: 800;
-        }
-
-        .login-copy p {
-            margin: 1rem 0 0;
-            max-width: 640px;
-            font-size: 1rem;
-            line-height: 1.7;
-            color: rgba(255, 255, 255, 0.84);
-        }
-
-        .login-copy-meta {
-            margin-top: 1.7rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-
-        .login-copy-meta-text {
-            font-size: .95rem;
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        .login-copy-link {
-            color: #ffffff;
-            text-decoration: none;
-            font-weight: 600;
-        }
-
-        .login-panel {
-            position: relative;
-            min-height: 100vh;
-            background: var(--login-card-bg);
-            border: none;
-            padding: 1.7rem 2rem 1.55rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .login-panel-top {
-            position: absolute;
-            top: 1.5rem;
-            left: 1.7rem;
-            right: 1.7rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .login-panel-brand {
-            display: inline-flex;
-            align-items: center;
-            gap: .55rem;
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--login-text-main);
-        }
-
-        .login-panel-brand-icon {
-            width: 2rem;
-            height: 2rem;
-            border-radius: 12px;
-            background: #111827;
-            color: #ffffff;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            font-weight: 700;
-        }
-
-        .login-back {
-            width: 2.1rem;
-            height: 2.1rem;
-            border-radius: 999px;
-            border: 1px solid #e5e7eb;
-            background: #ffffff;
-            color: #374151;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-        }
-
-        .login-panel-content {
-            width: 100%;
-            max-width: 360px;
-            margin: 0 auto;
-        }
-
-        .login-panel-title {
-            margin: 0;
-            font-size: 2.1rem;
-            line-height: 1.05;
-            letter-spacing: -0.04em;
-            font-weight: 800;
-            color: var(--login-text-main);
-        }
-
-        .login-panel-description {
-            margin: .85rem 0 0;
-            color: var(--login-text-muted);
-            line-height: 1.6;
-            font-size: .97rem;
-        }
-
-        .login-pill-row {
-            display: flex;
-            gap: .55rem;
-            margin: 1.4rem 0 1.25rem;
-            flex-wrap: wrap;
-        }
-
-        .login-pill {
-            border-radius: 999px;
-            padding: .65rem 1rem;
-            font-size: .88rem;
-            font-weight: 600;
-            border: 1px solid #e5e7eb;
-            color: #4b5563;
-            background: #ffffff;
-        }
-
-        .login-pill.is-active {
-            background: #2b2e35;
-            border-color: #2b2e35;
-            color: #ffffff;
-        }
-
-        .login-label {
-            display: block;
-            margin-bottom: .5rem;
-            font-size: .88rem;
-            font-weight: 600;
-            color: #374151;
-        }
-
-        .login-field-group {
-            margin-top: 1rem;
-        }
-
-        .login-input,
-        .login-password {
-            width: 100%;
-        }
-
-        .login-input .ui-inputfield,
-        .login-password .ui-inputfield {
-            width: 100%;
-            height: 3rem;
-            border-radius: 14px !important;
-            border: 1px solid #dbe1ea !important;
-            box-shadow: none !important;
-            padding: 0 1rem !important;
-            font-size: .95rem;
-            background: #ffffff !important;
-        }
-
-        .login-actions {
-            margin-top: 1.25rem;
-        }
-
-        .login-submit.ui-button {
-            width: 100%;
-            border-radius: 999px !important;
-            border: none !important;
-            background: linear-gradient(135deg, var(--login-accent) 0%, #49b097 100%) !important;
-            box-shadow: none !important;
-        }
-
-        .login-submit.ui-button .ui-button-text {
-            padding: .95rem 1rem !important;
-            font-weight: 600;
-            font-size: .96rem;
-        }
-
-        .login-submit.ui-button:hover,
-        .login-submit.ui-button:focus {
-            background: linear-gradient(135deg, var(--login-accent-dark) 0%, var(--login-accent) 100%) !important;
-        }
-
-        .login-help {
-            margin-top: 1.35rem;
-            font-size: .84rem;
-            color: #9ca3af;
-        }
-
-        .login-growl {
-            margin-bottom: 1rem;
-        }
-
-        .login-footer {
-            position: absolute;
-            left: 1.7rem;
-            right: 1.7rem;
-            bottom: 1.45rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: .75rem;
-            font-size: .8rem;
-            color: #9ca3af;
-        }
-
-        #loadingOverlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(255, 255, 255, 0.9);
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            backdrop-filter: blur(5px);
-        }
-
-        #loadingOverlay.active {
-            display: flex;
-        }
-
-        .loader {
-            width: 62px;
-            height: 62px;
-            border-radius: 50%;
-            border: 7px solid #dbeafe;
-            border-top-color: var(--login-accent);
-            animation: spin 1s linear infinite;
-        }
-
-        .loading-text {
-            margin-top: 1rem;
-            font-size: 1rem;
-            color: #374151;
-            font-weight: 600;
-        }
-
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 1080px) {
-            .login-frame {
-                grid-template-columns: 1fr;
-                height: auto;
-                min-height: 100vh;
-            }
-
-            .login-showcase,
-            .login-panel {
-                min-height: 50vh;
-            }
-
-            .login-panel-top,
-            .login-footer {
-                position: static;
-            }
-
-            .login-panel {
-                justify-content: flex-start;
-                gap: 1.5rem;
-            }
-
-            .login-panel-content {
-                max-width: 100%;
-                margin: 0;
-            }
-
-            .login-footer {
-                margin-top: auto;
-                padding-top: 1rem;
-            }
-        }
-
-        @media (max-width: 640px) {
-            .login-showcase {
-                min-height: 440px;
-            }
-
-            .login-copy {
-                padding: 1.35rem;
-            }
-
-            .login-copy h1 {
-                font-size: 2rem;
-            }
-
-            .login-panel {
-                min-height: auto;
-                padding: 1.2rem;
-            }
-
-            .login-brand {
-                left: 1.2rem;
-                top: 1.2rem;
-            }
-        }
+        *{box-sizing:border-box} html,body{min-height:100%;margin:0;font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif;color:var(--text);background:
+            radial-gradient(circle at top left, rgba(220,236,243,.85), transparent 30%),
+            radial-gradient(circle at bottom right, rgba(238,245,247,.95), transparent 24%),var(--bg)}
+        .page{min-height:100vh;padding:1.4rem;display:flex;align-items:center;justify-content:center}
+        .shell{width:min(1240px,100%);min-height:720px;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(360px,430px);background:var(--surface);border:1px solid rgba(255,255,255,.9);border-radius:30px;box-shadow:var(--shadow);overflow:hidden}
+        .left{padding:2.2rem 2.4rem;display:flex;flex-direction:column;justify-content:space-between}
+        .right{padding:2.2rem 2.5rem;border-left:1px solid var(--line2);display:flex;flex-direction:column;justify-content:center}
+        .brand,.pbrand{display:inline-flex;align-items:center;gap:.8rem;text-decoration:none}
+        .mark{position:relative;width:2rem;height:2rem;flex:0 0 auto}
+        .mark:before,.mark:after{content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);border-radius:999px;background:var(--warm)}
+        .mark:before{width:2rem;height:.56rem}.mark:after{width:.56rem;height:2rem}
+        .bcopy{display:flex;flex-direction:column;line-height:1.08;gap:.06rem}
+        .bname{font-size:1.08rem;font-weight:800;color:var(--deep);letter-spacing:-.02em}
+        .bsub{font-size:.76rem;color:var(--muted)}
+        .art{position:relative;flex:1;min-height:460px;display:flex;align-items:center;justify-content:center}
+        .scene{position:relative;width:min(100%,700px);height:470px}
+        .blob{position:absolute;inset:9% 10% 11%;border-radius:48% 52% 46% 54%/44% 42% 58% 56%;background:var(--soft)}
+        .wv,.wh{position:absolute;background:rgba(255,255,255,.96)} .wv{left:50%;top:10%;width:12px;height:78%;transform:translateX(-50%)} .wh{left:16%;top:48%;width:68%;height:12px}
+        .grid{position:absolute;inset:18% 17% 18%;opacity:.45;background:linear-gradient(90deg, rgba(15,76,92,.07) 0 12px, transparent 12px 56px),linear-gradient(180deg, rgba(15,76,92,.05) 0 12px, transparent 12px 54px)}
+        .ic{position:absolute;width:108px;height:108px;border-radius:28px;background:rgba(255,255,255,.94);box-shadow:0 16px 34px rgba(15,23,42,.08);animation:f 6s ease-in-out infinite}
+        .ic:before{content:"";position:absolute;inset:12px;border-radius:50%;background:var(--soft2)}
+        .a1{top:5%;left:22%}.a2{top:4%;right:23%;animation-delay:.6s}.a3{top:26%;right:8%;animation-delay:1s}.a4{left:6%;top:44%;animation-delay:.8s}.a5{top:24%;left:5%;animation-delay:.3s}.a6{bottom:2%;left:39%;animation-delay:.9s}.a7{bottom:8%;right:9%;animation-delay:1.1s}
+        .amb .x,.med .lab,.bag .cross,.care .cross{position:absolute;background:linear-gradient(var(--warm),var(--warm)) center/100% 4px no-repeat,linear-gradient(var(--warm),var(--warm)) center/4px 100% no-repeat}
+        .amb .body{position:absolute;left:26px;top:42px;width:50px;height:28px;border-radius:6px;background:#4b5563}.amb .cab{position:absolute;left:66px;top:48px;width:18px;height:22px;border-radius:0 8px 8px 0;background:#4b5563}.amb .w1,.amb .w2{position:absolute;bottom:28px;width:13px;height:13px;border-radius:50%;background:var(--warm)}.amb .w1{left:30px}.amb .w2{left:70px}.amb .x{left:46px;top:46px;width:16px;height:16px}
+        .hrt .hb{position:absolute;left:50%;top:50%;width:32px;height:32px;transform:translate(-50%,-34%) rotate(45deg);background:#e84a4a;border-radius:8px}.hrt .hb:before,.hrt .hb:after{content:"";position:absolute;width:32px;height:32px;border-radius:50%;background:#e84a4a}.hrt .hb:before{left:-17px}.hrt .hb:after{top:-17px}.hrt .ln{position:absolute;left:26px;right:26px;top:56px;height:4px;background:linear-gradient(90deg,transparent 0 12%,#fff 12% 25%,transparent 25% 36%,#fff 36% 44%,transparent 44% 58%,#fff 58% 76%,transparent 76%)}
+        .syr .n{position:absolute;left:40px;top:34px;width:12px;height:50px;border-radius:8px;background:#697586;transform:rotate(23deg)} .syr .t{position:absolute;left:48px;top:28px;width:28px;height:16px;border-radius:999px;background:var(--warm);transform:rotate(23deg)}
+        .drp .l{position:absolute;left:50px;top:22px;width:3px;height:60px;background:#64748b}.drp .b{position:absolute;left:38px;top:30px;width:26px;height:42px;border-radius:6px 6px 12px 12px;background:linear-gradient(180deg,#fff 0 40%,#ef5b5b 40%);border:3px solid #64748b}
+        .med .cap{position:absolute;left:40px;top:20px;width:28px;height:10px;border-radius:4px 4px 0 0;background:#f6a53d}.med .bot{position:absolute;left:38px;top:28px;width:32px;height:46px;border-radius:8px 8px 12px 12px;background:#fff;border:3px solid #697586}.med .lab{left:44px;top:44px;width:20px;height:10px;background:linear-gradient(#ffd28c,#ffd28c)}
+        .bag .c{position:absolute;left:32px;top:42px;width:48px;height:34px;border-radius:8px;background:var(--warm)}.bag .c:before{content:"";position:absolute;left:14px;top:-10px;width:20px;height:10px;border:4px solid var(--warm);border-bottom:none;border-radius:8px 8px 0 0}.bag .cross{left:13px;top:6px;width:22px;height:22px;background:linear-gradient(#fff,#fff) center/100% 6px no-repeat,linear-gradient(#fff,#fff) center/6px 100% no-repeat}
+        .care .h{position:absolute;left:38px;top:28px;width:18px;height:18px;border-radius:50%;background:#64748b}.care .bd{position:absolute;left:32px;top:48px;width:28px;height:26px;border-radius:14px 14px 8px 8px;background:#fff;border:3px solid #64748b}.care .cross{right:24px;top:24px;width:14px;height:14px}
+        .doc,.nur{position:absolute;bottom:36px;width:110px;height:222px;animation:s 5.8s ease-in-out infinite}.doc{left:24%}.nur{right:20%;animation-delay:.7s}
+        .sh{position:absolute;left:50%;bottom:-6px;width:76px;height:14px;border-radius:50%;background:rgba(148,163,184,.35);transform:translateX(-50%)}
+        .head{position:absolute;left:50%;top:16px;width:34px;height:34px;border-radius:50%;transform:translateX(-50%);background:#8b4366}.nur .head{background:#7c3166}
+        .coat{position:absolute;left:50%;top:48px;width:64px;height:118px;transform:translateX(-50%);border-radius:18px 18px 14px 14px;background:#fff;box-shadow:0 8px 18px rgba(15,23,42,.06)} .coat:before{content:"";position:absolute;left:50%;top:0;width:16px;height:40px;transform:translateX(-50%);background:#e9eef3;clip-path:polygon(0 0,100% 0,50% 100%)}
+        .arm{position:absolute;top:68px;width:18px;height:76px;border-radius:999px;background:#fff}.doc .al{left:22px;transform:rotate(12deg)}.doc .ar{right:22px;transform:rotate(-12deg)}.nur .al{left:18px;transform:rotate(30deg)}.nur .ar{right:18px;transform:rotate(-10deg)}
+        .leg{position:absolute;bottom:24px;width:20px;height:70px;border-radius:999px;background:#1e6c79}.doc .ll{left:40px}.doc .lr{right:40px}.nur .ll,.nur .lr{background:#27348b}.nur .ll{left:42px}.nur .lr{right:42px}
+        .heart{position:absolute;left:50%;top:20%;width:138px;height:138px;transform:translateX(-50%);animation:p 3.2s ease-in-out infinite}
+        .heart .b{position:absolute;left:50%;top:50%;width:64px;height:64px;transform:translate(-50%,-34%) rotate(45deg);background:var(--deep);border-radius:16px}.heart .b:before,.heart .b:after{content:"";position:absolute;width:64px;height:64px;border-radius:50%;background:var(--deep)}.heart .b:before{left:-34px}.heart .b:after{top:-34px}.heart .l{position:absolute;left:28px;right:28px;top:64px;height:6px;z-index:1;background:linear-gradient(90deg,transparent 0 12%,#fff 12% 26%,transparent 26% 37%,#fff 37% 45%,transparent 45% 58%,#fff 58% 76%,transparent 76%)}
+        .plant{position:absolute;left:10%;bottom:34px;width:84px;height:160px}.pot{position:absolute;left:22px;bottom:0;width:42px;height:56px;border-radius:6px 6px 10px 10px;background:#57596f}.leaf,.leaf:after{position:absolute;content:"";width:34px;height:58px;border-radius:100% 0 100% 0;background:#0f6c7c}.leaf.left{left:8px;bottom:54px;transform:rotate(-42deg)}.leaf.right{right:10px;bottom:68px;transform:rotate(34deg)}.leaf:after{left:16px;top:6px;transform:rotate(18deg);opacity:.9}
+        .copy{max-width:540px}.copy h1{margin:0;font-size:clamp(2.5rem,3.3vw,3.7rem);line-height:1.02;letter-spacing:-.05em}.copy p{margin:.85rem 0 0;color:var(--muted);line-height:1.72;font-size:1rem}
+        .pills{margin-top:1rem;display:flex;flex-wrap:wrap;gap:.65rem}.pill{padding:.58rem .86rem;border-radius:999px;background:#fff;border:1px solid var(--line2);color:#4b5563;font-size:.82rem;font-weight:700}
+        .head2{margin-bottom:1.8rem}.head2 h2{margin:1.3rem 0 .35rem;font-size:2.35rem;line-height:1.05;letter-spacing:-.04em}.head2 p{margin:0;color:var(--muted);font-size:.98rem;line-height:1.6}
+        .growl{margin-bottom:.9rem}.fg+.fg{margin-top:.95rem}.lr{margin-bottom:.4rem;display:flex;justify-content:space-between;align-items:center;gap:.75rem}.lbl{font-size:.88rem;font-weight:700;color:#374151}.help{color:#6b7280;text-decoration:none;font-size:.8rem}
+        .in,.pw{width:100%}.in .ui-inputfield,.pw .ui-inputfield{width:100%;height:3.15rem;border-radius:12px!important;border:1px solid var(--line)!important;background:#f8fafc!important;box-shadow:none!important;padding:0 1rem!important;font-size:.95rem}
+        .in .ui-inputfield:focus,.pw .ui-inputfield:focus{border-color:#cbd5e1!important;background:#fff!important}
+        .row{margin-top:.9rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;font-size:.82rem;color:var(--muted)} .chk{display:inline-flex;align-items:center;gap:.45rem}.chk input{accent-color:var(--accent)}
+        .actions{margin-top:1.2rem}.submit.ui-button{width:100%;border:none!important;border-radius:10px!important;background:linear-gradient(180deg,var(--accent),var(--accent2))!important;box-shadow:none!important;transition:filter .18s ease,transform .18s ease,box-shadow .18s ease}.submit.ui-button .ui-button-text{padding:.95rem 1rem!important;font-weight:700;font-size:.97rem}.submit.ui-button:hover,.submit.ui-button:focus{background:linear-gradient(180deg,var(--accent),var(--accent2))!important;filter:brightness(.94);box-shadow:0 12px 24px rgba(15,23,42,.12)!important}.submit.ui-button:active{transform:translateY(1px)}
+        .alt,.foothelp{text-align:center;color:var(--muted);font-size:.82rem}.alt{margin-top:1rem}.foothelp{margin-top:.95rem}.footer{margin-top:1.8rem;text-align:center;color:#9ca3af;font-size:.8rem}
+        #loadingOverlay{display:none;position:fixed;inset:0;background:rgba(255,255,255,.88);z-index:9999;justify-content:center;align-items:center;flex-direction:column;backdrop-filter:blur(5px)} #loadingOverlay.active{display:flex}
+        .loader{width:60px;height:60px;border-radius:50%;border:6px solid #d9edf3;border-top-color:var(--accent);animation:spin 1s linear infinite}.loading-text{margin-top:1rem;font-size:.96rem;color:#374151;font-weight:700}
+        @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}} @keyframes f{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}} @keyframes s{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}} @keyframes p{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.05)}}
+        @media (max-width:1080px){.shell{grid-template-columns:1fr;min-height:auto}.right{border-left:none;border-top:1px solid var(--line2)}.art{min-height:380px}}
+        @media (max-width:640px){.page{padding:.75rem}.left,.right{padding:1.3rem}.scene{height:310px}.ic,.plant{display:none}.doc{left:16%}.nur{right:12%}.heart{width:112px;height:112px;top:16%}.head2 h2{font-size:2rem}.row{flex-direction:column;align-items:flex-start}}
     </style>
 </h:head>
-
 <h:body>
     <f:event listener="#{loginBean.initializePageAttributes}" type="preRenderComponent"/>
-
     <div id="loadingOverlay">
         <div class="loader"></div>
         <div class="loading-text">Authenticating, please wait...</div>
     </div>
-
-    <div class="login-page">
-        <div class="login-frame">
-            <section class="login-showcase">
-                <h:outputLink value="#{request.contextPath}/login" styleClass="login-brand">
-                    <span class="login-brand-mark">C</span>
-                    <span class="login-brand-text">#{appInfo.appName}</span>
+    <div class="page">
+        <div class="shell">
+            <section class="left">
+                <h:outputLink value="#{request.contextPath}/login" styleClass="brand">
+                    <span class="mark"></span>
+                    <span class="bcopy"><span class="bname">#{appInfo.appName}</span><span class="bsub">Clinic and hospital operations platform</span></span>
                 </h:outputLink>
-
-                <video autoplay="autoplay" muted="muted" loop="loop" playsinline="playsinline" class="login-video">
-                    <source src="#{request.contextPath}#{appInfo.loginVideo}" type="video/mp4"/>
-                </video>
-
-                <div class="login-copy">
-                    <span class="login-copy-kicker">Operational Platform</span>
+                <div class="art" aria-hidden="true">
+                    <div class="scene">
+                        <div class="blob"></div><div class="wv"></div><div class="wh"></div><div class="grid"></div>
+                        <div class="ic amb a1"><div class="body"></div><div class="cab"></div><div class="w1"></div><div class="w2"></div><div class="x"></div></div>
+                        <div class="ic hrt a2"><div class="hb"></div><div class="ln"></div></div>
+                        <div class="ic syr a3"><div class="n"></div><div class="t"></div></div>
+                        <div class="ic drp a4"><div class="l"></div><div class="b"></div></div>
+                        <div class="ic med a5"><div class="cap"></div><div class="bot"></div><div class="lab"></div></div>
+                        <div class="ic bag a6"><div class="c"></div><div class="cross"></div></div>
+                        <div class="ic care a7"><div class="h"></div><div class="bd"></div><div class="cross"></div></div>
+                        <div class="plant"><div class="leaf left"></div><div class="leaf right"></div><div class="pot"></div></div>
+                        <div class="doc"><div class="head"></div><div class="coat"></div><div class="arm al"></div><div class="arm ar"></div><div class="leg ll"></div><div class="leg lr"></div><div class="sh"></div></div>
+                        <div class="nur"><div class="head"></div><div class="coat"></div><div class="arm al"></div><div class="arm ar"></div><div class="leg ll"></div><div class="leg lr"></div><div class="sh"></div></div>
+                        <div class="heart"><div class="b"></div><div class="l"></div></div>
+                    </div>
+                </div>
+                <div class="copy">
                     <h1>#{appInfo.loginHeadline}</h1>
                     <p>#{appInfo.loginDescription}</p>
-                    <div class="login-copy-meta">
-                        <div class="login-copy-meta-text">Secure access for clinics, hospitals, and internal teams.</div>
-                        <h:outputLink value="#{request.contextPath}/login" styleClass="login-copy-link">
-                            Learn more <i class="pi pi-arrow-right" style="font-size:.8rem;"></i>
-                        </h:outputLink>
+                    <div class="pills">
+                        <span class="pill">Patient registration</span>
+                        <span class="pill">Appointment and consultation flow</span>
+                        <span class="pill">Pharmacy, billing, and care delivery</span>
                     </div>
                 </div>
             </section>
-
-            <section class="login-panel">
-                <div class="login-panel-top">
-                    <div class="login-panel-brand">
-                        <span class="login-panel-brand-icon">S</span>
-                        <span>#{appInfo.appName}</span>
-                    </div>
-                    <h:outputLink value="#{request.contextPath}/login" styleClass="login-back">
-                        <i class="pi pi-angle-left"></i>
+            <section class="right">
+                <div class="head2">
+                    <h:outputLink value="#{request.contextPath}/login" styleClass="pbrand">
+                        <span class="mark"></span>
+                        <span class="bcopy"><span class="bname">#{appInfo.appName}</span><span class="bsub">Outpatient, pharmacy, billing, and patient care</span></span>
                     </h:outputLink>
+                    <h2>Welcome Back</h2>
+                    <p>Sign in to continue to your CareX operations workspace.</p>
                 </div>
-
-                <div class="login-panel-content">
-                    <h:form id="form">
-                        <p:growl id="messages" showDetail="true" styleClass="login-growl"/>
-
-                        <h2 class="login-panel-title">Let&apos;s join with us</h2>
-                        <div class="login-panel-description">
-                            Application name, application content, and secure login are now combined into one single entry page.
-                        </div>
-
-                        <div class="login-pill-row">
-                            <span class="login-pill is-active">Username</span>
-                            <span class="login-pill">Access</span>
-                            <span class="login-pill">Secure</span>
-                        </div>
-
-                        <div class="login-field-group">
-                            <label class="login-label" for="form:username">Username</label>
-                            <p:inputText id="username" value="#{loginBean.username}" styleClass="login-input" placeholder="Enter your username"/>
-                        </div>
-
-                        <div class="login-field-group">
-                            <label class="login-label" for="form:password">Password</label>
-                            <p:password id="password" value="#{loginBean.password}" styleClass="login-password" placeholder="Enter your password" feedback="false"/>
-                        </div>
-
-                        <h:inputHidden id="encryptedPassword" value="#{loginBean.encryptedPassword}"/>
-
-                        <div class="login-actions">
-                            <p:commandButton value="Continue"
-                                             icon="pi pi-sign-in"
-                                             type="button"
-                                             onclick="encryptAndSubmitLogin(); return false;"
-                                             styleClass="login-submit"/>
-                            <h:commandButton id="encryptedSubmit"
-                                             value="Encrypted Submit"
-                                             action="#{loginBean.login}"
-                                             style="display:none;"/>
-                        </div>
-
-                        <div class="login-help">Password is encrypted in the browser before submit.</div>
-                    </h:form>
-                </div>
-
-                <div class="login-footer">
-                    <span>© CoreX Logic #{loginBean.year}</span>
-                    <span>One login page only</span>
-                </div>
+                <h:form id="form" autocomplete="off">
+                    <p:growl id="messages" showDetail="true" styleClass="growl"/>
+                    <input type="text" name="fake_username" autocomplete="username" style="display:none;" aria-hidden="true"/>
+                    <input type="password" name="fake_password" autocomplete="current-password" style="display:none;" aria-hidden="true"/>
+                    <div class="fg">
+                        <div class="lr"><label class="lbl" for="form:username">Username</label></div>
+                        <p:inputText id="username" value="#{loginBean.username}" styleClass="in"
+                                     placeholder="Enter your username" autocomplete="off"/>
+                    </div>
+                    <div class="fg">
+                        <div class="lr"><label class="lbl" for="form:password">Password</label><h:outputLink value="#{request.contextPath}/login" styleClass="help">Need help?</h:outputLink></div>
+                        <p:password id="password" value="#{loginBean.password}" styleClass="pw"
+                                    placeholder="Enter your password" feedback="false" autocomplete="new-password"/>
+                    </div>
+                    <h:inputHidden id="encryptedPassword" value="#{loginBean.encryptedPassword}"/>
+                    <div class="actions">
+                        <p:commandButton value="Login" type="button" onclick="encryptAndSubmitLogin(); return false;" styleClass="submit"/>
+                        <h:commandButton id="encryptedSubmit" value="Encrypted Submit" action="#{loginBean.login}" style="display:none;"/>
+                    </div>
+                    <div class="foothelp">Password is encrypted in the browser before submit.</div>
+                </h:form>
+                <div class="footer">&#169; CoreX Logic #{loginBean.year}</div>
             </section>
         </div>
     </div>
-
     <script type="text/javascript">
         //<![CDATA[
         const loginEncryptionPublicKey = "#{loginBean.loginEncryptionPublicKey}";
-
-        function showLoader() {
-            document.getElementById('loadingOverlay').classList.add('active');
-            sessionStorage.setItem('showingLoader', 'true');
-        }
-
-        function hideLoader() {
-            sessionStorage.removeItem('showingLoader');
-            document.getElementById('loadingOverlay').classList.remove('active');
-        }
-
-        function hideLoaderIfLoginPage() {
-            if (window.location.pathname.includes('login')) {
-                hideLoader();
-            }
-        }
-
-        function decodeBase64ToUint8Array(base64Value) {
-            const binaryValue = window.atob(base64Value);
-            const bytes = new Uint8Array(binaryValue.length);
-            for (let index = 0; index < binaryValue.length; index++) {
-                bytes[index] = binaryValue.charCodeAt(index);
-            }
-            return bytes;
-        }
-
-        function canEncryptPasswordInBrowser() {
-            return Boolean(
-                loginEncryptionPublicKey &&
-                window.crypto &&
-                window.crypto.subtle &&
-                window.isSecureContext
-            );
-        }
-
-        async function encryptPasswordForSubmit(plainPassword) {
-            const publicKeyBytes = decodeBase64ToUint8Array(loginEncryptionPublicKey);
-            const publicKey = await window.crypto.subtle.importKey(
-                'spki',
-                publicKeyBytes.buffer,
-                {
-                    name: 'RSA-OAEP',
-                    hash: 'SHA-256'
-                },
-                false,
-                ['encrypt']
-            );
-
-            const encryptedBytes = await window.crypto.subtle.encrypt(
-                {
-                    name: 'RSA-OAEP'
-                },
-                publicKey,
-                new TextEncoder().encode(plainPassword)
-            );
-
-            const encryptedArray = new Uint8Array(encryptedBytes);
-            let binaryValue = '';
-            encryptedArray.forEach(function(currentByte) {
-                binaryValue += String.fromCharCode(currentByte);
-            });
-            return window.btoa(binaryValue);
-        }
-
-        async function encryptAndSubmitLogin() {
-            const passwordInput = document.getElementById('form:password');
-            const encryptedPasswordInput = document.getElementById('form:encryptedPassword');
-            const submitButton = document.getElementById('form:encryptedSubmit');
-
-            if (!passwordInput || !encryptedPasswordInput || !submitButton) {
-                window.alert('Login controls are not available. Refresh the page and try again.');
-                return false;
-            }
-
-            if (!passwordInput.value) {
-                submitButton.click();
-                return false;
-            }
-
-            if (!canEncryptPasswordInBrowser()) {
-                encryptedPasswordInput.value = '';
-                submitButton.click();
-                return false;
-            }
-
-            try {
-                showLoader();
-                encryptedPasswordInput.value = await encryptPasswordForSubmit(passwordInput.value);
-                passwordInput.value = '';
-                submitButton.click();
-            } catch (error) {
-                hideLoader();
-                encryptedPasswordInput.value = '';
-                submitButton.click();
-            }
-            return false;
-        }
-
-        window.addEventListener('load', function() {
-            if (sessionStorage.getItem('showingLoader') === 'true' && window.location.pathname.includes('login')) {
-                hideLoader();
-            }
-        });
+        function showLoader(){document.getElementById('loadingOverlay').classList.add('active');sessionStorage.setItem('showingLoader','true');}
+        function hideLoader(){sessionStorage.removeItem('showingLoader');document.getElementById('loadingOverlay').classList.remove('active');}
+        function decodeBase64ToUint8Array(v){const b=window.atob(v),bytes=new Uint8Array(b.length);for(let i=0;i<b.length;i++){bytes[i]=b.charCodeAt(i);}return bytes;}
+        function canEncryptPasswordInBrowser(){return Boolean(loginEncryptionPublicKey&&window.crypto&&window.crypto.subtle&&window.isSecureContext);}
+        async function encryptPasswordForSubmit(p){const key=await window.crypto.subtle.importKey('spki',decodeBase64ToUint8Array(loginEncryptionPublicKey).buffer,{name:'RSA-OAEP',hash:'SHA-256'},false,['encrypt']);const encrypted=await window.crypto.subtle.encrypt({name:'RSA-OAEP'},key,new TextEncoder().encode(p));let bin='';new Uint8Array(encrypted).forEach(function(x){bin+=String.fromCharCode(x);});return window.btoa(bin);}
+        async function encryptAndSubmitLogin(){const p=document.getElementById('form:password'),e=document.getElementById('form:encryptedPassword'),s=document.getElementById('form:encryptedSubmit');if(!p||!e||!s){window.alert('Login controls are not available. Refresh the page and try again.');return false;}if(!p.value){s.click();return false;}if(!canEncryptPasswordInBrowser()){e.value='';s.click();return false;}try{showLoader();e.value=await encryptPasswordForSubmit(p.value);p.value='';s.click();}catch(error){hideLoader();e.value='';s.click();}return false;}
+        window.addEventListener('load',function(){if(sessionStorage.getItem('showingLoader')==='true'&&window.location.pathname.includes('login')){hideLoader();}});
         //]]>
     </script>
 </h:body>

@@ -147,12 +147,17 @@
                                                  oncomplete="PF('manageBDDialog').show()"
                                                  styleClass="ui-button-success" style="margin-right: .5rem" />
                                 <p:spacer width="5"/>
-                                <p:autoComplete id="searchorglist" dropdown="true" value="#{bankDetailsBean.searchBDOrganizationName}"
-                                                completeMethod="#{bankDetailsBean.completeOrganization}"
-                                                scrollHeight="250">
-
-                                    <p:ajax event="itemSelect" listener="#{bankDetailsBean.onOrganizationSelect}"/>
-                                </p:autoComplete>
+                                <h:panelGroup rendered="#{bankDetailsBean.applicationAdmin}" layout="block">
+                                    <p:autoComplete id="searchorglist" dropdown="true" value="#{bankDetailsBean.searchBDOrganizationName}"
+                                                    completeMethod="#{bankDetailsBean.completeOrganization}"
+                                                    scrollHeight="250">
+                                        <p:ajax event="itemSelect" listener="#{bankDetailsBean.onOrganizationSelect}"/>
+                                    </p:autoComplete>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{not bankDetailsBean.applicationAdmin}" layout="block"
+                                              style="font-weight:700;padding:.5rem .25rem 0 .25rem;">
+                                    <h:outputText value="#{bankDetailsBean.currentOrganizationName}"/>
+                                </h:panelGroup>
                                 <p:spacer width="5"/>
                                 <p:commandButton value="#{msg['fetchBankDetailsLabel']}" icon="pi pi-search"
                                                  action="#{bankDetailsBean.searchButtonAction}"
@@ -214,11 +219,17 @@
 
                                     <div class="field">
                                         <p:outputLabel for="@next" value="#{msg['organizationNameLabel']}*"/>
-                                        <p:autoComplete id="orglist" dropdown="true" value="#{bankDetailsBean.bDOrganizationName}"
-                                                        completeMethod="#{bankDetailsBean.completeOrganization}"
-                                                        scrollHeight="250" onfocus="clearErrorStyles()">
-                                            <p:ajax event="itemSelect" listener="#{bankDetailsBean.onOrganizationSelect}"/>
-                                        </p:autoComplete>
+                                        <h:panelGroup rendered="#{bankDetailsBean.applicationAdmin}" layout="block">
+                                            <p:autoComplete id="orglist" dropdown="true" value="#{bankDetailsBean.bDOrganizationName}"
+                                                            completeMethod="#{bankDetailsBean.completeOrganization}"
+                                                            scrollHeight="250" onfocus="clearErrorStyles()">
+                                                <p:ajax event="itemSelect" listener="#{bankDetailsBean.onOrganizationSelect}"/>
+                                            </p:autoComplete>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{not bankDetailsBean.applicationAdmin}" layout="block"
+                                                      style="font-weight:700;padding-top:.6rem;">
+                                            <h:outputText value="#{bankDetailsBean.currentOrganizationName}"/>
+                                        </h:panelGroup>
 
 
                                     </div>

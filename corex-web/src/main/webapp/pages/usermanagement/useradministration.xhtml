@@ -23,11 +23,60 @@
 
     <ui:define name="head">
         <h:outputStylesheet name="css/flags/flags.css" library="demo"/>
+        <style type="text/css">
+            .user-dialog .ui-dialog-content {
+                max-height: 72vh;
+                overflow-y: auto;
+            }
+
+            .user-avatar-help {
+                margin-top: .5rem;
+                color: #64748b;
+                font-size: .85rem;
+            }
+
+            .user-avatar-panel {
+                display: flex;
+                flex-direction: column;
+                gap: .85rem;
+                align-items: flex-start;
+                max-width: 100%;
+            }
+
+            .user-avatar-cropper {
+                max-width: min(100%, 280px);
+                overflow: hidden;
+                border: 1px solid #dbe2ea;
+                border-radius: 14px;
+                background: #f8fafc;
+                padding: .5rem;
+            }
+
+            .user-avatar-preview {
+                width: 96px;
+                height: 96px;
+                border-radius: 18px;
+                object-fit: cover;
+                border: 1px solid #dbe2ea;
+            }
+
+            .user-avatar-empty {
+                width: 96px;
+                height: 96px;
+                border-radius: 18px;
+                border: 1px dashed #cbd5e1;
+                background: #f8fafc;
+                color: #64748b;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        </style>
     </ui:define>
 
     <ui:define name="content">
         <f:event listener="#{userAdministrationBean.initializePageAttributes}" type="preRenderComponent"/>
-        <h:form id="userform">
+        <h:form id="userform" enctype="multipart/form-data">
             <div class="col-12">
                 <p:breadCrumb>
                     <p:menuitem url="#" icon="pi pi-home"/>
@@ -119,7 +168,7 @@
                             <p:dataTable id="usersDataTableId" widgetVar="countDataTable" var="user"
                                          value="#{userAdministrationBean.usersList}"
                                          reflow="true" styleClass="commoncrud-table"
-                                         rowKey="#{user.id}" paginator="true" rows="10" paginatorPosition="bottom">
+                                         rowKey="#{user.userId}" paginator="true" rows="10" paginatorPosition="bottom">
                                 <f:facet name="header">
                                     <div class="products-table-header">
                                         <span style="font-weight: bold">Search Users</span>
@@ -134,6 +183,17 @@
                                 <p:column headerText="userName" sortBy="#{user.userName}" filterBy="#{user.userName}">
                                     <h:outputText value="#{user.userName}"/>
                                 </p:column>
+                                <p:column headerText="Image">
+                                    <h:panelGroup rendered="#{not empty user.profileImage}">
+                                        <h:graphicImage value="data:#{user.profileImageContentType};base64,#{userAdministrationBean.encodeImage(user.profileImage)}"
+                                                        style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{empty user.profileImage}">
+                                        <div style="width:40px;height:40px;border-radius:50%;background:#e2e8f0;color:#475569;display:flex;align-items:center;justify-content:center;">
+                                            <i class="pi pi-user"></i>
+                                        </div>
+                                    </h:panelGroup>
+                                </p:column>
                                 <p:column headerText="User Login Status">
                                     <p:tag value="#{user.status == 1 ? 'Logged In' : user.status == 6 ? 'Logged Out' : user.status == 3 ? 'Never Logged In' : 'Unknown'}"
                                     rounded="true" severity="#{user.status == 1 ? 'success' : user.status == 6 ? 'danger' : user.status == 3 ? 'warning' : 'info'}"/>
@@ -143,17 +203,18 @@
                                 </p:column>
                                 <p:column headerText="roleName" sortBy="#{user.role.roleName}"
                                           filterBy="#{user.role.roleName}">
-                                    <h:outputText value="#{user.role.roleName}"/>
+                                    <h:outputText value="#{empty user.role ? '-' : user.role.roleName}"/>
                                 </p:column>
                                 <p:column headerText="organization" sortBy="#{user.organization.organizationName}"
                                           filterBy="#{user.organization.organizationName}">
-                                    <h:outputText value="#{user.organization.organizationName}"/>
+                                    <h:outputText value="#{empty user.organization ? 'Application Admin' : user.organization.organizationName}"/>
                                 </p:column>
                                 <p:column headerText="name" sortBy="#{user.country.name}"
                                           filterBy="#{user.country.name}">
                                     <span class="flag flag-#{user.country.iso2.toLowerCase()}"
+                                          rendered="#{not empty user.country and not empty user.country.iso2}"
                                           style="width: 30px; height: 20px"/>
-                                    <h:outputText value="#{user.country.name}"/>
+                                    <h:outputText value="#{empty user.country ? '-' : user.country.name}"/>
                                 </p:column>
 
                                 <p:column exportable="false">
@@ -179,7 +240,9 @@
                                   modal="true"
                                   widgetVar="ManageUserDialog"
                                   responsive="true"
-                                  width="85%">
+                                  fitViewport="true"
+                                  styleClass="user-dialog"
+                                  width="75vw">
 
                             <p:panelGrid id="addEditCountPanelId"
                                          columns="4"
@@ -187,27 +250,36 @@
                                          layout="grid"
                                          styleClass="ui-panelgrid-blank ui-fluid"
                                          style="border:0px none; background-color:transparent;">
+                                <input type="text" name="fake_user_admin_username" autocomplete="username" style="display:none;" aria-hidden="true"/>
+                                <input type="password" name="fake_user_admin_password" autocomplete="new-password" style="display:none;" aria-hidden="true"/>
                                 <p:outputLabel for="@next" value="User Name*"/>
-                                <p:inputText id="name" value="#{userAdministrationBean.userName}"/>
+                                <p:inputText id="name" value="#{userAdministrationBean.userName}" autocomplete="off"/>
 
                                 <p:outputLabel for="@next" value="Password*"/>
                                 <p:password id="pwd1" value="#{userAdministrationBean.password}" match="pwd2"
-                                            label="Password" required="true" toggleMask="true" redisplay="true"/>
+                                            label="Password" required="true" toggleMask="true" redisplay="true"
+                                            autocomplete="new-password"/>
 
                                 <p:outputLabel for="@next" value="Confirm Password*"/>
                                 <p:password id="pwd2" value="#{userAdministrationBean.password}"
                                             label="Confirm Password" required="true" toggleMask="true"
-                                            redisplay="true"/>
+                                            redisplay="true" autocomplete="new-password"/>
 
                                 <p:outputLabel for="@next" value="Organization*"/>
-                                <p:autoComplete id="orglist"
-                                                dropdown="true"
-                                                value="#{userAdministrationBean.organization}"
-                                                completeMethod="#{userAdministrationBean.completeOrganization}"
-                                                scrollHeight="250">
-                                    <p:ajax event="itemSelect" listener="#{userAdministrationBean.onOrgSelect}"
-                                            update="branchlist"/>
-                                </p:autoComplete>
+                                <h:panelGroup rendered="#{userAdministrationBean.applicationAdmin}" layout="block">
+                                    <p:autoComplete id="orglist"
+                                                    dropdown="true"
+                                                    value="#{userAdministrationBean.organization}"
+                                                    completeMethod="#{userAdministrationBean.completeOrganization}"
+                                                    scrollHeight="250">
+                                        <p:ajax event="itemSelect" listener="#{userAdministrationBean.onOrgSelect}"
+                                                update="branchlist"/>
+                                    </p:autoComplete>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{not userAdministrationBean.applicationAdmin}" layout="block"
+                                              style="font-weight:700;padding-top:.6rem;">
+                                    <h:outputText value="#{userAdministrationBean.currentOrganizationName}"/>
+                                </h:panelGroup>
 
                                 <p:outputLabel for="@next" value="Branch*"/>
                                 <p:autoComplete id="branchlist"
@@ -266,6 +338,65 @@
 
                                 <p:outputLabel for="@next" value="Address*"/>
                                 <p:inputText id="address" value="#{userAdministrationBean.address}"/>
+
+                                <p:outputLabel for="@next" value="Profile Image"/>
+                                <h:panelGroup layout="block" styleClass="user-avatar-panel">
+                                    <p:fileUpload id="profileImage"
+                                                  mode="advanced"
+                                                  auto="true"
+                                                  multiple="false"
+                                                  dragDropSupport="false"
+                                                  update="messages cropperPanel imagePreviewPanel"
+                                                  listener="#{userAdministrationBean.handleProfileImageUpload}"
+                                                  sizeLimit="2097152"
+                                                  invalidSizeMessage="Profile image must be 2 MB or smaller."
+                                                  accept=".jpeg,.jpg,.png,.gif,image/*"/>
+                                    <div class="user-avatar-help">
+                                        Crop to a square avatar. Saved size: #{userAdministrationBean.avatarImageSize} x #{userAdministrationBean.avatarImageSize} px.
+                                    </div>
+                                    <div>
+                                        <h:selectBooleanCheckbox id="removeImage" value="#{userAdministrationBean.removeProfileImage}"/>
+                                        <h:outputLabel for="removeImage" value=" Remove existing image"/>
+                                    </div>
+                                </h:panelGroup>
+
+                                <p:outputLabel value="Crop"/>
+                                <p:outputPanel id="cropperPanel" styleClass="user-avatar-panel">
+                                    <h:panelGroup rendered="#{not empty userAdministrationBean.uploadedProfileImage}">
+                                        <div class="user-avatar-cropper">
+                                            <p:imageCropper value="#{userAdministrationBean.croppedProfileImage}"
+                                                            image="#{userAdministrationBean.uploadedProfileImage}"
+                                                            aspectRatio="1"
+                                                            minSize="160,160"
+                                                            boxWidth="240"
+                                                            boxHeight="240"
+                                                            cache="false"
+                                                            responsive="true"
+                                                            viewMode="1"/>
+                                        </div>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{empty userAdministrationBean.uploadedProfileImage}">
+                                        <div style="color:#64748b;font-size:.9rem;">Upload an image to adjust the crop area before saving.</div>
+                                    </h:panelGroup>
+                                </p:outputPanel>
+
+                                <p:outputLabel value="Preview"/>
+                                <h:panelGroup id="imagePreviewPanel" layout="block">
+                                    <h:panelGroup rendered="#{not empty userAdministrationBean.uploadedProfileImage and empty userAdministrationBean.croppedProfileImage and not userAdministrationBean.removeProfileImage}">
+                                        <p:graphicImage value="#{userAdministrationBean.uploadedProfileImage}"
+                                                        cache="false"
+                                                        styleClass="user-avatar-preview"/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{not empty userAdministrationBean.selectedProfileImageDataUrl}">
+                                        <h:graphicImage value="#{userAdministrationBean.selectedProfileImageDataUrl}"
+                                                        styleClass="user-avatar-preview"/>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{empty userAdministrationBean.selectedProfileImageDataUrl and (empty userAdministrationBean.uploadedProfileImage or userAdministrationBean.removeProfileImage)}">
+                                        <div class="user-avatar-empty">
+                                            <i class="pi pi-user" style="font-size:1.8rem;"></i>
+                                        </div>
+                                    </h:panelGroup>
+                                </h:panelGroup>
 
                             </p:panelGrid>
                             <f:facet name="footer">

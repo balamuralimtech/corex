@@ -46,6 +46,9 @@ public class UserDetails implements Serializable {
     @Column(name = "email_id", unique = true, nullable = false)
     private String emailId;
 
+    @Column(name = "user_type", nullable = false)
+    private String userType = "GENERAL_USER";
+
     @Column(name = "contact")
     private String contact;
 
@@ -105,6 +108,14 @@ public class UserDetails implements Serializable {
     @Column(name = "last_session_id")
     private String lastSessionId;
 
+    @Lob
+    @Basic(fetch = FetchType.EAGER)
+    @Column(name = "profile_image")
+    private byte[] profileImage;
+
+    @Column(name = "profile_image_content_type")
+    private String profileImageContentType;
+
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private Timestamp createdAt;
 
@@ -145,6 +156,14 @@ public class UserDetails implements Serializable {
 
     public void setEmailId(String emailId) {
         this.emailId = emailId;
+    }
+
+    public String getUserType() {
+        return userType;
+    }
+
+    public void setUserType(String userType) {
+        this.userType = userType;
     }
 
     public String getContact() {
@@ -293,6 +312,22 @@ public class UserDetails implements Serializable {
 
     public void setLastSessionId(String lastSessionId) {
         this.lastSessionId = lastSessionId;
+    }
+
+    public byte[] getProfileImage() {
+        return profileImage;
+    }
+
+    public void setProfileImage(byte[] profileImage) {
+        this.profileImage = profileImage;
+    }
+
+    public String getProfileImageContentType() {
+        return profileImageContentType;
+    }
+
+    public void setProfileImageContentType(String profileImageContentType) {
+        this.profileImageContentType = profileImageContentType;
     }
 
     @PrePersist

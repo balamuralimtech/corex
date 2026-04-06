@@ -12,6 +12,7 @@ import com.persist.carex.clinicmanagement.Medicine;
 import com.persist.carex.clinicmanagement.Patient;
 import com.persist.carex.settings.ClinicSettings;
 import com.persist.coretix.modal.systemmanagement.Organizations;
+import com.web.carex.appgeneral.CarexManagedBean;
 import org.springframework.context.annotation.Scope;
 
 import javax.faces.context.FacesContext;
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
 
 @Named("carexDashboardBean")
 @Scope("session")
-public class CarexDashboardBean implements Serializable {
+public class CarexDashboardBean extends CarexManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH);
@@ -72,10 +73,8 @@ public class CarexDashboardBean implements Serializable {
         if (facesContext != null && facesContext.isPostback() && initialized) {
             return;
         }
-        organizationList = new ArrayList<>(organizationService.getOrganizationsList());
-        if (selectedOrganizationId == null && !organizationList.isEmpty()) {
-            selectedOrganizationId = organizationList.get(0).getId();
-        }
+        organizationList = new ArrayList<>(getAccessibleOrganizations(organizationService));
+        selectedOrganizationId = resolveDefaultOrganizationId(organizationList, selectedOrganizationId);
         refreshDashboard();
         initialized = true;
     }
@@ -408,7 +407,7 @@ public class CarexDashboardBean implements Serializable {
     }
 
     public void setSelectedOrganizationId(Integer selectedOrganizationId) {
-        this.selectedOrganizationId = selectedOrganizationId;
+        this.selectedOrganizationId = resolveAccessibleOrganizationId(selectedOrganizationId);
     }
 
     public List<Organizations> getOrganizationList() {

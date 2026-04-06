@@ -54,8 +54,16 @@
                             rendered="#{guestPreferences.profileMode == 'overlay' or guestPreferences.horizontalMenuLayout}">
                         <li class="profile-item">
                             <a href="#">
-                                <p:graphicImage name="images/male.png" library="avalon-layout"
-                                                styleClass="profile-image" style="border: 0 none"/>
+                                <h:panelGroup rendered="#{not empty guestPreferences.topbarProfileImageSrc}">
+                                    <h:graphicImage value="#{guestPreferences.topbarProfileImageSrc}"
+                                                    styleClass="profile-image"
+                                                    style="border: 0 none; object-fit: cover; border-radius: 50%;"/>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{empty guestPreferences.topbarProfileImageSrc}">
+                                    <p:graphicImage name="images/male.png" library="avalon-layout"
+                                                    styleClass="profile-image"
+                                                    style="border: 0 none; border-radius: 50%;"/>
+                                </h:panelGroup>
                                 <span class="topbar-item-name">#{guestPreferences.userName}</span>
                             </a>
 

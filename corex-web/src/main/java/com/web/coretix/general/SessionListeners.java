@@ -18,7 +18,12 @@ package com.web.coretix.general;
 
 import com.web.coretix.constants.SessionAttributes;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
@@ -36,7 +41,7 @@ public class SessionListeners implements HttpSessionListener
 {
     private static final Logger logger = LoggerFactory.getLogger(SessionListeners.class);
 
-    private static Map sessionMap = new HashMap();
+    private static final Map<String, HttpSession> sessionMap = new java.util.concurrent.ConcurrentHashMap<>();
 
     /** Creates a new instance of SessionLifeCycleListener */
     public SessionListeners()
@@ -90,7 +95,7 @@ public class SessionListeners implements HttpSessionListener
      * This method is used to get active sessions
      * @return Set of active session Id's
      */
-    public static Set getActiveSessionIds()
+    public static Set<String> getActiveSessionIds()
     {
         return sessionMap.keySet();
     }
@@ -118,8 +123,8 @@ public class SessionListeners implements HttpSessionListener
 
         if (sessionMap != null && !sessionMap.isEmpty())
         {
-            for (Object sessionId : sessionMap.keySet()) {
-                HttpSession session = (HttpSession) sessionMap.get(sessionId);
+            for (String sessionId : sessionMap.keySet()) {
+                HttpSession session = sessionMap.get(sessionId);
                 if (session != null) {
                     userNameList.add((String) session.getAttribute(SessionAttributes.USERNAME.getName()));
                 }
@@ -134,8 +139,8 @@ public class SessionListeners implements HttpSessionListener
         List<HttpSession> activeSessions = new ArrayList<>();
         if (sessionMap != null && !sessionMap.isEmpty())
         {
-            for (Object sessionId : sessionMap.keySet()) {
-                HttpSession session = (HttpSession) sessionMap.get(sessionId);
+            for (String sessionId : sessionMap.keySet()) {
+                HttpSession session = sessionMap.get(sessionId);
                 if (session != null) {
                     activeSessions.add(session);
                 }
@@ -154,9 +159,37 @@ public class SessionListeners implements HttpSessionListener
         HttpSession httpSession = null;
         if (isActive(sessionId))
         {
-            httpSession = (HttpSession) sessionMap.get(sessionId);
+            httpSession = sessionMap.get(sessionId);
         }
         return httpSession;
+    }
+
+    public static boolean hasOtherActiveSessionsForUser(String userName, String excludedSessionId) {
+        return findAnotherActiveSessionIdForUser(userName, excludedSessionId) != null;
+    }
+
+    public static String findAnotherActiveSessionIdForUser(String userName, String excludedSessionId) {
+        if (userName == null || userName.trim().isEmpty()) {
+            return null;
+        }
+
+        Collection<HttpSession> activeSessions = sessionMap.values();
+        for (HttpSession activeSession : activeSessions) {
+            if (activeSession == null) {
+                continue;
+            }
+
+            if (excludedSessionId != null && excludedSessionId.equals(activeSession.getId())) {
+                continue;
+            }
+
+            Object sessionUserName = activeSession.getAttribute(SessionAttributes.USERNAME.getName());
+            if (userName.equals(sessionUserName)) {
+                return activeSession.getId();
+            }
+        }
+
+        return null;
     }
     
     public static void updateSessionMap(HttpSession session)

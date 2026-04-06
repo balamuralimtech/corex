@@ -220,12 +220,18 @@
                                          style="border:0px none; background-color:transparent;">
 
                                 <p:outputLabel for="orglist">Organization Name</p:outputLabel>
-                                <p:autoComplete id="orglist" 
-                                                dropdown="true" 
-                                                value="#{notificationSettingBean.organizationName}"
-                                                completeMethod="#{notificationSettingBean.completeOrganization}" 
-                                                scrollHeight="250"
-                                                onfocus="clearErrorStyles()"/>
+                                <h:panelGroup rendered="#{notificationSettingBean.applicationAdmin}" layout="block">
+                                    <p:autoComplete id="orglist" 
+                                                    dropdown="true" 
+                                                    value="#{notificationSettingBean.organizationName}"
+                                                    completeMethod="#{notificationSettingBean.completeOrganization}" 
+                                                    scrollHeight="250"
+                                                    onfocus="clearErrorStyles()"/>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{not notificationSettingBean.applicationAdmin}" layout="block"
+                                              style="font-weight:700;padding-top:.6rem;">
+                                    <h:outputText value="#{notificationSettingBean.currentOrganizationName}"/>
+                                </h:panelGroup>
 
                                 <p:outputLabel for="@next" value="#{msg['emailIDLabel']}"/>
                                 <p:inputText id="UserId" value="#{notificationSettingBean.emailId}" onfocus="clearErrorStyles()"/>

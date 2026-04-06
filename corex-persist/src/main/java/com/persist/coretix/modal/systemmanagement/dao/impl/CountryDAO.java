@@ -175,36 +175,27 @@ public class CountryDAO implements ICountryDAO {
 
     public Countries getCountry(int id) {
         Session session = getSessionFactory().getCurrentSession();
-        Transaction trans = session.beginTransaction();
-
         List<?> list = session
                 .createQuery("from Countries where id=?1").setParameter(1, id)
                 .list();
 
-        trans.commit();
-        return (Countries) list.get(0);
+        return list.isEmpty() ? null : (Countries) list.get(0);
     }
 
     public Countries getCountryEntityByCountryName(String countryName) {
         Session session = getSessionFactory().getCurrentSession();
-        Transaction trans = session.beginTransaction();
-
         List<?> list = session
                 .createQuery("from Countries where name=?1").setParameter(1, countryName)
                 .list();
 
-        trans.commit();
-        return (Countries) list.get(0);
+        return list.isEmpty() ? null : (Countries) list.get(0);
     }
     
     public List<Countries> getCountriesList() {
         Session session = getSessionFactory().getCurrentSession();
-        Transaction trans = session.beginTransaction();
-
         @SuppressWarnings("unchecked")
         List<Countries> list = (List<Countries>) session.createQuery("from Countries").list();
 
-        trans.commit();
         return list;
     }
 }

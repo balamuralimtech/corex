@@ -8,6 +8,7 @@ import com.persist.carex.settings.ClinicSettings;
 import com.persist.carex.settings.InvoiceSettings;
 import com.persist.coretix.modal.constants.GeneralConstants;
 import com.persist.coretix.modal.systemmanagement.Organizations;
+import com.web.carex.appgeneral.CarexManagedBean;
 import org.primefaces.PrimeFaces;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -35,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 
 @Named("invoiceSettingsBean")
 @Scope("session")
-public class InvoiceSettingsBean implements Serializable {
+public class InvoiceSettingsBean extends CarexManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -62,9 +63,7 @@ public class InvoiceSettingsBean implements Serializable {
             return;
         }
         loadOrganizations();
-        if (selectedOrganizationId == null) {
-            selectedOrganizationId = resolveCurrentOrganizationId();
-        }
+        selectedOrganizationId = resolveDefaultOrganizationId(organizationList, selectedOrganizationId);
         loadInvoiceSettings();
         initialized = true;
     }
@@ -144,7 +143,7 @@ public class InvoiceSettingsBean implements Serializable {
     }
 
     public void setSelectedOrganizationId(Integer selectedOrganizationId) {
-        this.selectedOrganizationId = selectedOrganizationId;
+        this.selectedOrganizationId = resolveAccessibleOrganizationId(selectedOrganizationId);
     }
 
     public String getDownloadPreviewBodyHtml() {
@@ -241,7 +240,7 @@ public class InvoiceSettingsBean implements Serializable {
     }
 
     private void loadOrganizations() {
-        organizationList = new ArrayList<>(organizationService.getOrganizationsList());
+        organizationList = new ArrayList<>(getAccessibleOrganizations(organizationService));
     }
 
     private Organizations getSelectedOrganizationEntity() {
@@ -459,16 +458,6 @@ public class InvoiceSettingsBean implements Serializable {
             normalized = "#" + normalized;
         }
         return normalized.matches("^#[0-9A-Fa-f]{6}$") ? normalized.toUpperCase() : fallback;
-    }
-
-    private Integer resolveCurrentOrganizationId() {
-        FacesContext facesContext = FacesContext.getCurrentInstance();
-        if (facesContext == null) {
-            return null;
-        }
-        Map<String, Object> sessionMap = facesContext.getExternalContext().getSessionMap();
-        Object organizationId = sessionMap.get("organizationId");
-        return organizationId instanceof Integer ? (Integer) organizationId : null;
     }
 
     private UserActivityTO populateUserActivityTO() {

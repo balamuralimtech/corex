@@ -8,6 +8,7 @@ import com.persist.carex.settings.ClinicSettings;
 import com.persist.coretix.modal.constants.GeneralConstants;
 import com.persist.coretix.modal.systemmanagement.CurrencyDetails;
 import com.persist.coretix.modal.systemmanagement.Organizations;
+import com.web.carex.appgeneral.CarexManagedBean;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.PrimeFaces;
 import org.primefaces.model.DefaultStreamedContent;
@@ -32,7 +33,7 @@ import java.util.stream.Collectors;
 
 @Named("clinicSettingsBean")
 @Scope("session")
-public class ClinicSettingsBean implements Serializable {
+public class ClinicSettingsBean extends CarexManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -59,9 +60,7 @@ public class ClinicSettingsBean implements Serializable {
         }
         loadOrganizations();
         loadCurrencies();
-        if (selectedOrganizationId == null) {
-            selectedOrganizationId = resolveCurrentOrganizationId();
-        }
+        selectedOrganizationId = resolveDefaultOrganizationId(organizationList, selectedOrganizationId);
         loadClinicSettings();
         initialized = true;
     }
@@ -145,7 +144,7 @@ public class ClinicSettingsBean implements Serializable {
     }
 
     public void setSelectedOrganizationId(Integer selectedOrganizationId) {
-        this.selectedOrganizationId = selectedOrganizationId;
+        this.selectedOrganizationId = resolveAccessibleOrganizationId(selectedOrganizationId);
     }
 
     public String getSelectedBaseCurrencyDisplay() {
@@ -217,7 +216,7 @@ public class ClinicSettingsBean implements Serializable {
     }
 
     private void loadOrganizations() {
-        organizationList = new ArrayList<>(organizationService.getOrganizationsList());
+        organizationList = new ArrayList<>(getAccessibleOrganizations(organizationService));
     }
 
     private void loadCurrencies() {
@@ -381,16 +380,6 @@ public class ClinicSettingsBean implements Serializable {
             return "image/gif";
         }
         return "image/png";
-    }
-
-    private Integer resolveCurrentOrganizationId() {
-        FacesContext facesContext = FacesContext.getCurrentInstance();
-        if (facesContext == null) {
-            return null;
-        }
-        Map<String, Object> sessionMap = facesContext.getExternalContext().getSessionMap();
-        Object organizationId = sessionMap.get("organizationId");
-        return organizationId instanceof Integer ? (Integer) organizationId : null;
     }
 
     private UserActivityTO populateUserActivityTO() {

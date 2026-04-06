@@ -8,6 +8,7 @@ import com.persist.carex.clinicmanagement.Consultation;
 import com.persist.carex.clinicmanagement.Patient;
 import com.persist.carex.settings.ClinicSettings;
 import com.persist.coretix.modal.systemmanagement.Organizations;
+import com.web.carex.appgeneral.CarexManagedBean;
 import org.springframework.context.annotation.Scope;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -32,7 +33,7 @@ import java.util.stream.Collectors;
 
 @Named("revenueReportBean")
 @Scope("session")
-public class RevenueReportBean implements Serializable {
+public class RevenueReportBean extends CarexManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final DateTimeFormatter DATE_LABEL_FORMATTER = DateTimeFormatter.ofPattern("dd MMM yyyy", Locale.ENGLISH);
@@ -66,10 +67,8 @@ public class RevenueReportBean implements Serializable {
         if (facesContext != null && facesContext.isPostback() && initialized) {
             return;
         }
-        organizationList = new ArrayList<>(organizationService.getOrganizationsList());
-        if (selectedOrganizationId == null) {
-            selectedOrganizationId = resolveCurrentOrganizationId();
-        }
+        organizationList = new ArrayList<>(getAccessibleOrganizations(organizationService));
+        selectedOrganizationId = resolveDefaultOrganizationId(organizationList, selectedOrganizationId);
         onOrganizationChange();
         initialized = true;
     }
@@ -289,7 +288,7 @@ public class RevenueReportBean implements Serializable {
     }
 
     public void setSelectedOrganizationId(Integer selectedOrganizationId) {
-        this.selectedOrganizationId = selectedOrganizationId;
+        this.selectedOrganizationId = resolveAccessibleOrganizationId(selectedOrganizationId);
     }
 
     public Integer getSelectedPatientId() {
@@ -354,15 +353,6 @@ public class RevenueReportBean implements Serializable {
     private LocalDate resolveReferenceDate() {
         Date source = reportReferenceDate == null ? new Date() : reportReferenceDate;
         return source.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-    }
-
-    private Integer resolveCurrentOrganizationId() {
-        FacesContext facesContext = FacesContext.getCurrentInstance();
-        if (facesContext == null) {
-            return null;
-        }
-        Object organizationId = facesContext.getExternalContext().getSessionMap().get("organizationId");
-        return organizationId instanceof Integer ? (Integer) organizationId : null;
     }
 
     private ClinicSettings fallbackClinicSettings(ClinicSettings settings) {

@@ -6,6 +6,7 @@ import com.module.coretix.systemmanagement.IOrganizationService;
 import com.persist.carex.clinicmanagement.Patient;
 import com.persist.coretix.modal.constants.GeneralConstants;
 import com.persist.coretix.modal.systemmanagement.Organizations;
+import com.web.carex.appgeneral.CarexManagedBean;
 import org.primefaces.PrimeFaces;
 import org.springframework.context.annotation.Scope;
 
@@ -23,7 +24,7 @@ import java.util.Map;
 
 @Named("patientBean")
 @Scope("session")
-public class PatientBean implements Serializable {
+public class PatientBean extends CarexManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -49,10 +50,8 @@ public class PatientBean implements Serializable {
         if (facesContext != null && facesContext.isPostback() && initialized) {
             return;
         }
-        organizationList = new ArrayList<>(organizationService.getOrganizationsList());
-        if (selectedOrganizationId == null) {
-            selectedOrganizationId = resolveCurrentOrganizationId();
-        }
+        organizationList = new ArrayList<>(getAccessibleOrganizations(organizationService));
+        selectedOrganizationId = resolveDefaultOrganizationId(organizationList, selectedOrganizationId);
         if (formOrganizationId == null) {
             formOrganizationId = selectedOrganizationId;
         }
@@ -175,9 +174,9 @@ public class PatientBean implements Serializable {
     public Patient getSelectedPatient() { return selectedPatient; }
     public void setSelectedPatient(Patient selectedPatient) { this.selectedPatient = selectedPatient; }
     public Integer getSelectedOrganizationId() { return selectedOrganizationId; }
-    public void setSelectedOrganizationId(Integer selectedOrganizationId) { this.selectedOrganizationId = selectedOrganizationId; }
+    public void setSelectedOrganizationId(Integer selectedOrganizationId) { this.selectedOrganizationId = resolveAccessibleOrganizationId(selectedOrganizationId); }
     public Integer getFormOrganizationId() { return formOrganizationId; }
-    public void setFormOrganizationId(Integer formOrganizationId) { this.formOrganizationId = formOrganizationId; }
+    public void setFormOrganizationId(Integer formOrganizationId) { this.formOrganizationId = resolveAccessibleOrganizationId(formOrganizationId); }
     public java.util.Date getPatientDateOfBirth() { return patientDateOfBirth; }
     public void setPatientDateOfBirth(java.util.Date patientDateOfBirth) { this.patientDateOfBirth = patientDateOfBirth; }
     public boolean isAddOperation() { return addOperation; }
@@ -242,15 +241,6 @@ public class PatientBean implements Serializable {
         userActivityTO.setLocationInfo((String) sessionMap.get("browserClientInfo"));
         userActivityTO.setCreatedAt(new java.util.Date());
         return userActivityTO;
-    }
-
-    private Integer resolveCurrentOrganizationId() {
-        FacesContext facesContext = FacesContext.getCurrentInstance();
-        if (facesContext == null) {
-            return null;
-        }
-        Object organizationId = facesContext.getExternalContext().getSessionMap().get("organizationId");
-        return organizationId instanceof Integer ? (Integer) organizationId : null;
     }
 
     private boolean isBlank(String value) {

@@ -24,6 +24,7 @@ public class ClinicSettingsService implements IClinicSettingsService {
     private UserActivityDAO userActivityDAO;
 
     @Override
+    @Transactional(readOnly = false)
     public GeneralConstants saveClinicSettings(UserActivityTO userActivityTO, ClinicSettings clinicSettings) {
         GeneralConstants result = clinicSettingsDAO.saveClinicSettings(clinicSettings);
         userActivityTO.setActivityDescription("Save clinic settings - (" + resolveOrganizationName(clinicSettings) + ") - " + result.getName());

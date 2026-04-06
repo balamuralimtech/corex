@@ -86,8 +86,13 @@ public final class SessionAuditSupport {
 
         try {
             UserActivities userActivity = buildTerminationActivity(session, terminationReason);
+            String survivingSessionId = SessionListeners.findAnotherActiveSessionIdForUser(userName, session.getId());
+            int persistedStatus = survivingSessionId == null
+                    ? status.getId()
+                    : LoginConstants.SUCCESSFUL_LOGIN.getId();
             getUserActivityService(session.getServletContext()).addUserActivity(userActivity);
-            getUserAdministrationService(session.getServletContext()).markLogout(userId, status.getId(), session.getId());
+            getUserAdministrationService(session.getServletContext())
+                    .markLogout(userId, persistedStatus, survivingSessionId == null ? session.getId() : survivingSessionId);
             session.setAttribute(SessionAttributes.SESSION_AUDIT_COMPLETED.getName(), Boolean.TRUE);
             session.setAttribute(SessionAttributes.SESSION_TERMINATION_REASON.getName(), terminationReason);
         } catch (Exception ex) {

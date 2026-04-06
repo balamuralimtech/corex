@@ -305,6 +305,13 @@ public class OrganizationBean extends GenericManagedBean implements Serializable
     }
 
     public void saveOrganization() {
+        if (!isApplicationAdmin() && isAddOperation) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, resourceBundle.getString("errorLabel"),
+                            "Only application admins can create organizations."));
+            PrimeFaces.current().ajax().update("form:messages");
+            return;
+        }
 
         logger.debug("Inside save organization method ");
         logger.debug("organizationName : " + organizationName);
@@ -539,7 +546,7 @@ public class OrganizationBean extends GenericManagedBean implements Serializable
             logger.debug("inside fetchOrganizationList clear");
             organizationList.clear();
         }
-        organizationList.addAll(organizationService.getOrganizationsList());
+        organizationList.addAll(getAccessibleOrganizations(organizationService));
 
         if (CollectionUtils.isNotEmpty(organizationList)) {
             logger.debug("organizationList.size() : " + organizationList.size());

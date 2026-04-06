@@ -22,12 +22,18 @@
                     </div>
                     <div class="surface-100 border-round px-3 py-2">
                         <label for="organizationFilter"><strong>Organization:</strong></label>
-                        <p:selectOneMenu id="organizationFilter" value="#{medicineBean.selectedOrganizationId}" style="display:block;min-width:18rem;margin-top:.35rem;">
-                            <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
-                            <f:selectItems value="#{medicineBean.organizationList}" var="organization"
-                                           itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
-                            <p:ajax listener="#{medicineBean.onOrganizationChange}" update="form:medicineMainPanel form:messages" process="@this"/>
-                        </p:selectOneMenu>
+                        <h:panelGroup rendered="#{medicineBean.applicationAdmin}" layout="block">
+                            <p:selectOneMenu id="organizationFilter" value="#{medicineBean.selectedOrganizationId}" style="display:block;min-width:18rem;margin-top:.35rem;">
+                                <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{medicineBean.organizationList}" var="organization"
+                                               itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
+                                <p:ajax listener="#{medicineBean.onOrganizationChange}" update="form:medicineMainPanel form:messages" process="@this"/>
+                            </p:selectOneMenu>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{not medicineBean.applicationAdmin}" layout="block"
+                                      style="margin-top:.45rem;font-weight:700;">
+                            <h:outputText value="#{medicineBean.currentOrganizationName}"/>
+                        </h:panelGroup>
                     </div>
                 </div>
 
@@ -114,12 +120,18 @@
                     <div class="grid">
                         <div class="col-12">
                             <label>Organization *</label>
-                            <p:selectOneMenu value="#{medicineBean.formOrganizationId}" style="width:100%;">
-                                <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
-                                <f:selectItems value="#{medicineBean.organizationList}" var="organization"
-                                               itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
-                                <p:ajax listener="#{medicineBean.onFormOrganizationChange}" process="@this" update="form:medicineDialogPanel"/>
-                            </p:selectOneMenu>
+                            <h:panelGroup rendered="#{medicineBean.applicationAdmin}" layout="block">
+                                <p:selectOneMenu value="#{medicineBean.formOrganizationId}" style="width:100%;">
+                                    <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                    <f:selectItems value="#{medicineBean.organizationList}" var="organization"
+                                                   itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
+                                    <p:ajax listener="#{medicineBean.onFormOrganizationChange}" process="@this" update="form:medicineDialogPanel"/>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{not medicineBean.applicationAdmin}" layout="block"
+                                          style="font-weight:700;padding-top:.6rem;">
+                                <h:outputText value="#{medicineBean.currentOrganizationName}"/>
+                            </h:panelGroup>
                         </div>
                         <div class="col-12 md:col-4">
                             <label>Medicine Code *</label>

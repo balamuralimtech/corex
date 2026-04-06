@@ -176,47 +176,35 @@ public class StateDAO implements IStateDAO {
 
     public States getState(int id) {
         Session session = getSessionFactory().getCurrentSession();
-        Transaction trans = session.beginTransaction();
-
         List<?> list = session
                 .createQuery("from States where id=?1").setParameter(1, id)
                 .list();
 
-        trans.commit();
         return list.isEmpty() ? null : (States) list.get(0);
     }
 
     public States getStateEntityByStateName(String stateName) {
         Session session = getSessionFactory().getCurrentSession();
-        Transaction trans = session.beginTransaction();
-
         List<?> list = session
                 .createQuery("from States where name=?1").setParameter(1, stateName)
                 .list();
 
-        trans.commit();
-        return (States) list.get(0);
+        return list.isEmpty() ? null : (States) list.get(0);
     }
 
     public List<States> getStatesList() {
         Session session = getSessionFactory().getCurrentSession();
-        Transaction trans = session.beginTransaction();
-
         @SuppressWarnings("unchecked")
         List<States> list = (List<States>) session.createQuery("from States").list();
 
-        trans.commit();
         return list;
     }
     
     public List<States> getStatesListByCountryId(int countryId) {
         Session session = getSessionFactory().getCurrentSession();
-        Transaction trans = session.beginTransaction();
-
         @SuppressWarnings("unchecked")
         List<States> list = (List<States>) session.createQuery("from States where country_id=?1").setParameter(1, countryId).list();
 
-        trans.commit();
         return list;
     }
 

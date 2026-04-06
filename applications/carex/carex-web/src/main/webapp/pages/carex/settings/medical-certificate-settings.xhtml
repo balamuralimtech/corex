@@ -48,11 +48,17 @@
                     </div>
                     <div class="surface-100 border-round px-3 py-2">
                         <label for="organizationSelect"><strong>Organization:</strong></label>
-                        <p:selectOneMenu id="organizationSelect" value="#{medicalCertificateSettingsBean.selectedOrganizationId}" style="display:block;min-width:18rem;margin-top:.35rem;">
-                            <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
-                            <f:selectItems value="#{medicalCertificateSettingsBean.organizationList}" var="organization" itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
-                            <p:ajax listener="#{medicalCertificateSettingsBean.onOrganizationChange}" process="@this" update="form:medicalCertificateSettingsPanel form:messages"/>
-                        </p:selectOneMenu>
+                        <h:panelGroup rendered="#{medicalCertificateSettingsBean.applicationAdmin}" layout="block">
+                            <p:selectOneMenu id="organizationSelect" value="#{medicalCertificateSettingsBean.selectedOrganizationId}" style="display:block;min-width:18rem;margin-top:.35rem;">
+                                <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{medicalCertificateSettingsBean.organizationList}" var="organization" itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
+                                <p:ajax listener="#{medicalCertificateSettingsBean.onOrganizationChange}" process="@this" update="form:medicalCertificateSettingsPanel form:messages"/>
+                            </p:selectOneMenu>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{not medicalCertificateSettingsBean.applicationAdmin}" layout="block"
+                                      style="margin-top:.45rem;font-weight:700;">
+                            <h:outputText value="#{medicalCertificateSettingsBean.currentOrganizationName}"/>
+                        </h:panelGroup>
                     </div>
                 </div>
 

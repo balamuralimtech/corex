@@ -16,7 +16,9 @@
  */
 package com.web.coretix.appgeneral;
 
+import com.module.coretix.systemmanagement.IOrganizationService;
 import com.module.coretix.usermanagement.IRoleAdministrationService;
+import com.persist.coretix.modal.systemmanagement.Organizations;
 import com.persist.coretix.modal.usermanagement.RolePrivileges;
 import com.web.coretix.applicationConstants.ApplicationSessionAttributes;
 import java.io.File;
@@ -31,6 +33,11 @@ import javax.servlet.http.HttpSession;
 import com.web.coretix.constants.CoreAppModule;
 import com.web.coretix.constants.RolePrivilegeConstants;
 import com.web.coretix.constants.SessionAttributes;
+import com.web.coretix.constants.UserManagementModule;
+import com.web.coretix.constants.UserTypeConstants;
+import com.web.coretix.constants.SystemManagementModule;
+import com.web.coretix.constants.LicenseManagementModule;
+import com.web.coretix.constants.ServerAndDBModule;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -184,6 +191,9 @@ public class GenericManagedBean
      */
     public int fetchCurrentUserRoleId()
     {
+        if (isApplicationAdmin()) {
+            return 0;
+        }
         int roleId = 0;
         HttpSession httpSession = getHttpSession();
         if (httpSession != null)
@@ -192,6 +202,41 @@ public class GenericManagedBean
         }
         logger.trace("[PL] - User account ID: " + roleId);
         return roleId;
+    }
+
+    public String fetchCurrentUserType()
+    {
+        HttpSession httpSession = getHttpSession();
+        if (httpSession == null) {
+            return UserTypeConstants.GENERAL_USER.getValue();
+        }
+
+        Object userType = httpSession.getAttribute(SessionAttributes.USER_TYPE.getName());
+        return userType instanceof String ? (String) userType : UserTypeConstants.GENERAL_USER.getValue();
+    }
+
+    public boolean isApplicationAdmin() {
+        return UserTypeConstants.APPLICATION_ADMIN == UserTypeConstants.fromValue(fetchCurrentUserType());
+    }
+
+    public Integer fetchCurrentOrganizationId() {
+        HttpSession httpSession = getHttpSession();
+        if (httpSession == null) {
+            return null;
+        }
+
+        Object organizationId = httpSession.getAttribute(SessionAttributes.ORGANIZATION_ID.getName());
+        return organizationId instanceof Integer ? (Integer) organizationId : null;
+    }
+
+    public String getCurrentOrganizationName() {
+        HttpSession httpSession = getHttpSession();
+        if (httpSession == null) {
+            return "";
+        }
+
+        Object organizationName = httpSession.getAttribute(SessionAttributes.ORGANIZATION_NAME.getName());
+        return organizationName instanceof String ? (String) organizationName : "";
     }
 
 
@@ -203,14 +248,15 @@ public class GenericManagedBean
     public HttpSession getHttpSession()
     {
         FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null) {
+            return null;
+        }
         HttpSession httpSession = (HttpSession) facesContext.getExternalContext().getSession(false);
         if (httpSession != null)
         {
             if (httpSession.getAttribute(SessionAttributes.USERNAME.getName()) == null)
             {
-                logger.info("[PL] - Generic Managed Bean User login name does not exist in this session. Navigating to the session expired page...");
-                facesContext.getApplication().getNavigationHandler().handleNavigation(facesContext, "",
-                        "session_expired");
+                logger.info("[PL] - Generic Managed Bean user session is missing the username attribute.");
                 return null;
             }
             else
@@ -225,6 +271,10 @@ public class GenericManagedBean
     {
         logger.debug("[PL] - Generic Managed Bean Role module list");
         List<CoreAppModule> roleModuleList = new ArrayList<>();
+        if (isApplicationAdmin()) {
+            roleModuleList.addAll(Arrays.asList(CoreAppModule.values()));
+            return roleModuleList;
+        }
         List<Integer> moduleList = roleAdministrationService.getModulesByRoleId(fetchCurrentUserRoleId());
         logger.debug("moduleList : "+moduleList);
         if (CollectionUtils.isNotEmpty(moduleList)){
@@ -244,6 +294,21 @@ public class GenericManagedBean
      */
     public List<Integer> getSubModuleDetailsByRoleandModuleId(int moduleId)
     {
+        if (isApplicationAdmin()) {
+            if (moduleId == CoreAppModule.USER_MANAGEMENT.getId()) {
+                return enumIds(UserManagementModule.values());
+            }
+            if (moduleId == CoreAppModule.SYSTEM_MANAGEMENT.getId()) {
+                return enumIds(SystemManagementModule.values());
+            }
+            if (moduleId == CoreAppModule.LICENCE.getId()) {
+                return enumIds(LicenseManagementModule.values());
+            }
+            if (moduleId == CoreAppModule.SERVER_AND_DB.getId()) {
+                return enumIds(ServerAndDBModule.values());
+            }
+            return new ArrayList<>();
+        }
         List<Integer> subModuleDetailsList = roleAdministrationService.getSubmodulesByRoleandModuleId(fetchCurrentUserRoleId(), moduleId);
 
         return subModuleDetailsList;
@@ -258,6 +323,10 @@ public class GenericManagedBean
     public List<RolePrivilegeConstants> getModulePrivilegeList(int moduleId, int subModuleId)
     {
         List<RolePrivilegeConstants> modulePrivilegeList = new ArrayList<>();
+        if (isApplicationAdmin()) {
+            modulePrivilegeList.addAll(Arrays.asList(RolePrivilegeConstants.values()));
+            return modulePrivilegeList;
+        }
         List<RolePrivileges> rolePrivilegesList = roleAdministrationService.getRolePrivilegesByModuleAndSubModule(fetchCurrentUserRoleId(), moduleId, subModuleId);
 
         if (CollectionUtils.isNotEmpty(rolePrivilegesList))
@@ -304,6 +373,81 @@ public class GenericManagedBean
         FacesContext facesContext = FacesContext.getCurrentInstance();
         ELResolver resolver = facesContext.getApplication().getELResolver();
         return resolver.getValue(facesContext.getELContext(), null, className);
+    }
+
+    private <T extends Enum<T>> List<Integer> enumIds(T[] values) {
+        List<Integer> ids = new ArrayList<>();
+        for (T value : values) {
+            try {
+                ids.add((Integer) value.getClass().getMethod("getId").invoke(value));
+            } catch (Exception exception) {
+                logger.warn("Unable to resolve enum id for {}", value, exception);
+            }
+        }
+        return ids;
+    }
+
+    protected boolean canAccessOrganization(Integer organizationId) {
+        if (organizationId == null) {
+            return isApplicationAdmin();
+        }
+
+        if (isApplicationAdmin()) {
+            return true;
+        }
+
+        Integer currentOrganizationId = fetchCurrentOrganizationId();
+        return currentOrganizationId != null && currentOrganizationId.equals(organizationId);
+    }
+
+    protected Integer resolveAccessibleOrganizationId(Integer requestedOrganizationId) {
+        if (isApplicationAdmin()) {
+            return requestedOrganizationId;
+        }
+
+        Integer currentOrganizationId = fetchCurrentOrganizationId();
+        if (currentOrganizationId == null) {
+            return null;
+        }
+
+        if (requestedOrganizationId == null || !currentOrganizationId.equals(requestedOrganizationId)) {
+            return currentOrganizationId;
+        }
+        return requestedOrganizationId;
+    }
+
+    protected List<Organizations> getAccessibleOrganizations(IOrganizationService organizationService) {
+        List<Organizations> organizations = new ArrayList<>();
+        if (organizationService == null) {
+            return organizations;
+        }
+
+        if (isApplicationAdmin()) {
+            organizations.addAll(organizationService.getOrganizationsList());
+            return organizations;
+        }
+
+        Integer currentOrganizationId = fetchCurrentOrganizationId();
+        if (currentOrganizationId == null) {
+            return organizations;
+        }
+
+        Organizations organization = organizationService.getOrganizationById(currentOrganizationId);
+        if (organization != null) {
+            organizations.add(organization);
+        }
+        return organizations;
+    }
+
+    protected Integer resolveDefaultOrganizationId(List<Organizations> organizations, Integer requestedOrganizationId) {
+        if (isApplicationAdmin()) {
+            if (requestedOrganizationId != null && canAccessOrganization(requestedOrganizationId)) {
+                return requestedOrganizationId;
+            }
+            return organizations == null || organizations.isEmpty() ? null : organizations.get(0).getId();
+        }
+
+        return resolveAccessibleOrganizationId(requestedOrganizationId);
     }
 
 }

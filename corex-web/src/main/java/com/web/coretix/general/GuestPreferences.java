@@ -36,6 +36,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.*;
 import java.io.Serializable;
+import java.util.Base64;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.faces.context.FacesContext;
@@ -1077,6 +1078,27 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
     public void setDbDetailsRendered(boolean dbDetailsRendered) {
         this.dbDetailsRendered = dbDetailsRendered;
+    }
+
+    public String getTopbarProfileImageSrc() {
+        if (userId <= 0) {
+            return null;
+        }
+
+        try {
+            UserDetails currentUserDetails = userAdministrationService.getUserDetailById(userId);
+            if (currentUserDetails == null || currentUserDetails.getProfileImage() == null
+                    || currentUserDetails.getProfileImage().length == 0
+                    || currentUserDetails.getProfileImageContentType() == null) {
+                return null;
+            }
+
+            return "data:" + currentUserDetails.getProfileImageContentType() + ";base64,"
+                    + Base64.getEncoder().encodeToString(currentUserDetails.getProfileImage());
+        } catch (Exception ex) {
+            logger.error("Unable to load topbar profile image for user {}", userId, ex);
+            return null;
+        }
     }
 
     @SuppressWarnings("unchecked")

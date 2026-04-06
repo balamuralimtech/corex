@@ -59,12 +59,18 @@
                     <div class="grid">
                         <div class="col-12 md:col-3">
                             <label>Organization</label>
-                            <p:selectOneMenu value="#{medicineReportBean.selectedOrganizationId}" style="width:100%;">
-                                <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
-                                <f:selectItems value="#{medicineReportBean.organizationList}" var="organization"
-                                               itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
-                                <p:ajax listener="#{medicineReportBean.onOrganizationChange}" process="@this" update="form"/>
-                            </p:selectOneMenu>
+                            <h:panelGroup rendered="#{medicineReportBean.applicationAdmin}" layout="block">
+                                <p:selectOneMenu value="#{medicineReportBean.selectedOrganizationId}" style="width:100%;">
+                                    <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                    <f:selectItems value="#{medicineReportBean.organizationList}" var="organization"
+                                                   itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
+                                    <p:ajax listener="#{medicineReportBean.onOrganizationChange}" process="@this" update="form"/>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{not medicineReportBean.applicationAdmin}" layout="block"
+                                          style="margin-top:.55rem;font-weight:700;">
+                                <h:outputText value="#{medicineReportBean.currentOrganizationName}"/>
+                            </h:panelGroup>
                         </div>
                         <div class="col-12 md:col-3">
                             <label>Patient Scope</label>

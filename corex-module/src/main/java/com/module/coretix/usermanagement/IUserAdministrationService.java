@@ -39,6 +39,8 @@ public interface IUserAdministrationService {
 
     public List<UserDetails> getUserDetailsList();
 
+    public long getUserCount();
+
     public void updateUserPassword(int userId, String newPassword);
 
     public boolean isUserValid(String username, String password);

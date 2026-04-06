@@ -21,6 +21,7 @@ import com.persist.carex.settings.MedicalCertificateSettings;
 import com.persist.carex.settings.PrescriptionSettings;
 import com.persist.coretix.modal.constants.GeneralConstants;
 import com.persist.coretix.modal.systemmanagement.Organizations;
+import com.web.carex.appgeneral.CarexManagedBean;
 import org.primefaces.PrimeFaces;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
@@ -55,7 +56,7 @@ import java.util.concurrent.TimeUnit;
 
 @Named("consultationBean")
 @Scope("session")
-public class ConsultationBean implements Serializable {
+public class ConsultationBean extends CarexManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy, HH:mm");
@@ -135,10 +136,8 @@ public class ConsultationBean implements Serializable {
         if (facesContext != null && facesContext.isPostback() && initialized) {
             return;
         }
-        organizationList = new ArrayList<>(organizationService.getOrganizationsList());
-        if (selectedOrganizationId == null) {
-            selectedOrganizationId = resolveCurrentOrganizationId();
-        }
+        organizationList = new ArrayList<>(getAccessibleOrganizations(organizationService));
+        selectedOrganizationId = resolveDefaultOrganizationId(organizationList, selectedOrganizationId);
         loadScopedReferenceData();
         consultationList = new ArrayList<>();
         consultationResultsLoaded = false;
@@ -649,7 +648,7 @@ public class ConsultationBean implements Serializable {
     public Consultation getSelectedConsultation() { return selectedConsultation; }
     public void setSelectedConsultation(Consultation selectedConsultation) { this.selectedConsultation = selectedConsultation; }
     public Integer getSelectedOrganizationId() { return selectedOrganizationId; }
-    public void setSelectedOrganizationId(Integer selectedOrganizationId) { this.selectedOrganizationId = selectedOrganizationId; }
+    public void setSelectedOrganizationId(Integer selectedOrganizationId) { this.selectedOrganizationId = resolveAccessibleOrganizationId(selectedOrganizationId); }
     public Integer getSelectedDoctorId() { return selectedDoctorId; }
     public void setSelectedDoctorId(Integer selectedDoctorId) { this.selectedDoctorId = selectedDoctorId; }
     public Integer getSelectedPatientId() { return selectedPatientId; }
@@ -914,15 +913,6 @@ public class ConsultationBean implements Serializable {
         userActivityTO.setLocationInfo((String) sessionMap.get("browserClientInfo"));
         userActivityTO.setCreatedAt(new Date());
         return userActivityTO;
-    }
-
-    private Integer resolveCurrentOrganizationId() {
-        FacesContext facesContext = FacesContext.getCurrentInstance();
-        if (facesContext == null) {
-            return null;
-        }
-        Object organizationId = facesContext.getExternalContext().getSessionMap().get("organizationId");
-        return organizationId instanceof Integer ? (Integer) organizationId : null;
     }
 
     private Doctor getSelectedDoctor() {

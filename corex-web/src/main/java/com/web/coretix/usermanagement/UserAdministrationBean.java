@@ -37,6 +37,11 @@ import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.primefaces.PrimeFaces;
+import org.primefaces.event.FileUploadEvent;
+import org.primefaces.model.CroppedImage;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
+import org.primefaces.model.file.UploadedFile;
 import com.web.coretix.appgeneral.GenericManagedBean;
 import com.web.coretix.general.NotificationService;
 import org.springframework.context.annotation.Scope;
@@ -45,13 +50,23 @@ import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
+import java.io.IOException;
+import java.util.Base64;
+import javax.imageio.ImageIO;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import com.web.coretix.constants.AccessRightConstants;
+import com.web.coretix.constants.UserTypeConstants;
 import javax.servlet.http.HttpSession;
 
 /**
@@ -65,6 +80,7 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
     private static final long serialVersionUID = 13543434334535435L;
     private static final Logger logger = LoggerFactory.getLogger(UserAdministrationBean.class);
     private static final DateTimeFormatter NOTIFICATION_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd-MMM-yyyy hh:mm:ss a");
+    private static final int AVATAR_IMAGE_SIZE = 320;
     private List<UserDetails> usersList = new ArrayList<>();
     
     private boolean isAddOperation;
@@ -88,6 +104,9 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
     private String city;
     private String address;
     private String accessRight;
+    private UploadedFile profileImageFile;
+    private CroppedImage croppedProfileImage;
+    private boolean removeProfileImage;
 
     private int usersLoggedInCount;
     private int usersLoggedOutCount;
@@ -142,6 +161,9 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         setCity("");
         setAddress("");
         setAccessRight("");
+        profileImageFile = null;
+        croppedProfileImage = null;
+        removeProfileImage = false;
 
         if (CollectionUtils.isNotEmpty(usersList)) {
             logger.debug("inside  usersList clear");
@@ -168,6 +190,9 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         setCity("");
         setAddress("");
         setAccessRight("");
+        profileImageFile = null;
+        croppedProfileImage = null;
+        removeProfileImage = false;
     }
 
     public void addButtonAction() {
@@ -179,6 +204,10 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
     public void searchButtonAction() {
         logger.debug("entered into searchButtonAction !!!");
         fetchUserDetailsList();
+        PrimeFaces.current().executeScript(
+                "var filterInput=document.getElementById('userform:globalFilter');"
+                        + "if(filterInput){filterInput.value='';}"
+                        + "if (PF('countDataTable')) { PF('countDataTable').clearFilters(); PF('countDataTable').getPaginator().setPage(0); }");
         logger.debug("end of searchButtonAction !!!");
     }
 
@@ -207,18 +236,21 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         logger.debug("accessRight : " + getAccessRight());
         
         setUserName(getSelectedUserDetail().getUserName());
-        setPassword(getSelectedUserDetail().getPassword());
+        setPassword("");
         setEmailId(getSelectedUserDetail().getEmailId());
-        setContact(getSelectedUserDetail().getCountry().getName());
+        setContact(getSelectedUserDetail().getContact());
         
-        setRole(getSelectedUserDetail().getRole().getRoleName());
-        setOrganization(getSelectedUserDetail().getOrganization().getOrganizationName());
-        setBranch(getSelectedUserDetail().getBranch().getBranchName());
-        setCountry(getSelectedUserDetail().getCountry().getName());
-        setState(getSelectedUserDetail().getState().getName());
-        setCity(getSelectedUserDetail().getCity().getName());
+        setRole(getSelectedUserDetail().getRole() == null ? "" : getSelectedUserDetail().getRole().getRoleName());
+        setOrganization(getSelectedUserDetail().getOrganization() == null ? "" : getSelectedUserDetail().getOrganization().getOrganizationName());
+        setBranch(getSelectedUserDetail().getBranch() == null ? "" : getSelectedUserDetail().getBranch().getBranchName());
+        setCountry(getSelectedUserDetail().getCountry() == null ? "" : getSelectedUserDetail().getCountry().getName());
+        setState(getSelectedUserDetail().getState() == null ? "" : getSelectedUserDetail().getState().getName());
+        setCity(getSelectedUserDetail().getCity() == null ? "" : getSelectedUserDetail().getCity().getName());
         setAddress(getSelectedUserDetail().getAddress());
         setAccessRight(AccessRightConstants.getById(getSelectedUserDetail().getAccessRight()).getValue());
+        profileImageFile = null;
+        croppedProfileImage = null;
+        removeProfileImage = false;
 
     }
     
@@ -257,6 +289,9 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         List<String> stateList = new ArrayList<>();
         
         Countries tempCountry = getCountriesByCountryName(country);
+        if (tempCountry == null) {
+            return stateList;
+        }
         List<States> states = stateService.getStatesListByCountryId(tempCountry.getId());
         for (States state : states) {
             stateList.add(state.getName());
@@ -272,11 +307,14 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
          
      }
      
-     public List<String> completeCity(String query) {
+    public List<String> completeCity(String query) {
         String queryLowerCase = query.toLowerCase();
         List<String> cityList = new ArrayList<>();
         Countries tempCountry = getCountriesByCountryName(country);
         States tempStates = getStateEntityByStateName(state);
+        if (tempCountry == null || tempStates == null) {
+            return cityList;
+        }
         List<Cities> cities = cityService.getCitiesListByCountryIdAndStateId(tempCountry.getId(), tempStates.getId());
         for (Cities city : cities) {
             cityList.add(city.getName());
@@ -288,7 +326,7 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
     public List<String> completeOrganization(String query) {
         String queryLowerCase = query.toLowerCase();
         List<String> organizationList = new ArrayList<>();
-        List<Organizations> countries = organizationService.getOrganizationsList();
+        List<Organizations> countries = getAccessibleOrganizations(organizationService);
         for (Organizations Organization : countries) {
             organizationList.add(Organization.getOrganizationName());
         }
@@ -312,6 +350,9 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         List<String> branchList = new ArrayList<>();
         logger.debug("organization : "+organization);
         Organizations tempOrg = getOrganizationsByOrganizationName(organization);
+        if (tempOrg == null) {
+            return branchList;
+        }
         logger.debug("tempOrg.getId() : "+tempOrg.getId());
         List<Branches> branches = branchService.getBranchesListByOrgId(tempOrg.getId());
         for (Branches branch : branches) {
@@ -355,13 +396,43 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
     
 
     public void saveUserDetails() {
+        try {
+            saveUserDetailsInternal();
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            logger.warn("Unable to save user details", ex);
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", ex.getMessage()));
+            PrimeFaces.current().ajax().update("userform:messages", "userform:addEditCountPanelId");
+        }
+    }
 
+    public void handleProfileImageUpload(FileUploadEvent event) {
+        UploadedFile uploadedFile = event == null ? null : event.getFile();
+        profileImageFile = null;
+        croppedProfileImage = null;
+        removeProfileImage = false;
+
+        if (uploadedFile == null || uploadedFile.getContent() == null || uploadedFile.getContent().length == 0) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "Selected profile image is empty."));
+            PrimeFaces.current().ajax().update("userform:messages", "userform:cropperPanel", "userform:imagePreviewPanel");
+            return;
+        }
+
+        validateProfileImage(uploadedFile);
+        profileImageFile = uploadedFile;
+
+        FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_INFO, "Profile Image", uploadedFile.getFileName() + " uploaded."));
+        PrimeFaces.current().ajax().update("userform:messages", "userform:cropperPanel", "userform:imagePreviewPanel");
+    }
+
+    private void saveUserDetailsInternal() {
         logger.debug("Inside save organization method ");
         logger.debug("isAddOperation : " + isAddOperation);
 
-        // Hash the password using BCrypt
-        String hashedPassword = hashPassword(getPassword());
-        logger.debug("Password hashed successfully");
+        String hashedPassword = resolvePasswordForSave();
+        logger.debug("Password resolved successfully");
 
         logger.debug("userName : " + getUserName());
 
@@ -380,6 +451,7 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         userDetails.setPassword(hashedPassword);
         userDetails.setEmailId(getEmailId());
         userDetails.setContact(getContact());
+        userDetails.setUserType(UserTypeConstants.GENERAL_USER.getValue());
         
         Roles addRole = getRoleEntityByRoleName(getRole());
         if(addRole != null)
@@ -388,8 +460,8 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         }
         
         Organizations addOrganization = getOrganizationsByOrganizationName(getOrganization());
-        logger.debug("country name " + addOrganization.getOrganizationName());
         if (addOrganization != null) {
+            logger.debug("organization name " + addOrganization.getOrganizationName());
             userDetails.setOrganization(addOrganization);
         }
         
@@ -417,6 +489,7 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         userDetails.setAccessRight(AccessRightConstants.getByValue(getAccessRight()).getId());
         
         userDetails.setAddress(getAddress());
+        applyProfileImage(userDetails);
         Integer organizationId = resolveCurrentOrganizationId();
 
         if (isAddOperation) {
@@ -431,6 +504,7 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
             logger.debug("selectedUserDetail.getUserId() : " + getSelectedUserDetail().getUserId());
             //country.setId(selectedCountry.getId());
             userDetails.setUserId(getSelectedUserDetail().getUserId());
+            preserveExistingAuditFields(userDetails, getSelectedUserDetail());
             userAdministrationService.updateUserDetail(userDetails);
             notifyActiveOrganizationUsers(organizationId,
                     buildUserChangeNotification(userDetails.getUserName(), "edited"));
@@ -440,6 +514,10 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         fetchUserDetailsList();
         logger.debug("crossed fetchUserDetailsList !!!");
         PrimeFaces.current().executeScript("PF('ManageUserDialog').hide()");
+        PrimeFaces.current().executeScript(
+                "var filterInput=document.getElementById('userform:globalFilter');"
+                        + "if(filterInput){filterInput.value='';}"
+                        + "if (PF('countDataTable')) { PF('countDataTable').clearFilters(); PF('countDataTable').getPaginator().setPage(0); }");
         logger.debug("crossed dialog hide method !!!");
         PrimeFaces.current().ajax().update("userform:messages", "userform:usersDataTableId");
         
@@ -466,6 +544,10 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
                 buildUserChangeNotification(deletedUserName, "deleted"));
         fetchUserDetailsList();
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("User Removed"));
+        PrimeFaces.current().executeScript(
+                "var filterInput=document.getElementById('userform:globalFilter');"
+                        + "if(filterInput){filterInput.value='';}"
+                        + "if (PF('countDataTable')) { PF('countDataTable').clearFilters(); PF('countDataTable').getPaginator().setPage(0); }");
         PrimeFaces.current().ajax().update("userform:messages", "userform:usersDataTableId");
     }
 
@@ -476,7 +558,13 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
             logger.debug("inside fetchUserDetailsList clear");
             usersList.clear();
         }
-        usersList.addAll(userAdministrationService.getUserDetailsList());
+        List<UserDetails> visibleUsers = new ArrayList<>(userAdministrationService.getUserDetailsList());
+        if (!isApplicationAdmin()) {
+            visibleUsers.removeIf(user -> user == null
+                    || user.getOrganization() == null
+                    || !canAccessOrganization(user.getOrganization().getId()));
+        }
+        usersList.addAll(visibleUsers);
 
         if (CollectionUtils.isNotEmpty(usersList)) {
             logger.debug("countriesList.size() : " + usersList.size());
@@ -774,6 +862,198 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         return username instanceof String && !((String) username).trim().isEmpty()
                 ? ((String) username).trim()
                 : "Unknown user";
+    }
+
+    private void applyProfileImage(UserDetails userDetails) {
+        if (removeProfileImage) {
+            userDetails.setProfileImage(null);
+            userDetails.setProfileImageContentType(null);
+            return;
+        }
+
+        if (croppedProfileImage != null && croppedProfileImage.getBytes() != null && croppedProfileImage.getBytes().length > 0) {
+            AvatarImage avatarImage = resizeImageToAvatar(croppedProfileImage.getBytes(), "image/png");
+            userDetails.setProfileImage(avatarImage.getBytes());
+            userDetails.setProfileImageContentType(avatarImage.getContentType());
+            return;
+        }
+
+        if (profileImageFile != null && profileImageFile.getFileName() != null && !profileImageFile.getFileName().trim().isEmpty()) {
+            validateProfileImage(profileImageFile);
+            AvatarImage avatarImage = resizeImageToAvatar(profileImageFile.getContent(), profileImageFile.getContentType());
+            userDetails.setProfileImage(avatarImage.getBytes());
+            userDetails.setProfileImageContentType(avatarImage.getContentType());
+            return;
+        }
+
+        if (!isAddOperation && selectedUserDetail != null) {
+            userDetails.setProfileImage(selectedUserDetail.getProfileImage());
+            userDetails.setProfileImageContentType(selectedUserDetail.getProfileImageContentType());
+        }
+    }
+
+    private void validateProfileImage(UploadedFile uploadedFile) {
+        String contentType = uploadedFile.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("Profile image must be an image file.");
+        }
+
+        if (uploadedFile.getSize() > (2L * 1024L * 1024L)) {
+            throw new IllegalArgumentException("Profile image must be 2 MB or smaller.");
+        }
+    }
+
+    private String resolvePasswordForSave() {
+        if (isAddOperation) {
+            if (getPassword() == null || getPassword().trim().isEmpty()) {
+                throw new IllegalArgumentException("Password is required.");
+            }
+            return hashPassword(getPassword());
+        }
+
+        if (getPassword() == null || getPassword().trim().isEmpty()) {
+            if (selectedUserDetail == null || selectedUserDetail.getPassword() == null
+                    || selectedUserDetail.getPassword().trim().isEmpty()) {
+                throw new IllegalArgumentException("Existing password could not be resolved for the selected user.");
+            }
+            return selectedUserDetail.getPassword();
+        }
+
+        return hashPassword(getPassword());
+    }
+
+    private void preserveExistingAuditFields(UserDetails targetUserDetails, UserDetails sourceUserDetails) {
+        if (sourceUserDetails == null) {
+            return;
+        }
+
+        targetUserDetails.setStatus(sourceUserDetails.getStatus());
+        targetUserDetails.setUserType(sourceUserDetails.getUserType());
+        targetUserDetails.setLastPasswordChange(sourceUserDetails.getLastPasswordChange());
+        targetUserDetails.setLastSuccessfulLogin(sourceUserDetails.getLastSuccessfulLogin());
+        targetUserDetails.setLastSeenAt(sourceUserDetails.getLastSeenAt());
+        targetUserDetails.setLastLogoutAt(sourceUserDetails.getLastLogoutAt());
+        targetUserDetails.setLastSessionId(sourceUserDetails.getLastSessionId());
+        targetUserDetails.setCreatedAt(sourceUserDetails.getCreatedAt());
+        targetUserDetails.setUpdatedAt(sourceUserDetails.getUpdatedAt());
+    }
+
+    public String getSelectedProfileImageDataUrl() {
+        if (removeProfileImage) {
+            return null;
+        }
+
+        if (croppedProfileImage != null && croppedProfileImage.getBytes() != null && croppedProfileImage.getBytes().length > 0) {
+            return "data:image/png;base64," + Base64.getEncoder().encodeToString(croppedProfileImage.getBytes());
+        }
+
+        UserDetails imageSource = selectedUserDetail;
+        if (imageSource == null || imageSource.getProfileImage() == null || imageSource.getProfileImage().length == 0
+                || imageSource.getProfileImageContentType() == null) {
+            return null;
+        }
+
+        return "data:" + imageSource.getProfileImageContentType() + ";base64,"
+                + Base64.getEncoder().encodeToString(imageSource.getProfileImage());
+    }
+
+    public String encodeImage(byte[] imageBytes) {
+        if (imageBytes == null || imageBytes.length == 0) {
+            return "";
+        }
+        return Base64.getEncoder().encodeToString(imageBytes);
+    }
+
+    public UploadedFile getProfileImageFile() {
+        return profileImageFile;
+    }
+
+    public void setProfileImageFile(UploadedFile profileImageFile) {
+        this.profileImageFile = profileImageFile;
+    }
+
+    public CroppedImage getCroppedProfileImage() {
+        return croppedProfileImage;
+    }
+
+    public void setCroppedProfileImage(CroppedImage croppedProfileImage) {
+        this.croppedProfileImage = croppedProfileImage;
+    }
+
+    public StreamedContent getUploadedProfileImage() {
+        if (removeProfileImage) {
+            return null;
+        }
+
+        if (profileImageFile == null || profileImageFile.getContent() == null || profileImageFile.getContent().length == 0) {
+            return null;
+        }
+
+        return DefaultStreamedContent.builder()
+                .contentType(profileImageFile.getContentType())
+                .stream(() -> new ByteArrayInputStream(profileImageFile.getContent()))
+                .build();
+    }
+
+    public boolean isRemoveProfileImage() {
+        return removeProfileImage;
+    }
+
+    public void setRemoveProfileImage(boolean removeProfileImage) {
+        this.removeProfileImage = removeProfileImage;
+    }
+
+    private AvatarImage resizeImageToAvatar(byte[] sourceBytes, String sourceContentType) {
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(sourceBytes);
+             ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            BufferedImage originalImage = ImageIO.read(inputStream);
+            if (originalImage == null) {
+                throw new IllegalArgumentException("Selected profile image could not be read.");
+            }
+
+            int cropSize = Math.min(originalImage.getWidth(), originalImage.getHeight());
+            int x = (originalImage.getWidth() - cropSize) / 2;
+            int y = (originalImage.getHeight() - cropSize) / 2;
+            BufferedImage squareImage = originalImage.getSubimage(x, y, cropSize, cropSize);
+
+            BufferedImage resizedImage = new BufferedImage(AVATAR_IMAGE_SIZE, AVATAR_IMAGE_SIZE, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D graphics = resizedImage.createGraphics();
+            try {
+                graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+                graphics.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                graphics.drawImage(squareImage, 0, 0, AVATAR_IMAGE_SIZE, AVATAR_IMAGE_SIZE, null);
+            } finally {
+                graphics.dispose();
+            }
+
+            ImageIO.write(resizedImage, "png", outputStream);
+            return new AvatarImage(outputStream.toByteArray(), "image/png");
+        } catch (IOException ex) {
+            throw new IllegalStateException("Unable to resize the selected profile image.", ex);
+        }
+    }
+
+    public int getAvatarImageSize() {
+        return AVATAR_IMAGE_SIZE;
+    }
+
+    private static final class AvatarImage {
+        private final byte[] bytes;
+        private final String contentType;
+
+        private AvatarImage(byte[] bytes, String contentType) {
+            this.bytes = bytes;
+            this.contentType = contentType;
+        }
+
+        private byte[] getBytes() {
+            return bytes;
+        }
+
+        private String getContentType() {
+            return contentType;
+        }
     }
 }
 

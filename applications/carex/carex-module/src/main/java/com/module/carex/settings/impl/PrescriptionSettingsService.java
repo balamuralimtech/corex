@@ -24,6 +24,7 @@ public class PrescriptionSettingsService implements IPrescriptionSettingsService
     private UserActivityDAO userActivityDAO;
 
     @Override
+    @Transactional(readOnly = false)
     public GeneralConstants savePrescriptionSettings(UserActivityTO userActivityTO, PrescriptionSettings prescriptionSettings) {
         GeneralConstants result = prescriptionSettingsDAO.savePrescriptionSettings(prescriptionSettings);
         userActivityTO.setActivityDescription("Save prescription settings - (" + resolveOrganizationName(prescriptionSettings) + ") - " + result.getName());

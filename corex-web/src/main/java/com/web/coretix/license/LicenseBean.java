@@ -255,7 +255,15 @@ public class LicenseBean extends GenericManagedBean implements Serializable {
         if (CollectionUtils.isNotEmpty(licenseList)) {
             licenseList.clear();
         }
-        licenseList.addAll(licenseService.getLicenseList());
+        List<Licenses> visibleLicenses = new ArrayList<>(licenseService.getLicenseList());
+        if (!isApplicationAdmin()) {
+            Integer currentOrganizationId = fetchCurrentOrganizationId();
+            visibleLicenses.removeIf(license -> license == null
+                    || license.getOrganization() == null
+                    || currentOrganizationId == null
+                    || license.getOrganization().getId() != currentOrganizationId);
+        }
+        licenseList.addAll(visibleLicenses);
         if (CollectionUtils.isNotEmpty(licenseList)) {
             datatableRendered = true;
             recordsCount = licenseList.size();
@@ -270,7 +278,7 @@ public class LicenseBean extends GenericManagedBean implements Serializable {
 
     private List<Organizations> getOrganizations() {
         if (CollectionUtils.isEmpty(organizationList)) {
-            organizationList.addAll(organizationService.getOrganizationsList());
+            organizationList.addAll(getAccessibleOrganizations(organizationService));
         }
         return organizationList;
     }

@@ -67,12 +67,18 @@
                     </div>
                     <div class="surface-100 border-round px-3 py-2">
                         <label for="organizationSelect"><strong>Organization:</strong></label>
-                        <p:selectOneMenu id="organizationSelect" value="#{prescriptionSettingsBean.selectedOrganizationId}" style="display:block;min-width:18rem;margin-top:.35rem;">
-                            <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
-                            <f:selectItems value="#{prescriptionSettingsBean.organizationList}" var="organization"
-                                           itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
-                            <p:ajax listener="#{prescriptionSettingsBean.onOrganizationChange}" process="@this" update="form:prescriptionSettingsPanel form:messages"/>
-                        </p:selectOneMenu>
+                        <h:panelGroup rendered="#{prescriptionSettingsBean.applicationAdmin}" layout="block">
+                            <p:selectOneMenu id="organizationSelect" value="#{prescriptionSettingsBean.selectedOrganizationId}" style="display:block;min-width:18rem;margin-top:.35rem;">
+                                <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItems value="#{prescriptionSettingsBean.organizationList}" var="organization"
+                                               itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
+                                <p:ajax listener="#{prescriptionSettingsBean.onOrganizationChange}" process="@this" update="form:prescriptionSettingsPanel form:messages"/>
+                            </p:selectOneMenu>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{not prescriptionSettingsBean.applicationAdmin}" layout="block"
+                                      style="margin-top:.45rem;font-weight:700;">
+                            <h:outputText value="#{prescriptionSettingsBean.currentOrganizationName}"/>
+                        </h:panelGroup>
                     </div>
                 </div>
 

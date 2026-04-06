@@ -181,48 +181,36 @@ public class BranchDAO implements IBranchDAO {
 
     public Branches getBranch(int id) {
         Session session = getSessionFactory().getCurrentSession();
-        Transaction trans = session.beginTransaction();
-
         List<?> list = session
                 .createQuery("from Branches where id=?1").setParameter(1, id)
                 .list();
 
-        trans.commit();
-        return (Branches) list.get(0);
+        return list.isEmpty() ? null : (Branches) list.get(0);
     }
 
     public Branches getBranchEntityByBranchName(String branchName) {
         Session session = getSessionFactory().getCurrentSession();
-        Transaction trans = session.beginTransaction();
-
         List<?> list = session
                 .createQuery("from Branches where branch_name=?1").setParameter(1, branchName)
                 .list();
 
-        trans.commit();
-        return (Branches) list.get(0);
+        return list.isEmpty() ? null : (Branches) list.get(0);
     }
 
     public List<Branches> getBranchesList() {
         Session session = getSessionFactory().getCurrentSession();
-        Transaction trans = session.beginTransaction();
-
         @SuppressWarnings("unchecked")
         List<Branches> list = (List<Branches>) session.createQuery("from Branches").list();
 
-        trans.commit();
         return list;
     }
 
     public List<Branches> getBranchesListByOrgId(int orgId) {
         logger.debug("inside getBranchesListByOrgId : "+orgId);
         Session session = getSessionFactory().getCurrentSession();
-        Transaction trans = session.beginTransaction();
-
         @SuppressWarnings("unchecked")
         List<Branches> list = (List<Branches>) session.createQuery("from Branches where organization_id=?1").setParameter(1, orgId).list();
         logger.debug("list size  : "+list.size());
-        trans.commit();
         return list;
     }
 
