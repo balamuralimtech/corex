@@ -109,10 +109,8 @@
 
                 <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-start gap-3 mb-4">
                     <div>
-                        <h1 style="margin:0;">Consultation</h1>
-                        <p style="margin:.5rem 0 0 0;color:#64748b;">
-                            Search consultations by organization, then open a dedicated workspace only when creating or reviewing a visit.
-                        </p>
+                        <h1 style="margin:0;">#{i18n.app('consultationTitle')}</h1>
+                        <p style="margin:.5rem 0 0 0;color:#64748b;">#{i18n.app('consultationDescription')}</p>
                     </div>
                 </div>
 
@@ -122,10 +120,10 @@
                         <div class="flex flex-column lg:flex-row lg:justify-content-between lg:align-items-end gap-3">
                             <div class="flex flex-column md:flex-row gap-3" style="flex:1;">
                                 <div style="min-width:18rem;">
-                                    <label for="organizationFilter"><strong>Organization:</strong></label>
+                                    <label for="organizationFilter"><strong>#{i18n.core('organizationLabel')}:</strong></label>
                                     <h:panelGroup rendered="#{consultationBean.applicationAdmin}" layout="block">
                                         <p:selectOneMenu id="organizationFilter" value="#{consultationBean.selectedOrganizationId}" style="display:block;width:100%;margin-top:.35rem;">
-                                            <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                            <f:selectItem itemLabel="#{i18n.app('selectOrganizationLabel')}" itemValue="#{null}" noSelectionOption="true"/>
                                             <f:selectItems value="#{consultationBean.organizationList}" var="organization"
                                                            itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
                                             <p:ajax listener="#{consultationBean.onOrganizationChange}" process="@this"
@@ -139,11 +137,11 @@
                                 </div>
                             </div>
                             <div class="flex flex-wrap gap-2">
-                                <p:commandButton value="New Consultation" icon="pi pi-plus" process="@this"
+                                <p:commandButton value="#{i18n.app('newConsultationLabel')}" icon="pi pi-plus" process="@this"
                                                  actionListener="#{consultationBean.startNewConsultation}"
                                                  update="form:contentModePanel form:messages"
                                                  styleClass="ui-button-success"/>
-                                <p:commandButton value="Fetch Consultations" icon="pi pi-search" process="@this"
+                                <p:commandButton value="#{i18n.app('fetchConsultationsLabel')}" icon="pi pi-search" process="@this"
                                                  actionListener="#{consultationBean.fetchConsultationList}"
                                                  update="form:searchPanel" styleClass="ui-button-info"/>
                             </div>
@@ -152,71 +150,71 @@
                         <p:outputPanel id="consultationMainPanel" styleClass="card" style="margin-top:1rem;border:1px solid #e2e8f0;box-shadow:none;">
                             <p:outputPanel rendered="#{not consultationBean.consultationResultsLoaded}">
                                 <div style="padding:1rem 0;color:#64748b;">
-                                    Consultation history is not loaded by default. Select an organization and click <strong>Fetch Consultations</strong> when you want to search existing visits.
+                                    #{i18n.app('consultationHistoryEmptyPrefix')} <strong>#{i18n.app('fetchConsultationsLabel')}</strong> #{i18n.app('consultationHistoryEmptySuffix')}
                                 </div>
                             </p:outputPanel>
                             <p:dataTable value="#{consultationBean.consultationList}" var="consultationRow" widgetVar="consultationTableWidget"
                                          rendered="#{consultationBean.consultationResultsLoaded}"
                                          paginator="true" rows="10" rowsPerPageTemplate="10,25,50" paginatorPosition="bottom"
                                          currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords}" reflow="true" rowKey="#{consultationRow.id}"
-                                         emptyMessage="No consultations found for the selected organization.">
+                                         emptyMessage="#{i18n.app('noConsultationsFoundMessage')}">
                                 <f:facet name="header">
                                     <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-2">
-                                        <span style="font-weight:600;">Consultation History</span>
+                                        <span style="font-weight:600;">#{i18n.app('consultationHistoryLabel')}</span>
                                         <span class="p-input-icon-left">
                                             <i class="pi pi-search"/>
-                                            <p:inputText onkeyup="PF('consultationTableWidget').filter()" placeholder="Search consultations"/>
+                                            <p:inputText onkeyup="PF('consultationTableWidget').filter()" placeholder="#{i18n.app('searchConsultationsPlaceholder')}"/>
                                         </span>
                                     </div>
                                 </f:facet>
-                                <p:column headerText="Consultation No" sortBy="#{consultationRow.consultationNumber}" filterBy="#{consultationRow.consultationNumber}">
+                                <p:column headerText="#{i18n.app('consultationNumberLabel')}" sortBy="#{consultationRow.consultationNumber}" filterBy="#{consultationRow.consultationNumber}">
                                     <p:commandLink value="#{consultationRow.consultationNumber}" process="@this"
                                                    action="#{consultationBean.openConsultationView(consultationRow.id)}"
                                                    update="form:contentModePanel form:messages">
                                     </p:commandLink>
                                 </p:column>
-                                <p:column headerText="Date" sortBy="#{consultationRow.consultationDate}">
+                                <p:column headerText="#{i18n.app('dateLabel')}" sortBy="#{consultationRow.consultationDate}">
                                     <h:outputText value="#{consultationRow.consultationDate}">
                                         <f:convertDateTime pattern="dd/MM/yyyy HH:mm"/>
                                     </h:outputText>
                                 </p:column>
-                                <p:column headerText="Doctor" sortBy="#{consultationRow.doctor.doctorName}" filterBy="#{consultationRow.doctor.doctorName}">
+                                <p:column headerText="#{i18n.app('doctorLabel')}" sortBy="#{consultationRow.doctor.doctorName}" filterBy="#{consultationRow.doctor.doctorName}">
                                     #{consultationRow.doctor.doctorName}
                                 </p:column>
-                                <p:column headerText="Patient" sortBy="#{consultationRow.patient.patientName}" filterBy="#{consultationRow.patient.patientName}">
+                                <p:column headerText="#{i18n.app('patientLabel')}" sortBy="#{consultationRow.patient.patientName}" filterBy="#{consultationRow.patient.patientName}">
                                     #{consultationRow.patient.patientName}
                                 </p:column>
-                                <p:column headerText="Invoice">
-                                    <p:tag value="#{consultationRow.issueInvoice ? 'Yes' : 'No'}" severity="#{consultationRow.issueInvoice ? 'success' : 'warning'}"/>
+                                <p:column headerText="#{i18n.app('invoiceLabel')}">
+                                    <p:tag value="#{consultationRow.issueInvoice ? i18n.core('yesLabel') : i18n.core('noLabel')}" severity="#{consultationRow.issueInvoice ? 'success' : 'warning'}"/>
                                 </p:column>
-                                <p:column headerText="MC">
-                                    <p:tag value="#{consultationRow.issueMedicalCertificate ? 'Yes' : 'No'}" severity="#{consultationRow.issueMedicalCertificate ? 'success' : 'warning'}"/>
+                                <p:column headerText="#{i18n.app('medicalCertificateShortLabel')}">
+                                    <p:tag value="#{consultationRow.issueMedicalCertificate ? i18n.core('yesLabel') : i18n.core('noLabel')}" severity="#{consultationRow.issueMedicalCertificate ? 'success' : 'warning'}"/>
                                 </p:column>
-                                <p:column headerText="Total">#{consultationBean.previewCurrencySymbol} #{consultationRow.invoiceTotal}</p:column>
-                                <p:column headerText="Actions" style="width:16rem;">
+                                <p:column headerText="#{i18n.app('totalLabel')}">#{consultationBean.previewCurrencySymbol} #{consultationRow.invoiceTotal}</p:column>
+                                <p:column headerText="#{i18n.app('actionsLabel')}" style="width:16rem;">
                                     <div class="flex flex-wrap gap-1">
-                                        <p:commandButton icon="pi pi-eye" title="View" process="@this" styleClass="rounded-button ui-button-info ui-button-sm"
+                                        <p:commandButton icon="pi pi-eye" title="#{i18n.app('viewLabel')}" process="@this" styleClass="rounded-button ui-button-info ui-button-sm"
                                                          action="#{consultationBean.openConsultationView(consultationRow.id)}"
                                                          update="form:contentModePanel form:messages">
                                         </p:commandButton>
-                                        <p:commandButton icon="pi pi-pencil" title="Edit" process="@this" styleClass="rounded-button ui-button-success ui-button-sm"
+                                        <p:commandButton icon="pi pi-pencil" title="#{i18n.app('editLabel')}" process="@this" styleClass="rounded-button ui-button-success ui-button-sm"
                                                          action="#{consultationBean.openConsultationEditor(consultationRow.id)}"
                                                          update="form:contentModePanel form:messages">
                                         </p:commandButton>
-                                        <p:commandButton icon="pi pi-file" title="Prescription" process="@this" styleClass="rounded-button ui-button-help ui-button-sm"
+                                        <p:commandButton icon="pi pi-file" title="#{i18n.app('prescriptionLabel')}" process="@this" styleClass="rounded-button ui-button-help ui-button-sm"
                                                          action="#{consultationBean.openPrescriptionPreview(consultationRow.id)}"
                                                          update="form:contentModePanel form:messages">
                                         </p:commandButton>
-                                        <p:commandButton icon="pi pi-receipt" title="Invoice" process="@this" styleClass="rounded-button ui-button-secondary ui-button-sm"
+                                        <p:commandButton icon="pi pi-receipt" title="#{i18n.app('invoiceLabel')}" process="@this" styleClass="rounded-button ui-button-secondary ui-button-sm"
                                                          action="#{consultationBean.openInvoicePreview(consultationRow.id)}"
                                                          update="form:contentModePanel form:messages">
                                         </p:commandButton>
-                                        <p:commandButton icon="pi pi-file-pdf" title="Medical Certificate" process="@this" styleClass="rounded-button ui-button-warning ui-button-sm"
+                                        <p:commandButton icon="pi pi-file-pdf" title="#{i18n.app('medicalCertificateLabel')}" process="@this" styleClass="rounded-button ui-button-warning ui-button-sm"
                                                          disabled="#{not consultationRow.issueMedicalCertificate}"
                                                          action="#{consultationBean.openMedicalCertificatePreview(consultationRow.id)}"
                                                          update="form:contentModePanel form:messages">
                                         </p:commandButton>
-                                        <p:commandButton icon="pi pi-trash" title="Delete" process="@this" styleClass="rounded-button ui-button-danger ui-button-sm"
+                                        <p:commandButton icon="pi pi-trash" title="#{i18n.app('deleteLabel')}" process="@this" styleClass="rounded-button ui-button-danger ui-button-sm"
                                                          action="#{consultationBean.selectConsultationForDelete(consultationRow.id)}"
                                                          oncomplete="PF('deleteConsultationDialog').show()">
                                         </p:commandButton>
@@ -233,15 +231,15 @@
                             <div class="card" style="margin:0 0 1rem 0;border:1px solid #e2e8f0;box-shadow:none;">
                                 <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-2">
                                     <div>
-                                        <h3 style="margin:0;">Consultation View</h3>
+                                        <h3 style="margin:0;">#{i18n.app('consultationViewLabel')}</h3>
                                         <div style="margin-top:.35rem;color:#64748b;font-size:.9rem;">
-                                            Prescription, invoice, and medical certificate previews are available below.
+                                            #{i18n.app('consultationViewSubtitle')}
                                         </div>
                                     </div>
                                     <div class="flex gap-2">
-                                        <p:commandButton value="Back" icon="pi pi-arrow-left" process="@this" actionListener="#{consultationBean.backToSearch}"
+                                        <p:commandButton value="#{i18n.app('backLabel')}" icon="pi pi-arrow-left" process="@this" actionListener="#{consultationBean.backToSearch}"
                                                          update="form:contentModePanel form:messages" styleClass="ui-button-secondary ui-button-sm"/>
-                                        <p:commandButton value="Edit" icon="pi pi-pencil" process="@this" actionListener="#{consultationBean.confirmEditButtonAction}"
+                                        <p:commandButton value="#{i18n.app('editLabel')}" icon="pi pi-pencil" process="@this" actionListener="#{consultationBean.confirmEditButtonAction}"
                                                          update="form:contentModePanel form:messages" styleClass="ui-button-success ui-button-sm"/>
                                     </div>
                                 </div>
@@ -258,17 +256,17 @@
                             <p:outputPanel id="consultationEditorPanel" styleClass="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
                             <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-2 mb-3">
                                 <div>
-                                    <h3 style="margin:0;">#{consultationBean.readOnlyMode ? 'Consultation View' : (consultationBean.addOperation ? 'New Consultation' : 'Edit Consultation')}</h3>
+                                    <h3 style="margin:0;">#{consultationBean.readOnlyMode ? i18n.app('consultationViewLabel') : (consultationBean.addOperation ? i18n.app('newConsultationLabel') : i18n.app('editConsultationLabel'))}</h3>
                                     <div style="margin-top:.35rem;color:#64748b;font-size:.9rem;">
-                                        #{consultationBean.readOnlyMode ? 'Review the consultation and print or download documents.' : 'Complete the visit details and save the consultation.'}
+                                        #{consultationBean.readOnlyMode ? i18n.app('consultationViewSubtitle') : i18n.app('consultationWorkspaceSubtitle')}
                                     </div>
                                 </div>
                                 <div class="flex gap-2">
-                                    <p:commandButton value="Back" icon="pi pi-arrow-left" process="@this" actionListener="#{consultationBean.backToSearch}"
+                                        <p:commandButton value="#{i18n.app('backLabel')}" icon="pi pi-arrow-left" process="@this" actionListener="#{consultationBean.backToSearch}"
                                                      update="form:contentModePanel form:messages" styleClass="ui-button-secondary ui-button-sm"/>
-                                    <p:commandButton value="New" icon="pi pi-plus" process="@this" actionListener="#{consultationBean.startNewConsultation}"
+                                        <p:commandButton value="#{i18n.app('newLabel')}" icon="pi pi-plus" process="@this" actionListener="#{consultationBean.startNewConsultation}"
                                                      update="form:contentModePanel form:messages" styleClass="ui-button-success ui-button-sm"/>
-                                    <p:commandButton value="Save Consultation" icon="pi pi-check" process="@form"
+                                        <p:commandButton value="#{i18n.app('saveConsultationLabel')}" icon="pi pi-check" process="@form"
                                                      actionListener="#{consultationBean.saveConsultation}"
                                                      disabled="#{consultationBean.readOnlyMode}"
                                                      update="form:contentModePanel form:messages"
@@ -278,18 +276,18 @@
 
                             <div class="grid">
                                 <div class="col-12 md:col-6">
-                                    <label>Consultation No *</label>
+                                    <label>#{i18n.app('consultationNumberLabel')} *</label>
                                     <p:inputText value="#{consultationBean.consultation.consultationNumber}" maxlength="40" style="width:100%;" readonly="#{consultationBean.readOnlyMode}"/>
                                 </div>
                                 <div class="col-12 md:col-6">
-                                    <label>Consultation Date *</label>
+                                    <label>#{i18n.app('consultationDateLabel')} *</label>
                                     <p:datePicker value="#{consultationBean.consultationDateTime}" pattern="dd/MM/yyyy HH:mm"
                                                   showTime="true" hourFormat="24" style="width:100%;" disabled="#{consultationBean.readOnlyMode}"/>
                                 </div>
                                 <div class="col-12 md:col-6">
-                                    <label>Doctor *</label>
+                                    <label>#{i18n.app('doctorLabel')} *</label>
                                     <p:selectOneMenu value="#{consultationBean.selectedDoctorId}" style="width:100%;" disabled="#{consultationBean.readOnlyMode}">
-                                        <f:selectItem itemLabel="Select Doctor" itemValue="#{null}" noSelectionOption="true"/>
+                                        <f:selectItem itemLabel="#{i18n.app('selectDoctorLabel')}" itemValue="#{null}" noSelectionOption="true"/>
                                         <f:selectItems value="#{consultationBean.doctorList}" var="doctor"
                                                        itemValue="#{doctor.id}" itemLabel="#{doctor.doctorName} - #{doctor.specialization}"/>
                                         <p:ajax listener="#{consultationBean.onDoctorChange}" process="@this"
@@ -297,16 +295,16 @@
                                     </p:selectOneMenu>
                                 </div>
                                 <div class="col-12 md:col-6">
-                                    <label>Patient *</label>
+                                    <label>#{i18n.app('patientLabel')} *</label>
                                     <p:selectOneMenu value="#{consultationBean.selectedPatientId}" style="width:100%;" disabled="#{consultationBean.readOnlyMode}">
-                                        <f:selectItem itemLabel="Select Patient" itemValue="#{null}" noSelectionOption="true"/>
+                                        <f:selectItem itemLabel="#{i18n.app('selectPatientLabel')}" itemValue="#{null}" noSelectionOption="true"/>
                                         <f:selectItems value="#{consultationBean.patientList}" var="patient"
                                                        itemValue="#{patient.id}" itemLabel="#{patient.patientCode} - #{patient.patientName}"/>
                                         <p:ajax listener="#{consultationBean.onPatientChange}" process="@this" update="form:previewTabsPanel"/>
                                     </p:selectOneMenu>
                                 </div>
                                 <div class="col-12 md:col-4">
-                                    <label>Consultation Fee</label>
+                                    <label>#{i18n.app('consultationFeeLabel')}</label>
                                     <p:inputNumber value="#{consultationBean.consultation.consultationFee}" decimalPlaces="2" minValue="0" readonly="#{consultationBean.readOnlyMode}">
                                         <p:ajax process="@this" update="form:previewTabsPanel"/>
                                     </p:inputNumber>
@@ -317,7 +315,7 @@
                                             <p:ajax listener="#{consultationBean.onInvoiceToggle}" process="@this"
                                                     update="form:consultationEditorPanel form:previewTabsPanel"/>
                                         </p:selectBooleanCheckbox>
-                                        <p:outputLabel for="issueInvoice" value="Generate Invoice"/>
+                                        <p:outputLabel for="issueInvoice" value="#{i18n.app('generateInvoiceLabel')}"/>
                                     </div>
                                 </div>
                                 <div class="col-12 md:col-4">
@@ -326,62 +324,62 @@
                                             <p:ajax listener="#{consultationBean.onMedicalCertificateToggle}" process="@this"
                                                     update="form:consultationEditorPanel form:previewTabsPanel"/>
                                         </p:selectBooleanCheckbox>
-                                        <p:outputLabel for="issueMedicalCertificate" value="Generate Medical Certificate"/>
+                                        <p:outputLabel for="issueMedicalCertificate" value="#{i18n.app('generateMedicalCertificateLabel')}"/>
                                     </div>
                                 </div>
                                 <div class="col-12 md:col-4">
-                                    <label>Paid By</label>
+                                    <label>#{i18n.app('paidByLabel')}</label>
                                     <p:selectOneMenu value="#{consultationBean.consultation.invoicePaidBy}" style="width:100%;" disabled="#{not consultationBean.invoiceAvailable or consultationBean.readOnlyMode}">
                                         <f:selectItems value="#{consultationBean.availablePaidByOptions}"/>
                                     </p:selectOneMenu>
                                 </div>
                                 <div class="col-12 md:col-4">
-                                    <label>Invoice Issue Date</label>
+                                    <label>#{i18n.app('invoiceIssueDateLabel')}</label>
                                     <p:datePicker value="#{consultationBean.invoiceIssueDate}" pattern="dd/MM/yyyy" style="width:100%;" disabled="#{not consultationBean.invoiceAvailable or consultationBean.readOnlyMode}"/>
                                 </div>
                                 <div class="col-12 md:col-4">
-                                    <label>Invoice Due Date</label>
+                                    <label>#{i18n.app('invoiceDueDateLabel')}</label>
                                     <p:datePicker value="#{consultationBean.invoiceDueDate}" pattern="dd/MM/yyyy" style="width:100%;" disabled="#{not consultationBean.invoiceAvailable or consultationBean.readOnlyMode}"/>
                                 </div>
                                 <div class="col-12">
-                                    <label>Symptoms</label>
+                                    <label>#{i18n.app('symptomsLabel')}</label>
                                     <p:inputTextarea value="#{consultationBean.consultation.symptoms}" rows="3" autoResize="false" style="width:100%;" readonly="#{consultationBean.readOnlyMode}"/>
                                 </div>
                                 <div class="col-12">
-                                    <label>Family History</label>
+                                    <label>#{i18n.app('familyHistoryLabel')}</label>
                                     <p:inputTextarea value="#{consultationBean.consultation.familyHistory}" rows="2" autoResize="false" style="width:100%;" readonly="#{consultationBean.readOnlyMode}"/>
                                 </div>
                                 <div class="col-12 md:col-6">
-                                    <label>Vitals</label>
+                                    <label>#{i18n.app('vitalsLabel')}</label>
                                     <p:inputTextarea value="#{consultationBean.consultation.vitals}" rows="3" autoResize="false" style="width:100%;" readonly="#{consultationBean.readOnlyMode}"/>
                                 </div>
                                 <div class="col-12 md:col-6">
-                                    <label>Findings</label>
+                                    <label>#{i18n.app('findingsLabel')}</label>
                                     <p:inputTextarea value="#{consultationBean.consultation.findings}" rows="3" autoResize="false" style="width:100%;" readonly="#{consultationBean.readOnlyMode}"/>
                                 </div>
                                 <div class="col-12">
-                                    <label>Diagnosis</label>
+                                    <label>#{i18n.app('diagnosisLabel')}</label>
                                     <p:inputTextarea value="#{consultationBean.consultation.diagnosis}" rows="3" autoResize="false" style="width:100%;" readonly="#{consultationBean.readOnlyMode}"/>
                                 </div>
                                 <div class="col-12">
-                                    <label>Follow Up</label>
+                                    <label>#{i18n.app('followUpLabel')}</label>
                                     <p:inputTextarea value="#{consultationBean.consultation.followUpNote}" rows="2" autoResize="false" style="width:100%;" readonly="#{consultationBean.readOnlyMode}"/>
                                 </div>
                                 <div class="col-12">
-                                    <label>Doctor Notes</label>
+                                    <label>#{i18n.app('doctorNotesLabel')}</label>
                                     <p:inputTextarea value="#{consultationBean.consultation.doctorNotes}" rows="3" autoResize="false" style="width:100%;" readonly="#{consultationBean.readOnlyMode}"/>
                                 </div>
                             </div>
 
                             <p:outputPanel id="medicineLinePanel" layout="block">
                                 <div class="card" style="margin-top:1rem;border:1px solid #e2e8f0;box-shadow:none;background:#f8fafc;">
-                                    <h3 style="margin-top:0;">Prescription Lines</h3>
+                                    <h3 style="margin-top:0;">#{i18n.app('prescriptionLinesLabel')}</h3>
                                     <p:outputPanel layout="block" rendered="#{not consultationBean.readOnlyMode}">
                                     <div class="grid">
                                         <div class="col-12 md:col-6">
-                                            <label>Medicine</label>
+                                            <label>#{i18n.app('medicineLabel')}</label>
                                             <p:selectOneMenu value="#{consultationBean.draftMedicineLine.medicineId}" style="width:100%;">
-                                                <f:selectItem itemLabel="Select Medicine" itemValue="#{null}" noSelectionOption="true"/>
+                                                <f:selectItem itemLabel="#{i18n.app('selectMedicineLabel')}" itemValue="#{null}" noSelectionOption="true"/>
                                                 <f:selectItems value="#{consultationBean.medicineList}" var="medicine"
                                                                itemValue="#{medicine.id}" itemLabel="#{medicine.medicineName} - #{medicine.strength}"/>
                                                 <p:ajax listener="#{consultationBean.onDraftMedicineChange}" process="@this"
@@ -389,35 +387,35 @@
                                             </p:selectOneMenu>
                                         </div>
                                         <div class="col-12 md:col-6">
-                                            <label>Description</label>
+                                            <label>#{i18n.app('descriptionLabel')}</label>
                                             <p:inputText value="#{consultationBean.draftMedicineLine.descriptionText}" style="width:100%;"/>
                                         </div>
                                         <div class="col-12 md:col-3">
-                                            <label>Dose</label>
+                                            <label>#{i18n.app('doseLabel')}</label>
                                             <p:inputText value="#{consultationBean.draftMedicineLine.dose}" style="width:100%;"/>
                                         </div>
                                         <div class="col-12 md:col-3">
-                                            <label>Frequency</label>
+                                            <label>#{i18n.app('frequencyLabel')}</label>
                                             <p:inputText value="#{consultationBean.draftMedicineLine.frequency}" style="width:100%;"/>
                                         </div>
                                         <div class="col-12 md:col-3">
-                                            <label>Duration</label>
+                                            <label>#{i18n.app('durationLabel')}</label>
                                             <p:inputText value="#{consultationBean.draftMedicineLine.durationText}" style="width:100%;"/>
                                         </div>
                                         <div class="col-12 md:col-3">
-                                            <label>Quantity</label>
+                                            <label>#{i18n.app('quantityLabel')}</label>
                                             <p:inputNumber value="#{consultationBean.draftMedicineLine.quantity}" decimalPlaces="2" minValue="0"/>
                                         </div>
                                         <div class="col-12 md:col-4">
-                                            <label>Unit Price</label>
+                                            <label>#{i18n.app('unitPriceLabel')}</label>
                                             <p:inputNumber value="#{consultationBean.draftMedicineLine.unitPrice}" decimalPlaces="2" minValue="0"/>
                                         </div>
                                         <div class="col-12 md:col-8">
-                                            <label>Remarks</label>
+                                            <label>#{i18n.app('remarksLabel')}</label>
                                             <p:inputText value="#{consultationBean.draftMedicineLine.remarks}" style="width:100%;"/>
                                         </div>
                                         <div class="col-12">
-                                            <p:commandButton value="Add Medicine Line" icon="pi pi-plus" process="medicineLinePanel"
+                                            <p:commandButton value="#{i18n.app('addMedicineLineLabel')}" icon="pi pi-plus" process="medicineLinePanel"
                                                              actionListener="#{consultationBean.addMedicineLine}"
                                                              update="form:medicineLinePanel form:previewTabsPanel form:messages"
                                                              styleClass="ui-button-success ui-button-sm"/>
@@ -426,19 +424,19 @@
                                     </p:outputPanel>
 
                                     <p:dataTable value="#{consultationBean.medicineLines}" var="line" reflow="true"
-                                                 emptyMessage="No medicines added yet." style="margin-top:1rem;">
-                                        <p:column headerText="Medicine">
+                                                 emptyMessage="#{i18n.app('noMedicinesAddedYetMessage')}" style="margin-top:1rem;">
+                                        <p:column headerText="#{i18n.app('medicineLabel')}">
                                             <div><strong>#{line.medicineName}</strong></div>
                                             <div style="font-size:.85rem;color:#64748b;">#{line.descriptionText}</div>
                                         </p:column>
-                                        <p:column headerText="Instruction">
+                                        <p:column headerText="#{i18n.app('instructionLabel')}">
                                             <div>#{line.dose}</div>
                                             <div style="font-size:.85rem;color:#64748b;">#{line.frequency} | #{line.durationText}</div>
                                         </p:column>
-                                        <p:column headerText="Qty">#{line.quantity}</p:column>
-                                        <p:column headerText="Price">#{consultationBean.previewCurrencySymbol} #{line.unitPrice}</p:column>
-                                        <p:column headerText="Total">#{consultationBean.previewCurrencySymbol} #{line.lineTotal}</p:column>
-                                        <p:column headerText="Actions" style="width:4rem;" rendered="#{not consultationBean.readOnlyMode}">
+                                        <p:column headerText="#{i18n.app('quantityLabel')}">#{line.quantity}</p:column>
+                                        <p:column headerText="#{i18n.app('priceLabel')}">#{consultationBean.previewCurrencySymbol} #{line.unitPrice}</p:column>
+                                        <p:column headerText="#{i18n.app('totalLabel')}">#{consultationBean.previewCurrencySymbol} #{line.lineTotal}</p:column>
+                                        <p:column headerText="#{i18n.app('actionsLabel')}" style="width:4rem;" rendered="#{not consultationBean.readOnlyMode}">
                                             <p:commandButton icon="pi pi-trash" process="@this" styleClass="rounded-button ui-button-warning ui-button-sm"
                                                              actionListener="#{consultationBean.removeMedicineLine}"
                                                              update="form:medicineLinePanel form:previewTabsPanel form:messages">
@@ -450,25 +448,25 @@
                             </p:outputPanel>
 
                             <div class="card" style="margin-top:1rem;border:1px solid #e2e8f0;box-shadow:none;background:#f8fafc;">
-                                <h3 style="margin-top:0;">Medical Certificate Details</h3>
+                                <h3 style="margin-top:0;">#{i18n.app('medicalCertificateDetailsLabel')}</h3>
                                 <div class="grid">
                                     <div class="col-12 md:col-6">
-                                        <label>Disease / Illness</label>
+                                        <label>#{i18n.app('diseaseIllnessLabel')}</label>
                                         <p:inputText value="#{consultationBean.consultation.medicalCertificateDisease}" style="width:100%;"
                                                      disabled="#{not consultationBean.medicalCertificateAvailable or consultationBean.readOnlyMode}"/>
                                     </div>
                                     <div class="col-12 md:col-6">
-                                        <label>Treatment Duration</label>
+                                        <label>#{i18n.app('treatmentDurationLabel')}</label>
                                         <p:inputText value="#{consultationBean.consultation.medicalCertificateTreatmentDuration}" style="width:100%;"
                                                      disabled="#{not consultationBean.medicalCertificateAvailable or consultationBean.readOnlyMode}"/>
                                     </div>
                                     <div class="col-12 md:col-6">
-                                        <label>Certificate Place</label>
+                                        <label>#{i18n.app('certificatePlaceLabel')}</label>
                                         <p:inputText value="#{consultationBean.consultation.medicalCertificatePlace}" style="width:100%;"
                                                      disabled="#{not consultationBean.medicalCertificateAvailable or consultationBean.readOnlyMode}"/>
                                     </div>
                                     <div class="col-12 md:col-6">
-                                        <label>Certificate Fee</label>
+                                        <label>#{i18n.app('certificateFeeLabel')}</label>
                                         <p:inputNumber value="#{consultationBean.consultation.medicalCertificateFee}" decimalPlaces="2" minValue="0"
                                                        disabled="#{not consultationBean.medicalCertificateAvailable or consultationBean.readOnlyMode}">
                                             <p:ajax process="@this" update="form:previewTabsPanel"/>
@@ -482,13 +480,13 @@
                         <div class="col-12 #{consultationBean.readOnlyMode ? 'xl:col-12' : 'xl:col-7'}">
                             <p:outputPanel id="previewTabsPanel">
                                 <p:tabView activeIndex="#{consultationBean.activePreviewTabIndex}">
-                                    <p:tab title="Prescription">
+                                    <p:tab title="#{i18n.app('prescriptionLabel')}">
                                         <ui:include src="/WEB-INF/consultation/prescription-preview.xhtml"/>
                                     </p:tab>
-                                    <p:tab title="Invoice">
+                                    <p:tab title="#{i18n.app('invoiceLabel')}">
                                         <ui:include src="/WEB-INF/consultation/invoice-preview.xhtml"/>
                                     </p:tab>
-                                    <p:tab title="Medical Certificate">
+                                    <p:tab title="#{i18n.app('medicalCertificateLabel')}">
                                         <ui:include src="/WEB-INF/consultation/medical-certificate-preview.xhtml"/>
                                     </p:tab>
                                 </p:tabView>
@@ -499,12 +497,12 @@
                 </p:outputPanel>
             </div>
 
-            <p:confirmDialog widgetVar="deleteConsultationDialog" header="Confirm Delete" severity="warn"
-                             message="Delete the selected consultation?">
-                <p:commandButton value="Yes" icon="pi pi-check" actionListener="#{consultationBean.confirmDeleteConsultation}"
+            <p:confirmDialog widgetVar="deleteConsultationDialog" header="#{i18n.app('confirmDeleteLabel')}" severity="warn"
+                             message="#{i18n.app('deleteSelectedConsultationMessage')}">
+                <p:commandButton value="#{i18n.core('yesLabel')}" icon="pi pi-check" actionListener="#{consultationBean.confirmDeleteConsultation}"
                                  process="@this" update=":form:contentModePanel :form:messages"
                                  oncomplete="PF('deleteConsultationDialog').hide()"/>
-                <p:commandButton value="No" type="button" icon="pi pi-times" onclick="PF('deleteConsultationDialog').hide()"
+                <p:commandButton value="#{i18n.core('noLabel')}" type="button" icon="pi pi-times" onclick="PF('deleteConsultationDialog').hide()"
                                  styleClass="ui-button-secondary"/>
             </p:confirmDialog>
         </h:form>

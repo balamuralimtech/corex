@@ -37,16 +37,16 @@
                 <div class="report-hero">
                     <div class="grid align-items-start">
                         <div class="col-12 lg:col-8">
-                            <h1 class="report-title">Clinic Report</h1>
+                            <h1 class="report-title">#{i18n.app('clinicReportTitle')}</h1>
                             <div class="report-copy">
-                                Review patient age groups, gender mix, visit frequency, and clinic traffic patterns for the selected reporting window.
+                                #{i18n.app('clinicReportDescription')}
                             </div>
                         </div>
                         <div class="col-12 lg:col-4">
                             <div style="padding:1rem;border-radius:18px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);">
-                                <div style="font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(187,247,208,.9);">Current Window</div>
+                                <div style="font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(187,247,208,.9);">#{i18n.app('currentWindowLabel')}</div>
                                 <div style="margin-top:.45rem;font-size:1.3rem;font-weight:700;">#{clinicReportBean.reportWindowLabel}</div>
-                                <div style="margin-top:.5rem;font-size:.92rem;color:rgba(220,252,231,.92);">Organization-level clinic analytics</div>
+                                <div style="margin-top:.5rem;font-size:.92rem;color:rgba(220,252,231,.92);">#{i18n.app('clinicReportWindowSubtitle')}</div>
                             </div>
                         </div>
                     </div>
@@ -55,16 +55,16 @@
                 <div class="report-panel">
                     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
                         <div>
-                            <h3 class="report-panel-title">Report Filters</h3>
-                            <div class="report-panel-subtitle">Choose organization and period before fetching clinic-level patient and visit analytics.</div>
+                            <h3 class="report-panel-title">#{i18n.app('reportFiltersLabel')}</h3>
+                            <div class="report-panel-subtitle">#{i18n.app('reportChooseClinicFiltersLabel')}</div>
                         </div>
                     </div>
                     <div class="grid">
                         <div class="col-12 md:col-4">
-                            <label>Organization</label>
+                            <label>#{i18n.core('organizationLabel')}</label>
                             <h:panelGroup rendered="#{clinicReportBean.applicationAdmin}" layout="block">
                                 <p:selectOneMenu value="#{clinicReportBean.selectedOrganizationId}" style="width:100%;">
-                                    <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                    <f:selectItem itemLabel="#{i18n.app('selectOrganizationLabel')}" itemValue="#{null}" noSelectionOption="true"/>
                                     <f:selectItems value="#{clinicReportBean.organizationList}" var="organization"
                                                    itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
                                     <p:ajax listener="#{clinicReportBean.onOrganizationChange}" process="@this" update="form"/>
@@ -76,20 +76,20 @@
                             </h:panelGroup>
                         </div>
                         <div class="col-12 md:col-4">
-                            <label>Period Scope</label>
+                            <label>#{i18n.app('periodScopeLabel')}</label>
                             <p:selectOneMenu value="#{clinicReportBean.periodScope}" style="width:100%;">
-                                <f:selectItem itemLabel="Daily" itemValue="DAILY"/>
-                                <f:selectItem itemLabel="Weekly" itemValue="WEEKLY"/>
-                                <f:selectItem itemLabel="Monthly" itemValue="MONTHLY"/>
-                                <f:selectItem itemLabel="Yearly" itemValue="YEARLY"/>
+                                <f:selectItem itemLabel="#{i18n.app('dailyLabel')}" itemValue="DAILY"/>
+                                <f:selectItem itemLabel="#{i18n.app('weeklyLabel')}" itemValue="WEEKLY"/>
+                                <f:selectItem itemLabel="#{i18n.app('monthlyLabel')}" itemValue="MONTHLY"/>
+                                <f:selectItem itemLabel="#{i18n.app('yearlyLabel')}" itemValue="YEARLY"/>
                             </p:selectOneMenu>
                         </div>
                         <div class="col-12 md:col-4">
-                            <label>Reference Date</label>
+                            <label>#{i18n.app('referenceDateLabel')}</label>
                             <p:datePicker value="#{clinicReportBean.reportReferenceDate}" pattern="dd/MM/yyyy" style="width:100%;"/>
                         </div>
                         <div class="col-12" style="display:flex;align-items:flex-end;">
-                            <p:commandButton value="Fetch Clinic Report" icon="pi pi-search"
+                            <p:commandButton value="#{i18n.app('clinicReportFetchLabel')}" icon="pi pi-search"
                                              actionListener="#{clinicReportBean.fetchReport}"
                                              process="@form"
                                              update="form"

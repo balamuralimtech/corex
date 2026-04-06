@@ -64,8 +64,8 @@
                 <div class="col-12">
                     <p:breadCrumb>
                         <p:menuitem url="#" icon="pi pi-home"/>
-                        <p:menuitem value="Clinic Management" url="#"/>
-                        <p:menuitem value="Dashboard" url="#"/>
+                        <p:menuitem value="#{i18n.app('clinicManagementLabel')}" url="#"/>
+                        <p:menuitem value="#{i18n.app('dashboardLabel')}" url="#"/>
                     </p:breadCrumb>
                 </div>
 
@@ -78,7 +78,7 @@
                 <div class="clinic-dashboard-hero">
                     <div class="grid align-items-start">
                         <div class="col-12 lg:col-8">
-                            <h2 class="clinic-dashboard-title">Clinic Command Dashboard</h2>
+                            <h2 class="clinic-dashboard-title">#{i18n.app('clinicDashboardTitle')}</h2>
                             <div class="clinic-dashboard-copy">#{carexDashboardBean.dashboardInsights}</div>
                         </div>
                         <div class="col-12 lg:col-4">
@@ -87,10 +87,10 @@
                                     <span class="clinic-hero-chip-label">Auto Refresh</span>
                                     <span class="clinic-hero-chip-value"><span id="carexCountdownDisplay">60</span><span id="carexCountdownSuffix">s</span></span>
                                 </div>
-                                <label for="organizationSelect" style="display:block;font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(204,251,241,.82);">Organization Scope</label>
+                                <label for="organizationSelect" style="display:block;font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(204,251,241,.82);">#{i18n.core('organizationScopeLabel')}</label>
                                 <h:panelGroup rendered="#{carexDashboardBean.applicationAdmin}" layout="block">
                                     <p:selectOneMenu id="organizationSelect" value="#{carexDashboardBean.selectedOrganizationId}" style="display:block;width:100%;margin-top:.55rem;">
-                                        <f:selectItem itemLabel="All Organizations" itemValue="-1"/>
+                                        <f:selectItem itemLabel="#{i18n.app('allOrganizationsLabel')}" itemValue="-1"/>
                                         <f:selectItems value="#{carexDashboardBean.organizationList}" var="organization"
                                                        itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
                                         <p:ajax event="change"
@@ -106,14 +106,14 @@
                                     <h:outputText value="#{carexDashboardBean.currentOrganizationName}"/>
                                 </h:panelGroup>
                                 <div class="clinic-dashboard-actions" style="margin-top:1rem;">
-                                    <p:commandButton value="Refresh Now"
+                                    <p:commandButton value="#{i18n.app('refreshNowLabel')}"
                                                      action="#{carexDashboardBean.refreshDashboard}"
                                                      update="dashboardFormId"
                                                      onstart="beginCarexDashboardRefresh();"
                                                      oncomplete="restartCarexDashboardCountdown(); renderCarexDashboardCharts();"
                                                      styleClass="clinic-refresh-btn"/>
                                     <div style="display:flex;align-items:center;gap:.5rem;padding:.55rem .8rem;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);">
-                                        <span style="font-size:.9rem;font-weight:600;color:#f8fafc;">Auto Refresh</span>
+                                        <span style="font-size:.9rem;font-weight:600;color:#f8fafc;">#{i18n.app('autoRefreshLabel')}</span>
                                         <p:inputSwitch value="#{carexDashboardBean.timerEnabled}"
                                                        onLabel="On"
                                                        offLabel="Off"
@@ -130,104 +130,104 @@
 
                     <div class="clinic-dashboard-hero-strip">
                         <div class="clinic-hero-chip">
-                            <span class="clinic-hero-chip-label">Today Consultations</span>
+                            <span class="clinic-hero-chip-label">#{i18n.app('todayConsultationsLabel')}</span>
                             <span class="clinic-hero-chip-value">#{carexDashboardBean.todayConsultations}</span>
                         </div>
                         <div class="clinic-hero-chip">
-                            <span class="clinic-hero-chip-label">Total Revenue</span>
+                            <span class="clinic-hero-chip-label">#{i18n.app('totalRevenueLabel')}</span>
                             <span class="clinic-hero-chip-value">#{carexDashboardBean.formatCurrency(carexDashboardBean.totalRevenue)}</span>
                         </div>
                         <div class="clinic-hero-chip">
-                            <span class="clinic-hero-chip-label">Invoice Coverage</span>
+                            <span class="clinic-hero-chip-label">#{i18n.app('invoiceCoverageLabel')}</span>
                             <span class="clinic-hero-chip-value">#{carexDashboardBean.invoiceCoverageRate}%</span>
                         </div>
                         <div class="clinic-hero-chip">
-                            <span class="clinic-hero-chip-label">Low Stock Alert</span>
+                            <span class="clinic-hero-chip-label">#{i18n.app('lowStockAlertLabel')}</span>
                             <span class="clinic-hero-chip-value">#{carexDashboardBean.lowStockMedicines}</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="grid">
-                    <div class="col-12 md:col-6 xl:col-3"><div class="clinic-metric-card"><span class="clinic-metric-muted">Doctors</span><div class="clinic-metric-value">#{carexDashboardBean.totalDoctors}</div><div class="clinic-metric-foot">#{carexDashboardBean.activeDoctors} active and #{carexDashboardBean.linkedDoctors} linked to system users.</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="clinic-metric-card"><span class="clinic-metric-muted">Patients</span><div class="clinic-metric-value">#{carexDashboardBean.totalPatients}</div><div class="clinic-metric-foot">#{carexDashboardBean.activePatients} active records ready for consultation flow.</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="clinic-metric-card"><span class="clinic-metric-muted">Medicines</span><div class="clinic-metric-value">#{carexDashboardBean.totalMedicines}</div><div class="clinic-metric-foot">#{carexDashboardBean.lowStockMedicines} items are at or below reorder level.</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="clinic-metric-card"><span class="clinic-metric-muted">Consultations</span><div class="clinic-metric-value">#{carexDashboardBean.totalConsultations}</div><div class="clinic-metric-foot">#{carexDashboardBean.consultationsWithInvoice} invoices and #{carexDashboardBean.consultationsWithMedicalCertificate} MC issuances.</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="clinic-metric-card"><span class="clinic-metric-muted">Avg Revenue / Visit</span><div class="clinic-metric-value">#{carexDashboardBean.formatCurrency(carexDashboardBean.averageRevenuePerConsultation)}</div><div class="clinic-metric-foot">Blended across consultation fee, medicine lines, and certificate fee.</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="clinic-metric-card"><span class="clinic-metric-muted">Avg Medicine Value</span><div class="clinic-metric-value">#{carexDashboardBean.formatCurrency(carexDashboardBean.averageMedicineValue)}</div><div class="clinic-metric-foot">Average medicine basket value per consultation.</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="clinic-metric-card"><span class="clinic-metric-muted">Doctor Utilization</span><div class="clinic-metric-value">#{carexDashboardBean.doctorUtilizationRate}%</div><div class="clinic-metric-foot">Share of doctors that are currently active in the selected clinic.</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="clinic-metric-card"><span class="clinic-metric-muted">Patient Activation</span><div class="clinic-metric-value">#{carexDashboardBean.patientActivationRate}%</div><div class="clinic-metric-foot">Active patient records available for repeat clinical visits.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="clinic-metric-card"><span class="clinic-metric-muted">#{i18n.app('doctorsLabel')}</span><div class="clinic-metric-value">#{carexDashboardBean.totalDoctors}</div><div class="clinic-metric-foot"><h:outputFormat value="#{i18n.app('activeDoctorsFootnote')}"><f:param value="#{carexDashboardBean.activeDoctors}"/><f:param value="#{carexDashboardBean.linkedDoctors}"/></h:outputFormat></div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="clinic-metric-card"><span class="clinic-metric-muted">#{i18n.app('patientsLabel')}</span><div class="clinic-metric-value">#{carexDashboardBean.totalPatients}</div><div class="clinic-metric-foot"><h:outputFormat value="#{i18n.app('activePatientsFootnote')}"><f:param value="#{carexDashboardBean.activePatients}"/></h:outputFormat></div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="clinic-metric-card"><span class="clinic-metric-muted">#{i18n.app('medicinesLabel')}</span><div class="clinic-metric-value">#{carexDashboardBean.totalMedicines}</div><div class="clinic-metric-foot"><h:outputFormat value="#{i18n.app('medicinesFootnote')}"><f:param value="#{carexDashboardBean.lowStockMedicines}"/></h:outputFormat></div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="clinic-metric-card"><span class="clinic-metric-muted">#{i18n.app('consultationsLabel')}</span><div class="clinic-metric-value">#{carexDashboardBean.totalConsultations}</div><div class="clinic-metric-foot"><h:outputFormat value="#{i18n.app('consultationsFootnote')}"><f:param value="#{carexDashboardBean.consultationsWithInvoice}"/><f:param value="#{carexDashboardBean.consultationsWithMedicalCertificate}"/></h:outputFormat></div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="clinic-metric-card"><span class="clinic-metric-muted">#{i18n.app('averageRevenuePerVisitLabel')}</span><div class="clinic-metric-value">#{carexDashboardBean.formatCurrency(carexDashboardBean.averageRevenuePerConsultation)}</div><div class="clinic-metric-foot">#{i18n.app('averageRevenuePerVisitFootnote')}</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="clinic-metric-card"><span class="clinic-metric-muted">#{i18n.app('averageMedicineValueLabel')}</span><div class="clinic-metric-value">#{carexDashboardBean.formatCurrency(carexDashboardBean.averageMedicineValue)}</div><div class="clinic-metric-foot">#{i18n.app('averageMedicineValueFootnote')}</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="clinic-metric-card"><span class="clinic-metric-muted">#{i18n.app('doctorUtilizationLabel')}</span><div class="clinic-metric-value">#{carexDashboardBean.doctorUtilizationRate}%</div><div class="clinic-metric-foot">#{i18n.app('doctorUtilizationFootnote')}</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="clinic-metric-card"><span class="clinic-metric-muted">#{i18n.app('patientActivationLabel')}</span><div class="clinic-metric-value">#{carexDashboardBean.patientActivationRate}%</div><div class="clinic-metric-foot">#{i18n.app('patientActivationFootnote')}</div></div></div>
                 </div>
 
                 <div class="grid">
                     <div class="col-12 xl:col-8">
                         <div class="clinic-panel">
-                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">Care Footprint</h3><div class="clinic-panel-subtitle">Live inventory across doctors, patients, medicines, and consultations</div></div></div>
+                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">#{i18n.app('careFootprintLabel')}</h3><div class="clinic-panel-subtitle">#{i18n.app('careFootprintSubtitle')}</div></div></div>
                             <div id="clinicMixChart" class="clinic-chart"></div>
                         </div>
                     </div>
                     <div class="col-12 xl:col-4">
                         <div class="clinic-panel">
-                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">Document Mix</h3><div class="clinic-panel-subtitle">How the current consultation base is converting into generated documents</div></div></div>
+                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">#{i18n.app('documentMixLabel')}</h3><div class="clinic-panel-subtitle">#{i18n.app('documentMixSubtitle')}</div></div></div>
                             <div id="documentMixChart" class="clinic-chart-sm"></div>
                         </div>
                     </div>
                     <div class="col-12 xl:col-4">
                         <div class="clinic-panel">
-                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">Patient Gender Mix</h3><div class="clinic-panel-subtitle">Gender distribution from patient master data</div></div></div>
+                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">#{i18n.app('patientGenderMixLabel')}</h3><div class="clinic-panel-subtitle">#{i18n.app('patientGenderMixSubtitle')}</div></div></div>
                             <div id="patientGenderChart" class="clinic-chart-sm"></div>
                         </div>
                     </div>
                     <div class="col-12 xl:col-4">
                         <div class="clinic-panel">
-                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">Stock Pressure</h3><div class="clinic-panel-subtitle">Healthy versus low and critical medicine positions</div></div></div>
+                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">#{i18n.app('stockPressureLabel')}</h3><div class="clinic-panel-subtitle">#{i18n.app('stockPressureSubtitle')}</div></div></div>
                             <div id="stockStatusChart" class="clinic-chart-sm"></div>
                         </div>
                     </div>
                     <div class="col-12 xl:col-4">
                         <div class="clinic-panel">
-                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">Doctor Specializations</h3><div class="clinic-panel-subtitle">Visible mix of available doctor skill coverage</div></div></div>
+                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">#{i18n.app('doctorSpecializationsLabel')}</h3><div class="clinic-panel-subtitle">#{i18n.app('doctorSpecializationsSubtitle')}</div></div></div>
                             <div id="specializationChart" class="clinic-chart-sm"></div>
                         </div>
                     </div>
                     <div class="col-12 xl:col-6">
                         <div class="clinic-panel">
-                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">Seven-Day Revenue</h3><div class="clinic-panel-subtitle">Revenue captured from recent consultations</div></div></div>
+                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">#{i18n.app('sevenDayRevenueLabel')}</h3><div class="clinic-panel-subtitle">#{i18n.app('sevenDayRevenueSubtitle')}</div></div></div>
                             <div id="weeklyRevenueChart" class="clinic-chart-sm"></div>
                         </div>
                     </div>
                     <div class="col-12 xl:col-6">
                         <div class="clinic-panel">
-                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">Consultation Velocity</h3><div class="clinic-panel-subtitle">Last seven days of consultation volume</div></div></div>
+                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">#{i18n.app('consultationVelocityLabel')}</h3><div class="clinic-panel-subtitle">#{i18n.app('consultationVelocitySubtitle')}</div></div></div>
                             <div id="consultationVolumeChart" class="clinic-chart-sm"></div>
                         </div>
                     </div>
                     <div class="col-12 xl:col-6">
                         <div class="clinic-panel">
-                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">Patient Age Groups</h3><div class="clinic-panel-subtitle">Useful for pediatric, adult, and senior care planning</div></div></div>
+                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">#{i18n.app('patientAgeGroupsLabel')}</h3><div class="clinic-panel-subtitle">#{i18n.app('patientAgeGroupsSubtitle')}</div></div></div>
                             <div id="patientAgeChart" class="clinic-chart-sm"></div>
                         </div>
                     </div>
                     <div class="col-12 xl:col-6">
                         <div class="clinic-panel">
-                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">Operational Ratios</h3><div class="clinic-panel-subtitle">Quick percent-based signals for clinic readiness</div></div></div>
+                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">#{i18n.app('operationalRatiosLabel')}</h3><div class="clinic-panel-subtitle">#{i18n.app('operationalRatiosSubtitle')}</div></div></div>
                             <div id="quickHighlightsChart" class="clinic-chart-sm"></div>
                         </div>
                     </div>
                     <div class="col-12 xl:col-4">
                         <div class="clinic-panel">
-                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">Action Signals</h3><div class="clinic-panel-subtitle">Short operational readout from current live data</div></div></div>
+                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">#{i18n.app('actionSignalsLabel')}</h3><div class="clinic-panel-subtitle">#{i18n.app('actionSignalsSubtitle')}</div></div></div>
                             <div class="clinic-signal-board">
                                 <div class="clinic-signal clinic-signal-amber">
-                                    <h4>Inventory Pressure</h4>
-                                    <p>#{carexDashboardBean.lowStockMedicines} medicines are already at or below reorder level.</p>
+                                    <h4>#{i18n.app('inventoryPressureLabel')}</h4>
+                                    <p><h:outputFormat value="#{i18n.app('inventoryPressureText')}"><f:param value="#{carexDashboardBean.lowStockMedicines}"/></h:outputFormat></p>
                                 </div>
                                 <div class="clinic-signal clinic-signal-teal">
-                                    <h4>Document Throughput</h4>
-                                    <p>#{carexDashboardBean.consultationsWithInvoice} invoice-ready visits and #{carexDashboardBean.consultationsWithMedicalCertificate} medical-certificate cases are on record.</p>
+                                    <h4>#{i18n.app('documentThroughputLabel')}</h4>
+                                    <p><h:outputFormat value="#{i18n.app('documentThroughputText')}"><f:param value="#{carexDashboardBean.consultationsWithInvoice}"/><f:param value="#{carexDashboardBean.consultationsWithMedicalCertificate}"/></h:outputFormat></p>
                                 </div>
                                 <div class="clinic-signal clinic-signal-slate">
-                                    <h4>Summary</h4>
+                                    <h4>#{i18n.app('summaryLabel')}</h4>
                                     <p>#{carexDashboardBean.openSignals}</p>
                                 </div>
                             </div>
@@ -235,30 +235,30 @@
                     </div>
                     <div class="col-12 xl:col-8">
                         <div class="clinic-panel">
-                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">Recent Consultations</h3><div class="clinic-panel-subtitle">Latest activity in the selected organization</div></div></div>
+                            <div class="clinic-panel-header"><div><h3 class="clinic-panel-title">#{i18n.app('recentConsultationsLabel')}</h3><div class="clinic-panel-subtitle">#{i18n.app('recentConsultationsSubtitle')}</div></div></div>
                             <p:dataTable value="#{carexDashboardBean.recentConsultations}" var="consultationRow" reflow="true"
-                                         emptyMessage="No consultations available for the selected organization.">
-                                <p:column headerText="Consultation">
+                                         emptyMessage="#{i18n.app('noConsultationsAvailableMessage')}">
+                                <p:column headerText="#{i18n.app('consultationLabel')}">
                                     <div style="font-weight:700;">#{consultationRow.consultationNumber}</div>
                                     <div style="font-size:.84rem;color:#64748b;">#{carexDashboardBean.getRecentConsultationDate(consultationRow)}</div>
                                 </p:column>
-                                <p:column headerText="Doctor">
+                                <p:column headerText="#{i18n.app('doctorLabel')}">
                                     <div>#{consultationRow.doctor.doctorName}</div>
                                     <div style="font-size:.84rem;color:#64748b;">#{consultationRow.doctor.specialization}</div>
                                 </p:column>
-                                <p:column headerText="Patient">
+                                <p:column headerText="#{i18n.app('patientLabel')}">
                                     <div>#{consultationRow.patient.patientName}</div>
                                     <div style="font-size:.84rem;color:#64748b;">#{consultationRow.patient.patientCode}</div>
                                 </p:column>
-                                <p:column headerText="Documents">
-                                    <span class="clinic-table-chip #{consultationRow.issueInvoice ? 'clinic-chip-invoice' : 'clinic-chip-noinvoice'}">Invoice: #{consultationRow.issueInvoice ? 'Yes' : 'No'}</span>
+                                <p:column headerText="#{i18n.app('documentsLabel')}">
+                                    <span class="clinic-table-chip #{consultationRow.issueInvoice ? 'clinic-chip-invoice' : 'clinic-chip-noinvoice'}">#{i18n.app('invoiceShortLabel')}: #{consultationRow.issueInvoice ? i18n.core('yesLabel') : i18n.core('noLabel')}</span>
                                     <br/>
-                                    <span class="clinic-table-chip #{consultationRow.issueMedicalCertificate ? 'clinic-chip-invoice' : 'clinic-chip-noinvoice'}" style="margin-top:.35rem;">MC: #{consultationRow.issueMedicalCertificate ? 'Yes' : 'No'}</span>
+                                    <span class="clinic-table-chip #{consultationRow.issueMedicalCertificate ? 'clinic-chip-invoice' : 'clinic-chip-noinvoice'}" style="margin-top:.35rem;">#{i18n.app('medicalCertificateShortLabel')}: #{consultationRow.issueMedicalCertificate ? i18n.core('yesLabel') : i18n.core('noLabel')}</span>
                                 </p:column>
-                                <p:column headerText="Revenue">
+                                <p:column headerText="#{i18n.app('revenueLabel')}">
                                     #{carexDashboardBean.formatCurrency(consultationRow.invoiceTotal)}
                                 </p:column>
-                                <p:column headerText="Status">
+                                <p:column headerText="#{i18n.app('statusLabel')}">
                                     <p:tag value="#{consultationRow.status}" severity="info"/>
                                 </p:column>
                             </p:dataTable>

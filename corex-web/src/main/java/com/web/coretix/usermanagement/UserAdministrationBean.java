@@ -81,6 +81,8 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
     private static final Logger logger = LoggerFactory.getLogger(UserAdministrationBean.class);
     private static final DateTimeFormatter NOTIFICATION_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd-MMM-yyyy hh:mm:ss a");
     private static final int AVATAR_IMAGE_SIZE = 320;
+    private static final byte[] EMPTY_CROPPER_IMAGE = Base64.getDecoder().decode(
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4////fwAJ+wP9KobjigAAAABJRU5ErkJggg==");
     private static final String ALL_ORGANIZATIONS = "__ALL_ORGANIZATIONS__";
     private static final String ALL_USERS = "__ALL_USERS__";
     private List<UserDetails> usersList = new ArrayList<>();
@@ -109,6 +111,8 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
     private String selectedOrganizationFilter;
     private String selectedUserFilter;
     private UploadedFile profileImageFile;
+    private byte[] uploadedProfileImageBytes;
+    private String uploadedProfileImageContentType;
     private CroppedImage croppedProfileImage;
     private boolean removeProfileImage;
 
@@ -148,10 +152,9 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         datatableRendered = false;
         recordsCount = 0;
 
-        UsersStatusCountTO usersStatusCountTO = userAdministrationService.populateUsersStatusCount();
-        usersLoggedInCount = usersStatusCountTO.getUsersLoggedInCount();
-        usersLoggedOutCount = usersStatusCountTO.getUsersLoggedOutCount();
-        usersNeverLoggedinCount = usersStatusCountTO.getUsersNeverLoggedInCount();
+        usersLoggedInCount = 0;
+        usersLoggedOutCount = 0;
+        usersNeverLoggedinCount = 0;
         logger.debug("usersLoggedInCount : "+usersLoggedInCount);
         logger.debug("usersLoggedOutCount : "+usersLoggedOutCount);
         logger.debug("usersNeverLoggedinCount : "+usersNeverLoggedinCount);
@@ -172,6 +175,8 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         selectedOrganizationFilter = resolveDefaultOrganizationFilter();
         selectedUserFilter = ALL_USERS;
         profileImageFile = null;
+        uploadedProfileImageBytes = null;
+        uploadedProfileImageContentType = null;
         croppedProfileImage = null;
         removeProfileImage = false;
 
@@ -201,6 +206,8 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         setAddress("");
         setAccessRight("");
         profileImageFile = null;
+        uploadedProfileImageBytes = null;
+        uploadedProfileImageContentType = null;
         croppedProfileImage = null;
         removeProfileImage = false;
     }
@@ -237,7 +244,6 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
     public void onUserFilterChange() {
         searchButtonAction();
     }
-
 
     public void confirmEditButtonAction() {
         editCountry();
@@ -276,6 +282,8 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         setAddress(getSelectedUserDetail().getAddress());
         setAccessRight(AccessRightConstants.getById(getSelectedUserDetail().getAccessRight()).getValue());
         profileImageFile = null;
+        uploadedProfileImageBytes = null;
+        uploadedProfileImageContentType = null;
         croppedProfileImage = null;
         removeProfileImage = false;
 
@@ -460,6 +468,8 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
     public void handleProfileImageUpload(FileUploadEvent event) {
         UploadedFile uploadedFile = event == null ? null : event.getFile();
         profileImageFile = null;
+        uploadedProfileImageBytes = null;
+        uploadedProfileImageContentType = null;
         croppedProfileImage = null;
         removeProfileImage = false;
 
@@ -472,6 +482,8 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
 
         validateProfileImage(uploadedFile);
         profileImageFile = uploadedFile;
+        uploadedProfileImageBytes = uploadedFile.getContent();
+        uploadedProfileImageContentType = uploadedFile.getContentType();
 
         FacesContext.getCurrentInstance().addMessage(null,
                 new FacesMessage(FacesMessage.SEVERITY_INFO, "Profile Image", uploadedFile.getFileName() + " uploaded."));
@@ -1003,9 +1015,8 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
             return;
         }
 
-        if (profileImageFile != null && profileImageFile.getFileName() != null && !profileImageFile.getFileName().trim().isEmpty()) {
-            validateProfileImage(profileImageFile);
-            AvatarImage avatarImage = resizeImageToAvatar(profileImageFile.getContent(), profileImageFile.getContentType());
+        if (uploadedProfileImageBytes != null && uploadedProfileImageBytes.length > 0) {
+            AvatarImage avatarImage = resizeImageToAvatar(uploadedProfileImageBytes, uploadedProfileImageContentType);
             userDetails.setProfileImage(avatarImage.getBytes());
             userDetails.setProfileImageContentType(avatarImage.getContentType());
             return;
@@ -1072,6 +1083,11 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
             return "data:image/png;base64," + Base64.getEncoder().encodeToString(croppedProfileImage.getBytes());
         }
 
+        if (uploadedProfileImageBytes != null && uploadedProfileImageBytes.length > 0) {
+            String previewContentType = uploadedProfileImageContentType == null ? "image/png" : uploadedProfileImageContentType;
+            return "data:" + previewContentType + ";base64," + Base64.getEncoder().encodeToString(uploadedProfileImageBytes);
+        }
+
         UserDetails imageSource = selectedUserDetail;
         if (imageSource == null || imageSource.getProfileImage() == null || imageSource.getProfileImage().length == 0
                 || imageSource.getProfileImageContentType() == null) {
@@ -1107,16 +1123,29 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
 
     public StreamedContent getUploadedProfileImage() {
         if (removeProfileImage) {
-            return null;
+            return buildEmptyCropperImage();
         }
 
-        if (profileImageFile == null || profileImageFile.getContent() == null || profileImageFile.getContent().length == 0) {
-            return null;
+        if (uploadedProfileImageBytes == null || uploadedProfileImageBytes.length == 0) {
+            return buildEmptyCropperImage();
         }
 
         return DefaultStreamedContent.builder()
-                .contentType(profileImageFile.getContentType())
-                .stream(() -> new ByteArrayInputStream(profileImageFile.getContent()))
+                .contentType(uploadedProfileImageContentType == null ? "image/png" : uploadedProfileImageContentType)
+                .stream(() -> new ByteArrayInputStream(uploadedProfileImageBytes))
+                .build();
+    }
+
+    public boolean isUploadedProfileImageAvailable() {
+        return !removeProfileImage
+                && uploadedProfileImageBytes != null
+                && uploadedProfileImageBytes.length > 0;
+    }
+
+    private StreamedContent buildEmptyCropperImage() {
+        return DefaultStreamedContent.builder()
+                .contentType("image/png")
+                .stream(() -> new ByteArrayInputStream(EMPTY_CROPPER_IMAGE))
                 .build();
     }
 

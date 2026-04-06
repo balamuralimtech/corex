@@ -15,16 +15,16 @@
 
                 <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-start gap-3 mb-4">
                     <div>
-                        <h1 style="margin:0;">Clinic Settings</h1>
+                        <h1 style="margin:0;">#{i18n.app('clinicSettingsPageTitle')}</h1>
                         <p style="margin:.5rem 0 0 0;color:#64748b;">
-                            Configure clinic operating hours, fee structure, invoice policy, and medical certificate handling.
+                            #{i18n.app('clinicSettingsPageDescription')}
                         </p>
                     </div>
                     <div class="surface-100 border-round px-3 py-2">
-                        <label for="organizationSelect"><strong>Organization:</strong></label>
+                        <label for="organizationSelect"><strong>#{i18n.core('organizationLabel')}:</strong></label>
                         <h:panelGroup rendered="#{clinicSettingsBean.applicationAdmin}" layout="block">
                             <p:selectOneMenu id="organizationSelect" value="#{clinicSettingsBean.selectedOrganizationId}" style="display:block;min-width:18rem;margin-top:.35rem;">
-                                <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItem itemLabel="#{i18n.app('selectOrganizationLabel')}" itemValue="#{null}" noSelectionOption="true"/>
                                 <f:selectItems value="#{clinicSettingsBean.organizationList}" var="organization"
                                                itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
                                 <p:ajax listener="#{clinicSettingsBean.onOrganizationChange}" process="@this" update="form:clinicSettingsPanel form:messages"/>
@@ -41,7 +41,7 @@
                     <div class="grid">
                         <div class="col-12">
                             <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
-                                <h3 style="margin-top:0;">Prescription Header and Footer Identity</h3>
+                                <h3 style="margin-top:0;">#{i18n.app('clinicSettingsIdentityLabel')}</h3>
                                 <div class="grid">
                                     <div class="col-12 md:col-6">
                                         <label>Clinic Name</label>
@@ -93,15 +93,15 @@
 
                         <div class="col-12">
                             <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
-                                <h3 style="margin-top:0;">Official Seal / Stamp</h3>
+                                <h3 style="margin-top:0;">#{i18n.app('clinicSettingsSealLabel')}</h3>
                                 <p style="margin-top:0;color:#64748b;">
-                                    Upload a dedicated clinic or hospital seal to use independently from the organization logo on generated documents.
+                                    #{i18n.app('clinicSettingsSealDescription')}
                                 </p>
                                 <div class="grid">
                                     <div class="col-12 lg:col-7">
                                         <div class="field-checkbox mb-3">
                                             <p:selectBooleanCheckbox id="showOfficialSeal" value="#{clinicSettingsBean.clinicSettings.showOfficialSeal}"/>
-                                            <p:outputLabel for="showOfficialSeal" value="Display official seal on Carex documents"/>
+                                            <p:outputLabel for="showOfficialSeal" value="#{i18n.app('clinicSettingsShowSealLabel')}"/>
                                         </div>
                                         <div class="mb-3">
                                             <p:fileUpload mode="advanced"
@@ -110,23 +110,23 @@
                                                           update="form:clinicSettingsPanel form:messages"
                                                           listener="#{clinicSettingsBean.handleSealUpload}"
                                                           sizeLimit="512000"
-                                                          invalidSizeMessage="Clinic seal must be 500 KB or smaller."
+                                                          invalidSizeMessage="#{i18n.app('clinicSettingsInvalidSealSize')}"
                                                           accept=".gif,.jpeg,.jpg,.png"/>
                                         </div>
                                         <div class="grid">
                                             <div class="col-12 md:col-6">
-                                                <label>Seal Placement</label>
+                                                <label>#{i18n.app('clinicSettingsSealPlacementLabel')}</label>
                                                 <p:selectOneMenu value="#{clinicSettingsBean.clinicSettings.sealDisplayMode}" style="width:100%;">
                                                     <f:selectItems value="#{clinicSettingsBean.sealDisplayModes}"/>
                                                 </p:selectOneMenu>
                                             </div>
                                             <div class="col-12 md:col-6">
-                                                <label>Seal Size (px)</label>
+                                                <label>#{i18n.app('clinicSettingsSealSizeLabel')}</label>
                                                 <p:spinner value="#{clinicSettingsBean.clinicSettings.sealSizePx}" min="48" max="180" stepFactor="4" style="width:100%;"/>
                                             </div>
                                         </div>
                                         <div class="mt-2">
-                                            <p:commandButton value="Remove Seal"
+                                            <p:commandButton value="#{i18n.app('clinicSettingsRemoveSealLabel')}"
                                                              icon="pi pi-trash"
                                                              actionListener="#{clinicSettingsBean.clearSeal}"
                                                              process="@this"
@@ -151,7 +151,7 @@
                                                     <div style="width:132px;height:132px;border:2px dashed #cbd5e1;border-radius:999px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem auto;font-weight:700;">
                                                         SEAL
                                                     </div>
-                                                    <div>No official seal uploaded</div>
+                                                    <div>#{i18n.app('clinicSettingsNoSealLabel')}</div>
                                                 </div>
                                             </h:panelGroup>
                                         </div>
@@ -162,19 +162,19 @@
 
                         <div class="col-12 lg:col-6">
                             <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
-                                <h3 style="margin-top:0;">Clinic Timings</h3>
+                                <h3 style="margin-top:0;">#{i18n.app('clinicSettingsTimingsLabel')}</h3>
                                 <div class="grid">
                                     <div class="col-12 md:col-4">
-                                        <label>Weekdays Open</label>
-                                        <p:selectBooleanButton value="#{clinicSettingsBean.clinicSettings.weekdaysOpen}" onLabel="Yes" offLabel="No" style="display:block;"/>
+                                        <label>#{i18n.app('clinicSettingsWeekdaysOpenLabel')}</label>
+                                        <p:selectBooleanButton value="#{clinicSettingsBean.clinicSettings.weekdaysOpen}" onLabel="#{i18n.core('yesLabel')}" offLabel="#{i18n.core('noLabel')}" style="display:block;"/>
                                     </div>
                                     <div class="col-12 md:col-4">
-                                        <label>Saturday Open</label>
-                                        <p:selectBooleanButton value="#{clinicSettingsBean.clinicSettings.saturdayOpen}" onLabel="Yes" offLabel="No" style="display:block;"/>
+                                        <label>#{i18n.app('clinicSettingsSaturdayOpenLabel')}</label>
+                                        <p:selectBooleanButton value="#{clinicSettingsBean.clinicSettings.saturdayOpen}" onLabel="#{i18n.core('yesLabel')}" offLabel="#{i18n.core('noLabel')}" style="display:block;"/>
                                     </div>
                                     <div class="col-12 md:col-4">
-                                        <label>Sunday Open</label>
-                                        <p:selectBooleanButton value="#{clinicSettingsBean.clinicSettings.sundayOpen}" onLabel="Yes" offLabel="No" style="display:block;"/>
+                                        <label>#{i18n.app('clinicSettingsSundayOpenLabel')}</label>
+                                        <p:selectBooleanButton value="#{clinicSettingsBean.clinicSettings.sundayOpen}" onLabel="#{i18n.core('yesLabel')}" offLabel="#{i18n.core('noLabel')}" style="display:block;"/>
                                     </div>
                                     <div class="col-12 md:col-6">
                                         <label>Opening Time</label>
@@ -202,16 +202,16 @@
 
                         <div class="col-12 lg:col-6">
                             <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
-                                <h3 style="margin-top:0;">Fees Structure</h3>
+                                <h3 style="margin-top:0;">#{i18n.app('clinicSettingsFeesLabel')}</h3>
                                 <div class="grid">
                                     <div class="col-12">
-                                        <label>Base Currency</label>
+                                        <label>#{i18n.app('clinicSettingsBaseCurrencyLabel')}</label>
                                         <p:autoComplete value="#{clinicSettingsBean.selectedBaseCurrencyDisplay}"
                                                         completeMethod="#{clinicSettingsBean.completeCurrency}"
                                                         dropdown="true"
                                                         forceSelection="true"
                                                         scrollHeight="250"
-                                                        placeholder="Search by currency code, symbol, or name"
+                                                        placeholder="#{i18n.app('clinicSettingsBaseCurrencyPlaceholder')}"
                                                         style="width:100%;"/>
                                         <small style="display:block;margin-top:.35rem;color:#64748b;">
                                             #{clinicSettingsBean.baseCurrencySummary}
@@ -222,11 +222,11 @@
                                         <p:inputNumber value="#{clinicSettingsBean.clinicSettings.consultationFee}" decimalPlaces="2" minValue="0" style="width:100%;"/>
                                     </div>
                                     <div class="col-12 md:col-6">
-                                        <label>Follow-up Fee</label>
+                                        <label>#{i18n.app('clinicSettingsFollowupFeeLabel')}</label>
                                         <p:inputNumber value="#{clinicSettingsBean.clinicSettings.followupFee}" decimalPlaces="2" minValue="0" style="width:100%;"/>
                                     </div>
                                     <div class="col-12 md:col-6">
-                                        <label>Registration Fee</label>
+                                        <label>#{i18n.app('clinicSettingsRegistrationFeeLabel')}</label>
                                         <p:inputNumber value="#{clinicSettingsBean.clinicSettings.registrationFee}" decimalPlaces="2" minValue="0" style="width:100%;"/>
                                     </div>
                                     <div class="col-12 md:col-6">
@@ -239,14 +239,14 @@
 
                         <div class="col-12 lg:col-6">
                             <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
-                                <h3 style="margin-top:0;">Operational Controls</h3>
+                                <h3 style="margin-top:0;">#{i18n.app('clinicSettingsOperationalControlsLabel')}</h3>
                                 <div class="field-checkbox mb-3">
                                     <p:selectBooleanCheckbox id="requireInvoice" value="#{clinicSettingsBean.clinicSettings.requireInvoice}"/>
-                                    <p:outputLabel for="requireInvoice" value="Require invoice generation for consultations"/>
+                                    <p:outputLabel for="requireInvoice" value="#{i18n.app('clinicSettingsRequireInvoiceLabel')}"/>
                                 </div>
                                 <div class="field-checkbox mb-3">
                                     <p:selectBooleanCheckbox id="requireMedicalCertificate" value="#{clinicSettingsBean.clinicSettings.requireMedicalCertificate}"/>
-                                    <p:outputLabel for="requireMedicalCertificate" value="Enable medical certificate issuance workflow"/>
+                                    <p:outputLabel for="requireMedicalCertificate" value="#{i18n.app('clinicSettingsRequireMedicalCertificateLabel')}"/>
                                 </div>
                             </div>
                         </div>
@@ -260,7 +260,7 @@
                     </div>
 
                     <div class="mt-4">
-                        <p:commandButton value="Save Clinic Settings" icon="pi pi-check"
+                        <p:commandButton value="#{i18n.app('clinicSettingsSaveLabel')}" icon="pi pi-check"
                                          actionListener="#{clinicSettingsBean.saveClinicSettings}"
                                          process="@form"
                                          update="form:messages form:clinicSettingsPanel"

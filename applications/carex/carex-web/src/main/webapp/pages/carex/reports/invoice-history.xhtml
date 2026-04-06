@@ -38,14 +38,14 @@
                 <div class="report-hero">
                     <div class="grid align-items-start">
                         <div class="col-12 lg:col-8">
-                            <h1 class="report-title">Invoice History</h1>
+                            <h1 class="report-title">#{i18n.app('invoiceHistoryTitle')}</h1>
                             <div class="report-copy">
-                                Review invoice history for all patients or a selected patient, with daily, weekly, monthly, and yearly filtering plus direct preview and PDF download.
+                                #{i18n.app('invoiceHistoryDescription')}
                             </div>
                         </div>
                         <div class="col-12 lg:col-4">
                             <div style="padding:1rem;border-radius:18px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);">
-                                <div style="font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(191,219,254,.9);">Current Window</div>
+                                <div style="font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(191,219,254,.9);">#{i18n.app('currentWindowLabel')}</div>
                                 <div style="margin-top:.45rem;font-size:1.3rem;font-weight:700;">#{invoiceHistoryReportBean.reportWindowLabel}</div>
                                 <div style="margin-top:.5rem;font-size:.92rem;color:rgba(219,234,254,.92);">#{invoiceHistoryReportBean.selectedPatientName}</div>
                             </div>
@@ -56,16 +56,16 @@
                 <div class="report-panel">
                     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;">
                         <div>
-                            <h3 class="report-panel-title">Report Filters</h3>
-                            <div class="report-panel-subtitle">Choose organization, patient scope, and period before fetching invoice history.</div>
+                            <h3 class="report-panel-title">#{i18n.app('reportFiltersLabel')}</h3>
+                            <div class="report-panel-subtitle">#{i18n.app('reportChoosePatientFiltersLabel')}</div>
                         </div>
                     </div>
                     <div class="grid">
                         <div class="col-12 md:col-3">
-                            <label>Organization</label>
+                            <label>#{i18n.core('organizationLabel')}</label>
                             <h:panelGroup rendered="#{invoiceHistoryReportBean.applicationAdmin}" layout="block">
                                 <p:selectOneMenu value="#{invoiceHistoryReportBean.selectedOrganizationId}" style="width:100%;">
-                                    <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                    <f:selectItem itemLabel="#{i18n.app('selectOrganizationLabel')}" itemValue="#{null}" noSelectionOption="true"/>
                                     <f:selectItems value="#{invoiceHistoryReportBean.organizationList}" var="organization"
                                                    itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
                                     <p:ajax listener="#{invoiceHistoryReportBean.onOrganizationChange}" process="@this" update="form"/>
@@ -77,36 +77,36 @@
                             </h:panelGroup>
                         </div>
                         <div class="col-12 md:col-3">
-                            <label>Patient Scope</label>
+                            <label>#{i18n.app('patientScopeLabel')}</label>
                             <p:selectOneMenu value="#{invoiceHistoryReportBean.patientScope}" style="width:100%;">
-                                <f:selectItem itemLabel="All Patients" itemValue="ALL"/>
-                                <f:selectItem itemLabel="Specific Patient" itemValue="SPECIFIC"/>
+                                <f:selectItem itemLabel="#{i18n.app('allPatientsLabel')}" itemValue="ALL"/>
+                                <f:selectItem itemLabel="#{i18n.app('specificPatientLabel')}" itemValue="SPECIFIC"/>
                                 <p:ajax listener="#{invoiceHistoryReportBean.onPatientScopeChange}" process="@this" update="form"/>
                             </p:selectOneMenu>
                         </div>
                         <div class="col-12 md:col-3">
-                            <label>Patient</label>
+                            <label>#{i18n.app('patientLabel')}</label>
                             <p:selectOneMenu value="#{invoiceHistoryReportBean.selectedPatientId}" style="width:100%;" disabled="#{invoiceHistoryReportBean.patientScope ne 'SPECIFIC'}">
-                                <f:selectItem itemLabel="Select Patient" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItem itemLabel="#{i18n.app('selectPatientLabel')}" itemValue="#{null}" noSelectionOption="true"/>
                                 <f:selectItems value="#{invoiceHistoryReportBean.patientList}" var="patient"
                                                itemValue="#{patient.id}" itemLabel="#{patient.patientCode} - #{patient.patientName}"/>
                             </p:selectOneMenu>
                         </div>
                         <div class="col-12 md:col-3">
-                            <label>Period Scope</label>
+                            <label>#{i18n.app('periodScopeLabel')}</label>
                             <p:selectOneMenu value="#{invoiceHistoryReportBean.periodScope}" style="width:100%;">
-                                <f:selectItem itemLabel="Daily" itemValue="DAILY"/>
-                                <f:selectItem itemLabel="Weekly" itemValue="WEEKLY"/>
-                                <f:selectItem itemLabel="Monthly" itemValue="MONTHLY"/>
-                                <f:selectItem itemLabel="Yearly" itemValue="YEARLY"/>
+                                <f:selectItem itemLabel="#{i18n.app('dailyLabel')}" itemValue="DAILY"/>
+                                <f:selectItem itemLabel="#{i18n.app('weeklyLabel')}" itemValue="WEEKLY"/>
+                                <f:selectItem itemLabel="#{i18n.app('monthlyLabel')}" itemValue="MONTHLY"/>
+                                <f:selectItem itemLabel="#{i18n.app('yearlyLabel')}" itemValue="YEARLY"/>
                             </p:selectOneMenu>
                         </div>
                         <div class="col-12 md:col-3">
-                            <label>Reference Date</label>
+                            <label>#{i18n.app('referenceDateLabel')}</label>
                             <p:datePicker value="#{invoiceHistoryReportBean.reportReferenceDate}" pattern="dd/MM/yyyy" style="width:100%;"/>
                         </div>
                         <div class="col-12 md:col-9" style="display:flex;align-items:flex-end;">
-                            <p:commandButton value="Fetch Invoice History" icon="pi pi-search"
+                            <p:commandButton value="#{i18n.app('invoiceHistoryFetchLabel')}" icon="pi pi-search"
                                              actionListener="#{invoiceHistoryReportBean.fetchReport}"
                                              process="@form"
                                              update="form"

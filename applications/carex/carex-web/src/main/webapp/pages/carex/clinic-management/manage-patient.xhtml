@@ -15,16 +15,14 @@
 
                 <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-start gap-3 mb-4">
                     <div>
-                        <h1 style="margin:0;">Manage Patient</h1>
-                        <p style="margin:.5rem 0 0 0;color:#64748b;">
-                            Register and maintain patients under the selected organization.
-                        </p>
+            <h1 style="margin:0;">#{i18n.app('managePatientTitle')}</h1>
+                        <p style="margin:.5rem 0 0 0;color:#64748b;">#{i18n.app('managePatientDescription')}</p>
                     </div>
                     <div class="surface-100 border-round px-3 py-2">
-                        <label for="organizationFilter"><strong>Organization:</strong></label>
+                <label for="organizationFilter"><strong>#{i18n.core('organizationLabel')}:</strong></label>
                         <h:panelGroup rendered="#{patientBean.applicationAdmin}" layout="block">
                             <p:selectOneMenu id="organizationFilter" value="#{patientBean.selectedOrganizationId}" style="display:block;min-width:18rem;margin-top:.35rem;">
-                                <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                    <f:selectItem itemLabel="#{i18n.app('selectOrganizationLabel')}" itemValue="#{null}" noSelectionOption="true"/>
                                 <f:selectItems value="#{patientBean.organizationList}" var="organization"
                                                itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
                                 <p:ajax listener="#{patientBean.onOrganizationChange}" update="form:patientMainPanel form:messages" process="@this"/>
@@ -40,61 +38,61 @@
                 <p:outputPanel id="patientMainPanel">
                     <p:toolbar styleClass="mb-4">
                         <p:toolbarGroup>
-                            <p:commandButton value="New Patient" icon="pi pi-plus" actionListener="#{patientBean.addButtonAction}"
+                <p:commandButton value="#{i18n.app('newPatientLabel')}" icon="pi pi-plus" actionListener="#{patientBean.addButtonAction}"
                                              update="form:patientDialogPanel form:dialogMessages" process="@this"
                                              oncomplete="PF('managePatientDialog').show()" styleClass="ui-button-success"/>
-                            <p:commandButton value="Fetch Patients" icon="pi pi-search" actionListener="#{patientBean.fetchPatientList}"
+                <p:commandButton value="#{i18n.app('fetchPatientsLabel')}" icon="pi pi-search" actionListener="#{patientBean.fetchPatientList}"
                                              update="form:patientMainPanel" process="@this" styleClass="ui-button-info" style="margin-left:.5rem;"/>
                         </p:toolbarGroup>
                         <p:toolbarGroup align="right">
-                            <span style="font-weight:600;">Records: #{patientBean.patientList.size()}</span>
+                            <span style="font-weight:600;">#{i18n.core('recordsLabel')}: #{patientBean.patientList.size()}</span>
                         </p:toolbarGroup>
                     </p:toolbar>
 
                     <p:outputPanel rendered="#{not patientBean.patientResultsLoaded}">
                         <div style="padding:1rem 0;color:#64748b;">
-                            Patient records are not loaded by default. Select an organization and click <strong>Fetch Patients</strong> when you want to view the list.
+                #{i18n.app('patientRecordsEmptyStatePrefix')} <strong>#{i18n.app('fetchPatientsLabel')}</strong> #{i18n.app('patientRecordsEmptyStateSuffix')}
                         </div>
                     </p:outputPanel>
                     <p:dataTable id="patientTable" widgetVar="patientTableWidget" var="patientRow" value="#{patientBean.patientList}"
                                  rendered="#{patientBean.patientResultsLoaded}"
                                  paginator="true" rows="10" reflow="true" rowKey="#{patientRow.id}"
-                                 emptyMessage="No patients found for the selected organization.">
+                                 emptyMessage="#{i18n.app('noPatientsFoundMessage')}">
                         <f:facet name="header">
                             <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-2">
-                                <span style="font-weight:600;">Patient Register</span>
+                        <span style="font-weight:600;">#{i18n.app('patientRegisterLabel')}</span>
                                 <span class="p-input-icon-left">
                                     <i class="pi pi-search"/>
-                                    <p:inputText id="globalFilter" onkeyup="PF('patientTableWidget').filter()" placeholder="Search patients"/>
+                                    <p:inputText id="globalFilter" onkeyup="PF('patientTableWidget').filter()" placeholder="#{i18n.app('searchPatientsPlaceholder')}"/>
                                 </span>
                             </div>
                         </f:facet>
 
-                        <p:column headerText="Code" sortBy="#{patientRow.patientCode}" filterBy="#{patientRow.patientCode}">
+                        <p:column headerText="#{i18n.app('codeLabel')}" sortBy="#{patientRow.patientCode}" filterBy="#{patientRow.patientCode}">
                             <h:outputText value="#{patientRow.patientCode}"/>
                         </p:column>
-                        <p:column headerText="Patient Name" sortBy="#{patientRow.patientName}" filterBy="#{patientRow.patientName}">
+                        <p:column headerText="#{i18n.app('patientNameLabel')}" sortBy="#{patientRow.patientName}" filterBy="#{patientRow.patientName}">
                             <h:outputText value="#{patientRow.patientName}"/>
                         </p:column>
-                        <p:column headerText="Gender">
+                        <p:column headerText="#{i18n.app('genderLabel')}">
                             <h:outputText value="#{patientRow.gender}"/>
                         </p:column>
-                        <p:column headerText="DOB">
+                        <p:column headerText="#{i18n.app('dobLabel')}">
                             <h:outputText value="#{patientRow.dateOfBirth}">
                                 <f:convertDateTime pattern="dd-MMM-yyyy"/>
                             </h:outputText>
                         </p:column>
-                        <p:column headerText="Phone">
+                        <p:column headerText="#{i18n.app('phoneLabel')}">
                             <h:outputText value="#{patientRow.phoneNumber}"/>
                         </p:column>
-                        <p:column headerText="Blood Group">
+                        <p:column headerText="#{i18n.app('bloodGroupLabel')}">
                             <h:outputText value="#{patientRow.bloodGroup}"/>
                         </p:column>
-                        <p:column headerText="ID Proof No">
+                        <p:column headerText="#{i18n.app('patientIdProofNoLabel')}">
                             <h:outputText value="#{patientRow.patientIdProofNo}"/>
                         </p:column>
-                        <p:column headerText="Status">
-                            <p:tag value="#{patientRow.active ? 'Active' : 'Inactive'}"
+                        <p:column headerText="#{i18n.app('statusLabel')}">
+                                            <p:tag value="#{patientRow.active ? i18n.app('activePatientStatusLabel') : i18n.app('inactiveStatusLabel')}"
                                    severity="#{patientRow.active ? 'success' : 'warning'}"/>
                         </p:column>
                         <p:column exportable="false" style="width:8rem;">
@@ -112,16 +110,16 @@
                 </p:outputPanel>
             </div>
 
-            <p:dialog header="#{patientBean.addOperation ? 'Add Patient' : 'Edit Patient'}" widgetVar="managePatientDialog"
+            <p:dialog header="#{patientBean.addOperation ? i18n.app('addPatientLabel') : i18n.app('editPatientLabel')}" widgetVar="managePatientDialog"
                       modal="true" responsive="true" width="760">
                 <p:outputPanel id="patientDialogPanel" class="ui-fluid">
                     <p:messages id="dialogMessages" showDetail="true" closable="true"/>
                     <div class="grid">
                         <div class="col-12">
-                            <label>Organization *</label>
+                                    <label>#{i18n.core('organizationLabel')} *</label>
                             <h:panelGroup rendered="#{patientBean.applicationAdmin}" layout="block">
                                 <p:selectOneMenu value="#{patientBean.formOrganizationId}" style="width:100%;">
-                                    <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                            <f:selectItem itemLabel="#{i18n.app('selectOrganizationLabel')}" itemValue="#{null}" noSelectionOption="true"/>
                                     <f:selectItems value="#{patientBean.organizationList}" var="organization"
                                                    itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
                                     <p:ajax listener="#{patientBean.onFormOrganizationChange}" process="@this" update="form:patientDialogPanel"/>
@@ -133,81 +131,81 @@
                             </h:panelGroup>
                         </div>
                         <div class="col-12 md:col-4">
-                            <label>Patient Code *</label>
+                                    <label>#{i18n.app('patientCodeLabel')} *</label>
                             <p:inputText value="#{patientBean.patient.patientCode}" maxlength="30"/>
                         </div>
                         <div class="col-12 md:col-8">
-                            <label>Patient Name *</label>
+                                    <label>#{i18n.app('patientNameLabel')} *</label>
                             <p:inputText value="#{patientBean.patient.patientName}" maxlength="120"/>
                         </div>
                         <div class="col-12 md:col-4">
-                            <label>Gender</label>
+                                    <label>#{i18n.app('genderLabel')}</label>
                             <p:selectOneMenu value="#{patientBean.patient.gender}" style="width:100%;">
-                                <f:selectItem itemLabel="Select Gender" itemValue="#{null}" noSelectionOption="true"/>
+                                            <f:selectItem itemLabel="#{i18n.app('selectGenderLabel')}" itemValue="#{null}" noSelectionOption="true"/>
                                 <f:selectItems value="#{patientBean.availableGenders}"/>
                             </p:selectOneMenu>
                         </div>
                         <div class="col-12 md:col-4">
-                            <label>Date Of Birth</label>
+                                    <label>#{i18n.app('dateOfBirthLabel')}</label>
                             <p:datePicker value="#{patientBean.patientDateOfBirth}" pattern="dd-MMM-yyyy" showIcon="true"/>
                         </div>
                         <div class="col-12 md:col-4">
-                            <label>Blood Group</label>
+                                    <label>#{i18n.app('bloodGroupLabel')}</label>
                             <p:selectOneMenu value="#{patientBean.patient.bloodGroup}" style="width:100%;">
-                                <f:selectItem itemLabel="Select Blood Group" itemValue="#{null}" noSelectionOption="true"/>
+                                            <f:selectItem itemLabel="#{i18n.app('selectBloodGroupLabel')}" itemValue="#{null}" noSelectionOption="true"/>
                                 <f:selectItems value="#{patientBean.availableBloodGroups}"/>
                             </p:selectOneMenu>
                         </div>
                         <div class="col-12 md:col-4">
-                            <label>Patient ID Proof No</label>
+                                    <label>#{i18n.app('patientIdProofNoLabel')}</label>
                             <p:inputText value="#{patientBean.patient.patientIdProofNo}" maxlength="80"/>
                         </div>
                         <div class="col-12 md:col-6">
-                            <label>Phone Number *</label>
+                                    <label>#{i18n.app('phoneNumberLabel')} *</label>
                             <p:inputText value="#{patientBean.patient.phoneNumber}" maxlength="30"/>
                         </div>
                         <div class="col-12 md:col-6">
-                            <label>Email Address</label>
+                                    <label>#{i18n.app('emailAddressLabel')}</label>
                             <p:inputText value="#{patientBean.patient.emailAddress}" maxlength="120"/>
                         </div>
                         <div class="col-12">
-                            <label>Address</label>
+                                    <label>#{i18n.core('addressLabel')}</label>
                             <p:inputTextarea value="#{patientBean.patient.address}" rows="3" autoResize="false" maxlength="255"/>
                         </div>
                         <div class="col-12 md:col-6">
-                            <label>Emergency Contact Name</label>
+                                    <label>#{i18n.app('emergencyContactNameLabel')}</label>
                             <p:inputText value="#{patientBean.patient.emergencyContactName}" maxlength="120"/>
                         </div>
                         <div class="col-12 md:col-6">
-                            <label>Emergency Contact Number</label>
+                                    <label>#{i18n.app('emergencyContactNumberLabel')}</label>
                             <p:inputText value="#{patientBean.patient.emergencyContactNumber}" maxlength="30"/>
                         </div>
                         <div class="col-12">
                             <div class="field-checkbox mb-0">
                                 <p:selectBooleanCheckbox id="patientActive" value="#{patientBean.patient.active}"/>
-                                <p:outputLabel for="patientActive" value="Active patient"/>
+                                    <p:outputLabel for="patientActive" value="#{i18n.app('activePatientToggleLabel')}"/>
                             </div>
                         </div>
                         <div class="col-12">
-                            <label>Notes</label>
+                                    <label>#{i18n.core('notesLabel')}</label>
                             <p:inputTextarea value="#{patientBean.patient.notes}" rows="4" autoResize="false" maxlength="500"/>
                         </div>
                     </div>
                 </p:outputPanel>
                 <f:facet name="footer">
-                    <p:commandButton value="Save Patient" icon="pi pi-check" actionListener="#{patientBean.savePatient}"
+                            <p:commandButton value="#{i18n.app('savePatientLabel')}" icon="pi pi-check" actionListener="#{patientBean.savePatient}"
                                      process="patientDialogPanel @this" update="patientDialogPanel :form:patientMainPanel :form:messages"/>
-                    <p:commandButton value="Cancel" icon="pi pi-times" type="button"
+                            <p:commandButton value="#{i18n.core('cancelLabel')}" icon="pi pi-times" type="button"
                                      onclick="PF('managePatientDialog').hide()" styleClass="ui-button-secondary"/>
                 </f:facet>
             </p:dialog>
 
-            <p:confirmDialog widgetVar="deletePatientDialog" header="Confirm Delete" severity="warn"
-                             message="Delete the selected patient?">
-                <p:commandButton value="Yes" icon="pi pi-check" actionListener="#{patientBean.confirmDeletePatient}"
+            <p:confirmDialog widgetVar="deletePatientDialog" header="#{i18n.app('confirmDeleteLabel')}" severity="warn"
+                             message="#{i18n.app('deleteSelectedPatientMessage')}">
+                    <p:commandButton value="#{i18n.core('yesLabel')}" icon="pi pi-check" actionListener="#{patientBean.confirmDeletePatient}"
                                  process="@this" update=":form:patientMainPanel :form:messages"
                                  oncomplete="PF('deletePatientDialog').hide()"/>
-                <p:commandButton value="No" type="button" icon="pi pi-times"
+                    <p:commandButton value="#{i18n.core('noLabel')}" type="button" icon="pi pi-times"
                                  onclick="PF('deletePatientDialog').hide()" styleClass="ui-button-secondary"/>
             </p:confirmDialog>
         </h:form>

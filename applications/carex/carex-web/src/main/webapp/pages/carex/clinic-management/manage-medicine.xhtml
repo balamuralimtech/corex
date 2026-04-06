@@ -15,16 +15,14 @@
 
                 <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-start gap-3 mb-4">
                     <div>
-                        <h1 style="margin:0;">Manage Medicine</h1>
-                        <p style="margin:.5rem 0 0 0;color:#64748b;">
-                            Maintain medicines with required units, pricing, stock, and reorder details for each organization.
-                        </p>
+            <h1 style="margin:0;">#{i18n.app('manageMedicineTitle')}</h1>
+                        <p style="margin:.5rem 0 0 0;color:#64748b;">#{i18n.app('manageMedicineDescription')}</p>
                     </div>
                     <div class="surface-100 border-round px-3 py-2">
-                        <label for="organizationFilter"><strong>Organization:</strong></label>
+                <label for="organizationFilter"><strong>#{i18n.core('organizationLabel')}:</strong></label>
                         <h:panelGroup rendered="#{medicineBean.applicationAdmin}" layout="block">
                             <p:selectOneMenu id="organizationFilter" value="#{medicineBean.selectedOrganizationId}" style="display:block;min-width:18rem;margin-top:.35rem;">
-                                <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                    <f:selectItem itemLabel="#{i18n.app('selectOrganizationLabel')}" itemValue="#{null}" noSelectionOption="true"/>
                                 <f:selectItems value="#{medicineBean.organizationList}" var="organization"
                                                itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
                                 <p:ajax listener="#{medicineBean.onOrganizationChange}" update="form:medicineMainPanel form:messages" process="@this"/>
@@ -40,62 +38,62 @@
                 <p:outputPanel id="medicineMainPanel">
                     <p:toolbar styleClass="mb-4">
                         <p:toolbarGroup>
-                            <p:commandButton value="New Medicine" icon="pi pi-plus" actionListener="#{medicineBean.addButtonAction}"
+                <p:commandButton value="#{i18n.app('newMedicineLabel')}" icon="pi pi-plus" actionListener="#{medicineBean.addButtonAction}"
                                              update="form:medicineDialogPanel form:dialogMessages" process="@this"
                                              oncomplete="PF('manageMedicineDialog').show()" styleClass="ui-button-success"/>
-                            <p:commandButton value="Fetch Medicines" icon="pi pi-search" actionListener="#{medicineBean.fetchMedicineList}"
+                <p:commandButton value="#{i18n.app('fetchMedicinesLabel')}" icon="pi pi-search" actionListener="#{medicineBean.fetchMedicineList}"
                                              update="form:medicineMainPanel" process="@this" styleClass="ui-button-info" style="margin-left:.5rem;"/>
                         </p:toolbarGroup>
                         <p:toolbarGroup align="right">
-                            <span style="font-weight:600;">Records: #{medicineBean.medicineList.size()}</span>
+                            <span style="font-weight:600;">#{i18n.core('recordsLabel')}: #{medicineBean.medicineList.size()}</span>
                         </p:toolbarGroup>
                     </p:toolbar>
 
                     <p:outputPanel rendered="#{not medicineBean.medicineResultsLoaded}">
                         <div style="padding:1rem 0;color:#64748b;">
-                            Medicine records are not loaded by default. Select an organization and click <strong>Fetch Medicines</strong> when you want to view the list.
+                #{i18n.app('medicineRecordsEmptyStatePrefix')} <strong>#{i18n.app('fetchMedicinesLabel')}</strong> #{i18n.app('medicineRecordsEmptyStateSuffix')}
                         </div>
                     </p:outputPanel>
                     <p:dataTable id="medicineTable" widgetVar="medicineTableWidget" var="medicineRow" value="#{medicineBean.medicineList}"
                                  rendered="#{medicineBean.medicineResultsLoaded}"
                                  paginator="true" rows="10" reflow="true" rowKey="#{medicineRow.id}"
-                                 emptyMessage="No medicines found for the selected organization.">
+                                 emptyMessage="#{i18n.app('noMedicinesFoundMessage')}">
                         <f:facet name="header">
                             <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-2">
-                                <span style="font-weight:600;">Medicine Register</span>
+                        <span style="font-weight:600;">#{i18n.app('medicineRegisterLabel')}</span>
                                 <span class="p-input-icon-left">
                                     <i class="pi pi-search"/>
-                                    <p:inputText id="globalFilter" onkeyup="PF('medicineTableWidget').filter()" placeholder="Search medicines"/>
+                                    <p:inputText id="globalFilter" onkeyup="PF('medicineTableWidget').filter()" placeholder="#{i18n.app('searchMedicinesPlaceholder')}"/>
                                 </span>
                             </div>
                         </f:facet>
 
-                        <p:column headerText="Code" sortBy="#{medicineRow.medicineCode}" filterBy="#{medicineRow.medicineCode}">
+                        <p:column headerText="#{i18n.app('codeLabel')}" sortBy="#{medicineRow.medicineCode}" filterBy="#{medicineRow.medicineCode}">
                             <h:outputText value="#{medicineRow.medicineCode}"/>
                         </p:column>
-                        <p:column headerText="Medicine Name" sortBy="#{medicineRow.medicineName}" filterBy="#{medicineRow.medicineName}">
+                        <p:column headerText="#{i18n.app('medicineNameLabel')}" sortBy="#{medicineRow.medicineName}" filterBy="#{medicineRow.medicineName}">
                             <h:outputText value="#{medicineRow.medicineName}"/>
                         </p:column>
-                        <p:column headerText="Generic Name">
+                        <p:column headerText="#{i18n.app('genericNameLabel')}">
                             <h:outputText value="#{medicineRow.genericName}"/>
                         </p:column>
-                        <p:column headerText="Category">
+                        <p:column headerText="#{i18n.app('categoryLabel')}">
                             <h:outputText value="#{medicineRow.category}"/>
                         </p:column>
-                        <p:column headerText="Unit">
+                        <p:column headerText="#{i18n.app('unitLabel')}">
                             <h:outputText value="#{medicineRow.unit}"/>
                         </p:column>
-                        <p:column headerText="Strength">
+                        <p:column headerText="#{i18n.app('strengthLabel')}">
                             <h:outputText value="#{medicineRow.strength}"/>
                         </p:column>
-                        <p:column headerText="Stock">
+                        <p:column headerText="#{i18n.app('stockLabel')}">
                             <h:outputText value="#{medicineRow.stockQuantity}"/>
                         </p:column>
-                        <p:column headerText="Selling Price">
+                        <p:column headerText="#{i18n.app('sellingPriceLabel')}">
                             <h:outputText value="#{medicineRow.sellingPrice}"/>
                         </p:column>
-                        <p:column headerText="Status">
-                            <p:tag value="#{medicineRow.active ? 'Active' : 'Inactive'}"
+                        <p:column headerText="#{i18n.app('statusLabel')}">
+                                            <p:tag value="#{medicineRow.active ? i18n.app('activeMedicineStatusLabel') : i18n.app('inactiveStatusLabel')}"
                                    severity="#{medicineRow.active ? 'success' : 'warning'}"/>
                         </p:column>
                         <p:column exportable="false" style="width:8rem;">
@@ -113,16 +111,16 @@
                 </p:outputPanel>
             </div>
 
-            <p:dialog header="#{medicineBean.addOperation ? 'Add Medicine' : 'Edit Medicine'}" widgetVar="manageMedicineDialog"
+            <p:dialog header="#{medicineBean.addOperation ? i18n.app('addMedicineLabel') : i18n.app('editMedicineLabel')}" widgetVar="manageMedicineDialog"
                       modal="true" responsive="true" width="820">
                 <p:outputPanel id="medicineDialogPanel" class="ui-fluid">
                     <p:messages id="dialogMessages" showDetail="true" closable="true"/>
                     <div class="grid">
                         <div class="col-12">
-                            <label>Organization *</label>
+                                    <label>#{i18n.core('organizationLabel')} *</label>
                             <h:panelGroup rendered="#{medicineBean.applicationAdmin}" layout="block">
                                 <p:selectOneMenu value="#{medicineBean.formOrganizationId}" style="width:100%;">
-                                    <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                            <f:selectItem itemLabel="#{i18n.app('selectOrganizationLabel')}" itemValue="#{null}" noSelectionOption="true"/>
                                     <f:selectItems value="#{medicineBean.organizationList}" var="organization"
                                                    itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
                                     <p:ajax listener="#{medicineBean.onFormOrganizationChange}" process="@this" update="form:medicineDialogPanel"/>
@@ -134,81 +132,81 @@
                             </h:panelGroup>
                         </div>
                         <div class="col-12 md:col-4">
-                            <label>Medicine Code *</label>
+                                    <label>#{i18n.app('medicineCodeLabel')} *</label>
                             <p:inputText value="#{medicineBean.medicine.medicineCode}" maxlength="30"/>
                         </div>
                         <div class="col-12 md:col-8">
-                            <label>Medicine Name *</label>
+                                    <label>#{i18n.app('medicineNameLabel')} *</label>
                             <p:inputText value="#{medicineBean.medicine.medicineName}" maxlength="150"/>
                         </div>
                         <div class="col-12 md:col-6">
-                            <label>Generic Name</label>
+                                    <label>#{i18n.app('genericNameLabel')}</label>
                             <p:inputText value="#{medicineBean.medicine.genericName}" maxlength="150"/>
                         </div>
                         <div class="col-12 md:col-6">
-                            <label>Category</label>
+                                    <label>#{i18n.app('categoryLabel')}</label>
                             <p:selectOneMenu value="#{medicineBean.medicine.category}" style="width:100%;">
-                                <f:selectItem itemLabel="Select Category" itemValue="#{null}" noSelectionOption="true"/>
+                                            <f:selectItem itemLabel="#{i18n.app('selectCategoryLabel')}" itemValue="#{null}" noSelectionOption="true"/>
                                 <f:selectItems value="#{medicineBean.availableCategories}"/>
                             </p:selectOneMenu>
                         </div>
                         <div class="col-12 md:col-4">
-                            <label>Unit *</label>
+                                    <label>#{i18n.app('unitLabel')} *</label>
                             <p:selectOneMenu value="#{medicineBean.medicine.unit}" style="width:100%;">
-                                <f:selectItem itemLabel="Select Unit" itemValue="#{null}" noSelectionOption="true"/>
+                                            <f:selectItem itemLabel="#{i18n.app('selectUnitLabel')}" itemValue="#{null}" noSelectionOption="true"/>
                                 <f:selectItems value="#{medicineBean.availableUnits}"/>
                             </p:selectOneMenu>
                         </div>
                         <div class="col-12 md:col-4">
-                            <label>Strength</label>
+                                    <label>#{i18n.app('strengthLabel')}</label>
                             <p:inputText value="#{medicineBean.medicine.strength}" maxlength="40"/>
                         </div>
                         <div class="col-12 md:col-4">
-                            <label>Manufacturer</label>
+                                    <label>#{i18n.app('manufacturerLabel')}</label>
                             <p:inputText value="#{medicineBean.medicine.manufacturer}" maxlength="120"/>
                         </div>
                         <div class="col-12 md:col-3">
-                            <label>Purchase Price</label>
+                                    <label>#{i18n.app('purchasePriceLabel')}</label>
                             <p:inputNumber value="#{medicineBean.medicine.purchasePrice}" decimalPlaces="2" minValue="0"/>
                         </div>
                         <div class="col-12 md:col-3">
-                            <label>Selling Price</label>
+                                    <label>#{i18n.app('sellingPriceLabel')}</label>
                             <p:inputNumber value="#{medicineBean.medicine.sellingPrice}" decimalPlaces="2" minValue="0"/>
                         </div>
                         <div class="col-12 md:col-3">
-                            <label>Stock Quantity</label>
+                                    <label>#{i18n.app('stockQuantityLabel')}</label>
                             <p:spinner value="#{medicineBean.medicine.stockQuantity}" min="0" max="100000"/>
                         </div>
                         <div class="col-12 md:col-3">
-                            <label>Reorder Level</label>
+                                    <label>#{i18n.app('reorderLevelLabel')}</label>
                             <p:spinner value="#{medicineBean.medicine.reorderLevel}" min="0" max="100000"/>
                         </div>
                         <div class="col-12">
                             <div class="field-checkbox mb-0">
                                 <p:selectBooleanCheckbox id="medicineActive" value="#{medicineBean.medicine.active}"/>
-                                <p:outputLabel for="medicineActive" value="Active medicine"/>
+                                    <p:outputLabel for="medicineActive" value="#{i18n.app('activeMedicineToggleLabel')}"/>
                             </div>
                         </div>
                         <div class="col-12">
-                            <label>Notes</label>
+                                    <label>#{i18n.core('notesLabel')}</label>
                             <p:inputTextarea value="#{medicineBean.medicine.notes}" rows="4" autoResize="false" maxlength="500"/>
                         </div>
                     </div>
                 </p:outputPanel>
                 <f:facet name="footer">
-                    <p:commandButton value="Save Medicine" icon="pi pi-check" actionListener="#{medicineBean.saveMedicine}"
+                            <p:commandButton value="#{i18n.app('saveMedicineLabel')}" icon="pi pi-check" actionListener="#{medicineBean.saveMedicine}"
                                      process="medicineDialogPanel @this" update="medicineDialogPanel :form:medicineMainPanel :form:messages"/>
-                    <p:commandButton value="Cancel" icon="pi pi-times" type="button"
+                            <p:commandButton value="#{i18n.core('cancelLabel')}" icon="pi pi-times" type="button"
                                      onclick="PF('manageMedicineDialog').hide()" styleClass="ui-button-secondary"/>
                 </f:facet>
             </p:dialog>
 
-            <p:confirmDialog widgetVar="deleteMedicineDialog" header="Confirm Delete" severity="warn"
-                             message="Delete the selected medicine?">
-                <p:commandButton value="Yes" icon="pi pi-check" actionListener="#{medicineBean.confirmDeleteMedicine}"
+            <p:confirmDialog widgetVar="deleteMedicineDialog" header="#{i18n.app('confirmDeleteLabel')}" severity="warn"
+                             message="#{i18n.app('deleteSelectedMedicineMessage')}">
+                    <p:commandButton value="#{i18n.core('yesLabel')}" icon="pi pi-check" actionListener="#{medicineBean.confirmDeleteMedicine}"
                                  process="@this" update=":form:medicineMainPanel :form:messages"
                                  oncomplete="PF('deleteMedicineDialog').hide()"/>
-                <p:commandButton value="No" type="button" icon="pi pi-times"
+                    <p:commandButton value="#{i18n.core('noLabel')}" type="button" icon="pi pi-times"
                                  onclick="PF('deleteMedicineDialog').hide()" styleClass="ui-button-secondary"/>
             </p:confirmDialog>
         </h:form>

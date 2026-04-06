@@ -52,6 +52,39 @@ import org.springframework.context.annotation.Scope;
 public class GuestPreferences extends GenericManagedBean implements Serializable {
 
     private static final Logger logger = LoggerFactory.getLogger(GuestPreferences.class);
+    private static final List<LanguageOption> SUPPORTED_LANGUAGE_OPTIONS = Collections.unmodifiableList(Arrays.asList(
+            new LanguageOption("en", "English (US)", "us"),
+            new LanguageOption("hi", "Hindi", "in"),
+            new LanguageOption("ta", "Tamil", "in"),
+            new LanguageOption("te", "Telugu", "in"),
+            new LanguageOption("kn", "Kannada", "in"),
+            new LanguageOption("ml", "Malayalam", "in"),
+            new LanguageOption("bn", "Bengali", "in"),
+            new LanguageOption("mr", "Marathi", "in"),
+            new LanguageOption("gu", "Gujarati", "in"),
+            new LanguageOption("pa", "Punjabi", "in"),
+            new LanguageOption("or", "Odia", "in"),
+            new LanguageOption("as", "Assamese", "in"),
+            new LanguageOption("ur", "Urdu", "pk"),
+            new LanguageOption("si", "Sinhala", "lk"),
+            new LanguageOption("ms", "Malay", "my"),
+            new LanguageOption("zh", "Chinese", "cn"),
+            new LanguageOption("th", "Thai", "th"),
+            new LanguageOption("ja", "Japanese", "jp"),
+            new LanguageOption("fr", "French", "fr"),
+            new LanguageOption("es", "Spanish", "es"),
+            new LanguageOption("de", "German", "de"),
+            new LanguageOption("ru", "Russian", "ru"),
+            new LanguageOption("uk", "Ukrainian", "ua"),
+            new LanguageOption("pl", "Polish", "pl"),
+            new LanguageOption("pt", "Portuguese", "pt"),
+            new LanguageOption("it", "Italian", "it"),
+            new LanguageOption("ko", "Korean", "kr"),
+            new LanguageOption("vi", "Vietnamese", "vn"),
+            new LanguageOption("id", "Indonesian", "id"),
+            new LanguageOption("nl", "Dutch", "nl"),
+            new LanguageOption("tr", "Turkish", "tr")
+    ));
 
     private Map<String, String> themeColors;
 
@@ -160,7 +193,16 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
             return;
         }
 
-        //languageItems = getAvailableResourceBundles(); commented to use it in the future
+        Object sessionLanguage = httpSession.getAttribute(SessionAttributes.LANGUAGE.getName());
+        if (sessionLanguage instanceof String && !((String) sessionLanguage).trim().isEmpty()) {
+            selectedLanguage = (String) sessionLanguage;
+            locale = Locale.forLanguageTag(selectedLanguage);
+            if (facesContext.getViewRoot() != null) {
+                facesContext.getViewRoot().setLocale(locale);
+            }
+        } else {
+            selectedLanguage = locale == null ? "en" : locale.toLanguageTag();
+        }
 
         userName = (String) httpSession.getAttribute(SessionAttributes.USERNAME.getName());
         logger.debug("Username retrieved from session: " + userName);
@@ -230,8 +272,48 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
             logger.debug(" if (selectedLanguage != null) {");
             locale = Locale.forLanguageTag(selectedLanguage);
             FacesContext.getCurrentInstance().getViewRoot().setLocale(locale);
+            HttpSession session = (HttpSession) FacesContext.getCurrentInstance().getExternalContext().getSession(false);
+            if (session != null) {
+                session.setAttribute(SessionAttributes.LANGUAGE.getName(), selectedLanguage);
+            }
         }
 
+    }
+
+    public String changeLocaleAndReload() {
+        changeLocale();
+
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null || facesContext.getViewRoot() == null) {
+            return null;
+        }
+
+        String viewId = facesContext.getViewRoot().getViewId();
+        return viewId + "?faces-redirect=true";
+    }
+
+    public List<LanguageOption> getTopbarLanguageOptions() {
+        return SUPPORTED_LANGUAGE_OPTIONS;
+    }
+
+    public String getSelectedLanguageLabel() {
+        return findLanguageOption(selectedLanguage).getLabel();
+    }
+
+    public String getSelectedLanguageFlag() {
+        return findLanguageOption(selectedLanguage).getFlagCode();
+    }
+
+    private LanguageOption findLanguageOption(String languageCode) {
+        if (languageCode != null) {
+            for (LanguageOption languageOption : SUPPORTED_LANGUAGE_OPTIONS) {
+                if (languageOption.getCode().equalsIgnoreCase(languageCode)) {
+                    return languageOption;
+                }
+            }
+        }
+
+        return SUPPORTED_LANGUAGE_OPTIONS.get(0);
     }
 
 
@@ -878,6 +960,30 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
     public void setLanguageItems(List<SelectItem> languageItems) {
         this.languageItems = languageItems;
+    }
+
+    public static final class LanguageOption implements Serializable {
+        private final String code;
+        private final String label;
+        private final String flagCode;
+
+        public LanguageOption(String code, String label, String flagCode) {
+            this.code = code;
+            this.label = label;
+            this.flagCode = flagCode;
+        }
+
+        public String getCode() {
+            return code;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public String getFlagCode() {
+            return flagCode;
+        }
     }
 
     public boolean isUserManagementRendered() {

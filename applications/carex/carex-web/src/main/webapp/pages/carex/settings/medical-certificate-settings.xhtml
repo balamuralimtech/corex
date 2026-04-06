@@ -43,14 +43,14 @@
                 <p:messages id="messages" showDetail="true" closable="true"/>
                 <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-start gap-3 mb-4">
                     <div>
-                        <h1 style="margin:0;">Medical Certificate Settings</h1>
-                        <p style="margin:.5rem 0 0 0;color:#64748b;">Configure certificate content, preview, print, and download from one workspace.</p>
+                        <h1 style="margin:0;">#{i18n.app('medicalCertificateSettingsPageTitle')}</h1>
+                        <p style="margin:.5rem 0 0 0;color:#64748b;">#{i18n.app('medicalCertificateSettingsPageDescription')}</p>
                     </div>
                     <div class="surface-100 border-round px-3 py-2">
-                        <label for="organizationSelect"><strong>Organization:</strong></label>
+                        <label for="organizationSelect"><strong>#{i18n.core('organizationLabel')}:</strong></label>
                         <h:panelGroup rendered="#{medicalCertificateSettingsBean.applicationAdmin}" layout="block">
                             <p:selectOneMenu id="organizationSelect" value="#{medicalCertificateSettingsBean.selectedOrganizationId}" style="display:block;min-width:18rem;margin-top:.35rem;">
-                                <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                <f:selectItem itemLabel="#{i18n.app('selectOrganizationLabel')}" itemValue="#{null}" noSelectionOption="true"/>
                                 <f:selectItems value="#{medicalCertificateSettingsBean.organizationList}" var="organization" itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
                                 <p:ajax listener="#{medicalCertificateSettingsBean.onOrganizationChange}" process="@this" update="form:medicalCertificateSettingsPanel form:messages"/>
                             </p:selectOneMenu>
@@ -68,16 +68,16 @@
                             <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;background:#f8fafc;">
                                 <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-3">
                                     <div>
-                                        <h3 style="margin:0;">Live Preview</h3>
-                                        <div style="margin-top:.35rem;color:#64748b;font-size:.9rem;">Preview, print, and download from this panel.</div>
+                                        <h3 style="margin:0;">#{i18n.app('livePreviewLabel')}</h3>
+                                        <div style="margin-top:.35rem;color:#64748b;font-size:.9rem;">#{i18n.app('previewPanelHelpLabel')}</div>
                                     </div>
                                     <div class="flex flex-wrap gap-2">
-                                        <p:commandButton value="Save" icon="pi pi-check" actionListener="#{medicalCertificateSettingsBean.saveMedicalCertificateSettings}" process="@form" update="form:messages form:medicalCertificateSettingsPanel" styleClass="ui-button-success ui-button-sm"/>
-                                        <p:commandButton value="Refresh" icon="pi pi-eye" process="@form" update="form:previewPanel" styleClass="ui-button-info ui-button-sm"/>
-                                        <p:commandButton value="Print" type="button" icon="pi pi-print"
+                                        <p:commandButton value="#{i18n.app('saveLabel')}" icon="pi pi-check" actionListener="#{medicalCertificateSettingsBean.saveMedicalCertificateSettings}" process="@form" update="form:messages form:medicalCertificateSettingsPanel" styleClass="ui-button-success ui-button-sm"/>
+                                        <p:commandButton value="#{i18n.app('refreshLabel')}" icon="pi pi-eye" process="@form" update="form:previewPanel" styleClass="ui-button-info ui-button-sm"/>
+                                        <p:commandButton value="#{i18n.app('printLabel')}" type="button" icon="pi pi-print"
                                                          onclick="(function(){const preview=document.querySelector(&quot;[id='form:previewPanel']&quot;);const bodyField=document.getElementById('form:downloadPreviewBodyHtml');const footerField=document.getElementById('form:downloadPreviewFooterHtml');if(!preview||!bodyField||!footerField){return false;}const previewClone=preview.cloneNode(true);const footer=previewClone.querySelector('.medical-certificate-preview-footer');footerField.value=footer?footer.outerHTML:'';if(footer&amp;&amp;footer.parentNode){footer.parentNode.removeChild(footer);}bodyField.value=previewClone.innerHTML;const iframe=document.createElement('iframe');iframe.style.position='fixed';iframe.style.right='0';iframe.style.bottom='0';iframe.style.width='0';iframe.style.height='0';iframe.style.border='0';document.body.appendChild(iframe);const printDocument=iframe.contentWindow.document;printDocument.open();printDocument.write('&lt;html&gt;&lt;head&gt;&lt;title&gt;Medical Certificate Sample&lt;/title&gt;&lt;style&gt;html,body{font-family:Helvetica,Arial,sans-serif;margin:0;padding:0;background:#fff;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;overflow:hidden !important;}body{background:#fff;overflow:hidden !important;}.preview-shell{position:relative;box-sizing:border-box;width:186mm;height:272mm;max-height:272mm;margin:0 auto;padding:0;overflow:hidden !important;border:none !important;outline:none !important;box-shadow:none !important;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;}.preview-shell *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;box-sizing:border-box;}.print-body{padding-bottom:42mm;overflow:hidden !important;max-height:230mm;}.print-body .medical-certificate-preview,.print-body .card{border:none !important;outline:none !important;box-shadow:none !important;background:#fff !important;}.print-footer{position:absolute;left:24px;right:24px;bottom:18px;}.print-footer .medical-certificate-preview-footer{border:none !important;outline:none !important;box-shadow:none !important;}@page{size:A4 portrait;margin:12mm;}@media print{html,body{background:#fff !important;overflow:hidden !important;}body{padding:0;margin:0;overflow:hidden !important;}}&lt;/style&gt;&lt;/head&gt;&lt;body&gt;&lt;div class=&quot;preview-shell&quot;&gt;&lt;div class=&quot;print-body&quot;&gt;'+bodyField.value+'&lt;/div&gt;'+(footerField.value?'&lt;div class=&quot;print-footer&quot;&gt;'+footerField.value+'&lt;/div&gt;':'')+'&lt;/div&gt;&lt;/body&gt;&lt;/html&gt;');printDocument.close();setTimeout(function(){iframe.contentWindow.focus();iframe.contentWindow.print();setTimeout(function(){document.body.removeChild(iframe);},1000);},250);return false;})(); return false;"
                                                          styleClass="ui-button-secondary ui-button-sm"/>
-                                        <p:commandButton value="Download" ajax="false" icon="pi pi-download" process="@form" actionListener="#{medicalCertificateSettingsBean.prepareSampleMedicalCertificateDownload}"
+                                        <p:commandButton value="#{i18n.app('downloadLabel')}" ajax="false" icon="pi pi-download" process="@form" actionListener="#{medicalCertificateSettingsBean.prepareSampleMedicalCertificateDownload}"
                                                          onclick="(function(){const preview=document.querySelector(&quot;[id='form:previewPanel']&quot;);const bodyField=document.getElementById('form:downloadPreviewBodyHtml');const footerField=document.getElementById('form:downloadPreviewFooterHtml');if(!preview||!bodyField||!footerField){return false;}const previewClone=preview.cloneNode(true);const footer=previewClone.querySelector('.medical-certificate-preview-footer');footerField.value=footer?footer.outerHTML:'';if(footer&amp;&amp;footer.parentNode){footer.parentNode.removeChild(footer);}bodyField.value=previewClone.innerHTML;return true;})();"
                                                          styleClass="ui-button-help ui-button-sm">
                                             <p:fileDownload value="#{medicalCertificateSettingsBean.sampleMedicalCertificatePdf}"/>
@@ -146,7 +146,7 @@
                             <div class="grid">
                                 <div class="col-12">
                                     <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
-                                        <h3 style="margin-top:0;">Layout</h3>
+                                        <h3 style="margin-top:0;">#{i18n.app('layoutLabel')}</h3>
                                         <div class="grid">
                                             <div class="col-12 md:col-6 lg:col-12">
                                                 <label>Page Size</label>
@@ -192,7 +192,7 @@
 
                                 <div class="col-12">
                                     <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
-                                        <h3 style="margin-top:0;">Colors</h3>
+                                        <h3 style="margin-top:0;">#{i18n.app('colorsLabel')}</h3>
                                         <div class="grid">
                                             <div class="col-12 md:col-6 lg:col-12">
                                                 <label>Theme Color</label>
@@ -212,7 +212,7 @@
 
                                 <div class="col-12">
                                     <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
-                                        <h3 style="margin-top:0;">Content</h3>
+                                        <h3 style="margin-top:0;">#{i18n.app('medicalCertificateSettingsContentSection')}</h3>
                                         <div class="grid">
                                             <div class="col-12">
                                                 <label>Intro Line</label>
@@ -232,7 +232,7 @@
 
                                 <div class="col-12">
                                     <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
-                                        <h3 style="margin-top:0;">Field Labels</h3>
+                                        <h3 style="margin-top:0;">#{i18n.app('medicalCertificateSettingsFieldLabelsSection')}</h3>
                                         <div class="grid">
                                             <div class="col-12">
                                                 <label>Disease Label</label>
@@ -260,21 +260,21 @@
 
                                 <div class="col-12">
                                     <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
-                                        <h3 style="margin-top:0;">Visibility</h3>
+                                        <h3 style="margin-top:0;">#{i18n.app('visibilityLabel')}</h3>
                                         <div class="field-checkbox mb-3">
                                             <p:selectBooleanCheckbox id="showCertificateLogo" value="#{medicalCertificateSettingsBean.medicalCertificateSettings.showClinicLogo}">
                                                 <p:ajax process="@this" update="form:previewPanel"/>
                                             </p:selectBooleanCheckbox>
-                                            <p:outputLabel for="showCertificateLogo" value="Show clinic logo"/>
+                                            <p:outputLabel for="showCertificateLogo" value="#{i18n.app('showClinicLogoLabel')}"/>
                                         </div>
                                         <div class="field-checkbox mb-3">
                                             <p:selectBooleanCheckbox id="showCertificateWatermark" value="#{medicalCertificateSettingsBean.medicalCertificateSettings.showWatermark}">
                                                 <p:ajax process="@this" update="form:previewPanel"/>
                                             </p:selectBooleanCheckbox>
-                                            <p:outputLabel for="showCertificateWatermark" value="Show watermark"/>
+                                            <p:outputLabel for="showCertificateWatermark" value="#{i18n.app('showWatermarkLabel')}"/>
                                         </div>
                                         <div class="col-12" style="padding:0;">
-                                            <label>Watermark Text</label>
+                                            <label>#{i18n.app('watermarkTextLabel')}</label>
                                             <p:inputText value="#{medicalCertificateSettingsBean.medicalCertificateSettings.watermarkText}" style="width:100%;"/>
                                         </div>
                                     </div>
@@ -282,7 +282,7 @@
 
                                 <div class="col-12">
                                     <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
-                                        <h3 style="margin-top:0;">Notes</h3>
+                                        <h3 style="margin-top:0;">#{i18n.app('notesSectionLabel')}</h3>
                                         <p:inputTextarea value="#{medicalCertificateSettingsBean.medicalCertificateSettings.notes}" rows="4" autoResize="false" maxlength="500" style="width:100%;"/>
                                     </div>
                                 </div>

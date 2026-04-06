@@ -21,9 +21,7 @@
         xmlns:ui="http://java.sun.com/jsf/facelets"
         xmlns:p="http://primefaces.org/ui"
         xmlns:pu="http://primefaces.org/avalon">
-    <ui:define name="head">
-        <h:outputStylesheet name="css/flags/flags.css" library="demo"/>
-    </ui:define>
+    <h:outputStylesheet name="css/flags/flags.css" library="demo"/>
     <div class="topbar clearfix">
         <div class="topbar-left">
             <h:form>
@@ -71,7 +69,7 @@
                                 <li role="menuitem">
                                     <a href="#{request.contextPath}/user-profile">
                                         <i class="pi pi-fw pi-user"/>
-                                        <span>Profile</span>
+                                        <span>#{i18n.core('profileLabel')}</span>
                                     </a>
                                 </li>
                                 <li role="menuitem">
@@ -79,16 +77,35 @@
                                                    onclick="markSessionLogoutIntent();"
                                                    title="Logout">
                                         <i class="pi pi-fw pi-sign-out"/>
-                                        <span>Logout</span>
+                                        <span>#{i18n.core('logoutLabel')}</span>
                                     </h:commandLink>
                                 </li>
                             </ul>
                         </li>
                     </ui:fragment>
                     <li>
+                        <a href="#" style="display:flex;align-items:center;gap:.55rem;color:#ffffff !important;">
+                            <i class="topbar-icon pi pi-fw pi-language" style="color:#ffffff !important;"/>
+                            <span class="flag flag-#{guestPreferences.selectedLanguageFlag}" style="width:22px;height:15px;display:inline-block;border-radius:2px;flex:0 0 auto;"></span>
+                            <span class="topbar-item-name" style="display:inline-block;color:#ffffff !important;">#{guestPreferences.selectedLanguageLabel}</span>
+                        </a>
+                        <ul class="layout-menu animated">
+                            <ui:repeat value="#{guestPreferences.topbarLanguageOptions}" var="languageOption">
+                                <li role="menuitem">
+                                    <h:commandLink action="#{guestPreferences.changeLocaleAndReload}">
+                                        <f:setPropertyActionListener value="#{languageOption.code}"
+                                                                     target="#{guestPreferences.selectedLanguage}"/>
+                                        <span class="flag flag-#{languageOption.flagCode}" style="width:22px;height:15px;margin-right:.55rem;display:inline-block;border-radius:2px;vertical-align:middle;"></span>
+                                        <span style="vertical-align:middle;">#{languageOption.label}</span>
+                                    </h:commandLink>
+                                </li>
+                            </ui:repeat>
+                        </ul>
+                    </li>
+                    <li>
                         <a href="#">
                             <i class="topbar-icon pi pi-fw pi-cog"/>
-                            <span class="topbar-item-name">Settings</span>
+                            <span class="topbar-item-name">#{i18n.core('settingsLabel')}</span>
                         </a>
                         <ul class="layout-menu animated">
                             <li role="menuitem">
@@ -123,7 +140,7 @@
                             <p:outputPanel id="messageUnreadCount" layout="inline">
                                 <span class="topbar-badge animated rubberBand">#{guestPreferences.topbarMessageCount}</span>
                             </p:outputPanel>
-                            <span class="topbar-item-name">Messages</span>
+                            <span class="topbar-item-name">#{i18n.core('messagesLabel')}</span>
                         </a>
                         <ul class="layout-menu animated">
                             <ui:repeat value="#{guestPreferences.displayedApplicationMessages}" var="topbarMessage">
@@ -138,7 +155,7 @@
                                 <li role="menuitem">
                                     <a href="#" class="topbar-message">
                                         <i class="pi pi-fw pi-envelope"/>
-                                        <span>No messages</span>
+                                        <span>#{i18n.core('noMessagesLabel')}</span>
                                     </a>
                                 </li>
                             </ui:fragment>
@@ -150,7 +167,7 @@
                             <p:outputPanel id="alertUnreadCount" layout="inline">
                                 <span class="topbar-badge animated rubberBand">#{guestPreferences.topbarAlertCount}</span>
                             </p:outputPanel>
-                            <span class="topbar-item-name">Alerts</span>
+                            <span class="topbar-item-name">#{i18n.core('alertsLabel')}</span>
                         </a>
                         <ul class="layout-menu animated">
                             <ui:repeat value="#{guestPreferences.displayedTopbarMessages}" var="topbarAlert">
@@ -165,24 +182,11 @@
                                 <li role="menuitem">
                                     <a href="#" class="topbar-message">
                                         <i class="pi pi-fw pi-bell"/>
-                                        <span>No alerts</span>
+                                        <span>#{i18n.core('noAlertsLabel')}</span>
                                     </a>
                                 </li>
                             </ui:fragment>
                         </ul>
-                    </li>
-                    <li class="search-item" style="visibility: hidden;">
-                        <div class="topbar-search">
-                            <p:selectOneMenu value="#{guestPreferences.selectedLanguage}">
-                                <f:selectItem itemLabel="English" itemValue="en"/>
-                                <f:selectItem itemLabel="Chinese" itemValue="chinese"/>
-                                <f:selectItem itemLabel="Malay" itemValue="malay"/>
-                                <f:selectItem itemLabel="Tamil" itemValue="ta"/>
-                                <p:ajax event="change" listener="#{guestPreferences.changeLocale}"
-                                        process="@this"
-                                        update=":config-form menuform topbar-items-form contentPanelId" />
-                            </p:selectOneMenu>
-                        </div>
                     </li>
                 </ul>
             </h:form>

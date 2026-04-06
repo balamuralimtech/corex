@@ -93,34 +93,32 @@
                 </div>
 
                 <div class="col-12">
-                    <div class="user-admin-hero">
-                        <h2 class="user-admin-title">User Administration Command Center</h2>
-                        <div class="user-admin-copy">
-                            Manage user accounts, login status, access footprint, and profile readiness from a sharper operational workspace. The underlying add, edit, delete, upload, and crop flows remain unchanged.
-                        </div>
-                        <div class="user-admin-strip">
-                            <div class="user-admin-chip">
-                                <span class="user-admin-chip-label">Records Loaded</span>
-                                <span class="user-admin-chip-value">#{userAdministrationBean.recordsCount}</span>
-                            </div>
-                            <div class="user-admin-chip">
-                                <span class="user-admin-chip-label">Logged In</span>
-                                <span class="user-admin-chip-value">#{userAdministrationBean.usersLoggedInCount}</span>
-                            </div>
-                            <div class="user-admin-chip">
-                                <span class="user-admin-chip-label">Logged Out</span>
-                                <span class="user-admin-chip-value">#{userAdministrationBean.usersLoggedOutCount}</span>
-                            </div>
-                            <div class="user-admin-chip">
-                                <span class="user-admin-chip-label">Never Logged In</span>
-                                <span class="user-admin-chip-value">#{userAdministrationBean.usersNeverLoggedinCount}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-12">
                     <p:outputPanel id="usersMainPanelId">
+                        <div class="user-admin-hero">
+                            <h2 class="user-admin-title">User Administration Command Center</h2>
+                            <div class="user-admin-copy">
+                                Manage user accounts, login status, access footprint, and profile readiness from a sharper operational workspace. The underlying add, edit, delete, upload, and crop flows remain unchanged.
+                            </div>
+                            <div class="user-admin-strip">
+                                <div class="user-admin-chip">
+                                    <span class="user-admin-chip-label">Records Loaded</span>
+                                    <span class="user-admin-chip-value">#{userAdministrationBean.recordsCount}</span>
+                                </div>
+                                <div class="user-admin-chip">
+                                    <span class="user-admin-chip-label">Logged In</span>
+                                    <span class="user-admin-chip-value">#{userAdministrationBean.usersLoggedInCount}</span>
+                                </div>
+                                <div class="user-admin-chip">
+                                    <span class="user-admin-chip-label">Logged Out</span>
+                                    <span class="user-admin-chip-value">#{userAdministrationBean.usersLoggedOutCount}</span>
+                                </div>
+                                <div class="user-admin-chip">
+                                    <span class="user-admin-chip-label">Never Logged In</span>
+                                    <span class="user-admin-chip-value">#{userAdministrationBean.usersNeverLoggedinCount}</span>
+                                </div>
+                            </div>
+                        </div>
+
                         <p:growl id="messages" showDetail="true"/>
 
                         <div class="grid">
@@ -132,7 +130,7 @@
                                             <div class="user-admin-head-copy">Create, fetch, export, and maintain user accounts from the same existing action flow, with page-level organization and user scope controls.</div>
                                         </div>
                                     </div>
-                                    <div class="user-admin-filter-grid">
+                                    <div class="user-admin-filter-grid" rendered="#{userAdministrationBean.datatableRendered}">
                                         <p:outputPanel styleClass="user-admin-filter-box" rendered="#{userAdministrationBean.applicationAdmin}">
                                             <span class="user-admin-filter-label">Organization Scope</span>
                                             <p:selectOneMenu value="#{userAdministrationBean.selectedOrganizationFilter}" style="width:100%">
@@ -173,7 +171,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-12 lg:col-6" rendered="#{userAdministrationBean.datatableRendered}">
+                            <p:outputPanel styleClass="col-12 lg:col-6" rendered="#{userAdministrationBean.datatableRendered}">
                                 <div class="user-admin-panel">
                                     <div class="user-admin-head">
                                         <div>
@@ -227,9 +225,9 @@
                                         });
                                     </h:outputScript>
                                 </div>
-                            </div>
+                            </p:outputPanel>
 
-                            <div class="col-12 lg:col-6" rendered="#{userAdministrationBean.datatableRendered}">
+                            <p:outputPanel styleClass="col-12 lg:col-6" rendered="#{userAdministrationBean.datatableRendered}">
                                 <div class="user-admin-panel">
                                     <div class="user-admin-head">
                                         <div>
@@ -277,9 +275,9 @@
                                         });
                                     </h:outputScript>
                                 </div>
-                            </div>
+                            </p:outputPanel>
 
-                            <div class="col-12" rendered="#{userAdministrationBean.datatableRendered}">
+                            <p:outputPanel styleClass="col-12" rendered="#{userAdministrationBean.datatableRendered}">
                                 <div class="user-admin-panel">
                                     <div class="user-admin-head">
                                         <div>
@@ -357,7 +355,7 @@
                                         </p:column>
                                     </p:dataTable>
                                 </div>
-                            </div>
+                            </p:outputPanel>
                         </div>
 
                         <p:dialog header="User Details"
@@ -371,6 +369,7 @@
                             <p:outputPanel id="addEditCountPanelId">
                                 <div class="grid">
                                     <div class="col-12">
+                                        <p:outputPanel id="userDetailsPanel">
                                         <div class="user-admin-panel">
                                             <div class="user-admin-head">
                                                 <div>
@@ -458,6 +457,7 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        </p:outputPanel>
                                     </div>
 
                                     <div class="col-12">
@@ -465,7 +465,7 @@
                                             <div class="user-admin-head">
                                                 <div>
                                                     <h3 class="user-admin-head-title">Profile Image Studio</h3>
-                                                    <div class="user-admin-head-copy">Choose an image, crop it to the avatar frame, then confirm the preview. The save flow stays the same.</div>
+                                                    <div class="user-admin-head-copy">Choose an image and review the preview. The system automatically crops it to a square avatar during save for consistent rendering.</div>
                                                 </div>
                                             </div>
                                             <div class="user-avatar-layout">
@@ -473,11 +473,11 @@
                                                     <div class="user-avatar-steps">
                                                         <div class="user-avatar-step">
                                                             <div class="user-avatar-step-title">Step 1. Select image</div>
-                                                            <div class="user-avatar-step-copy">Upload a JPG, JPEG, or PNG file up to 2 MB. The cropper appears immediately after upload.</div>
+                                                            <div class="user-avatar-step-copy">Upload a JPG, JPEG, or PNG file up to 2 MB. The preview updates immediately after upload.</div>
                                                         </div>
                                                         <div class="user-avatar-step">
-                                                            <div class="user-avatar-step-title">Step 2. Crop square avatar</div>
-                                                            <div class="user-avatar-step-copy">Use the crop frame to keep the face or brand mark centered. The final avatar is resized consistently for the top bar and user grid.</div>
+                                                            <div class="user-avatar-step-title">Step 2. Auto-crop avatar</div>
+                                                            <div class="user-avatar-step-copy">The system trims the uploaded image to a centered square avatar automatically when you save the user.</div>
                                                         </div>
                                                         <div class="user-avatar-step">
                                                             <div class="user-avatar-step-title">Step 3. Review preview</div>
@@ -496,18 +496,8 @@
                                                                   cancelIcon="pi pi-times"/>
 
                                                     <p:outputPanel id="cropperPanel">
-                                                        <div class="user-avatar-stage" rendered="#{not empty userAdministrationBean.uploadedProfileImage}">
-                                                            <div class="user-avatar-help">Crop to a square preview. The avatar output is normalized to #{userAdministrationBean.avatarImageSize}px for consistent rendering.</div>
-                                                            <div class="user-avatar-cropper">
-                                                                <p:imageCropper value="#{userAdministrationBean.croppedProfileImage}"
-                                                                                image="#{userAdministrationBean.uploadedProfileImage}"
-                                                                                initialCoords="30,30,220,220"
-                                                                                minSize="120,120" aspectRatio="1" responsive="true"
-                                                                                cache="false"/>
-                                                            </div>
-                                                        </div>
-                                                        <div class="user-avatar-help" rendered="#{empty userAdministrationBean.uploadedProfileImage}">
-                                                            No new image selected yet. Upload an image to unlock the cropper stage.
+                                                        <div class="user-avatar-help">
+                                                            Uploaded images are automatically center-cropped and resized to #{userAdministrationBean.avatarImageSize}px when you save.
                                                         </div>
                                                     </p:outputPanel>
                                                 </div>
@@ -519,9 +509,9 @@
                                                             <h:graphicImage value="#{userAdministrationBean.selectedProfileImageDataUrl}"
                                                                             rendered="#{not empty userAdministrationBean.selectedProfileImageDataUrl}"
                                                                             styleClass="user-avatar-preview"/>
-                                                            <div class="user-avatar-empty" rendered="#{empty userAdministrationBean.selectedProfileImageDataUrl}">
+                                                            <p:outputPanel styleClass="user-avatar-empty" rendered="#{empty userAdministrationBean.selectedProfileImageDataUrl}">
                                                                 <i class="pi pi-user" style="font-size:1.5rem;"></i>
-                                                            </div>
+                                                            </p:outputPanel>
                                                             <p:selectBooleanCheckbox id="removeImage" value="#{userAdministrationBean.removeProfileImage}"
                                                                                      itemLabel="Remove current profile image">
                                                                 <p:ajax update="imagePreviewPanel cropperPanel"/>
@@ -538,7 +528,7 @@
                                             <p:commandButton value="Save User" icon="pi pi-check"
                                                              actionListener="#{userAdministrationBean.saveUserDetails}"
                                                              update="@([id$=usersMainPanelId]) @([id$=addEditCountPanelId])"
-                                                             process="@([id$=addEditCountPanelId]) @this"
+                                                             process="@this userDetailsPanel imagePreviewPanel"
                                                              styleClass="ui-button-success"/>
                                             <p:commandButton value="Cancel" type="button" icon="pi pi-times"
                                                              onclick="PF('ManageUserDialog').hide()" styleClass="ui-button-secondary"/>
