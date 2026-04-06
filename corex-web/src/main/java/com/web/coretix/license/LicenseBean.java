@@ -19,15 +19,18 @@ package com.web.coretix.license;
 import com.module.coretix.commonto.UserActivityTO;
 import com.module.coretix.license.ILicenseService;
 import com.module.coretix.systemmanagement.IOrganizationService;
+import com.module.coretix.usermanagement.IUserAdministrationService;
 import com.persist.coretix.modal.constants.GeneralConstants;
 import com.persist.coretix.modal.license.Licenses;
 import com.persist.coretix.modal.systemmanagement.Organizations;
+import com.persist.coretix.modal.usermanagement.UserDetails;
 import com.web.coretix.appgeneral.GenericManagedBean;
 import com.web.coretix.constants.CoreAppModule;
 import com.web.coretix.constants.LicenseManagementModule;
 import com.web.coretix.constants.RolePrivilegeConstants;
 import com.web.coretix.constants.SessionAttributes;
 import com.web.coretix.constants.UserActivityConstants;
+import com.web.coretix.general.NotificationService;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -44,8 +47,12 @@ import java.io.Serializable;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Named("licenseBean")
@@ -67,6 +74,17 @@ public class LicenseBean extends GenericManagedBean implements Serializable {
     private boolean isAddOperation;
     private boolean datatableRendered;
     private int recordsCount;
+    private int activeLicenseCount;
+    private int expiredLicenseCount;
+    private int expiringSoonCount;
+    private int licensedUserCount;
+    private int unlicensedOrganizationCount;
+    private int licenseHealthScore;
+    private String portfolioSummary = "No license data available yet.";
+    private String licensePulseSummary = "Start by fetching license records.";
+    private String mostExposedOrganizationName = "-";
+    private String earliestExpiryLabel = "-";
+    private List<LicenseDashboardRow> licenseDashboardRows = new ArrayList<>();
 
     private Licenses selectedLicense = new Licenses();
 
@@ -75,6 +93,9 @@ public class LicenseBean extends GenericManagedBean implements Serializable {
 
     @Inject
     private IOrganizationService organizationService;
+
+    @Inject
+    private IUserAdministrationService userAdministrationService;
 
     public void initializePageAttributes() {
         resourceBundle = ResourceBundle.getBundle("messages", FacesContext.getCurrentInstance().getViewRoot().getLocale());
@@ -90,7 +111,7 @@ public class LicenseBean extends GenericManagedBean implements Serializable {
         }
 
         fetchRolePrivilegeList();
-        PrimeFaces.current().ajax().update("form:licenseMainPanelId");
+        fetchLicenseList();
     }
 
     private void fetchRolePrivilegeList() {
@@ -135,7 +156,7 @@ public class LicenseBean extends GenericManagedBean implements Serializable {
 
     public List<String> completeOrganization(String query) {
         String queryLowerCase = query.toLowerCase();
-        List<String> organizations = getOrganizations().stream()
+        List<String> organizations = getSelectableOrganizations().stream()
                 .map(Organizations::getOrganizationName)
                 .collect(Collectors.toList());
         return organizations.stream()
@@ -161,7 +182,7 @@ public class LicenseBean extends GenericManagedBean implements Serializable {
             return;
         }
 
-        Organizations organization = getOrganizationEntityByName(organizationName);
+        Organizations organization = getSelectableOrganizationEntityByName(organizationName);
         if (organization == null) {
             addErrorMessage("Selected organization does not exist");
             return;
@@ -189,7 +210,7 @@ public class LicenseBean extends GenericManagedBean implements Serializable {
         if (status == GeneralConstants.SUCCESSFUL) {
             fetchLicenseList();
             PrimeFaces.current().executeScript("PF('manageLicenseDialog').hide()");
-            PrimeFaces.current().ajax().update("form:messages", "form:licenseDataTableId");
+            PrimeFaces.current().ajax().update("form:licenseMainPanelId", "form:messages");
         }
     }
 
@@ -264,10 +285,147 @@ public class LicenseBean extends GenericManagedBean implements Serializable {
                     || license.getOrganization().getId() != currentOrganizationId);
         }
         licenseList.addAll(visibleLicenses);
+        refreshDashboardMetrics();
         if (CollectionUtils.isNotEmpty(licenseList)) {
             datatableRendered = true;
             recordsCount = licenseList.size();
         }
+    }
+
+    private void refreshDashboardMetrics() {
+        activeLicenseCount = 0;
+        expiredLicenseCount = 0;
+        expiringSoonCount = 0;
+        licensedUserCount = 0;
+        unlicensedOrganizationCount = 0;
+        licenseHealthScore = 0;
+        portfolioSummary = "No license data available yet.";
+        licensePulseSummary = "Start by fetching license records.";
+        mostExposedOrganizationName = "-";
+        earliestExpiryLabel = "-";
+        licenseDashboardRows = new ArrayList<>();
+
+        List<Licenses> visibleLicenses = new ArrayList<>(licenseList);
+        List<Organizations> visibleOrganizations = new ArrayList<>(getAccessibleOrganizations(organizationService));
+        List<UserDetails> visibleUsers = new ArrayList<>(userAdministrationService.getUserDetailsList());
+        if (!isApplicationAdmin()) {
+            visibleUsers.removeIf(user -> user == null || !canAccessOrganization(userOrganizationId(user)));
+        }
+
+        Map<Integer, Integer> userCountByOrganization = new HashMap<>();
+        for (UserDetails userDetails : visibleUsers) {
+            Integer organizationId = userOrganizationId(userDetails);
+            if (organizationId == null) {
+                continue;
+            }
+            userCountByOrganization.merge(organizationId, 1, Integer::sum);
+        }
+
+        java.util.Date today = new java.util.Date();
+        LicenseDashboardRow mostExposedOrganization = null;
+        LicenseDashboardRow earliestExpiry = null;
+
+        for (Licenses license : visibleLicenses) {
+            if (license == null || license.getOrganization() == null) {
+                continue;
+            }
+
+            int usersUnderLicense = userCountByOrganization.getOrDefault(license.getOrganization().getId(), 0);
+            licensedUserCount += usersUnderLicense;
+
+            long daysRemaining = calculateDaysRemaining(license, today);
+            boolean active = license.isActive();
+            boolean expiringSoon = active && daysRemaining <= 30;
+            boolean expiringCritical = active && daysRemaining <= 7;
+
+            if (active) {
+                activeLicenseCount++;
+            } else {
+                expiredLicenseCount++;
+            }
+            if (expiringSoon) {
+                expiringSoonCount++;
+            }
+
+            LicenseDashboardRow row = new LicenseDashboardRow(
+                    license.getOrganization().getId(),
+                    license.getOrganization().getOrganizationName(),
+                    usersUnderLicense,
+                    getFormattedDate(license.getEndDate()),
+                    getLicenseStatus(license),
+                    daysRemaining,
+                    license.getRemarks(),
+                    active ? (expiringCritical ? "Expiring" : expiringSoon ? "Attention" : "Healthy") : "Expired");
+            licenseDashboardRows.add(row);
+
+            if (mostExposedOrganization == null || row.getUserCount() > mostExposedOrganization.getUserCount()) {
+                mostExposedOrganization = row;
+            }
+
+            if (earliestExpiry == null || row.getDaysRemaining() < earliestExpiry.getDaysRemaining()) {
+                earliestExpiry = row;
+            }
+        }
+
+        licenseDashboardRows.sort(Comparator
+                .comparingLong(LicenseDashboardRow::getDaysRemaining)
+                .thenComparing(LicenseDashboardRow::getOrganizationName, String.CASE_INSENSITIVE_ORDER));
+
+        if (!visibleOrganizations.isEmpty()) {
+            int licensedOrganizationCount = (int) visibleLicenses.stream()
+                    .filter(license -> license != null && license.getOrganization() != null)
+                    .map(license -> license.getOrganization().getId())
+                    .distinct()
+                    .count();
+            unlicensedOrganizationCount = Math.max(0, visibleOrganizations.size() - licensedOrganizationCount);
+        }
+
+        if (!visibleLicenses.isEmpty()) {
+            licenseHealthScore = (int) Math.round((activeLicenseCount * 100.0d) / visibleLicenses.size());
+            portfolioSummary = activeLicenseCount + " active licenses, " + expiredLicenseCount + " expired, "
+                    + expiringSoonCount + " expiring within 30 days.";
+            licensePulseSummary = licensedUserCount + " users currently sit under visible licensed organizations.";
+        }
+
+        if (mostExposedOrganization != null) {
+            mostExposedOrganizationName = mostExposedOrganization.getOrganizationName() + " (" + mostExposedOrganization.getUserCount() + " users)";
+        }
+
+        if (earliestExpiry != null) {
+            earliestExpiryLabel = earliestExpiry.getOrganizationName() + " - "
+                    + formatDaysRemaining(earliestExpiry.getDaysRemaining()) + " remaining";
+        }
+    }
+
+    private Integer userOrganizationId(UserDetails userDetails) {
+        if (userDetails == null || userDetails.getOrganization() == null) {
+            return null;
+        }
+        return userDetails.getOrganization().getId();
+    }
+
+    private long calculateDaysRemaining(Licenses license, java.util.Date today) {
+        if (license == null || license.getEndDate() == null) {
+            return Long.MAX_VALUE;
+        }
+        long diffMillis = license.getEndDate().getTime() - today.getTime();
+        return TimeUnit.MILLISECONDS.toDays(diffMillis);
+    }
+
+    public String formatDaysRemaining(long daysRemaining) {
+        if (daysRemaining == Long.MAX_VALUE) {
+            return "-";
+        }
+        if (daysRemaining < 0) {
+            return Math.abs(daysRemaining) + " days overdue";
+        }
+        if (daysRemaining == 0) {
+            return "Ends today";
+        }
+        if (daysRemaining == 1) {
+            return "1 day left";
+        }
+        return daysRemaining + " days left";
     }
 
     private void addErrorMessage(String detail) {
@@ -283,8 +441,25 @@ public class LicenseBean extends GenericManagedBean implements Serializable {
         return organizationList;
     }
 
-    private Organizations getOrganizationEntityByName(String inputOrganizationName) {
-        for (Organizations organization : getOrganizations()) {
+    private List<Organizations> getSelectableOrganizations() {
+        List<Organizations> organizations = new ArrayList<>(getOrganizations());
+        if (!isAddOperation) {
+            return organizations;
+        }
+
+        List<Integer> licensedOrganizationIds = licenseService.getLicenseList().stream()
+                .filter(license -> license != null && license.getOrganization() != null)
+                .map(license -> license.getOrganization().getId())
+                .distinct()
+                .collect(Collectors.toList());
+
+        organizations.removeIf(organization -> organization == null
+                || licensedOrganizationIds.contains(organization.getId()));
+        return organizations;
+    }
+
+    private Organizations getSelectableOrganizationEntityByName(String inputOrganizationName) {
+        for (Organizations organization : getSelectableOrganizations()) {
             if (organization.getOrganizationName().equalsIgnoreCase(inputOrganizationName)) {
                 return organization;
             }
@@ -314,6 +489,111 @@ public class LicenseBean extends GenericManagedBean implements Serializable {
 
     public String getLicenseStatus(Licenses license) {
         return license != null && license.isActive() ? "Active" : "Expired";
+    }
+
+    public String statusSeverity(String status) {
+        if ("Expired".equalsIgnoreCase(status)) {
+            return "danger";
+        }
+        if ("Expiring".equalsIgnoreCase(status)) {
+            return "danger";
+        }
+        if ("Attention".equalsIgnoreCase(status)) {
+            return "warning";
+        }
+        return "success";
+    }
+
+    public String statusStyleClass(String status) {
+        if ("Expiring".equalsIgnoreCase(status)) {
+            return "license-tag-blink";
+        }
+        return "";
+    }
+
+    public boolean shouldRenderNotifyButton(String status) {
+        return "Attention".equalsIgnoreCase(status) || "Expiring".equalsIgnoreCase(status);
+    }
+
+    public void notifyOrganizationUsers(LicenseDashboardRow dashboardRow) {
+        if (dashboardRow == null || dashboardRow.getOrganizationId() == null || StringUtils.isBlank(dashboardRow.getOrganizationName())) {
+            return;
+        }
+
+        if (!canAccessOrganization(dashboardRow.getOrganizationId())) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_WARN, resourceBundle.getString("warningLabel"),
+                            "Unable to resolve the organization for notification."));
+            PrimeFaces.current().ajax().update("form:messages");
+            return;
+        }
+
+        String notificationMessage = String.format("%s license is %s and ends on %s. Please contact admin.",
+                dashboardRow.getOrganizationName(),
+                dashboardRow.getHealthLabel().toLowerCase(),
+                dashboardRow.getExpiryDate());
+
+        NotificationService.sendGrowlMessageToOrganization(dashboardRow.getOrganizationId(), notificationMessage);
+
+        FacesContext.getCurrentInstance().addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_INFO, "Notification Sent",
+                        "License expiry notification was sent to active users in " + dashboardRow.getOrganizationName() + "."));
+        PrimeFaces.current().ajax().update("form:messages", "form:licenseMainPanelId");
+    }
+
+    public int getTotalLicenseCount() {
+        return licenseList == null ? 0 : licenseList.size();
+    }
+
+    public int getActiveLicenseCount() {
+        return activeLicenseCount;
+    }
+
+    public int getExpiredLicenseCount() {
+        return expiredLicenseCount;
+    }
+
+    public int getExpiringSoonCount() {
+        return expiringSoonCount;
+    }
+
+    public int getLicensedUserCount() {
+        return licensedUserCount;
+    }
+
+    public int getUnlicensedOrganizationCount() {
+        return unlicensedOrganizationCount;
+    }
+
+    public int getLicenseHealthScore() {
+        return licenseHealthScore;
+    }
+
+    public String getLicenseHealthRingStyle() {
+        int safeScore = Math.max(0, Math.min(100, licenseHealthScore));
+        int activeDegrees = (int) Math.round(safeScore * 3.6d);
+        return "background:conic-gradient(#16a34a 0deg, #16a34a " + activeDegrees
+                + "deg, #dbeafe " + activeDegrees + "deg, #dbeafe 360deg);";
+    }
+
+    public String getPortfolioSummary() {
+        return portfolioSummary;
+    }
+
+    public String getLicensePulseSummary() {
+        return licensePulseSummary;
+    }
+
+    public String getMostExposedOrganizationName() {
+        return mostExposedOrganizationName;
+    }
+
+    public String getEarliestExpiryLabel() {
+        return earliestExpiryLabel;
+    }
+
+    public List<LicenseDashboardRow> getLicenseDashboardRows() {
+        return licenseDashboardRows;
     }
 
     public List<Licenses> getLicenseList() {
@@ -366,6 +646,61 @@ public class LicenseBean extends GenericManagedBean implements Serializable {
 
     public void setSelectedLicense(Licenses selectedLicense) {
         this.selectedLicense = selectedLicense;
+    }
+
+    public static class LicenseDashboardRow implements Serializable {
+        private final Integer organizationId;
+        private final String organizationName;
+        private final int userCount;
+        private final String expiryDate;
+        private final String status;
+        private final long daysRemaining;
+        private final String remarks;
+        private final String healthLabel;
+
+        public LicenseDashboardRow(Integer organizationId, String organizationName, int userCount, String expiryDate, String status,
+                                   long daysRemaining, String remarks, String healthLabel) {
+            this.organizationId = organizationId;
+            this.organizationName = organizationName;
+            this.userCount = userCount;
+            this.expiryDate = expiryDate;
+            this.status = status;
+            this.daysRemaining = daysRemaining;
+            this.remarks = remarks;
+            this.healthLabel = healthLabel;
+        }
+
+        public Integer getOrganizationId() {
+            return organizationId;
+        }
+
+        public String getOrganizationName() {
+            return organizationName;
+        }
+
+        public int getUserCount() {
+            return userCount;
+        }
+
+        public String getExpiryDate() {
+            return expiryDate;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public long getDaysRemaining() {
+            return daysRemaining;
+        }
+
+        public String getRemarks() {
+            return remarks;
+        }
+
+        public String getHealthLabel() {
+            return healthLabel;
+        }
     }
 }
 

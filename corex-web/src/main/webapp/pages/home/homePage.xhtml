@@ -125,6 +125,14 @@
                             <span class="hero-chip-label">Active User Rate</span>
                             <span class="hero-chip-value">#{homePageBean.activeUserRate}%</span>
                         </div>
+                        <div class="hero-chip">
+                            <span class="hero-chip-label">Licensed Orgs</span>
+                            <span class="hero-chip-value">#{homePageBean.licensedOrganizationCount}</span>
+                        </div>
+                        <div class="hero-chip">
+                            <span class="hero-chip-label">Expiring Licenses</span>
+                            <span class="hero-chip-value">#{homePageBean.expiringSoonLicenseCount}</span>
+                        </div>
                     </div>
                 </div>
 
@@ -137,6 +145,10 @@
                     <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">Structure Inventory</span><div class="metric-card-value">#{homePageBean.totalStructureCount}</div><div class="metric-card-foot">#{homePageBean.averageDepartmentsPerOrganization} departments per organization</div></div></div>
                     <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">Authentication Share</span><div class="metric-card-value">#{homePageBean.authenticationShare}%</div><div class="metric-card-foot">Login and logout events out of tracked activity</div></div></div>
                     <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">Change Share</span><div class="metric-card-value">#{homePageBean.changeShare}%</div><div class="metric-card-foot">Add, update, and delete events combined</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">Licensed Users</span><div class="metric-card-value">#{homePageBean.licensedUserCount}</div><div class="metric-card-foot">Users attached to organizations with registered licenses</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">Active Licenses</span><div class="metric-card-value">#{homePageBean.activeLicenseCount}</div><div class="metric-card-foot">#{homePageBean.expiredLicenseCount} expired and #{homePageBean.expiringSoonLicenseCount} nearing renewal</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">License Coverage</span><div class="metric-card-value">#{homePageBean.licenseCoverageRate}%</div><div class="metric-card-foot">Share of licensed organizations that are still active</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">Unlicensed Orgs</span><div class="metric-card-value">#{homePageBean.unlicensedOrganizationCount}</div><div class="metric-card-foot">Organizations without any registered license entry</div></div></div>
                 </div>
 
                 <div class="grid">
@@ -196,6 +208,19 @@
                                 <div class="dashboard-stat-row"><span class="dashboard-stat-name">Cities per state</span><span class="dashboard-stat-value">#{homePageBean.averageCitiesPerState}</span></div>
                                 <div class="dashboard-stat-row"><span class="dashboard-stat-name">Activities per role</span><span class="dashboard-stat-value">#{homePageBean.averageActivitiesPerRole}</span></div>
                             </div>
+                        </div>
+                    </div>
+                    <div class="col-12 xl:col-6">
+                        <div class="dashboard-panel">
+                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">License Pulse</h3><div class="dashboard-panel-subtitle">Current license coverage and renewal pressure across organizations</div></div></div>
+                            <div class="dashboard-stat-list" style="margin-bottom:1rem;">
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Licensed organizations</span><span class="dashboard-stat-value">#{homePageBean.licensedOrganizationCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Active / expired licenses</span><span class="dashboard-stat-value">#{homePageBean.activeLicenseCount} / #{homePageBean.expiredLicenseCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Expiring within 30 days</span><span class="dashboard-stat-value">#{homePageBean.expiringSoonLicenseCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Licensed user accounts</span><span class="dashboard-stat-value">#{homePageBean.licensedUserCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Unlicensed organizations</span><span class="dashboard-stat-value">#{homePageBean.unlicensedOrganizationCount}</span></div>
+                            </div>
+                            <div class="dashboard-panel-subtitle">#{homePageBean.licenseSummary}</div>
                         </div>
                     </div>
                     <div class="col-12 xl:col-6">

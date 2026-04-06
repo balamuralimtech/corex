@@ -21,6 +21,7 @@ import com.persist.coretix.modal.systemmanagement.Designations;
 import com.persist.coretix.modal.systemmanagement.Organizations;
 import com.module.coretix.commonto.UserActivityTO;
 import com.module.coretix.systemmanagement.IOrganizationService;
+import com.web.coretix.appgeneral.GenericManagedBean;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -56,7 +57,7 @@ import org.primefaces.PrimeFaces;
  */
 @Named("designationBean")
 @Scope("session")
-public class DesignationBean implements Serializable {
+public class DesignationBean extends GenericManagedBean implements Serializable {
 
     private static final long serialVersionUID = 135415345345354355L;
     private static final Logger logger = LoggerFactory.getLogger(DesignationBean.class);

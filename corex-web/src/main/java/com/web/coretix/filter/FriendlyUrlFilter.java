@@ -16,10 +16,14 @@
  */
 package com.web.coretix.filter;
 
+import com.web.coretix.constants.SessionAttributes;
+import com.web.coretix.constants.UserTypeConstants;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.servlet.Filter;
@@ -34,6 +38,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public class FriendlyUrlFilter implements Filter {
+    private static final String CORE_DASHBOARD_FRIENDLY_PATH = "/core-dashboard";
+    private static final String CORE_DASHBOARD_INTERNAL_PATH = "/pages/home/homePage.xhtml";
+    private static final String DASHBOARD_CYCLE_INDEX = "dashboardCycleIndex";
 
     private static final Set<String> SHARED_PAGE_DIRECTORIES = Set.of(
             "errorandwarningpages",
@@ -67,6 +74,8 @@ public class FriendlyUrlFilter implements Filter {
 
     private Map<String, String> friendlyToInternalPaths;
     private Map<String, String> internalToFriendlyPaths;
+    private List<String> applicationDashboardPaths;
+    private String primaryApplicationDashboardPath;
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -74,6 +83,8 @@ public class FriendlyUrlFilter implements Filter {
         paths.putAll(discoverApplicationFriendlyPaths(filterConfig.getServletContext()));
         friendlyToInternalPaths = Collections.unmodifiableMap(paths);
         internalToFriendlyPaths = Collections.unmodifiableMap(buildInternalToFriendlyPaths(friendlyToInternalPaths));
+        applicationDashboardPaths = Collections.unmodifiableList(discoverApplicationDashboardPaths(filterConfig.getServletContext()));
+        primaryApplicationDashboardPath = resolvePrimaryApplicationDashboardPath(applicationDashboardPaths);
     }
 
     @Override
@@ -85,6 +96,11 @@ public class FriendlyUrlFilter implements Filter {
         String requestUri = httpRequest.getRequestURI();
         String contextPath = httpRequest.getContextPath();
         String path = requestUri.substring(contextPath.length());
+
+        if ("/home".equals(path)) {
+            httpResponse.sendRedirect(contextPath + resolveHomeTarget(httpRequest));
+            return;
+        }
 
         String internalPath = friendlyToInternalPaths.get(path);
         if (internalPath != null) {
@@ -120,7 +136,8 @@ public class FriendlyUrlFilter implements Filter {
         paths.put("/landing", "/login2.xhtml");
         paths.put("/login", "/login.xhtml");
         paths.put("/setup", "/setup.xhtml");
-        paths.put("/home", "/pages/home/homePage.xhtml");
+        paths.put("/home", CORE_DASHBOARD_INTERNAL_PATH);
+        paths.put(CORE_DASHBOARD_FRIENDLY_PATH, CORE_DASHBOARD_INTERNAL_PATH);
 
         paths.put("/user-profile", "/pages/usermanagement/userprofile.xhtml");
         paths.put("/user-activity", "/pages/usermanagement/useractivity.xhtml");
@@ -238,6 +255,98 @@ public class FriendlyUrlFilter implements Filter {
         int separatorIndex = relativePath.lastIndexOf('/');
         String pageName = separatorIndex >= 0 ? relativePath.substring(separatorIndex + 1) : relativePath;
         return pageName.isEmpty() ? "" : "/" + pageName;
+    }
+
+    private String resolveHomeTarget(HttpServletRequest request) {
+        if (!isApplicationAdmin(request)) {
+            return primaryApplicationDashboardPath == null ? CORE_DASHBOARD_FRIENDLY_PATH : primaryApplicationDashboardPath;
+        }
+
+        List<String> dashboardPaths = new ArrayList<>();
+        dashboardPaths.add(CORE_DASHBOARD_FRIENDLY_PATH);
+        if (primaryApplicationDashboardPath != null) {
+            dashboardPaths.add(primaryApplicationDashboardPath);
+        }
+
+        if (dashboardPaths.isEmpty()) {
+            return CORE_DASHBOARD_FRIENDLY_PATH;
+        }
+
+        javax.servlet.http.HttpSession session = request.getSession(false);
+        if (session == null) {
+            return dashboardPaths.get(0);
+        }
+
+        Object currentIndexValue = session.getAttribute(DASHBOARD_CYCLE_INDEX);
+        int currentIndex = currentIndexValue instanceof Integer ? (Integer) currentIndexValue : -1;
+        int nextIndex = (currentIndex + 1) % dashboardPaths.size();
+        session.setAttribute(DASHBOARD_CYCLE_INDEX, nextIndex);
+        return dashboardPaths.get(nextIndex);
+    }
+
+    private boolean isApplicationAdmin(HttpServletRequest request) {
+        javax.servlet.http.HttpSession session = request.getSession(false);
+        if (session == null) {
+            return false;
+        }
+
+        Object userType = session.getAttribute(SessionAttributes.USER_TYPE.getName());
+        return userType instanceof String
+                && UserTypeConstants.APPLICATION_ADMIN == UserTypeConstants.fromValue((String) userType);
+    }
+
+    private List<String> discoverApplicationDashboardPaths(ServletContext servletContext) {
+        Set<String> pageResources = new HashSet<>();
+        collectPageResources(servletContext, "/pages/", pageResources);
+
+        List<String> dashboardPaths = new ArrayList<>();
+        for (String internalPath : pageResources) {
+            if (!isDashboardPage(internalPath)) {
+                continue;
+            }
+            String friendlyPath = toApplicationFriendlyPath(internalPath);
+            if (friendlyPath == null || friendlyPath.isEmpty()) {
+                friendlyPath = toFriendlyPath(internalPath);
+            }
+            if (friendlyPath != null && !friendlyPath.isEmpty()) {
+                dashboardPaths.add(friendlyPath);
+            }
+        }
+        Collections.sort(dashboardPaths);
+        return dashboardPaths;
+    }
+
+    private String resolvePrimaryApplicationDashboardPath(List<String> dashboardPaths) {
+        if (dashboardPaths == null || dashboardPaths.isEmpty()) {
+            return null;
+        }
+
+        for (String dashboardPath : dashboardPaths) {
+            if ("/dashboard".equals(dashboardPath)) {
+                return dashboardPath;
+            }
+        }
+
+        for (String dashboardPath : dashboardPaths) {
+            if (dashboardPath != null && dashboardPath.endsWith("/dashboard")) {
+                return dashboardPath;
+            }
+        }
+
+        return dashboardPaths.get(0);
+    }
+
+    private boolean isDashboardPage(String internalPath) {
+        if (internalPath == null || !internalPath.endsWith(".xhtml")) {
+            return false;
+        }
+        if (CORE_DASHBOARD_INTERNAL_PATH.equals(internalPath)) {
+            return false;
+        }
+
+        String normalizedPath = internalPath.toLowerCase();
+        return normalizedPath.contains("dashboard")
+                && !normalizedPath.contains("dashboardgateway");
     }
 }
 

@@ -21,36 +21,166 @@
                 xmlns:p="http://primefaces.org/ui"
                 template="/WEB-INF/template.xhtml">
 
-
     <ui:define name="content">
         <f:event listener="#{databaseDetailsBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:outputStylesheet>
+            .db-shell { --db-night:#08111f; --db-night-soft:#11213c; --db-ice:#e0f2fe; --db-accent:#0ea5e9; --db-accent-2:#22c55e; --db-gold:#f59e0b; }
+            .db-hero { position:relative; overflow:hidden; padding:2rem; border-radius:28px; color:#f8fafc; background:radial-gradient(circle at top right, rgba(34,197,94,.22), transparent 28%), linear-gradient(135deg, #08111f 0%, #102039 46%, #164e63 100%); box-shadow:0 24px 70px rgba(2,6,23,.25); }
+            .db-hero:before { content:''; position:absolute; inset:auto auto -22% -8%; width:260px; height:260px; border-radius:42px; transform:rotate(18deg); background:linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,0)); }
+            .db-hero-title { margin:0; font-size:2rem; font-weight:700; letter-spacing:-.03em; }
+            .db-hero-copy { margin-top:.75rem; max-width:780px; color:rgba(226,232,240,.84); line-height:1.7; }
+            .db-strip { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1rem; margin-top:1.4rem; }
+            .db-chip { padding:1rem 1.1rem; border-radius:18px; background:rgba(15,23,42,.34); border:1px solid rgba(148,163,184,.16); backdrop-filter:blur(10px); }
+            .db-chip-label { display:block; font-size:.76rem; text-transform:uppercase; letter-spacing:.08em; color:rgba(191,219,254,.76); }
+            .db-chip-value { display:block; margin-top:.35rem; color:#fff; font-size:1.25rem; font-weight:700; word-break:break-word; }
+            .db-panel { height:100%; padding:1.15rem; border-radius:24px; background:#fff; border:1px solid rgba(203,213,225,.82); box-shadow:0 16px 44px rgba(15,23,42,.08); }
+            .db-panel-dark { color:#dbeafe; background:linear-gradient(180deg, #0f1b2f 0%, #091321 100%); border-color:#0b1627; box-shadow:0 22px 48px rgba(2,6,23,.24); }
+            .db-head { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:1rem; }
+            .db-head-title { margin:0; font-size:1.08rem; font-weight:700; color:#0f172a; }
+            .db-panel-dark .db-head-title { color:#f8fafc; }
+            .db-head-copy { margin-top:.2rem; font-size:.92rem; color:#64748b; line-height:1.55; }
+            .db-panel-dark .db-head-copy { color:#94a3b8; }
+            .db-stat-card { height:100%; padding:1.1rem; border-radius:20px; background:#fff; border:1px solid rgba(203,213,225,.82); box-shadow:0 12px 36px rgba(15,23,42,.06); }
+            .db-stat-kicker { display:block; color:#64748b; font-size:.78rem; text-transform:uppercase; letter-spacing:.08em; }
+            .db-stat-value { display:block; margin-top:.55rem; font-size:1.85rem; font-weight:700; color:#0f172a; line-height:1.1; }
+            .db-stat-copy { display:block; margin-top:.7rem; color:#475569; line-height:1.5; }
+            .db-tone-success { background:linear-gradient(180deg,#fff 0%,#ecfdf5 100%); }
+            .db-tone-info { background:linear-gradient(180deg,#fff 0%,#eff6ff 100%); }
+            .db-tone-warn { background:linear-gradient(180deg,#fff 0%,#fff7ed 100%); }
+            .db-seal { display:flex; align-items:center; justify-content:center; width:142px; height:142px; border-radius:50%; margin:0 auto 1rem; background:conic-gradient(#22c55e 0deg, #22c55e 270deg, rgba(148,163,184,.18) 270deg, rgba(148,163,184,.18) 360deg); }
+            .db-seal-inner { width:106px; height:106px; border-radius:50%; background:#08111f; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:inset 0 0 0 1px rgba(148,163,184,.14); }
+            .db-seal-value { font-size:1.8rem; font-weight:700; color:#fff; line-height:1; }
+            .db-seal-label { margin-top:.25rem; color:#94a3b8; font-size:.78rem; text-transform:uppercase; letter-spacing:.08em; }
+            .db-insight { padding:1rem 1.05rem; border-radius:16px; background:#eff6ff; border:1px solid #dbeafe; color:#1d4ed8; line-height:1.6; }
+            .db-panel-dark .db-insight { background:rgba(14,165,233,.10); border-color:rgba(14,165,233,.2); color:#dbeafe; }
+            .db-detail-grid { display:grid; gap:.85rem; }
+            .db-detail-row { padding:.9rem 1rem; border-radius:16px; background:#f8fafc; border:1px solid #e2e8f0; }
+            .db-detail-label { display:block; color:#64748b; font-size:.78rem; text-transform:uppercase; letter-spacing:.08em; }
+            .db-detail-value { display:block; margin-top:.35rem; color:#0f172a; font-weight:600; line-height:1.6; word-break:break-word; }
+            .db-panel-dark .db-detail-row { background:rgba(255,255,255,.03); border-color:rgba(148,163,184,.12); }
+            .db-panel-dark .db-detail-label { color:#93c5fd; }
+            .db-panel-dark .db-detail-value { color:#f8fafc; }
+        </h:outputStylesheet>
+
         <h:form id="form">
-            <div class="col-12">
-                <p:breadCrumb>
-                    <p:menuitem url="#" icon="pi pi-home" />
-                    <p:menuitem value="Server and DB" url="#" />
-                    <p:menuitem value="Database" url="#" />
-                </p:breadCrumb>
-            </div>
-            <div class="grid">
+            <div class="grid crud-demo db-shell">
                 <div class="col-12">
-                    <div class="card ui-fluid">
-                        <h5>Database Details</h5>
-                        <div class="field">
-                            <p:outputLabel for="url">URL</p:outputLabel>
-                            <p:inputText id="url" value="#{databaseDetailsBean.jdbcUrl}" disabled="true" />
+                    <p:breadCrumb>
+                        <p:menuitem url="#" icon="pi pi-home"/>
+                        <p:menuitem value="Server and DB" url="#"/>
+                        <p:menuitem value="Database" url="#"/>
+                    </p:breadCrumb>
+                </div>
+
+                <div class="col-12">
+                    <div class="db-hero">
+                        <h2 class="db-hero-title">Database Runtime Control</h2>
+                        <div class="db-hero-copy">
+                            #{databaseDetailsBean.databaseSummary}
                         </div>
-                        <div class="field">
-                            <p:outputLabel for="jdbcUsername">Username</p:outputLabel>
-                            <p:inputText id="jdbcUsername" value="#{databaseDetailsBean.jdbcUsername}" disabled="true"/>
+                        <div class="db-strip">
+                            <div class="db-chip">
+                                <span class="db-chip-label">Connection State</span>
+                                <span class="db-chip-value">#{databaseDetailsBean.connectionStatus}</span>
+                            </div>
+                            <div class="db-chip">
+                                <span class="db-chip-label">Engine</span>
+                                <span class="db-chip-value">#{databaseDetailsBean.databaseEngineLabel}</span>
+                            </div>
+                            <div class="db-chip">
+                                <span class="db-chip-label">Runtime</span>
+                                <span class="db-chip-value">#{databaseDetailsBean.databaseFlavorTone}</span>
+                            </div>
+                            <div class="db-chip">
+                                <span class="db-chip-label">Datasource User</span>
+                                <span class="db-chip-value">#{empty databaseDetailsBean.jdbcUsername ? '-' : databaseDetailsBean.jdbcUsername}</span>
+                            </div>
                         </div>
-                        <div class="field">
-                            <p:outputLabel for="jdbcProductName">Product Name</p:outputLabel>
-                            <p:inputText id="jdbcProductName" value="#{databaseDetailsBean.jdbcProductName}" disabled="true"/>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <div class="grid">
+                        <div class="col-12 md:col-6 xl:col-3">
+                            <div class="db-stat-card db-tone-success">
+                                <span class="db-stat-kicker">Availability</span>
+                                <span class="db-stat-value">#{databaseDetailsBean.connectionStatus}</span>
+                                <span class="db-stat-copy">Live datasource reachability as seen from the running application server.</span>
+                            </div>
                         </div>
-                        <div class="field">
-                            <p:outputLabel for="jdbcProductVersion">Product Version</p:outputLabel>
-                            <p:inputText id="jdbcProductVersion" value="#{databaseDetailsBean.jdbcProductVersion}" disabled="true"/>
+                        <div class="col-12 md:col-6 xl:col-3">
+                            <div class="db-stat-card db-tone-info">
+                                <span class="db-stat-kicker">Product</span>
+                                <span class="db-stat-value">#{databaseDetailsBean.databaseEngineLabel}</span>
+                                <span class="db-stat-copy">Database product reported by JDBC metadata.</span>
+                            </div>
+                        </div>
+                        <div class="col-12 md:col-6 xl:col-3">
+                            <div class="db-stat-card db-tone-warn">
+                                <span class="db-stat-kicker">Version</span>
+                                <span class="db-stat-value">#{empty databaseDetailsBean.jdbcProductVersion ? '-' : databaseDetailsBean.jdbcProductVersion}</span>
+                                <span class="db-stat-copy">Server version currently exposed by the connected engine.</span>
+                            </div>
+                        </div>
+                        <div class="col-12 md:col-6 xl:col-3">
+                            <div class="db-stat-card">
+                                <span class="db-stat-kicker">Datasource User</span>
+                                <span class="db-stat-value">#{empty databaseDetailsBean.jdbcUsername ? '-' : databaseDetailsBean.jdbcUsername}</span>
+                                <span class="db-stat-copy">Authentication identity currently attached to the application datasource.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 xl:col-4">
+                    <div class="db-panel db-panel-dark">
+                        <div class="db-head">
+                            <div>
+                                <h3 class="db-head-title">Connection Pulse</h3>
+                                <div class="db-head-copy">Quick operational read of the active datasource and engine handshake.</div>
+                            </div>
+                            <p:tag value="#{databaseDetailsBean.connectionStatus}" severity="#{databaseDetailsBean.connectionSeverity}"/>
+                        </div>
+
+                        <div class="db-seal">
+                            <div class="db-seal-inner">
+                                <div class="db-seal-value">DB</div>
+                                <div class="db-seal-label">Online</div>
+                            </div>
+                        </div>
+
+                        <div class="db-insight">
+                            #{databaseDetailsBean.databaseSummary}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 xl:col-8">
+                    <div class="db-panel">
+                        <div class="db-head">
+                            <div>
+                                <h3 class="db-head-title">Technical Details</h3>
+                                <div class="db-head-copy">Datasource metadata captured directly from JDBC and formatted for fast inspection.</div>
+                            </div>
+                        </div>
+
+                        <div class="db-detail-grid">
+                            <div class="db-detail-row">
+                                <span class="db-detail-label">JDBC URL</span>
+                                <span class="db-detail-value">#{databaseDetailsBean.jdbcUrlMasked}</span>
+                            </div>
+                            <div class="db-detail-row">
+                                <span class="db-detail-label">Datasource Username</span>
+                                <span class="db-detail-value">#{empty databaseDetailsBean.jdbcUsername ? '-' : databaseDetailsBean.jdbcUsername}</span>
+                            </div>
+                            <div class="db-detail-row">
+                                <span class="db-detail-label">Database Product Name</span>
+                                <span class="db-detail-value">#{empty databaseDetailsBean.jdbcProductName ? '-' : databaseDetailsBean.jdbcProductName}</span>
+                            </div>
+                            <div class="db-detail-row">
+                                <span class="db-detail-label">Database Product Version</span>
+                                <span class="db-detail-value">#{empty databaseDetailsBean.jdbcProductVersion ? '-' : databaseDetailsBean.jdbcProductVersion}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -59,4 +189,3 @@
     </ui:define>
 
 </ui:composition>
-

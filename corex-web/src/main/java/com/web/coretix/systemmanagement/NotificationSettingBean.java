@@ -22,6 +22,7 @@ import com.persist.coretix.modal.systemmanagement.NotificationSettings;
 import com.persist.coretix.modal.systemmanagement.Organizations;
 import com.module.coretix.systemmanagement.INotificationSettingService;
 import com.module.coretix.systemmanagement.IOrganizationService;
+import com.web.coretix.appgeneral.GenericManagedBean;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -51,7 +52,7 @@ import org.springframework.context.annotation.Scope;
  */
 @Named("notificationSettingBean")
 @Scope("session")
-public class NotificationSettingBean implements Serializable {
+public class NotificationSettingBean extends GenericManagedBean implements Serializable {
 
     private static final long serialVersionUID = 135435341334535432L;
     private static final Logger logger = LoggerFactory.getLogger(NotificationSettingBean.class);

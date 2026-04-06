@@ -17,6 +17,7 @@
 package com.web.coretix.applicationserverlogsanddb;
 
 import java.io.Serializable;
+import java.util.Locale;
 import javax.servlet.ServletContext;
 import javax.faces.context.FacesContext;
 import org.springframework.web.context.WebApplicationContext;
@@ -80,6 +81,59 @@ public class DatabaseDetailsBean implements Serializable {
 
     public String getJdbcUsername() {
         return jdbcUsername;
+    }
+
+    public String getConnectionStatus() {
+        return isConnectionAvailable() ? "Connected" : "Unavailable";
+    }
+
+    public String getConnectionSeverity() {
+        return isConnectionAvailable() ? "success" : "danger";
+    }
+
+    public String getDatabaseEngineLabel() {
+        return jdbcProductName == null || jdbcProductName.trim().isEmpty() ? "Unknown Engine" : jdbcProductName;
+    }
+
+    public String getDatabaseSummary() {
+        if (!isConnectionAvailable()) {
+            return "Datasource metadata is currently unavailable. Check datasource configuration or connectivity.";
+        }
+        return getDatabaseEngineLabel() + " is connected and serving this deployment through the configured datasource.";
+    }
+
+    public String getJdbcUrlMasked() {
+        if (jdbcUrl == null || jdbcUrl.trim().isEmpty()) {
+            return "-";
+        }
+        return jdbcUrl.replaceAll("(?i)(password=)[^;&]+", "$1******");
+    }
+
+    public String getDatabaseFlavorTone() {
+        if (jdbcProductName == null) {
+            return "Database Core";
+        }
+        String value = jdbcProductName.toLowerCase(Locale.ENGLISH);
+        if (value.contains("mysql")) {
+            return "MySQL Runtime";
+        }
+        if (value.contains("postgres")) {
+            return "PostgreSQL Runtime";
+        }
+        if (value.contains("maria")) {
+            return "MariaDB Runtime";
+        }
+        if (value.contains("oracle")) {
+            return "Oracle Runtime";
+        }
+        if (value.contains("sql server")) {
+            return "SQL Server Runtime";
+        }
+        return "Database Core";
+    }
+
+    public boolean isConnectionAvailable() {
+        return jdbcUrl != null && !jdbcUrl.trim().isEmpty();
     }
 
     /**

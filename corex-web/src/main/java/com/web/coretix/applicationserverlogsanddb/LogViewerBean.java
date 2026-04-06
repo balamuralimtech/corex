@@ -32,6 +32,7 @@ import org.primefaces.model.StreamedContent;
 import org.primefaces.model.DefaultStreamedContent;
 
 import javax.inject.Named;
+import java.nio.charset.StandardCharsets;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.slf4j.Logger;
@@ -49,6 +50,8 @@ public  class LogViewerBean implements Serializable {
     private TreeNode selectedNode;
     private String selectedFileContent;
     private String selectedFileName;
+    private long selectedFileSize;
+    private int logFileCount;
     
     private StreamedContent fileToDownload;
     private StreamedContent zipToDownload;
@@ -122,6 +125,8 @@ public  class LogViewerBean implements Serializable {
     {
         selectedFileName = "";
         selectedFileContent = "";
+        selectedFileSize = 0L;
+        logFileCount = 0;
         root = null;
         selectedNode = null;
                 
@@ -129,6 +134,7 @@ public  class LogViewerBean implements Serializable {
         File logDir = new File(serverLogsLocation);
         if (logDir.exists() && logDir.isDirectory()) {
             createTree(logDir, root);  // Load files and folders recursively
+            logFileCount = countAcceptedLogFiles(logDir);
         }
     }
     
@@ -153,6 +159,7 @@ public  class LogViewerBean implements Serializable {
             File logFile = new File(fullFilePath);
 
             selectedFileName = logFile.getName();  // Store the file name
+            selectedFileSize = logFile.length();
             logger.debug("selectedFileName : " + selectedFileName);
             
             logger.debug("logFile : " + logFile.getPath());
@@ -181,6 +188,8 @@ public  class LogViewerBean implements Serializable {
             } catch (FileNotFoundException ex) {
                 logger.debug("FileNotFoundException : " + ex);
             }
+
+            loadSelectedLogFile();
         }
 
 
@@ -223,6 +232,7 @@ public  class LogViewerBean implements Serializable {
             selectedFileContent = contentBuilder.toString();
             logger.debug("selectedFileContent : " + selectedFileContent);
             selectedFileName = logFile.getName();  // Store the file name
+            selectedFileSize = logFile.length();
             logger.debug("selectedFileName : " + selectedFileName);
         }
 
@@ -334,6 +344,81 @@ public  class LogViewerBean implements Serializable {
         logger.debug("fileSeparator : "+fileSeparator);
         logger.debug("serverLogsLocation : "+serverLogsLocation);
         refreshButtonAction();
+    }
+
+    private int countAcceptedLogFiles(File directory) {
+        if (directory == null || !directory.exists()) {
+            return 0;
+        }
+
+        if (directory.isFile()) {
+            return accept(directory.getName()) ? 1 : 0;
+        }
+
+        int count = 0;
+        File[] files = directory.listFiles();
+        if (files != null) {
+            for (File file : files) {
+                count += countAcceptedLogFiles(file);
+            }
+        }
+        return count;
+    }
+
+    public boolean isFileSelected() {
+        return selectedNode != null && "file".equals(selectedNode.getType());
+    }
+
+    public int getLogFileCount() {
+        return logFileCount;
+    }
+
+    public String getServerLogsLocation() {
+        return serverLogsLocation;
+    }
+
+    public long getSelectedFileSize() {
+        return selectedFileSize;
+    }
+
+    public String getSelectedFileSizeLabel() {
+        if (selectedFileSize <= 0) {
+            return "-";
+        }
+        if (selectedFileSize < 1024) {
+            return selectedFileSize + " B";
+        }
+        if (selectedFileSize < (1024 * 1024)) {
+            return String.format("%.1f KB", selectedFileSize / 1024.0d);
+        }
+        return String.format("%.2f MB", selectedFileSize / (1024.0d * 1024.0d));
+    }
+
+    public int getSelectedFileLineCount() {
+        if (selectedFileContent == null || selectedFileContent.isEmpty()) {
+            return 0;
+        }
+        return selectedFileContent.split("\\R").length;
+    }
+
+    public String getSelectedPreviewText() {
+        if (selectedFileContent == null || selectedFileContent.isEmpty()) {
+            return "Select a log file from the explorer to preview its contents here.";
+        }
+        return selectedFileContent;
+    }
+
+    public StreamedContent getSelectedFileDownload() {
+        if (!isFileSelected() || selectedFileContent == null) {
+            return null;
+        }
+
+        byte[] content = selectedFileContent.getBytes(StandardCharsets.UTF_8);
+        return DefaultStreamedContent.builder()
+                .name(selectedFileName)
+                .contentType("text/plain")
+                .stream(() -> new ByteArrayInputStream(content))
+                .build();
     }
 
     /**

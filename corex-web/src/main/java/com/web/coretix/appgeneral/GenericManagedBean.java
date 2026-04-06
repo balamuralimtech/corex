@@ -279,7 +279,11 @@ public class GenericManagedBean
         logger.debug("moduleList : "+moduleList);
         if (CollectionUtils.isNotEmpty(moduleList)){
             for (Integer moduleId : moduleList) {
-                roleModuleList.add(CoreAppModule.getById(moduleId));
+                CoreAppModule module = CoreAppModule.getById(moduleId);
+                if (module == CoreAppModule.LICENCE || module == CoreAppModule.SERVER_AND_DB) {
+                    continue;
+                }
+                roleModuleList.add(module);
             }
         }
         else {

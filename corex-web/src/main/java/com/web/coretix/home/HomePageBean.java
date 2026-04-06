@@ -18,6 +18,10 @@ package com.web.coretix.home;
 
 import com.module.coretix.commonto.CoreDashboardTO;
 import com.module.coretix.coretix.ICoreDashboardService;
+import com.module.coretix.license.ILicenseService;
+import com.module.coretix.usermanagement.IUserAdministrationService;
+import com.persist.coretix.modal.license.Licenses;
+import com.persist.coretix.modal.usermanagement.UserDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
@@ -26,7 +30,11 @@ import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.ResourceBundle;
 
 @Named("homePageBean")
@@ -38,6 +46,12 @@ public class HomePageBean implements Serializable {
     private ResourceBundle resourceBundle;
     @Inject
     private ICoreDashboardService coreDashboardService;
+
+    @Inject
+    private ILicenseService licenseService;
+
+    @Inject
+    private IUserAdministrationService userAdministrationService;
 
     private CoreDashboardTO coreDashboardTO;
 
@@ -302,10 +316,94 @@ public class HomePageBean implements Serializable {
 
     public String getDashboardInsights() {
         return String.format(Locale.US,
-                "Active users are %.1f%% of the tracked user base. Roles are utilized at %.1f%%, and each user generates %.2f tracked activities on average.",
+                "Active users are %.1f%% of the tracked user base. Roles are utilized at %.1f%%, each user generates %.2f tracked activities on average, and %d organizations currently have active licenses.",
                 getActiveUserRate(),
                 getRoleUsageRate(),
-                getAverageActivitiesPerUser());
+                getAverageActivitiesPerUser(),
+                getActiveLicenseCount());
+    }
+
+    public int getLicensedOrganizationCount() {
+        return getAllLicenses().size();
+    }
+
+    public int getActiveLicenseCount() {
+        int activeCount = 0;
+        for (Licenses license : getAllLicenses()) {
+            if (license != null && license.isActive()) {
+                activeCount++;
+            }
+        }
+        return activeCount;
+    }
+
+    public int getExpiredLicenseCount() {
+        int expiredCount = 0;
+        for (Licenses license : getAllLicenses()) {
+            if (license != null && !license.isActive()) {
+                expiredCount++;
+            }
+        }
+        return expiredCount;
+    }
+
+    public int getExpiringSoonLicenseCount() {
+        int expiringSoonCount = 0;
+        Date today = new Date();
+        for (Licenses license : getAllLicenses()) {
+            if (license == null || !license.isActive() || license.getEndDate() == null) {
+                continue;
+            }
+            long daysRemaining = TimeUnit.MILLISECONDS.toDays(license.getEndDate().getTime() - today.getTime());
+            if (daysRemaining <= 30) {
+                expiringSoonCount++;
+            }
+        }
+        return expiringSoonCount;
+    }
+
+    public int getLicensedUserCount() {
+        Set<Integer> licensedOrganizationIds = new HashSet<>();
+        for (Licenses license : getAllLicenses()) {
+            if (license != null && license.getOrganization() != null) {
+                licensedOrganizationIds.add(license.getOrganization().getId());
+            }
+        }
+
+        int userCount = 0;
+        for (UserDetails userDetails : userAdministrationService.getUserDetailsList()) {
+            if (userDetails != null
+                    && userDetails.getOrganization() != null
+                    && licensedOrganizationIds.contains(userDetails.getOrganization().getId())) {
+                userCount++;
+            }
+        }
+        return userCount;
+    }
+
+    public int getUnlicensedOrganizationCount() {
+        if (coreDashboardTO == null) {
+            return 0;
+        }
+        return (int) Math.max(0L, coreDashboardTO.getOrganizationCount() - getLicensedOrganizationCount());
+    }
+
+    public double getLicenseCoverageRate() {
+        return percentage(getActiveLicenseCount(), getLicensedOrganizationCount());
+    }
+
+    public String getLicenseSummary() {
+        return String.format(Locale.US,
+                "%d licensed organizations cover %d users. %d licenses are active, %d are expired, and %d need renewal inside 30 days.",
+                getLicensedOrganizationCount(),
+                getLicensedUserCount(),
+                getActiveLicenseCount(),
+                getExpiredLicenseCount(),
+                getExpiringSoonLicenseCount());
+    }
+
+    private java.util.List<Licenses> getAllLicenses() {
+        return licenseService.getLicenseList();
     }
 
     private double ratio(double numerator, double denominator) {

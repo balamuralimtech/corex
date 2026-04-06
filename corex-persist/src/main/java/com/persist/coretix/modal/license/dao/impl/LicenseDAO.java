@@ -23,14 +23,19 @@ import com.persist.coretix.modal.systemmanagement.Organizations;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.exception.ConstraintViolationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.List;
 
 @Named
 public class LicenseDAO implements ILicenseDAO {
+
+    private static final Logger logger = LoggerFactory.getLogger(LicenseDAO.class);
 
     @Inject
     private SessionFactory sessionFactory;
@@ -49,9 +54,14 @@ public class LicenseDAO implements ILicenseDAO {
 
             Organizations organization = (Organizations) session.get(Organizations.class, license.getOrganization().getId());
             license.setOrganization(organization);
+            Timestamp now = new Timestamp(System.currentTimeMillis());
+            license.setCreatedAt(now);
+            license.setUpdatedAt(now);
             session.save(license);
             return GeneralConstants.SUCCESSFUL;
         } catch (Exception e) {
+            logger.error("Unable to add license for organization {}", license.getOrganization() == null ? null : license.getOrganization().getId(), e);
+            session.clear();
             return GeneralConstants.FAILED;
         }
     }
@@ -77,12 +87,21 @@ public class LicenseDAO implements ILicenseDAO {
             }
 
             Organizations organization = (Organizations) session.get(Organizations.class, license.getOrganization().getId());
+            Licenses persistedLicense = (Licenses) session.get(Licenses.class, license.getId());
+            if (persistedLicense != null) {
+                license.setCreatedAt(persistedLicense.getCreatedAt());
+            }
+            license.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
             license.setOrganization(organization);
             session.merge(license);
             return GeneralConstants.SUCCESSFUL;
         } catch (ConstraintViolationException e) {
+            logger.warn("License update failed because the entry is in use. License id={}", license.getId(), e);
+            session.clear();
             return GeneralConstants.ENTRY_IN_USE;
         } catch (Exception e) {
+            logger.error("Unable to update license {}", license.getId(), e);
+            session.clear();
             return GeneralConstants.FAILED;
         }
     }
@@ -102,8 +121,12 @@ public class LicenseDAO implements ILicenseDAO {
             session.delete(persistedLicense);
             return GeneralConstants.SUCCESSFUL;
         } catch (ConstraintViolationException e) {
+            logger.warn("License delete failed because the entry is in use. License id={}", license.getId(), e);
+            session.clear();
             return GeneralConstants.ENTRY_IN_USE;
         } catch (Exception e) {
+            logger.error("Unable to delete license {}", license.getId(), e);
+            session.clear();
             return GeneralConstants.FAILED;
         }
     }

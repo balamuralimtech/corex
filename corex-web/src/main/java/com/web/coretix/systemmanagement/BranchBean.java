@@ -20,6 +20,7 @@ import com.module.coretix.systemmanagement.*;
 import com.module.coretix.commonto.UserActivityTO;
 import com.persist.coretix.modal.constants.GeneralConstants;
 import com.persist.coretix.modal.systemmanagement.*;
+import com.web.coretix.appgeneral.GenericManagedBean;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -53,7 +54,7 @@ import org.springframework.context.annotation.Scope;
  */
 @Named("branchBean")
 @Scope("session")
-public class BranchBean implements Serializable {
+public class BranchBean extends GenericManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1354353434334535435L;
     private static final Logger logger = LoggerFactory.getLogger(BranchBean.class);

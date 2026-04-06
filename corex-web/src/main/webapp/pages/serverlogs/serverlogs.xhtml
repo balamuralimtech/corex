@@ -21,11 +21,51 @@
                 xmlns:p="http://primefaces.org/ui"
                 template="/WEB-INF/template.xhtml">
 
-
     <ui:define name="content">
-        <h:body>
-            <f:event listener="#{logViewerBean.initializePageAttributes}" type="preRenderComponent"/>
-            <h:form id="appserverlogFormId">
+        <f:event listener="#{logViewerBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:outputStylesheet>
+            .logs-shell { --logs-ink:#d8e2f0; --logs-deep:#08111f; --logs-panel:#0f1b2f; --logs-panel-soft:#14253f; --logs-accent:#38bdf8; --logs-accent-2:#22c55e; --logs-danger:#f97316; }
+            .logs-hero { position:relative; overflow:hidden; padding:2rem; border-radius:28px; color:#eff6ff; background:radial-gradient(circle at top right, rgba(56,189,248,.28), transparent 30%), linear-gradient(135deg, #07101d 0%, #0f1b2f 52%, #172a46 100%); box-shadow:0 24px 70px rgba(2,6,23,.28); }
+            .logs-hero:before { content:''; position:absolute; inset:auto -8% -32% auto; width:320px; height:320px; border-radius:50%; background:radial-gradient(circle, rgba(34,197,94,.18), rgba(34,197,94,0)); }
+            .logs-title { margin:0; font-size:2rem; font-weight:700; letter-spacing:-.03em; }
+            .logs-copy { margin-top:.75rem; max-width:760px; color:rgba(226,232,240,.84); line-height:1.7; }
+            .logs-strip { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; margin-top:1.35rem; }
+            .logs-chip { padding:1rem 1.1rem; border-radius:18px; background:rgba(15,23,42,.38); border:1px solid rgba(148,163,184,.18); backdrop-filter:blur(10px); }
+            .logs-chip-label { display:block; font-size:.76rem; text-transform:uppercase; letter-spacing:.08em; color:rgba(191,219,254,.78); }
+            .logs-chip-value { display:block; margin-top:.35rem; color:#fff; font-size:1.3rem; font-weight:700; word-break:break-word; }
+            .logs-panel { height:100%; padding:1.15rem; border-radius:24px; background:#fff; border:1px solid rgba(203,213,225,.8); box-shadow:0 16px 44px rgba(15,23,42,.08); }
+            .logs-panel-dark { background:linear-gradient(180deg, #0f1b2f 0%, #091321 100%); color:var(--logs-ink); border-color:#0b1627; box-shadow:0 20px 48px rgba(2,6,23,.24); }
+            .logs-head { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:1rem; }
+            .logs-head-title { margin:0; font-size:1.08rem; font-weight:700; color:#0f172a; }
+            .logs-panel-dark .logs-head-title { color:#f8fafc; }
+            .logs-head-copy { margin-top:.2rem; font-size:.92rem; color:#64748b; }
+            .logs-panel-dark .logs-head-copy { color:#94a3b8; }
+            .logs-actions { display:flex; flex-wrap:wrap; gap:.75rem; margin-bottom:1rem; }
+            .logs-preview-toolbar { display:flex; flex-wrap:wrap; justify-content:space-between; gap:.85rem; margin-bottom:1rem; }
+            .logs-meta { display:flex; flex-wrap:wrap; gap:.6rem; }
+            .logs-badge { display:inline-flex; align-items:center; gap:.4rem; padding:.42rem .75rem; border-radius:999px; background:#eff6ff; color:#1d4ed8; font-weight:600; font-size:.82rem; }
+            .logs-panel-dark .logs-badge { background:rgba(56,189,248,.12); color:#bae6fd; }
+            .logs-tree-wrap { border-radius:18px; border:1px solid rgba(148,163,184,.18); background:rgba(255,255,255,.03); padding:.5rem; min-height:520px; }
+            .logs-tree-wrap .ui-tree { width:100%; border:none; background:transparent; color:inherit; padding:0; }
+            .logs-tree-wrap .ui-tree-container { font-size:.95rem; }
+            .logs-tree-wrap .ui-treenode-content { border-radius:12px; padding:.45rem .55rem; transition:background-color .16s ease, transform .16s ease; }
+            .logs-tree-wrap .ui-treenode-content.ui-state-highlight { background:rgba(56,189,248,.15); color:#fff; }
+            .logs-tree-wrap .ui-treenode-content:hover { background:rgba(148,163,184,.10); }
+            .logs-preview { min-height:520px; border-radius:20px; background:#0a1220; border:1px solid #0f2038; overflow:hidden; }
+            .logs-preview-header { display:flex; justify-content:space-between; align-items:center; gap:1rem; padding:1rem 1.15rem; border-bottom:1px solid rgba(148,163,184,.12); background:rgba(15,23,42,.82); }
+            .logs-preview-title { color:#f8fafc; font-weight:700; font-size:1rem; }
+            .logs-preview-subtitle { margin-top:.15rem; color:#8ea3bc; font-size:.84rem; }
+            .logs-code { margin:0; padding:1.2rem; min-height:450px; max-height:780px; overflow:auto; color:#dbeafe; background:linear-gradient(180deg, #09111d 0%, #050b14 100%); font:13px/1.6 Consolas, "Courier New", monospace; white-space:pre-wrap; word-break:break-word; }
+            .logs-empty { display:flex; align-items:center; justify-content:center; min-height:450px; padding:2rem; color:#94a3b8; text-align:center; font-size:1rem; line-height:1.7; }
+            .logs-dialog-text { margin:0; padding:1.1rem; max-height:72vh; overflow:auto; background:#07101d; color:#dbeafe; font:13px/1.6 Consolas, "Courier New", monospace; white-space:pre-wrap; word-break:break-word; border-radius:16px; }
+            @media (max-width: 991px) {
+                .logs-preview, .logs-tree-wrap { min-height:unset; }
+                .logs-code, .logs-empty { min-height:320px; }
+            }
+        </h:outputStylesheet>
+
+        <h:form id="appserverlogFormId">
+            <div class="grid crud-demo logs-shell">
                 <div class="col-12">
                     <p:breadCrumb>
                         <p:menuitem url="#" icon="pi pi-home"/>
@@ -33,63 +73,185 @@
                         <p:menuitem value="Server Logs" url="#"/>
                     </p:breadCrumb>
                 </div>
-                <p:panel id="appserverlogMainPanelId" styleClass="card">
 
-                    <p:commandButton id="refreshButtonId"
-                                     value="Refresh"
-                                     icon="pi pi-refresh"
-                                     update="@([id$=appserverlogMainPanelId]),@([id$=logDialog])"
-                                     action="#{logViewerBean.refreshButtonAction}"/>
+                <div class="col-12">
+                    <div class="logs-hero">
+                        <h2 class="logs-title">Server Log Command Deck</h2>
+                        <div class="logs-copy">
+                            Inspect runtime logs, open the selected file instantly, and download the current artifact without leaving the page.
+                            Built for fast triage when production or UAT starts misbehaving.
+                        </div>
+                        <div class="logs-strip">
+                            <div class="logs-chip">
+                                <span class="logs-chip-label">Log Files</span>
+                                <span class="logs-chip-value">#{logViewerBean.logFileCount}</span>
+                            </div>
+                            <div class="logs-chip">
+                                <span class="logs-chip-label">Selected File</span>
+                                <span class="logs-chip-value">#{empty logViewerBean.selectedFileName ? 'No file selected' : logViewerBean.selectedFileName}</span>
+                            </div>
+                            <div class="logs-chip">
+                                <span class="logs-chip-label">Selected Size</span>
+                                <span class="logs-chip-value">#{logViewerBean.selectedFileSizeLabel}</span>
+                            </div>
+                            <div class="logs-chip">
+                                <span class="logs-chip-label">Log Location</span>
+                                <span class="logs-chip-value" style="font-size:1rem; line-height:1.45;">#{logViewerBean.serverLogsLocation}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
+                <div class="col-12">
+                    <p:outputPanel id="appserverlogMainPanelId">
+                        <div class="grid">
+                            <div class="col-12">
+                                <div class="logs-panel">
+                                    <p:outputPanel id="logActionPanelId">
+                                    <div class="logs-head">
+                                        <div>
+                                            <h3 class="logs-head-title">Actions</h3>
+                                            <div class="logs-head-copy">Refresh the explorer, open the current file in a dialog, or download what you are investigating.</div>
+                                        </div>
+                                    </div>
+                                    <div class="logs-actions">
+                                        <p:commandButton id="refreshButtonId"
+                                                         value="Refresh Explorer"
+                                                         icon="pi pi-refresh"
+                                                         action="#{logViewerBean.refreshButtonAction}"
+                                                         update=":appserverlogFormId:appserverlogMainPanelId :appserverlogFormId:logDialog"
+                                                         styleClass="ui-button-info"/>
 
-                    <!-- Button to open the selected log file in a dialog -->
-                    <p:commandButton id="loadLogButtonId"
-                                     value="Open Log File"
-                                     disabled="#{empty logViewerBean.selectedNode or logViewerBean.selectedNode.type ne 'file'}"
-                                     oncomplete="PF('logDialog').show()"
-                                     update="@([id$=logDialog])"
-                                     action="#{logViewerBean.loadSelectedLogFile}"/>
+                                        <p:commandButton id="loadLogButtonId"
+                                                         value="Open Full Viewer"
+                                                         icon="pi pi-external-link"
+                                                         disabled="#{not logViewerBean.fileSelected}"
+                                                         oncomplete="PF('logDialog').show()"
+                                                         action="#{logViewerBean.loadSelectedLogFile}"
+                                                         update=":appserverlogFormId:logDialog"
+                                                         styleClass="ui-button-success"/>
 
-                    <!-- Button to download the selected log file-->
-                    <p:commandButton id="downloadFileId" value="Download Selected File"
-                                     disabled="#{empty logViewerBean.selectedNode or logViewerBean.selectedNode.type ne 'file'}"
-                                     icon="pi pi-download">
-                        <p:fileDownload value="#{logViewerBean.fileToDownload}"/>
-                    </p:commandButton>
+                                        <p:commandButton id="downloadFileId"
+                                                         value="Download Selected"
+                                                         icon="pi pi-download"
+                                                         disabled="#{not logViewerBean.fileSelected}"
+                                                         ajax="false"
+                                                         styleClass="ui-button-help">
+                                            <p:fileDownload value="#{logViewerBean.selectedFileDownload}"/>
+                                        </p:commandButton>
 
-                    <!-- Button to download all log files as a ZIP and Disabled before logs folder has to be given permission (future work)-->
-                    <p:commandButton id="downloadZipId"
-                                     value="Download All Files as ZIP"
-                                     disabled="true"
-                                     icon="pi pi-download">
-                        <p:fileDownload value="#{logViewerBean.zipToDownload}"/>
-                    </p:commandButton>
+                                        <p:commandButton id="downloadZipId"
+                                                         value="Download ZIP"
+                                                         disabled="true"
+                                                         icon="pi pi-box"
+                                                         styleClass="ui-button-secondary">
+                                            <p:fileDownload value="#{logViewerBean.zipToDownload}"/>
+                                        </p:commandButton>
+                                    </div>
+                                    </p:outputPanel>
+                                </div>
+                            </div>
 
-                    <!-- Tree component to display log files and folders -->
-                    <p:tree value="#{logViewerBean.root}" var="node" selectionMode="single"
-                            selection="#{logViewerBean.selectedNode}" style="margin-bottom:20px;">
-                        <p:ajax event="select" update="@([id$=loadLogButtonId]), @([id$=downloadFileId])"
-                                listener="#{logViewerBean.selectionChanged}"/>
-                        <p:treeNode type="folder">
-                            <h:outputText value="#{node}"/>
-                        </p:treeNode>
-                        <p:treeNode type="file">
-                            <h:outputText value="#{node}"/>
-                        </p:treeNode>
-                    </p:tree>
+                            <div class="col-12 lg:col-4">
+                                <div class="logs-panel logs-panel-dark">
+                                    <div class="logs-head">
+                                        <div>
+                                            <h3 class="logs-head-title">Log Explorer</h3>
+                                            <div class="logs-head-copy">Folders and `.log` files under the server log directory.</div>
+                                        </div>
+                                        <span class="logs-badge">
+                                            <i class="pi pi-folder-open"></i>
+                                            #{logViewerBean.logFileCount} files
+                                        </span>
+                                    </div>
 
+                                    <div class="logs-tree-wrap">
+                                        <p:tree value="#{logViewerBean.root}"
+                                                var="node"
+                                                selectionMode="single"
+                                                selection="#{logViewerBean.selectedNode}">
+                                            <p:ajax event="select"
+                                                    listener="#{logViewerBean.selectionChanged}"
+                                                    update=":appserverlogFormId:logActionPanelId :appserverlogFormId:logPreviewPanelId :appserverlogFormId:logDialog"/>
+                                            <p:treeNode type="folder">
+                                                <span class="pi pi-folder" style="margin-right:.45rem;color:#7dd3fc;"></span>
+                                                <h:outputText value="#{node}"/>
+                                            </p:treeNode>
+                                            <p:treeNode type="file">
+                                                <span class="pi pi-file" style="margin-right:.45rem;color:#fbbf24;"></span>
+                                                <h:outputText value="#{node}"/>
+                                            </p:treeNode>
+                                        </p:tree>
+                                    </div>
+                                </div>
+                            </div>
 
-                </p:panel>
+                            <div class="col-12 lg:col-8">
+                                <div class="logs-panel">
+                                    <p:outputPanel id="logPreviewPanelId">
+                                    <div class="logs-head">
+                                        <div>
+                                            <h3 class="logs-head-title">Live Preview</h3>
+                                            <div class="logs-head-copy">Immediate view of the selected log file with download and full-view actions kept close.</div>
+                                        </div>
+                                    </div>
 
-                <!-- Dialog to display the selected log file's content -->
-                <p:dialog header="Log File: #{logViewerBean.selectedFileName}" widgetVar="logDialog" modal="true"
-                          height="500" width="1200" id="logDialog">
-                    <h:outputText value="#{logViewerBean.selectedFileContent}" escape="false"
-                                  style="white-space: pre-wrap;" id="logContent"/>
-                </p:dialog>
-            </h:form>
-        </h:body>
+                                    <div class="logs-preview-toolbar">
+                                        <div class="logs-meta">
+                                            <span class="logs-badge">
+                                                <i class="pi pi-file"></i>
+                                                #{empty logViewerBean.selectedFileName ? 'Awaiting selection' : logViewerBean.selectedFileName}
+                                            </span>
+                                            <span class="logs-badge">
+                                                <i class="pi pi-align-left"></i>
+                                                #{logViewerBean.selectedFileLineCount} lines
+                                            </span>
+                                            <span class="logs-badge">
+                                                <i class="pi pi-database"></i>
+                                                #{logViewerBean.selectedFileSizeLabel}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="logs-preview">
+                                        <div class="logs-preview-header">
+                                            <div>
+                                                <div class="logs-preview-title">#{empty logViewerBean.selectedFileName ? 'No file selected' : logViewerBean.selectedFileName}</div>
+                                                <div class="logs-preview-subtitle">#{logViewerBean.serverLogsLocation}</div>
+                                            </div>
+                                            <span class="logs-badge">
+                                                <i class="pi pi-eye"></i>
+                                                Inline Preview
+                                            </span>
+                                        </div>
+
+                                        <h:panelGroup rendered="#{logViewerBean.fileSelected}" layout="block">
+                                            <pre class="logs-code">#{logViewerBean.selectedPreviewText}</pre>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{not logViewerBean.fileSelected}" layout="block">
+                                            <div class="logs-empty">
+                                                Select a log file from the explorer to preview its contents here.
+                                            </div>
+                                        </h:panelGroup>
+                                    </div>
+                                    </p:outputPanel>
+                                </div>
+                            </div>
+                        </div>
+                    </p:outputPanel>
+                </div>
+            </div>
+
+            <p:dialog header="Log File: #{logViewerBean.selectedFileName}"
+                      widgetVar="logDialog"
+                      modal="true"
+                      responsive="true"
+                      width="1280"
+                      height="720"
+                      id="logDialog">
+                <pre class="logs-dialog-text">#{logViewerBean.selectedPreviewText}</pre>
+            </p:dialog>
+        </h:form>
     </ui:define>
 
 </ui:composition>
-

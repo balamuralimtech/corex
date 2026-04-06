@@ -24,16 +24,242 @@
 
     <ui:define name="content">
         <f:event listener="#{licenseBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:outputStylesheet>
+            .license-hero { position:relative; overflow:hidden; padding:1.9rem; border-radius:24px; background:linear-gradient(135deg,#0f172a 0%,#123057 44%,#1d4ed8 100%); color:#f8fafc; box-shadow:0 24px 70px rgba(15,23,42,.24); }
+            .license-hero:before { content:''; position:absolute; inset:auto -8% -42% auto; width:360px; height:360px; border-radius:50%; background:radial-gradient(circle,rgba(255,255,255,.16) 0%,rgba(255,255,255,0) 72%); }
+            .license-hero:after { content:''; position:absolute; inset:-18% auto auto -10%; width:280px; height:280px; border-radius:48px; transform:rotate(18deg); background:linear-gradient(135deg,rgba(255,255,255,.09),rgba(255,255,255,0)); }
+            .license-hero-title { margin:0; font-size:2rem; font-weight:700; letter-spacing:-.03em; }
+            .license-hero-copy { margin-top:.75rem; max-width:780px; color:rgba(226,232,240,.92); line-height:1.7; }
+            .license-hero-strip { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:.85rem; margin-top:1.4rem; }
+            .license-hero-chip { padding:.95rem 1rem; border-radius:18px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.14); backdrop-filter:blur(10px); }
+            .license-hero-label { display:block; font-size:.78rem; text-transform:uppercase; letter-spacing:.08em; color:rgba(226,232,240,.74); }
+            .license-hero-value { display:block; margin-top:.35rem; font-size:1.4rem; font-weight:700; color:#fff; }
+            .license-grid-card { height:100%; padding:1.15rem; border-radius:20px; background:#fff; border:1px solid rgba(203,213,225,.8); box-shadow:0 14px 44px rgba(15,23,42,.08); }
+            .license-card-kicker { display:block; color:#64748b; font-size:.78rem; text-transform:uppercase; letter-spacing:.08em; }
+            .license-card-value { display:block; margin-top:.55rem; font-size:2rem; font-weight:700; color:#0f172a; line-height:1; }
+            .license-card-foot { display:block; margin-top:.7rem; color:#475569; font-size:.93rem; line-height:1.5; }
+            .license-card-tone-danger { background:linear-gradient(180deg,#fff 0%,#fff1f2 100%); }
+            .license-card-tone-warning { background:linear-gradient(180deg,#fff 0%,#fff7ed 100%); }
+            .license-card-tone-success { background:linear-gradient(180deg,#fff 0%,#ecfdf5 100%); }
+            .license-panel { height:100%; padding:1rem; border-radius:20px; background:#fff; border:1px solid rgba(203,213,225,.8); box-shadow:0 14px 44px rgba(15,23,42,.08); }
+            .license-panel-head { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:.8rem; }
+            .license-panel-title { margin:0; font-size:1.05rem; font-weight:700; color:#0f172a; }
+            .license-panel-subtitle { margin-top:.18rem; color:#64748b; font-size:.9rem; }
+            .license-stat-list { display:grid; gap:.7rem; }
+            .license-stat-row { display:flex; justify-content:space-between; align-items:center; gap:1rem; padding:.85rem .95rem; border-radius:14px; background:#f8fafc; border:1px solid #e2e8f0; }
+            .license-stat-name { color:#334155; font-weight:500; }
+            .license-stat-value { color:#0f172a; font-weight:700; text-align:right; }
+            .license-health-ring { width:132px; height:132px; border-radius:50%; margin:0 auto 1rem; display:flex; align-items:center; justify-content:center; }
+            .license-health-ring-inner { width:96px; height:96px; border-radius:50%; background:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:inset 0 0 0 1px rgba(203,213,225,.85); }
+            .license-health-score { font-size:1.75rem; font-weight:700; color:#0f172a; line-height:1; }
+            .license-health-caption { margin-top:.25rem; font-size:.78rem; text-transform:uppercase; letter-spacing:.08em; color:#64748b; }
+            .license-insight { padding:.95rem 1rem; border-radius:16px; background:#eff6ff; border:1px solid #dbeafe; color:#1e3a8a; line-height:1.55; }
+            .license-mini-tag { display:inline-flex; align-items:center; gap:.35rem; padding:.3rem .65rem; border-radius:999px; background:#e2e8f0; color:#334155; font-size:.78rem; font-weight:600; }
+            .license-tag-blink.ui-tag { background:#dc2626 !important; color:#fff !important; border:1px solid #b91c1c !important; animation:licenseBlink 1s ease-in-out infinite; box-shadow:0 0 0 rgba(220,38,38,.45); }
+            @keyframes licenseBlink {
+                0%, 100% { opacity:1; box-shadow:0 0 0 0 rgba(220,38,38,.45); }
+                50% { opacity:.55; box-shadow:0 0 0 6px rgba(220,38,38,0); }
+            }
+        </h:outputStylesheet>
         <h:form id="form">
-            <div class="col-12">
-                <p:breadCrumb>
-                    <p:menuitem url="#" icon="pi pi-home"/>
-                    <p:menuitem value="#{msg['licenseLabel']}" url="#"/>
-                </p:breadCrumb>
-            </div>
             <div class="grid crud-demo">
                 <div class="col-12">
-                    <p:outputPanel class="card" id="licenseMainPanelId">
+                    <p:breadCrumb>
+                        <p:menuitem url="#" icon="pi pi-home"/>
+                        <p:menuitem value="#{msg['licenseLabel']}" url="#"/>
+                    </p:breadCrumb>
+                </div>
+                <div class="col-12">
+                <p:outputPanel id="licenseMainPanelId">
+                    <div class="grid">
+                        <div class="col-12">
+                    <div class="license-hero">
+                        <div class="grid align-items-start">
+                            <div class="col-12 lg:col-8">
+                                <h2 class="license-hero-title">License Command Center</h2>
+                                <div class="license-hero-copy">
+                                    #{licenseBean.portfolioSummary}
+                                    #{licenseBean.licensePulseSummary}
+                                </div>
+                            </div>
+                            <div class="col-12 lg:col-4">
+                                <div class="license-hero-chip">
+                                    <span class="license-hero-label">Most Exposed Organization</span>
+                                    <span class="license-hero-value">#{licenseBean.mostExposedOrganizationName}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="license-hero-strip">
+                            <div class="license-hero-chip">
+                                <span class="license-hero-label">Licensed Organizations</span>
+                                <span class="license-hero-value">#{licenseBean.totalLicenseCount}</span>
+                            </div>
+                            <div class="license-hero-chip">
+                                <span class="license-hero-label">Licensed Users</span>
+                                <span class="license-hero-value">#{licenseBean.licensedUserCount}</span>
+                            </div>
+                            <div class="license-hero-chip">
+                                <span class="license-hero-label">Expiring Soon</span>
+                                <span class="license-hero-value">#{licenseBean.expiringSoonCount}</span>
+                            </div>
+                            <div class="license-hero-chip">
+                                <span class="license-hero-label">Earliest Expiry</span>
+                                <span class="license-hero-value" style="font-size:1.05rem;line-height:1.4;">#{licenseBean.earliestExpiryLabel}</span>
+                            </div>
+                        </div>
+                    </div>
+                        </div>
+
+                        <div class="col-12">
+                    <div class="grid">
+                        <div class="col-12 md:col-6 xl:col-3">
+                            <div class="license-grid-card license-card-tone-success">
+                                <span class="license-card-kicker">Active Licenses</span>
+                                <span class="license-card-value">#{licenseBean.activeLicenseCount}</span>
+                                <span class="license-card-foot">Healthy license coverage currently available to accessible organizations.</span>
+                            </div>
+                        </div>
+                        <div class="col-12 md:col-6 xl:col-3">
+                            <div class="license-grid-card license-card-tone-warning">
+                                <span class="license-card-kicker">Expiring in 30 Days</span>
+                                <span class="license-card-value">#{licenseBean.expiringSoonCount}</span>
+                                <span class="license-card-foot">Renewal attention required before these organizations lose access.</span>
+                            </div>
+                        </div>
+                        <div class="col-12 md:col-6 xl:col-3">
+                            <div class="license-grid-card license-card-tone-danger">
+                                <span class="license-card-kicker">Expired Licenses</span>
+                                <span class="license-card-value">#{licenseBean.expiredLicenseCount}</span>
+                                <span class="license-card-foot">Organizations already outside their valid operating license window.</span>
+                            </div>
+                        </div>
+                        <div class="col-12 md:col-6 xl:col-3">
+                            <div class="license-grid-card">
+                                <span class="license-card-kicker">Unlicensed Organizations</span>
+                                <span class="license-card-value">#{licenseBean.unlicensedOrganizationCount}</span>
+                                <span class="license-card-foot">Accessible organizations without a registered license record.</span>
+                            </div>
+                        </div>
+                    </div>
+                        </div>
+
+                        <div class="col-12">
+                    <div class="grid">
+                        <div class="col-12 xl:col-4">
+                            <div class="license-panel">
+                                <div class="license-panel-head">
+                                    <div>
+                                        <h3 class="license-panel-title">License Health Score</h3>
+                                        <div class="license-panel-subtitle">Share of visible licenses that are currently active</div>
+                                    </div>
+                                    <span class="license-mini-tag">Live</span>
+                                </div>
+                                <div class="license-health-ring" style="#{licenseBean.licenseHealthRingStyle}">
+                                    <div class="license-health-ring-inner">
+                                        <div class="license-health-score">#{licenseBean.licenseHealthScore}%</div>
+                                        <div class="license-health-caption">Healthy</div>
+                                    </div>
+                                </div>
+                                <div class="license-insight">
+                                    #{licenseBean.portfolioSummary}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 xl:col-8">
+                            <div class="license-panel">
+                                <div class="license-panel-head">
+                                    <div>
+                                        <h3 class="license-panel-title">Renewal Pressure Board</h3>
+                                        <div class="license-panel-subtitle">Organizations sorted by expiry risk and user exposure</div>
+                                    </div>
+                                </div>
+                                <p:dataTable value="#{licenseBean.licenseDashboardRows}" var="dashboardRow"
+                                             reflow="true" rows="5" paginator="true" paginatorPosition="bottom"
+                                             styleClass="commoncrud-table">
+                                    <p:column headerText="Organization">
+                                        <h:outputText value="#{dashboardRow.organizationName}"/>
+                                    </p:column>
+                                    <p:column headerText="Users">
+                                        <h:outputText value="#{dashboardRow.userCount}"/>
+                                    </p:column>
+                                    <p:column headerText="Expiry">
+                                        <h:outputText value="#{dashboardRow.expiryDate}"/>
+                                    </p:column>
+                                    <p:column headerText="Window">
+                                        <h:outputText value="#{licenseBean.formatDaysRemaining(dashboardRow.daysRemaining)}"/>
+                                    </p:column>
+                                    <p:column headerText="Health">
+                                        <p:tag value="#{dashboardRow.healthLabel}"
+                                               severity="#{licenseBean.statusSeverity(dashboardRow.healthLabel)}"
+                                               styleClass="#{licenseBean.statusStyleClass(dashboardRow.healthLabel)}"/>
+                                    </p:column>
+                                    <p:column headerText="Remarks">
+                                        <h:outputText value="#{empty dashboardRow.remarks ? '-' : dashboardRow.remarks}"/>
+                                    </p:column>
+                                    <p:column headerText="Notify" exportable="false">
+                                        <p:commandButton icon="pi pi-bell"
+                                                         value="Notify"
+                                                         rendered="#{licenseBean.shouldRenderNotifyButton(dashboardRow.healthLabel)}"
+                                                         actionListener="#{licenseBean.notifyOrganizationUsers(dashboardRow)}"
+                                                         update=":form:messages :form:licenseMainPanelId"
+                                                         process="@this"
+                                                         styleClass="ui-button-danger ui-button-sm"/>
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+                        </div>
+
+                        <div class="col-12 xl:col-6">
+                            <div class="license-panel">
+                                <div class="license-panel-head">
+                                    <div>
+                                        <h3 class="license-panel-title">Exposure Summary</h3>
+                                        <div class="license-panel-subtitle">Key checkpoints for renewal planning and access continuity</div>
+                                    </div>
+                                </div>
+                                <div class="license-stat-list">
+                                    <div class="license-stat-row">
+                                        <span class="license-stat-name">Most exposed organization</span>
+                                        <span class="license-stat-value">#{licenseBean.mostExposedOrganizationName}</span>
+                                    </div>
+                                    <div class="license-stat-row">
+                                        <span class="license-stat-name">Closest expiry</span>
+                                        <span class="license-stat-value">#{licenseBean.earliestExpiryLabel}</span>
+                                    </div>
+                                    <div class="license-stat-row">
+                                        <span class="license-stat-name">Total visible records</span>
+                                        <span class="license-stat-value">#{licenseBean.recordsCount}</span>
+                                    </div>
+                                    <div class="license-stat-row">
+                                        <span class="license-stat-name">Protected user accounts</span>
+                                        <span class="license-stat-value">#{licenseBean.licensedUserCount}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12 xl:col-6">
+                            <div class="license-panel">
+                                <div class="license-panel-head">
+                                    <div>
+                                        <h3 class="license-panel-title">Command Notes</h3>
+                                        <div class="license-panel-subtitle">What this dashboard is telling you right now</div>
+                                    </div>
+                                </div>
+                                <div class="license-insight" style="margin-bottom:.8rem;">
+                                    #{licenseBean.licensePulseSummary}
+                                </div>
+                                <div class="license-insight" style="background:#f8fafc;border-color:#e2e8f0;color:#334155;">
+                                    Keep licenses healthy for organizations with the highest user counts first. That lowers operational risk fastest.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                        </div>
+
+                        <div class="col-12">
+                            <p:outputPanel styleClass="card">
                         <p:growl id="messages" showDetail="true"/>
 
                         <p:toolbar styleClass="mb-4">
@@ -148,9 +374,12 @@
                             <p:commandButton value="#{msg['noLabel']}" type="button" styleClass="ui-button-secondary"
                                              icon="pi pi-times" onclick="PF('deleteLicenseDialog').hide()"/>
                         </p:confirmDialog>
-                    </p:outputPanel>
+                            </p:outputPanel>
+                        </div>
+                    </div>
+                </p:outputPanel>
                 </div>
-            </div>
+                </div>
         </h:form>
     </ui:define>
 

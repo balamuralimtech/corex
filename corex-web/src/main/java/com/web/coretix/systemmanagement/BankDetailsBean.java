@@ -22,6 +22,7 @@ import com.persist.coretix.modal.constants.GeneralConstants;
 import com.persist.coretix.modal.systemmanagement.BankDetails;
 import com.persist.coretix.modal.systemmanagement.Organizations;
 import com.module.coretix.systemmanagement.IOrganizationService;
+import com.web.coretix.appgeneral.GenericManagedBean;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -57,7 +58,7 @@ import org.primefaces.PrimeFaces;
  */
 @Named("bankDetailsBean")
 @Scope("session")
-public class BankDetailsBean implements Serializable {
+public class BankDetailsBean extends GenericManagedBean implements Serializable {
 
     private static final long serialVersionUID = 13355L;
     private static final Logger logger = LoggerFactory.getLogger(BankDetailsBean.class);
