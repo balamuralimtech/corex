@@ -306,7 +306,8 @@
         <h:form>
             <p:growl id="growl" widgetVar="growlWidget" life="10000" />
             <p:poll interval="5" listener="#{guestPreferences.checkForGrowlMessage}" update="growl :topbar-items-form" global="false"
-                    oncomplete="PrimeFaces.AvalonConfigurator.refreshTopbarState();"/>
+                    oncomplete="PrimeFaces.AvalonConfigurator.refreshTopbarState();"
+                    onerror="window.location='#{request.contextPath}/session-timeout';"/>
             <p:remoteCommand name="roleUpdateForceLogout"
                              actionListener="#{guestPreferences.handleForcedRoleUpdateLogout}"
                              oncomplete="window.location='#{request.contextPath}/landing';" />

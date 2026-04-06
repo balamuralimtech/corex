@@ -34,6 +34,9 @@
         <display-name>SessionListeners</display-name>
         <listener-class>com.web.coretix.general.SessionListeners</listener-class>
     </listener>
+    <listener>
+        <listener-class>com.web.coretix.general.BackgroundThreadsKillerListener</listener-class>
+    </listener>
     <servlet>
         <servlet-name>SessionAuditServlet</servlet-name>
         <servlet-class>com.web.coretix.general.SessionAuditServlet</servlet-class>

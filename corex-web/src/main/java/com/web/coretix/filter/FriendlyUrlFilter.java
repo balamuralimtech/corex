@@ -162,6 +162,7 @@ public class FriendlyUrlFilter implements Filter {
         paths.put("/license", "/pages/license/license.xhtml");
         paths.put("/server-logs", "/pages/serverlogs/serverlogs.xhtml");
         paths.put("/database-details", "/pages/serverlogs/databaseDetails.xhtml");
+        paths.put("/error-log-monitor", "/pages/serverlogs/errorLogMonitor.xhtml");
 
         paths.put("/error", "/pages/errorandwarningpages/error.xhtml");
         paths.put("/bad-request", "/pages/errorandwarningpages/400badrequest.xhtml");

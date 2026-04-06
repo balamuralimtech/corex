@@ -17,8 +17,13 @@
 package com.web.coretix.usermanagement;
 
 import com.module.coretix.commonto.UserActivitiesCountTO;
-import com.persist.coretix.modal.usermanagement.UserActivities;
+import com.module.coretix.systemmanagement.IOrganizationService;
 import com.module.coretix.usermanagement.IUserActivityService;
+import com.module.coretix.usermanagement.IUserAdministrationService;
+import com.persist.coretix.modal.usermanagement.UserActivities;
+import com.persist.coretix.modal.usermanagement.UserDetails;
+import com.persist.coretix.modal.systemmanagement.Organizations;
+import com.web.coretix.appgeneral.GenericManagedBean;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -28,7 +33,14 @@ import org.primefaces.PrimeFaces;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
@@ -40,11 +52,17 @@ import org.springframework.context.annotation.Scope;
  */
 @Named("userActivityBean")
 @Scope("session")
-public class UserActivityBean implements Serializable {
+public class UserActivityBean extends GenericManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1354353434334535435L;
     private static final Logger logger = LoggerFactory.getLogger(UserActivityBean.class);
+    private static final Integer ALL_ORGANIZATIONS_ID = -1;
+    private List<UserActivities> allUserActivityList = new ArrayList<>();
     private List<UserActivities> userActivityList = new ArrayList<>();
+    private List<Organizations> organizationList = new ArrayList<>();
+    private List<UserDetails> filteredUserList = new ArrayList<>();
+    private Integer selectedOrganizationId;
+    private Integer selectedUserId;
 
 
     private int userId;
@@ -70,6 +88,12 @@ public class UserActivityBean implements Serializable {
     @Inject
     private IUserActivityService userActivityService;
 
+    @Inject
+    private IUserAdministrationService userAdministrationService;
+
+    @Inject
+    private IOrganizationService organizationService;
+
     /**
      * @return the userActivityList
      */
@@ -80,14 +104,8 @@ public class UserActivityBean implements Serializable {
 
     public void initializePageAttributes() {
         logger.debug("entered into initializePageAttributes !!!");
-        setDatatableRendered(false);
-        setRecordsCount(0);
-
-        if (CollectionUtils.isNotEmpty(userActivityList)) {
-            logger.debug("inside  userActivityList clear");
-            userActivityList.clear();
-        }
-
+        initializeFilters();
+        fetchUserActivityList();
         PrimeFaces.current().ajax().update("form:usrActMainPanelId");
         logger.debug("end of initializePageAttributes !!!");
     }
@@ -101,40 +119,130 @@ public class UserActivityBean implements Serializable {
 
 
     private void fetchUserActivityList() {
+        logger.debug("entered into fetchUserActivityList !!!");
+        initializeFilters();
+        allUserActivityList.clear();
+        allUserActivityList.addAll(userActivityService.getUserActivitiesList());
+        allUserActivityList.sort(Comparator.comparing(UserActivities::getCreatedAt,
+                Comparator.nullsLast(Comparator.reverseOrder())));
+        applyFilters();
+    }
+
+    public void organizationChanged() {
+        if (!isApplicationAdmin()) {
+            selectedOrganizationId = fetchCurrentOrganizationId();
+        }
+        selectedUserId = null;
+        refreshFilteredUsers();
+        applyFilters();
+    }
+
+    public void userChanged() {
+        applyFilters();
+    }
+
+    private void initializeFilters() {
+        organizationList = getAccessibleOrganizations(organizationService);
+        if (isApplicationAdmin()) {
+            if (selectedOrganizationId == null) {
+                selectedOrganizationId = ALL_ORGANIZATIONS_ID;
+            }
+        } else {
+            selectedOrganizationId = fetchCurrentOrganizationId();
+        }
+        refreshFilteredUsers();
+        if (selectedUserId != null && filteredUserList.stream().noneMatch(user -> user.getUserId() == selectedUserId)) {
+            selectedUserId = null;
+        }
+    }
+
+    private void refreshFilteredUsers() {
+        filteredUserList.clear();
+        List<UserDetails> accessibleUsers = resolveAccessibleUsers();
+        Integer effectiveOrganizationId = resolveEffectiveOrganizationId();
+        for (UserDetails user : accessibleUsers) {
+            Integer userOrganizationId = user.getOrganization() == null ? null : user.getOrganization().getId();
+            if (effectiveOrganizationId == null || Objects.equals(userOrganizationId, effectiveOrganizationId)) {
+                filteredUserList.add(user);
+            }
+        }
+        filteredUserList.sort(Comparator.comparing(UserDetails::getUserName, String.CASE_INSENSITIVE_ORDER));
+    }
+
+    private List<UserDetails> resolveAccessibleUsers() {
+        List<UserDetails> users = userAdministrationService.getUserDetailsList();
+        if (CollectionUtils.isEmpty(users)) {
+            return new ArrayList<>();
+        }
+        if (isApplicationAdmin()) {
+            return new ArrayList<>(users);
+        }
+        Integer currentOrganizationId = fetchCurrentOrganizationId();
+        return users.stream()
+                .filter(user -> user.getOrganization() != null
+                        && currentOrganizationId != null
+                        && currentOrganizationId.equals(user.getOrganization().getId()))
+                .collect(Collectors.toList());
+    }
+
+    private void applyFilters() {
         loginCount = 0;
         logoutCount = 0;
         addCount = 0;
         updateCount = 0;
         deleteCount = 0;
-        logger.debug("entered into fetchUserActivityList !!!");
-
         setDatatableRendered(false);
-        logger.debug("inside fetchUserActivityList ");
-        if (CollectionUtils.isNotEmpty(userActivityList)) {
-            logger.debug("inside fetchUserActivityList clear");
-            userActivityList.clear();
+        setRecordsCount(0);
+        userActivityList.clear();
+
+        Integer effectiveOrganizationId = resolveEffectiveOrganizationId();
+        Map<Integer, UserDetails> accessibleUsersById = resolveAccessibleUsers().stream()
+                .collect(Collectors.toMap(UserDetails::getUserId, user -> user, (left, right) -> left));
+
+        for (UserActivities activity : allUserActivityList) {
+            UserDetails activityUser = accessibleUsersById.get(activity.getUserId());
+            if (activityUser == null) {
+                continue;
+            }
+
+            Integer userOrganizationId = activityUser.getOrganization() == null ? null : activityUser.getOrganization().getId();
+            if (effectiveOrganizationId != null && !Objects.equals(effectiveOrganizationId, userOrganizationId)) {
+                continue;
+            }
+
+            if (selectedUserId != null && activity.getUserId() != selectedUserId) {
+                continue;
+            }
+
+            userActivityList.add(activity);
+            incrementCounters(activity.getActivityType());
         }
-        userActivityList.addAll(userActivityService.getUserActivitiesList());
 
         if (CollectionUtils.isNotEmpty(userActivityList)) {
-            logger.debug("userActivityList.size() : " + userActivityList.size());
             setDatatableRendered(true);
             setRecordsCount(userActivityList.size());
+        }
+    }
 
-            UserActivitiesCountTO userActivitiesCountTO = userActivityService.getActivityTypeCounts();
+    private Integer resolveEffectiveOrganizationId() {
+        if (isApplicationAdmin() && Objects.equals(selectedOrganizationId, ALL_ORGANIZATIONS_ID)) {
+            return null;
+        }
+        return resolveAccessibleOrganizationId(selectedOrganizationId);
+    }
 
-            loginCount = userActivitiesCountTO.getLoginCount();
-            logoutCount = userActivitiesCountTO.getLogoutCount();
-            addCount = userActivitiesCountTO.getAddCount();
-            updateCount = userActivitiesCountTO.getUpdateCount();
-            deleteCount = userActivitiesCountTO.getDeleteCount();
-
-            logger.debug("loginCount "+loginCount);
-            logger.debug("logoutCount "+logoutCount);
-            logger.debug("addCount "+addCount);
-            logger.debug("updateCount "+updateCount);
-            logger.debug("deleteCount "+deleteCount);
-
+    private void incrementCounters(String activityTypeValue) {
+        String activityTypeUpper = activityTypeValue == null ? "" : activityTypeValue.trim().toUpperCase(Locale.ENGLISH);
+        if (activityTypeUpper.contains("LOGIN")) {
+            loginCount++;
+        } else if (activityTypeUpper.contains("LOGOUT")) {
+            logoutCount++;
+        } else if (activityTypeUpper.contains("ADD") || activityTypeUpper.contains("CREATE")) {
+            addCount++;
+        } else if (activityTypeUpper.contains("EDIT") || activityTypeUpper.contains("UPDATE")) {
+            updateCount++;
+        } else if (activityTypeUpper.contains("DELETE") || activityTypeUpper.contains("REMOVE")) {
+            deleteCount++;
         }
     }
 
@@ -277,6 +385,251 @@ public class UserActivityBean implements Serializable {
 
     public void setDeleteCount(int deleteCount) {
         this.deleteCount = deleteCount;
+    }
+
+    public int getUniqueUserCount() {
+        if (CollectionUtils.isEmpty(userActivityList)) {
+            return 0;
+        }
+        return (int) userActivityList.stream()
+                .map(UserActivities::getUserName)
+                .filter(value -> value != null && !value.trim().isEmpty())
+                .distinct()
+                .count();
+    }
+
+    public int getUniqueIpCount() {
+        if (CollectionUtils.isEmpty(userActivityList)) {
+            return 0;
+        }
+        return (int) userActivityList.stream()
+                .map(UserActivities::getIpAddress)
+                .filter(value -> value != null && !value.trim().isEmpty())
+                .distinct()
+                .count();
+    }
+
+    public int getSecurityEventCount() {
+        return loginCount + logoutCount;
+    }
+
+    public int getChangeEventCount() {
+        return addCount + updateCount + deleteCount;
+    }
+
+    public String getLatestActivityLabel() {
+        if (CollectionUtils.isEmpty(userActivityList) || userActivityList.get(0).getCreatedAt() == null) {
+            return "No activity recorded";
+        }
+        return userActivityList.get(0).getCreatedAt().toLocalDateTime()
+                .format(java.time.format.DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a"));
+    }
+
+    public String getMostActiveUser() {
+        if (CollectionUtils.isEmpty(userActivityList)) {
+            return "-";
+        }
+
+        Map<String, Long> activityCounts = userActivityList.stream()
+                .filter(activity -> activity.getUserName() != null && !activity.getUserName().trim().isEmpty())
+                .collect(Collectors.groupingBy(UserActivities::getUserName, LinkedHashMap::new, Collectors.counting()));
+
+        return activityCounts.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(entry -> entry.getKey() + " (" + entry.getValue() + ")")
+                .orElse("-");
+    }
+
+    public String getMostUsedActivityType() {
+        if (CollectionUtils.isEmpty(userActivityList)) {
+            return "-";
+        }
+
+        Map<String, Long> activityCounts = userActivityList.stream()
+                .filter(activity -> activity.getActivityType() != null && !activity.getActivityType().trim().isEmpty())
+                .collect(Collectors.groupingBy(activity -> activity.getActivityType().trim(),
+                        LinkedHashMap::new, Collectors.counting()));
+
+        return activityCounts.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(entry -> entry.getKey() + " (" + entry.getValue() + ")")
+                .orElse("-");
+    }
+
+    public List<UserActivities> getRecentActivities() {
+        if (CollectionUtils.isEmpty(userActivityList)) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>(userActivityList.subList(0, Math.min(6, userActivityList.size())));
+    }
+
+    public String getActivityMixSummary() {
+        if (CollectionUtils.isEmpty(userActivityList)) {
+            return "Load user activities to inspect the latest usage profile.";
+        }
+
+        return getSecurityEventCount() + " security events, "
+                + getChangeEventCount() + " data-change events, across "
+                + getUniqueUserCount() + " users and " + getUniqueIpCount() + " IP addresses.";
+    }
+
+    public String activityTone(String activityType) {
+        if (activityType == null) {
+            return "info";
+        }
+
+        String normalized = activityType.trim().toUpperCase(Locale.ENGLISH);
+        if (normalized.contains("DELETE") || normalized.contains("REMOVE")) {
+            return "danger";
+        }
+        if (normalized.contains("LOGIN") || normalized.contains("LOGOUT")) {
+            return "info";
+        }
+        if (normalized.contains("ADD") || normalized.contains("CREATE")) {
+            return "success";
+        }
+        if (normalized.contains("EDIT") || normalized.contains("UPDATE")) {
+            return "warning";
+        }
+        return "secondary";
+    }
+
+    public String safeValue(String value) {
+        return value == null || value.trim().isEmpty() ? "-" : value.trim();
+    }
+
+    public String getBrowserChartData() {
+        Map<String, Long> browserCounts = new LinkedHashMap<>();
+        for (UserActivities activity : userActivityList) {
+            String browserName = resolveBrowserName(activity.getLocationInfo());
+            browserCounts.put(browserName, browserCounts.getOrDefault(browserName, 0L) + 1L);
+        }
+
+        StringBuilder builder = new StringBuilder("[");
+        boolean first = true;
+        for (Map.Entry<String, Long> entry : browserCounts.entrySet()) {
+            if (!first) {
+                builder.append(",");
+            }
+            builder.append("{name:'")
+                    .append(escapeForJavascript(entry.getKey()))
+                    .append("',y:")
+                    .append(entry.getValue())
+                    .append("}");
+            first = false;
+        }
+        builder.append("]");
+        return builder.toString();
+    }
+
+    public String getActivityTimelineCategories() {
+        Map<String, Long> hourlyCounts = new TreeMap<>();
+        for (UserActivities activity : userActivityList) {
+            if (activity.getCreatedAt() == null) {
+                continue;
+            }
+            String label = activity.getCreatedAt().toLocalDateTime()
+                    .format(java.time.format.DateTimeFormatter.ofPattern("dd MMM HH:mm"));
+            hourlyCounts.put(label, hourlyCounts.getOrDefault(label, 0L) + 1L);
+        }
+
+        StringBuilder builder = new StringBuilder("[");
+        boolean first = true;
+        for (String label : hourlyCounts.keySet()) {
+            if (!first) {
+                builder.append(",");
+            }
+            builder.append("'").append(escapeForJavascript(label)).append("'");
+            first = false;
+        }
+        builder.append("]");
+        return builder.toString();
+    }
+
+    public String getActivityTimelineSeries() {
+        Map<String, Long> hourlyCounts = new TreeMap<>();
+        for (UserActivities activity : userActivityList) {
+            if (activity.getCreatedAt() == null) {
+                continue;
+            }
+            String label = activity.getCreatedAt().toLocalDateTime()
+                    .format(java.time.format.DateTimeFormatter.ofPattern("dd MMM HH:mm"));
+            hourlyCounts.put(label, hourlyCounts.getOrDefault(label, 0L) + 1L);
+        }
+
+        StringBuilder builder = new StringBuilder("[");
+        boolean first = true;
+        for (Long count : hourlyCounts.values()) {
+            if (!first) {
+                builder.append(",");
+            }
+            builder.append(count);
+            first = false;
+        }
+        builder.append("]");
+        return builder.toString();
+    }
+
+    private String resolveBrowserName(String locationInfoValue) {
+        String normalized = safeValue(locationInfoValue).toLowerCase(Locale.ENGLISH);
+        if ("-".equals(normalized)) {
+            return "Unknown";
+        }
+        if (normalized.contains("chrome")) {
+            return "Chrome";
+        }
+        if (normalized.contains("edge")) {
+            return "Edge";
+        }
+        if (normalized.contains("firefox")) {
+            return "Firefox";
+        }
+        if (normalized.contains("safari")) {
+            return "Safari";
+        }
+        if (normalized.contains("opera")) {
+            return "Opera";
+        }
+        if (normalized.contains("internet explorer") || normalized.contains("trident") || normalized.contains("msie")) {
+            return "Internet Explorer";
+        }
+        return "Other";
+    }
+
+    private String escapeForJavascript(String value) {
+        return safeValue(value)
+                .replace("\\", "\\\\")
+                .replace("'", "\\'")
+                .replace("\r", "")
+                .replace("\n", " ");
+    }
+
+    public List<Organizations> getOrganizationList() {
+        return organizationList;
+    }
+
+    public List<UserDetails> getFilteredUserList() {
+        return filteredUserList;
+    }
+
+    public Integer getSelectedOrganizationId() {
+        return selectedOrganizationId;
+    }
+
+    public void setSelectedOrganizationId(Integer selectedOrganizationId) {
+        this.selectedOrganizationId = selectedOrganizationId;
+    }
+
+    public Integer getSelectedUserId() {
+        return selectedUserId;
+    }
+
+    public void setSelectedUserId(Integer selectedUserId) {
+        this.selectedUserId = selectedUserId;
+    }
+
+    public Integer getAllOrganizationsId() {
+        return ALL_ORGANIZATIONS_ID;
     }
 
 }

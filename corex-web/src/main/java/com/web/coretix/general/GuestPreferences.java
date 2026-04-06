@@ -117,6 +117,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
     private boolean serverLogRendered;
     private boolean dbDetailsRendered;
+    private boolean errorLogMonitorRendered;
 
 
 
@@ -401,6 +402,9 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
     private void getDbAndServerLogPageList() {
         logger.debug("getDbAndServerLogPageList");
+        serverLogRendered = false;
+        dbDetailsRendered = false;
+        errorLogMonitorRendered = false;
         List<Integer> pageList = getSubModuleDetailsByRoleandModuleId(CoreAppModule.SERVER_AND_DB.getId());
         if (CollectionUtils.isNotEmpty(pageList)) {
             for (Integer pageId : pageList) {
@@ -414,6 +418,10 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
                     case DATABASE:
                         dbDetailsRendered = true;
                         logger.debug("Database page available");
+                        break;
+                    case ERROR_LOG_MONITOR:
+                        errorLogMonitorRendered = true;
+                        logger.debug("Error log monitor page available");
                         break;
                     default:
                         logger.error("Unsupported module: " + LicenseManagementModule.getById(pageId));
@@ -1074,6 +1082,14 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
     public boolean isDbDetailsRendered() {
         return dbDetailsRendered;
+    }
+
+    public boolean isErrorLogMonitorRendered() {
+        return errorLogMonitorRendered;
+    }
+
+    public void setErrorLogMonitorRendered(boolean errorLogMonitorRendered) {
+        this.errorLogMonitorRendered = errorLogMonitorRendered;
     }
 
     public void setDbDetailsRendered(boolean dbDetailsRendered) {

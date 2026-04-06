@@ -164,6 +164,7 @@ public class AuthorizationFilter implements Filter {
         rules.put("/license", new int[]{CoreAppModule.LICENCE.getId(), LicenseManagementModule.LICENSE.getId()});
         rules.put("/server-logs", new int[]{CoreAppModule.SERVER_AND_DB.getId(), ServerAndDBModule.SERVER_LOGS.getId()});
         rules.put("/database-details", new int[]{CoreAppModule.SERVER_AND_DB.getId(), ServerAndDBModule.DATABASE.getId()});
+        rules.put("/error-log-monitor", new int[]{CoreAppModule.SERVER_AND_DB.getId(), ServerAndDBModule.ERROR_LOG_MONITOR.getId()});
         return java.util.Collections.unmodifiableMap(rules);
     }
 }

@@ -147,6 +147,11 @@
                                                          styleClass="ui-button-secondary">
                                             <p:fileDownload value="#{logViewerBean.zipToDownload}"/>
                                         </p:commandButton>
+
+                                        <p:button value="Error Monitor"
+                                                  icon="pi pi-bell"
+                                                  href="#{request.contextPath}/error-log-monitor"
+                                                  styleClass="ui-button-warning"/>
                                     </div>
                                     </p:outputPanel>
                                 </div>

@@ -23,6 +23,7 @@ import javax.faces.application.ViewExpiredException;
 import javax.faces.context.ExceptionHandler;
 import javax.faces.context.ExceptionHandlerWrapper;
 import javax.faces.context.FacesContext;
+import javax.faces.context.PartialResponseWriter;
 import javax.faces.event.ExceptionQueuedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -134,7 +135,19 @@ public class CustomExceptionHandler extends ExceptionHandlerWrapper {
     private void redirectToPage(FacesContext facesContext, String pagePath) throws IOException {
         String contextPath = facesContext.getExternalContext().getRequestContextPath();
         String redirectUrl = contextPath + pagePath;
-        facesContext.getExternalContext().redirect(redirectUrl);
+        if (facesContext.getPartialViewContext().isAjaxRequest()) {
+            facesContext.getExternalContext().responseReset();
+            facesContext.getExternalContext().setResponseContentType("text/xml");
+            facesContext.getExternalContext().setResponseCharacterEncoding("UTF-8");
+
+            PartialResponseWriter partialResponseWriter =
+                    facesContext.getPartialViewContext().getPartialResponseWriter();
+            partialResponseWriter.startDocument();
+            partialResponseWriter.redirect(redirectUrl);
+            partialResponseWriter.endDocument();
+        } else {
+            facesContext.getExternalContext().redirect(redirectUrl);
+        }
         facesContext.responseComplete();
         logger.debug("Successfully redirected to: " + redirectUrl);
     }

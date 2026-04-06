@@ -24,52 +24,58 @@
     <ui:define name="head">
         <h:outputStylesheet name="css/flags/flags.css" library="demo"/>
         <style type="text/css">
-            .user-dialog .ui-dialog-content {
-                max-height: 72vh;
-                overflow-y: auto;
-            }
-
-            .user-avatar-help {
-                margin-top: .5rem;
-                color: #64748b;
-                font-size: .85rem;
-            }
-
-            .user-avatar-panel {
-                display: flex;
-                flex-direction: column;
-                gap: .85rem;
-                align-items: flex-start;
-                max-width: 100%;
-            }
-
-            .user-avatar-cropper {
-                max-width: min(100%, 280px);
-                overflow: hidden;
-                border: 1px solid #dbe2ea;
-                border-radius: 14px;
-                background: #f8fafc;
-                padding: .5rem;
-            }
-
-            .user-avatar-preview {
-                width: 96px;
-                height: 96px;
-                border-radius: 18px;
-                object-fit: cover;
-                border: 1px solid #dbe2ea;
-            }
-
-            .user-avatar-empty {
-                width: 96px;
-                height: 96px;
-                border-radius: 18px;
-                border: 1px dashed #cbd5e1;
-                background: #f8fafc;
-                color: #64748b;
-                display: flex;
-                align-items: center;
-                justify-content: center;
+            .user-admin-shell { --ua-night:#07111f; --ua-night-soft:#10233f; --ua-panel:#ffffff; --ua-blue:#38bdf8; --ua-green:#22c55e; --ua-amber:#f59e0b; --ua-red:#ef4444; }
+            .user-admin-hero { position:relative; overflow:hidden; padding:2rem; border-radius:28px; color:#f8fafc; background:radial-gradient(circle at top right, rgba(56,189,248,.24), transparent 28%), linear-gradient(135deg, #07111f 0%, #10233f 48%, #0f5f73 100%); box-shadow:0 26px 72px rgba(2,6,23,.24); }
+            .user-admin-hero:before { content:''; position:absolute; inset:auto -10% -30% auto; width:340px; height:340px; border-radius:50%; background:radial-gradient(circle, rgba(34,197,94,.18), rgba(34,197,94,0)); }
+            .user-admin-title { margin:0; font-size:2rem; font-weight:700; letter-spacing:-.03em; }
+            .user-admin-copy { margin-top:.8rem; max-width:880px; color:rgba(226,232,240,.84); line-height:1.75; }
+            .user-admin-strip { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; margin-top:1.45rem; }
+            .user-admin-chip { padding:1rem 1.1rem; border-radius:18px; background:rgba(15,23,42,.34); border:1px solid rgba(148,163,184,.16); backdrop-filter:blur(10px); }
+            .user-admin-chip-label { display:block; font-size:.76rem; text-transform:uppercase; letter-spacing:.08em; color:rgba(191,219,254,.78); }
+            .user-admin-chip-value { display:block; margin-top:.35rem; color:#fff; font-size:1.22rem; font-weight:700; word-break:break-word; }
+            .user-admin-panel { height:100%; padding:1.15rem; border-radius:24px; background:#fff; border:1px solid rgba(203,213,225,.82); box-shadow:0 16px 44px rgba(15,23,42,.08); }
+            .user-admin-head { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:1rem; }
+            .user-admin-head-title { margin:0; font-size:1.08rem; font-weight:700; color:#0f172a; }
+            .user-admin-head-copy { margin-top:.2rem; font-size:.92rem; color:#64748b; line-height:1.55; }
+            .user-admin-actions { display:flex; flex-wrap:wrap; gap:.75rem; }
+            .user-admin-filter-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:1rem; margin-bottom:1rem; }
+            .user-admin-filter-box { padding:1rem; border-radius:18px; border:1px solid rgba(203,213,225,.82); background:#f8fafc; }
+            .user-admin-filter-label { display:block; margin-bottom:.45rem; color:#475569; font-size:.78rem; text-transform:uppercase; letter-spacing:.08em; font-weight:700; }
+            .user-admin-filter-static { padding:.82rem 1rem; border-radius:14px; background:#fff; border:1px solid #dbe2ea; font-weight:700; color:#0f172a; }
+            .user-admin-stat { height:100%; padding:1.1rem; border-radius:20px; border:1px solid rgba(203,213,225,.82); box-shadow:0 12px 36px rgba(15,23,42,.06); }
+            .user-admin-stat-kicker { display:block; color:#64748b; font-size:.78rem; text-transform:uppercase; letter-spacing:.08em; }
+            .user-admin-stat-value { display:block; margin-top:.5rem; font-size:1.85rem; font-weight:700; color:#0f172a; line-height:1.1; }
+            .user-admin-stat-copy { display:block; margin-top:.65rem; color:#475569; line-height:1.55; }
+            .user-admin-stat-blue { background:linear-gradient(180deg, #fff 0%, #eff6ff 100%); }
+            .user-admin-stat-green { background:linear-gradient(180deg, #fff 0%, #ecfdf5 100%); }
+            .user-admin-stat-amber { background:linear-gradient(180deg, #fff 0%, #fffbeb 100%); }
+            .user-admin-stat-red { background:linear-gradient(180deg, #fff 0%, #fef2f2 100%); }
+            .user-admin-chart { min-height:320px; }
+            .user-admin-table .ui-datatable-tablewrapper { border-radius:18px; overflow:hidden; }
+            .user-admin-table .ui-datatable thead th { background:#f8fafc; color:#334155; border-color:#e2e8f0; }
+            .user-admin-table .ui-datatable tbody td { vertical-align:top; border-color:#eef2f7; }
+            .user-admin-search { display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; }
+            .user-admin-search-title { font-weight:700; color:#0f172a; }
+            .user-dialog .ui-dialog-content { max-height: 76vh; overflow-y: auto; }
+            .user-form-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:1rem 1.25rem; }
+            .user-form-field { display:flex; flex-direction:column; gap:.45rem; }
+            .user-form-field label { font-size:.84rem; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:.06em; }
+            .user-avatar-layout { display:grid; grid-template-columns:minmax(0, 1.1fr) minmax(260px, .9fr); gap:1.25rem; padding:1rem; border-radius:20px; background:#f8fafc; border:1px solid #e2e8f0; }
+            .user-avatar-zone { display:flex; flex-direction:column; gap:.9rem; }
+            .user-avatar-stage { display:grid; gap:.85rem; }
+            .user-avatar-help { color:#64748b; font-size:.85rem; line-height:1.6; }
+            .user-avatar-cropper { max-width:min(100%, 340px); overflow:hidden; border:1px solid #dbe2ea; border-radius:14px; background:#fff; padding:.5rem; }
+            .user-avatar-preview-card { padding:1rem; border-radius:18px; background:#fff; border:1px solid #dbe2ea; display:flex; flex-direction:column; align-items:center; gap:.85rem; }
+            .user-avatar-preview { width:120px; height:120px; border-radius:28px; object-fit:cover; border:1px solid #dbe2ea; }
+            .user-avatar-empty { width:120px; height:120px; border-radius:28px; border:1px dashed #cbd5e1; background:#f8fafc; color:#64748b; display:flex; align-items:center; justify-content:center; }
+            .user-avatar-steps { display:grid; gap:.7rem; }
+            .user-avatar-step { padding:.9rem 1rem; border-radius:16px; background:#fff; border:1px solid #dbe2ea; }
+            .user-avatar-step-title { font-weight:700; color:#0f172a; }
+            .user-avatar-step-copy { margin-top:.25rem; color:#64748b; line-height:1.55; }
+            .user-dialog-footer { display:flex; justify-content:center; gap:.75rem; flex-wrap:wrap; }
+            @media (max-width: 991px) {
+                .user-form-grid { grid-template-columns:1fr; }
+                .user-avatar-layout { grid-template-columns:1fr; }
             }
         </style>
     </ui:define>
@@ -77,163 +83,282 @@
     <ui:define name="content">
         <f:event listener="#{userAdministrationBean.initializePageAttributes}" type="preRenderComponent"/>
         <h:form id="userform" enctype="multipart/form-data">
-            <div class="col-12">
-                <p:breadCrumb>
-                    <p:menuitem url="#" icon="pi pi-home"/>
-                    <p:menuitem value="User  Management" url="#"/>
-                    <p:menuitem value="User Administration" url="#"/>
-                </p:breadCrumb>
-            </div>
-            <div class="grid crud-demo">
+            <div class="grid crud-demo user-admin-shell">
                 <div class="col-12">
-                    <p:outputPanel class="card" id="usersMainPanelId">
+                    <p:breadCrumb>
+                        <p:menuitem url="#" icon="pi pi-home"/>
+                        <p:menuitem value="User Management" url="#"/>
+                        <p:menuitem value="User Administration" url="#"/>
+                    </p:breadCrumb>
+                </div>
+
+                <div class="col-12">
+                    <div class="user-admin-hero">
+                        <h2 class="user-admin-title">User Administration Command Center</h2>
+                        <div class="user-admin-copy">
+                            Manage user accounts, login status, access footprint, and profile readiness from a sharper operational workspace. The underlying add, edit, delete, upload, and crop flows remain unchanged.
+                        </div>
+                        <div class="user-admin-strip">
+                            <div class="user-admin-chip">
+                                <span class="user-admin-chip-label">Records Loaded</span>
+                                <span class="user-admin-chip-value">#{userAdministrationBean.recordsCount}</span>
+                            </div>
+                            <div class="user-admin-chip">
+                                <span class="user-admin-chip-label">Logged In</span>
+                                <span class="user-admin-chip-value">#{userAdministrationBean.usersLoggedInCount}</span>
+                            </div>
+                            <div class="user-admin-chip">
+                                <span class="user-admin-chip-label">Logged Out</span>
+                                <span class="user-admin-chip-value">#{userAdministrationBean.usersLoggedOutCount}</span>
+                            </div>
+                            <div class="user-admin-chip">
+                                <span class="user-admin-chip-label">Never Logged In</span>
+                                <span class="user-admin-chip-value">#{userAdministrationBean.usersNeverLoggedinCount}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <p:outputPanel id="usersMainPanelId">
                         <p:growl id="messages" showDetail="true"/>
 
-                        <p:toolbar styleClass="mb-4">
-                            <p:toolbarGroup>
-                                <p:commandButton value="New" icon="pi pi-plus"
-                                                 actionListener="#{userAdministrationBean.addButtonAction}"
-                                                 update="@([id$=addEditCountPanelId])"
-                                                 process="@([id$=addEditCountPanelId]) @this"
-                                                 oncomplete="PF('ManageUserDialog').show()"
-                                                 styleClass="ui-button-success" style="margin-right: .5rem"/>
-                                <p:commandButton value="Fetch Users" icon="pi pi-search"
-                                                 action="#{userAdministrationBean.searchButtonAction}"
-                                                 update="@([id$=usersMainPanelId])" process="@this"
-                                                 styleClass="ui-button-success" style="margin-right: .5rem"/>
-
-                                <h:outputLabel value="Number of Records: "
-                                               rendered="#{userAdministrationBean.datatableRendered}"/>
-                                <h:outputText value="#{userAdministrationBean.recordsCount}"
-                                              rendered="#{userAdministrationBean.datatableRendered}"/>
-                            </p:toolbarGroup>
-                            <p:toolbarGroup align="right">
-                                <p:commandButton value="Export" icon="pi pi-upload" styleClass="ui-button-help"
-                                                 rendered="#{userAdministrationBean.datatableRendered}">
-                                    <p:dataExporter type="pdf" target="countryDataTableId" fileName="Users"/>
-                                </p:commandButton>
-                            </p:toolbarGroup>
-                        </p:toolbar>
-
-                        <p:outputPanel id="datatablePanelId" rendered="#{userAdministrationBean.datatableRendered}">
-                            <figure class="highcharts-figure">
-                                <div id="container"></div>
-                            </figure>
-
-                            <!-- JavaScript to Initialize Highcharts -->
-                            <h:outputScript>
-                                Highcharts.chart('container', {
-                                    chart: {
-                                        type: 'pie',
-                                        options3d: {
-                                            enabled: true,
-                                            alpha: 45,
-                                            beta: 0
-                                        }
-                                    },
-                                    title: {
-                                        text: 'Users Current Status',
-                                        align: 'left'
-                                    },
-                                    accessibility: {
-                                        point: {
-                                            valueSuffix: '%'
-                                        }
-                                    },
-                                    tooltip: {
-                                        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
-                                    },
-                                    plotOptions: {
-                                        pie: {
-                                            allowPointSelect: true,
-                                            cursor: 'pointer',
-                                            depth: 35,
-                                            dataLabels: {
-                                                enabled: true,
-                                                format: '{point.name}: {point.y}'
-                                            }
-                                        }
-                                    },
-                                    series: [{
-                                        type: 'pie',
-                                        name: 'Users Status',
-                                        data: [
-                                            ['Users Logged In', #{userAdministrationBean.usersLoggedInCount}],
-                                            ['Users Logged Out', #{userAdministrationBean.usersLoggedOutCount}],
-                                            ['Users Never Logged In', #{userAdministrationBean.usersNeverLoggedinCount}]
-                                        ]
-                                    }]
-                                });
-                            </h:outputScript>
-                            <p:dataTable id="usersDataTableId" widgetVar="countDataTable" var="user"
-                                         value="#{userAdministrationBean.usersList}"
-                                         reflow="true" styleClass="commoncrud-table"
-                                         rowKey="#{user.userId}" paginator="true" rows="10" paginatorPosition="bottom">
-                                <f:facet name="header">
-                                    <div class="products-table-header">
-                                        <span style="font-weight: bold">Search Users</span>
-                                        <span class="filter-container ui-input-icon-left">
-                                            <i class="pi pi-search"></i>
-                                            <p:inputText id="globalFilter" onkeyup="PF('countDataTable').filter()"
-                                                         placeholder="Search"/>
-                                        </span>
-                                    </div>
-                                </f:facet>
-
-                                <p:column headerText="userName" sortBy="#{user.userName}" filterBy="#{user.userName}">
-                                    <h:outputText value="#{user.userName}"/>
-                                </p:column>
-                                <p:column headerText="Image">
-                                    <h:panelGroup rendered="#{not empty user.profileImage}">
-                                        <h:graphicImage value="data:#{user.profileImageContentType};base64,#{userAdministrationBean.encodeImage(user.profileImage)}"
-                                                        style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;"/>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{empty user.profileImage}">
-                                        <div style="width:40px;height:40px;border-radius:50%;background:#e2e8f0;color:#475569;display:flex;align-items:center;justify-content:center;">
-                                            <i class="pi pi-user"></i>
+                        <div class="grid">
+                            <div class="col-12">
+                                <div class="user-admin-panel">
+                                    <div class="user-admin-head">
+                                        <div>
+                                            <h3 class="user-admin-head-title">Actions</h3>
+                                            <div class="user-admin-head-copy">Create, fetch, export, and maintain user accounts from the same existing action flow, with page-level organization and user scope controls.</div>
                                         </div>
-                                    </h:panelGroup>
-                                </p:column>
-                                <p:column headerText="User Login Status">
-                                    <p:tag value="#{user.status == 1 ? 'Logged In' : user.status == 6 ? 'Logged Out' : user.status == 3 ? 'Never Logged In' : 'Unknown'}"
-                                    rounded="true" severity="#{user.status == 1 ? 'success' : user.status == 6 ? 'danger' : user.status == 3 ? 'warning' : 'info'}"/>
-                                </p:column>
-                                <p:column headerText="emailId" sortBy="#{user.emailId}" filterBy="#{user.emailId}">
-                                    <h:outputText value="#{user.emailId}"/>
-                                </p:column>
-                                <p:column headerText="roleName" sortBy="#{user.role.roleName}"
-                                          filterBy="#{user.role.roleName}">
-                                    <h:outputText value="#{empty user.role ? '-' : user.role.roleName}"/>
-                                </p:column>
-                                <p:column headerText="organization" sortBy="#{user.organization.organizationName}"
-                                          filterBy="#{user.organization.organizationName}">
-                                    <h:outputText value="#{empty user.organization ? 'Application Admin' : user.organization.organizationName}"/>
-                                </p:column>
-                                <p:column headerText="name" sortBy="#{user.country.name}"
-                                          filterBy="#{user.country.name}">
-                                    <span class="flag flag-#{user.country.iso2.toLowerCase()}"
-                                          rendered="#{not empty user.country and not empty user.country.iso2}"
-                                          style="width: 30px; height: 20px"/>
-                                    <h:outputText value="#{empty user.country ? '-' : user.country.name}"/>
-                                </p:column>
+                                    </div>
+                                    <div class="user-admin-filter-grid">
+                                        <p:outputPanel styleClass="user-admin-filter-box" rendered="#{userAdministrationBean.applicationAdmin}">
+                                            <span class="user-admin-filter-label">Organization Scope</span>
+                                            <p:selectOneMenu value="#{userAdministrationBean.selectedOrganizationFilter}" style="width:100%">
+                                                <f:selectItem itemLabel="All Organizations" itemValue="__ALL_ORGANIZATIONS__"/>
+                                                <f:selectItems value="#{userAdministrationBean.organizationFilterOptions}"/>
+                                                <p:ajax listener="#{userAdministrationBean.onOrganizationFilterChange}" process="@this" update="@([id$=usersMainPanelId])"/>
+                                            </p:selectOneMenu>
+                                        </p:outputPanel>
+                                        <p:outputPanel styleClass="user-admin-filter-box" rendered="#{not userAdministrationBean.applicationAdmin}">
+                                            <span class="user-admin-filter-label">Organization Scope</span>
+                                            <div class="user-admin-filter-static">#{userAdministrationBean.selectedOrganizationFilterLabel}</div>
+                                        </p:outputPanel>
+                                        <div class="user-admin-filter-box">
+                                            <span class="user-admin-filter-label">User Scope</span>
+                                            <p:selectOneMenu value="#{userAdministrationBean.selectedUserFilter}" style="width:100%">
+                                                <f:selectItem itemLabel="All Users" itemValue="__ALL_USERS__"/>
+                                                <f:selectItems value="#{userAdministrationBean.userFilterOptions}"/>
+                                                <p:ajax listener="#{userAdministrationBean.onUserFilterChange}" process="@this" update="@([id$=usersMainPanelId])"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                    </div>
+                                    <div class="user-admin-actions">
+                                        <p:commandButton value="New User" icon="pi pi-plus"
+                                                         actionListener="#{userAdministrationBean.addButtonAction}"
+                                                         update="@([id$=addEditCountPanelId])"
+                                                         process="@([id$=addEditCountPanelId]) @this"
+                                                         oncomplete="PF('ManageUserDialog').show()"
+                                                         styleClass="ui-button-success"/>
+                                        <p:commandButton value="Fetch Users" icon="pi pi-search"
+                                                         action="#{userAdministrationBean.searchButtonAction}"
+                                                         update="@([id$=usersMainPanelId])" process="@this"
+                                                         styleClass="ui-button-info"/>
+                                        <p:commandButton value="Export PDF" icon="pi pi-upload" styleClass="ui-button-help"
+                                                         rendered="#{userAdministrationBean.datatableRendered}">
+                                            <p:dataExporter type="pdf" target="usersDataTableId" fileName="Users"/>
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </div>
 
-                                <p:column exportable="false">
-                                    <p:commandButton icon="pi pi-pencil" update="@([id$=usersMainPanelId])"
-                                                     oncomplete="PF('ManageUserDialog').show()"
-                                                     action="#{userAdministrationBean.confirmEditButtonAction}"
-                                                     styleClass="edit-button rounded-button ui-button-success"
-                                                     process="@this">
-                                        <f:setPropertyActionListener value="#{user}"
-                                                                     target="#{userAdministrationBean.selectedUserDetail}"/>
-                                    </p:commandButton>
-                                    <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash"
-                                                     process="@this" oncomplete="PF('deleteCountDialog').show()">
-                                        <f:setPropertyActionListener value="#{user}"
-                                                                     target="#{userAdministrationBean.selectedUserDetail}"/>
-                                    </p:commandButton>
-                                </p:column>
-                            </p:dataTable>
-                        </p:outputPanel>
+                            <div class="col-12 lg:col-6" rendered="#{userAdministrationBean.datatableRendered}">
+                                <div class="user-admin-panel">
+                                    <div class="user-admin-head">
+                                        <div>
+                                            <h3 class="user-admin-head-title">Status Share</h3>
+                                            <div class="user-admin-head-copy">Understand how the user population is distributed across active, inactive, and never-used accounts.</div>
+                                        </div>
+                                    </div>
+                                    <figure class="highcharts-figure">
+                                        <div id="userStatusDonut" class="user-admin-chart"></div>
+                                    </figure>
+                                    <h:outputScript>
+                                        Highcharts.chart('userStatusDonut', {
+                                            chart: {
+                                                type: 'pie'
+                                            },
+                                            title: {
+                                                text: 'User Status Share',
+                                                align: 'left'
+                                            },
+                                            subtitle: {
+                                                text: 'Live account split',
+                                                align: 'left'
+                                            },
+                                            tooltip: {
+                                                pointFormat: '<b>{point.y}</b> users'
+                                            },
+                                            plotOptions: {
+                                                pie: {
+                                                    innerSize: '58%',
+                                                    depth: 35,
+                                                    dataLabels: {
+                                                        enabled: true,
+                                                        format: '{point.name}: {point.y}'
+                                                    }
+                                                }
+                                            },
+                                            series: [{
+                                                name: 'Users',
+                                                colorByPoint: true,
+                                                data: [{
+                                                    name: 'Logged In',
+                                                    y: #{userAdministrationBean.usersLoggedInCount}
+                                                }, {
+                                                    name: 'Logged Out',
+                                                    y: #{userAdministrationBean.usersLoggedOutCount}
+                                                }, {
+                                                    name: 'Never Logged In',
+                                                    y: #{userAdministrationBean.usersNeverLoggedinCount}
+                                                }]
+                                            }]
+                                        });
+                                    </h:outputScript>
+                                </div>
+                            </div>
+
+                            <div class="col-12 lg:col-6" rendered="#{userAdministrationBean.datatableRendered}">
+                                <div class="user-admin-panel">
+                                    <div class="user-admin-head">
+                                        <div>
+                                            <h3 class="user-admin-head-title">Status Comparison</h3>
+                                            <div class="user-admin-head-copy">Compare user lifecycle states side by side for faster admin review.</div>
+                                        </div>
+                                    </div>
+                                    <figure class="highcharts-figure">
+                                        <div id="userStatusColumn" class="user-admin-chart"></div>
+                                    </figure>
+                                    <h:outputScript>
+                                        Highcharts.chart('userStatusColumn', {
+                                            chart: {
+                                                type: 'column'
+                                            },
+                                            title: {
+                                                text: 'User Status Comparison',
+                                                align: 'left'
+                                            },
+                                            subtitle: {
+                                                text: 'Account lifecycle status',
+                                                align: 'left'
+                                            },
+                                            xAxis: {
+                                                categories: ['Logged In', 'Logged Out', 'Never Logged In']
+                                            },
+                                            yAxis: {
+                                                min: 0,
+                                                title: {
+                                                    text: 'Users'
+                                                }
+                                            },
+                                            legend: {
+                                                enabled: false
+                                            },
+                                            series: [{
+                                                name: 'Users',
+                                                colorByPoint: true,
+                                                data: [
+                                                    #{userAdministrationBean.usersLoggedInCount},
+                                                    #{userAdministrationBean.usersLoggedOutCount},
+                                                    #{userAdministrationBean.usersNeverLoggedinCount}
+                                                ]
+                                            }]
+                                        });
+                                    </h:outputScript>
+                                </div>
+                            </div>
+
+                            <div class="col-12" rendered="#{userAdministrationBean.datatableRendered}">
+                                <div class="user-admin-panel">
+                                    <div class="user-admin-head">
+                                        <div>
+                                            <h3 class="user-admin-head-title">Users Grid</h3>
+                                            <div class="user-admin-head-copy">Search, inspect avatars, review status, and open the existing edit/delete flows from the main grid.</div>
+                                        </div>
+                                    </div>
+
+                                    <p:dataTable id="usersDataTableId" widgetVar="countDataTable" var="user"
+                                                 value="#{userAdministrationBean.usersList}"
+                                                 reflow="true" rowHover="true" styleClass="user-admin-table"
+                                                 rowKey="#{user.userId}" paginator="true" rows="10" paginatorPosition="bottom">
+                                        <f:facet name="header">
+                                            <div class="user-admin-search">
+                                                <span class="user-admin-search-title">Search Users</span>
+                                                <span class="filter-container ui-input-icon-left">
+                                                    <i class="pi pi-search"></i>
+                                                    <p:inputText id="globalFilter" onkeyup="PF('countDataTable').filter()"
+                                                                 placeholder="Search"/>
+                                                </span>
+                                            </div>
+                                        </f:facet>
+
+                                        <p:column headerText="User" sortBy="#{user.userName}" filterBy="#{user.userName}">
+                                            <div style="font-weight:700;color:#0f172a;">#{user.userName}</div>
+                                            <div style="color:#64748b;">#{user.emailId}</div>
+                                        </p:column>
+
+                                        <p:column headerText="Image">
+                                            <h:panelGroup rendered="#{not empty user.profileImage}">
+                                                <h:graphicImage value="data:#{user.profileImageContentType};base64,#{userAdministrationBean.encodeImage(user.profileImage)}"
+                                                                style="width: 46px; height: 46px; border-radius: 50%; object-fit: cover;"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{empty user.profileImage}">
+                                                <div style="width:46px;height:46px;border-radius:50%;background:#e2e8f0;color:#475569;display:flex;align-items:center;justify-content:center;">
+                                                    <i class="pi pi-user"></i>
+                                                </div>
+                                            </h:panelGroup>
+                                        </p:column>
+
+                                        <p:column headerText="Status">
+                                            <p:tag value="#{user.status == 1 ? 'Logged In' : user.status == 6 ? 'Logged Out' : user.status == 3 ? 'Never Logged In' : 'Unknown'}"
+                                                   rounded="true" severity="#{user.status == 1 ? 'success' : user.status == 6 ? 'danger' : user.status == 3 ? 'warning' : 'info'}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Role" sortBy="#{user.role.roleName}" filterBy="#{user.role.roleName}">
+                                            <h:outputText value="#{empty user.role ? '-' : user.role.roleName}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Organization" sortBy="#{user.organization.organizationName}" filterBy="#{user.organization.organizationName}">
+                                            <h:outputText value="#{empty user.organization ? 'Application Admin' : user.organization.organizationName}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Country" sortBy="#{user.country.name}" filterBy="#{user.country.name}">
+                                            <span class="flag flag-#{user.country.iso2.toLowerCase()}"
+                                                  rendered="#{not empty user.country and not empty user.country.iso2}"
+                                                  style="width: 30px; height: 20px"/>
+                                            <h:outputText value="#{empty user.country ? '-' : user.country.name}"/>
+                                        </p:column>
+
+                                        <p:column exportable="false" style="width:120px;">
+                                            <p:commandButton icon="pi pi-pencil" update="@([id$=usersMainPanelId])"
+                                                             oncomplete="PF('ManageUserDialog').show()"
+                                                             action="#{userAdministrationBean.confirmEditButtonAction}"
+                                                             styleClass="edit-button rounded-button ui-button-success"
+                                                             process="@this">
+                                                <f:setPropertyActionListener value="#{user}"
+                                                                             target="#{userAdministrationBean.selectedUserDetail}"/>
+                                            </p:commandButton>
+                                            <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash"
+                                                             process="@this" oncomplete="PF('deleteCountDialog').show()">
+                                                <f:setPropertyActionListener value="#{user}"
+                                                                             target="#{userAdministrationBean.selectedUserDetail}"/>
+                                            </p:commandButton>
+                                        </p:column>
+                                    </p:dataTable>
+                                </div>
+                            </div>
+                        </div>
 
                         <p:dialog header="User Details"
                                   showEffect="fade"
@@ -242,196 +367,201 @@
                                   responsive="true"
                                   fitViewport="true"
                                   styleClass="user-dialog"
-                                  width="75vw">
+                                  width="82vw">
+                            <p:outputPanel id="addEditCountPanelId">
+                                <div class="grid">
+                                    <div class="col-12">
+                                        <div class="user-admin-panel">
+                                            <div class="user-admin-head">
+                                                <div>
+                                                    <h3 class="user-admin-head-title">Identity and Access</h3>
+                                                    <div class="user-admin-head-copy">Maintain the same add and edit behavior with a clearer layout for profile details, access scope, and location mapping.</div>
+                                                </div>
+                                                <p:tag value="#{userAdministrationBean.applicationAdmin ? 'Application Admin View' : 'Organization Scoped View'}"
+                                                       severity="#{userAdministrationBean.applicationAdmin ? 'info' : 'success'}" rounded="true"/>
+                                            </div>
 
-                            <p:panelGrid id="addEditCountPanelId"
-                                         columns="4"
-                                         columnClasses="ui-grid-col-2,ui-grid-col-4,ui-grid-col-2,ui-grid-col-4"
-                                         layout="grid"
-                                         styleClass="ui-panelgrid-blank ui-fluid"
-                                         style="border:0px none; background-color:transparent;">
-                                <input type="text" name="fake_user_admin_username" autocomplete="username" style="display:none;" aria-hidden="true"/>
-                                <input type="password" name="fake_user_admin_password" autocomplete="new-password" style="display:none;" aria-hidden="true"/>
-                                <p:outputLabel for="@next" value="User Name*"/>
-                                <p:inputText id="name" value="#{userAdministrationBean.userName}" autocomplete="off"/>
-
-                                <p:outputLabel for="@next" value="Password*"/>
-                                <p:password id="pwd1" value="#{userAdministrationBean.password}" match="pwd2"
-                                            label="Password" required="true" toggleMask="true" redisplay="true"
-                                            autocomplete="new-password"/>
-
-                                <p:outputLabel for="@next" value="Confirm Password*"/>
-                                <p:password id="pwd2" value="#{userAdministrationBean.password}"
-                                            label="Confirm Password" required="true" toggleMask="true"
-                                            redisplay="true" autocomplete="new-password"/>
-
-                                <p:outputLabel for="@next" value="Organization*"/>
-                                <h:panelGroup rendered="#{userAdministrationBean.applicationAdmin}" layout="block">
-                                    <p:autoComplete id="orglist"
-                                                    dropdown="true"
-                                                    value="#{userAdministrationBean.organization}"
-                                                    completeMethod="#{userAdministrationBean.completeOrganization}"
-                                                    scrollHeight="250">
-                                        <p:ajax event="itemSelect" listener="#{userAdministrationBean.onOrgSelect}"
-                                                update="branchlist"/>
-                                    </p:autoComplete>
-                                </h:panelGroup>
-                                <h:panelGroup rendered="#{not userAdministrationBean.applicationAdmin}" layout="block"
-                                              style="font-weight:700;padding-top:.6rem;">
-                                    <h:outputText value="#{userAdministrationBean.currentOrganizationName}"/>
-                                </h:panelGroup>
-
-                                <p:outputLabel for="@next" value="Branch*"/>
-                                <p:autoComplete id="branchlist"
-                                                dropdown="true"
-                                                value="#{userAdministrationBean.branch}"
-                                                completeMethod="#{userAdministrationBean.completeBranch}"
-                                                accesskey=" " scrollHeight="250"/>
-
-                                <p:outputLabel for="@next" value="Role*"/>
-                                <p:autoComplete id="rolelist"
-                                                dropdown="true"
-                                                value="#{userAdministrationBean.role}"
-                                                completeMethod="#{userAdministrationBean.completeRole}"
-                                                accesskey=" " scrollHeight="250"/>
-
-                                <p:outputLabel for="@next" value="Access Right*"/>
-                                <p:autoComplete id="arlist"
-                                                dropdown="true"
-                                                value="#{userAdministrationBean.accessRight}"
-                                                completeMethod="#{userAdministrationBean.completeAccessRight}"
-                                                accesskey=" " scrollHeight="250"/>
-
-                                <p:outputLabel for="@next" value="Country*"/>
-                                <p:autoComplete id="countrylist"
-                                                dropdown="true"
-                                                value="#{userAdministrationBean.country}"
-                                                completeMethod="#{userAdministrationBean.completeCountry}"
-                                                accesskey=" " scrollHeight="250">
-                                    <p:ajax event="itemSelect" listener="#{userAdministrationBean.onOrgSelect}"
-                                            update="statelist"/>
-                                </p:autoComplete>
-
-                                <p:outputLabel for="@next" value="State*"/>
-                                <p:autoComplete id="statelist"
-                                                dropdown="true"
-                                                value="#{userAdministrationBean.state}"
-                                                completeMethod="#{userAdministrationBean.completeState}"
-                                                accesskey=" " scrollHeight="250">
-                                    <p:ajax event="itemSelect" listener="#{userAdministrationBean.onOrgSelect}"
-                                            update="citylist"/>
-                                </p:autoComplete>
-
-                                <p:outputLabel for="@next" value="City*"/>
-                                <p:autoComplete id="citylist"
-                                                dropdown="true"
-                                                value="#{userAdministrationBean.city}"
-                                                completeMethod="#{userAdministrationBean.completeCity}"
-                                                accesskey=" " scrollHeight="250"/>
-
-
-                                <p:outputLabel for="@next" value="Contact*"/>
-                                <p:inputText id="phonecode" value="#{userAdministrationBean.contact}"/>
-
-                                <p:outputLabel for="@next" value="Email*"/>
-                                <p:inputText id="email" value="#{userAdministrationBean.emailId}"/>
-
-                                <p:outputLabel for="@next" value="Address*"/>
-                                <p:inputText id="address" value="#{userAdministrationBean.address}"/>
-
-                                <p:outputLabel for="@next" value="Profile Image"/>
-                                <h:panelGroup layout="block" styleClass="user-avatar-panel">
-                                    <p:fileUpload id="profileImage"
-                                                  mode="advanced"
-                                                  auto="true"
-                                                  multiple="false"
-                                                  dragDropSupport="false"
-                                                  update="messages cropperPanel imagePreviewPanel"
-                                                  listener="#{userAdministrationBean.handleProfileImageUpload}"
-                                                  sizeLimit="2097152"
-                                                  invalidSizeMessage="Profile image must be 2 MB or smaller."
-                                                  accept=".jpeg,.jpg,.png,.gif,image/*"/>
-                                    <div class="user-avatar-help">
-                                        Crop to a square avatar. Saved size: #{userAdministrationBean.avatarImageSize} x #{userAdministrationBean.avatarImageSize} px.
-                                    </div>
-                                    <div>
-                                        <h:selectBooleanCheckbox id="removeImage" value="#{userAdministrationBean.removeProfileImage}"/>
-                                        <h:outputLabel for="removeImage" value=" Remove existing image"/>
-                                    </div>
-                                </h:panelGroup>
-
-                                <p:outputLabel value="Crop"/>
-                                <p:outputPanel id="cropperPanel" styleClass="user-avatar-panel">
-                                    <h:panelGroup rendered="#{not empty userAdministrationBean.uploadedProfileImage}">
-                                        <div class="user-avatar-cropper">
-                                            <p:imageCropper value="#{userAdministrationBean.croppedProfileImage}"
-                                                            image="#{userAdministrationBean.uploadedProfileImage}"
-                                                            aspectRatio="1"
-                                                            minSize="160,160"
-                                                            boxWidth="240"
-                                                            boxHeight="240"
-                                                            cache="false"
-                                                            responsive="true"
-                                                            viewMode="1"/>
+                                            <div class="user-form-grid">
+                                                <div class="user-form-field">
+                                                    <label for="userName">User Name</label>
+                                                    <p:inputText id="userName" value="#{userAdministrationBean.userName}" maxlength="100" required="true"/>
+                                                </div>
+                                                <div class="user-form-field">
+                                                    <label for="password">Password</label>
+                                                    <p:password id="password" value="#{userAdministrationBean.password}" feedback="true" toggleMask="true"
+                                                                redisplay="true" autocomplete="new-password"/>
+                                                </div>
+                                                <div class="user-form-field">
+                                                    <label for="emailId">Email</label>
+                                                    <p:inputText id="emailId" value="#{userAdministrationBean.emailId}" maxlength="150"/>
+                                                </div>
+                                                <div class="user-form-field">
+                                                    <label for="contact">Contact</label>
+                                                    <p:inputText id="contact" value="#{userAdministrationBean.contact}" maxlength="25"/>
+                                                </div>
+                                                <div class="user-form-field">
+                                                    <label for="role">Role</label>
+                                                    <p:autoComplete id="role" value="#{userAdministrationBean.role}"
+                                                                    completeMethod="#{userAdministrationBean.completeRole}"
+                                                                    dropdown="true" forceSelection="true" scrollHeight="240"/>
+                                                </div>
+                                                <div class="user-form-field">
+                                                    <label for="accessRight">Access Right</label>
+                                                    <p:autoComplete id="accessRight" value="#{userAdministrationBean.accessRight}"
+                                                                    completeMethod="#{userAdministrationBean.completeAccessRight}"
+                                                                    dropdown="true" forceSelection="true" scrollHeight="240"/>
+                                                </div>
+                                                <p:outputPanel styleClass="user-form-field" rendered="#{userAdministrationBean.applicationAdmin}">
+                                                    <label for="organization">Organization</label>
+                                                    <p:autoComplete id="organization" value="#{userAdministrationBean.organization}"
+                                                                    completeMethod="#{userAdministrationBean.completeOrganization}"
+                                                                    dropdown="true" forceSelection="true" scrollHeight="240">
+                                                        <p:ajax event="itemSelect" listener="#{userAdministrationBean.onOrgSelect}" update="branch"/>
+                                                    </p:autoComplete>
+                                                </p:outputPanel>
+                                                <p:outputPanel styleClass="user-form-field" rendered="#{not userAdministrationBean.applicationAdmin}">
+                                                    <label>Organization</label>
+                                                    <div style="padding:.8rem 1rem;border:1px solid #dbe2ea;border-radius:14px;background:#f8fafc;font-weight:700;color:#0f172a;">
+                                                        #{userAdministrationBean.currentOrganizationName}
+                                                    </div>
+                                                    <h:inputHidden id="organizationHidden" value="#{userAdministrationBean.organization}"/>
+                                                </p:outputPanel>
+                                                <div class="user-form-field">
+                                                    <label for="branch">Branch</label>
+                                                    <p:autoComplete id="branch" value="#{userAdministrationBean.branch}"
+                                                                    completeMethod="#{userAdministrationBean.completeBranch}"
+                                                                    dropdown="true" forceSelection="true" scrollHeight="240"/>
+                                                </div>
+                                                <div class="user-form-field">
+                                                    <label for="country">Country</label>
+                                                    <p:autoComplete id="country" value="#{userAdministrationBean.country}"
+                                                                    completeMethod="#{userAdministrationBean.completeCountry}"
+                                                                    dropdown="true" forceSelection="true" scrollHeight="240"/>
+                                                </div>
+                                                <div class="user-form-field">
+                                                    <label for="state">State</label>
+                                                    <p:autoComplete id="state" value="#{userAdministrationBean.state}"
+                                                                    completeMethod="#{userAdministrationBean.completeState}"
+                                                                    dropdown="true" forceSelection="true" scrollHeight="240">
+                                                        <p:ajax event="itemSelect" listener="#{userAdministrationBean.onStateSelect}" update="city"/>
+                                                    </p:autoComplete>
+                                                </div>
+                                                <div class="user-form-field">
+                                                    <label for="city">City</label>
+                                                    <p:autoComplete id="city" value="#{userAdministrationBean.city}"
+                                                                    completeMethod="#{userAdministrationBean.completeCity}"
+                                                                    dropdown="true" forceSelection="true" scrollHeight="240"/>
+                                                </div>
+                                                <div class="user-form-field" style="grid-column:1 / -1;">
+                                                    <label for="address">Address</label>
+                                                    <p:inputTextarea id="address" value="#{userAdministrationBean.address}" rows="3" autoResize="false"/>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{empty userAdministrationBean.uploadedProfileImage}">
-                                        <div style="color:#64748b;font-size:.9rem;">Upload an image to adjust the crop area before saving.</div>
-                                    </h:panelGroup>
-                                </p:outputPanel>
+                                    </div>
 
-                                <p:outputLabel value="Preview"/>
-                                <h:panelGroup id="imagePreviewPanel" layout="block">
-                                    <h:panelGroup rendered="#{not empty userAdministrationBean.uploadedProfileImage and empty userAdministrationBean.croppedProfileImage and not userAdministrationBean.removeProfileImage}">
-                                        <p:graphicImage value="#{userAdministrationBean.uploadedProfileImage}"
-                                                        cache="false"
-                                                        styleClass="user-avatar-preview"/>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{not empty userAdministrationBean.selectedProfileImageDataUrl}">
-                                        <h:graphicImage value="#{userAdministrationBean.selectedProfileImageDataUrl}"
-                                                        styleClass="user-avatar-preview"/>
-                                    </h:panelGroup>
-                                    <h:panelGroup rendered="#{empty userAdministrationBean.selectedProfileImageDataUrl and (empty userAdministrationBean.uploadedProfileImage or userAdministrationBean.removeProfileImage)}">
-                                        <div class="user-avatar-empty">
-                                            <i class="pi pi-user" style="font-size:1.8rem;"></i>
+                                    <div class="col-12">
+                                        <div class="user-admin-panel">
+                                            <div class="user-admin-head">
+                                                <div>
+                                                    <h3 class="user-admin-head-title">Profile Image Studio</h3>
+                                                    <div class="user-admin-head-copy">Choose an image, crop it to the avatar frame, then confirm the preview. The save flow stays the same.</div>
+                                                </div>
+                                            </div>
+                                            <div class="user-avatar-layout">
+                                                <div class="user-avatar-zone">
+                                                    <div class="user-avatar-steps">
+                                                        <div class="user-avatar-step">
+                                                            <div class="user-avatar-step-title">Step 1. Select image</div>
+                                                            <div class="user-avatar-step-copy">Upload a JPG, JPEG, or PNG file up to 2 MB. The cropper appears immediately after upload.</div>
+                                                        </div>
+                                                        <div class="user-avatar-step">
+                                                            <div class="user-avatar-step-title">Step 2. Crop square avatar</div>
+                                                            <div class="user-avatar-step-copy">Use the crop frame to keep the face or brand mark centered. The final avatar is resized consistently for the top bar and user grid.</div>
+                                                        </div>
+                                                        <div class="user-avatar-step">
+                                                            <div class="user-avatar-step-title">Step 3. Review preview</div>
+                                                            <div class="user-avatar-step-copy">Use remove only if you want to clear the current profile image before saving.</div>
+                                                        </div>
+                                                    </div>
+
+                                                    <p:fileUpload id="profileImage" mode="advanced" auto="true" dragDropSupport="false"
+                                                                  update="messages cropperPanel imagePreviewPanel"
+                                                                  listener="#{userAdministrationBean.handleProfileImageUpload}"
+                                                                  sizeLimit="2097152" multiple="false"
+                                                                  allowTypes="/(\.|\/)(png|jpe?g)$/"
+                                                                  label="Select Profile Image"
+                                                                  chooseIcon="pi pi-image"
+                                                                  uploadIcon="pi pi-upload"
+                                                                  cancelIcon="pi pi-times"/>
+
+                                                    <p:outputPanel id="cropperPanel">
+                                                        <div class="user-avatar-stage" rendered="#{not empty userAdministrationBean.uploadedProfileImage}">
+                                                            <div class="user-avatar-help">Crop to a square preview. The avatar output is normalized to #{userAdministrationBean.avatarImageSize}px for consistent rendering.</div>
+                                                            <div class="user-avatar-cropper">
+                                                                <p:imageCropper value="#{userAdministrationBean.croppedProfileImage}"
+                                                                                image="#{userAdministrationBean.uploadedProfileImage}"
+                                                                                initialCoords="30,30,220,220"
+                                                                                minSize="120,120" aspectRatio="1" responsive="true"
+                                                                                cache="false"/>
+                                                            </div>
+                                                        </div>
+                                                        <div class="user-avatar-help" rendered="#{empty userAdministrationBean.uploadedProfileImage}">
+                                                            No new image selected yet. Upload an image to unlock the cropper stage.
+                                                        </div>
+                                                    </p:outputPanel>
+                                                </div>
+
+                                                <div class="user-avatar-zone">
+                                                    <p:outputPanel id="imagePreviewPanel">
+                                                        <div class="user-avatar-preview-card">
+                                                            <div class="user-avatar-help" style="margin:0;">Final avatar preview</div>
+                                                            <h:graphicImage value="#{userAdministrationBean.selectedProfileImageDataUrl}"
+                                                                            rendered="#{not empty userAdministrationBean.selectedProfileImageDataUrl}"
+                                                                            styleClass="user-avatar-preview"/>
+                                                            <div class="user-avatar-empty" rendered="#{empty userAdministrationBean.selectedProfileImageDataUrl}">
+                                                                <i class="pi pi-user" style="font-size:1.5rem;"></i>
+                                                            </div>
+                                                            <p:selectBooleanCheckbox id="removeImage" value="#{userAdministrationBean.removeProfileImage}"
+                                                                                     itemLabel="Remove current profile image">
+                                                                <p:ajax update="imagePreviewPanel cropperPanel"/>
+                                                            </p:selectBooleanCheckbox>
+                                                        </div>
+                                                    </p:outputPanel>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </h:panelGroup>
-                                </h:panelGroup>
+                                    </div>
 
-                            </p:panelGrid>
-                            <f:facet name="footer">
-                                <center>
-                                    <p:commandButton value="Save" icon="pi pi-check"
-                                                     actionListener="#{userAdministrationBean.saveUserDetails}"
-                                                     update="addEditCountPanelId" process="addEditCountPanelId @this"/>
-                                    <p:commandButton value="Cancel" icon="pi pi-times"
-                                                     onclick="PF('ManageUserDialog').hide()"
-                                                     class="ui-button-secondary"/>
-                                </center>
-                            </f:facet>
+                                    <div class="col-12">
+                                        <div class="user-dialog-footer">
+                                            <p:commandButton value="Save User" icon="pi pi-check"
+                                                             actionListener="#{userAdministrationBean.saveUserDetails}"
+                                                             update="@([id$=usersMainPanelId]) @([id$=addEditCountPanelId])"
+                                                             process="@([id$=addEditCountPanelId]) @this"
+                                                             styleClass="ui-button-success"/>
+                                            <p:commandButton value="Cancel" type="button" icon="pi pi-times"
+                                                             onclick="PF('ManageUserDialog').hide()" styleClass="ui-button-secondary"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </p:outputPanel>
                         </p:dialog>
 
-                        <p:confirmDialog widgetVar="deleteCountDialog" showEffect="fade" width="300"
-                                         message="Delete the Country?" header="Confirm" severity="warn">
+                        <p:confirmDialog widgetVar="deleteCountDialog" showEffect="fade" width="420"
+                                         message="Remove the selected user record?" header="Confirm Delete"
+                                         severity="warn">
                             <p:commandButton value="Yes" icon="pi pi-check"
                                              actionListener="#{userAdministrationBean.confirmDeleteCountry}"
-                                             process="@this" oncomplete="PF('deleteCountDialog').hide()"/>
-                            <p:commandButton value="No" type="button" styleClass="ui-button-secondary"
-                                             icon="pi pi-times" onclick="PF('deleteCountDialog').hide()"/>
-                        </p:confirmDialog>
-
-                        <p:confirmDialog global="true" showEffect="fade" width="300">
-                            <p:commandButton value="Yes" type="button" styleClass="ui-confirmdialog-yes"
-                                             icon="pi pi-check"/>
-                            <p:commandButton value="No" type="button"
-                                             styleClass="ui-confirmdialog-no ui-button-secondary" icon="pi pi-times"/>
+                                             update="@([id$=usersMainPanelId])"
+                                             oncomplete="PF('deleteCountDialog').hide()"
+                                             styleClass="ui-button-danger"/>
+                            <p:commandButton value="No" type="button" icon="pi pi-times"
+                                             onclick="PF('deleteCountDialog').hide()" styleClass="ui-button-secondary"/>
                         </p:confirmDialog>
                     </p:outputPanel>
                 </div>
             </div>
         </h:form>
-
     </ui:define>
-
 </ui:composition>
-

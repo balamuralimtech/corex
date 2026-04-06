@@ -83,7 +83,9 @@ public class CommonMenuContributor implements MenuContributor {
                 .addItem(new AppMenuItem("m_serverlogspage", "#{msg['serverLogsLabel']}", "pi pi-fw pi-server",
                         "/server-logs", 10, "#{guestPreferences.serverLogRendered}"))
                 .addItem(new AppMenuItem("m_databasedetails", "#{msg['databaseLabel']}", "pi pi-fw pi-server",
-                        "/database-details", 20, "#{guestPreferences.dbDetailsRendered}"));
+                        "/database-details", 20, "#{guestPreferences.dbDetailsRendered}"))
+                .addItem(new AppMenuItem("m_errorlogmonitor", "Error Log Monitoring", "pi pi-fw pi-bell",
+                        "/error-log-monitor", 30, "#{guestPreferences.errorLogMonitorRendered}"));
 
         return Arrays.asList(userManagement, systemManagement, license, serverLogs);
     }

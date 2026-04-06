@@ -16,6 +16,9 @@
  */
 package com.web.coretix.general;
 
+import com.module.coretix.usermanagement.IUserActivityService;
+import com.web.coretix.applicationserverlogsanddb.ErrorLogMonitorSupport;
+import java.io.File;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import org.slf4j.Logger;
@@ -40,6 +43,24 @@ public class BackgroundThreadsKillerListener implements ServletContextListener
     @Override
     public void contextInitialized(ServletContextEvent sce)
     {
+        try
+        {
+            WebApplicationContext context = (WebApplicationContext) sce.getServletContext().getAttribute(
+                    WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
+            if (context == null) {
+                logger.warn("Spring web application context is not ready. Error log monitor startup skipped.");
+                return;
+            }
+
+            IUserActivityService userActivityService = context.getBean(IUserActivityService.class);
+            String serverLocation = System.getProperty("catalina.base");
+            String logsLocation = serverLocation + File.separator + "logs";
+            ErrorLogMonitorSupport.startBackgroundMonitoring(userActivityService, logsLocation);
+        }
+        catch (Exception ex)
+        {
+            logger.error("Unable to start background error log monitoring.", ex);
+        }
     }
 
     /**
@@ -52,6 +73,7 @@ public class BackgroundThreadsKillerListener implements ServletContextListener
         try
         {
             logger.info("Going to close the resources used by application");
+            ErrorLogMonitorSupport.stopBackgroundMonitoring();
             WebApplicationContext context = (WebApplicationContext) sce.getServletContext().getAttribute(
                     WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
             logger.info("Successfully closed the all the resources created/used by application.");

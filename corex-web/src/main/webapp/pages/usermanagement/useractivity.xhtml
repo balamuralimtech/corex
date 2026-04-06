@@ -21,154 +21,439 @@
                 xmlns:p="http://primefaces.org/ui"
                 template="/WEB-INF/template.xhtml">
 
-    <ui:define name="head">
-        <h:outputStylesheet name="css/flags/flags.css" library="demo" />
-    </ui:define>
-
     <ui:define name="content">
         <f:event listener="#{userActivityBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:outputStylesheet>
+            .activity-shell { --activity-night:#07111f; --activity-panel:#ffffff; --activity-red:#ef4444; --activity-blue:#38bdf8; --activity-green:#22c55e; --activity-amber:#f59e0b; }
+            .activity-hero { position:relative; overflow:hidden; padding:2rem; border-radius:28px; color:#f8fafc; background:radial-gradient(circle at top right, rgba(56,189,248,.24), transparent 28%), linear-gradient(135deg, #07111f 0%, #11233d 46%, #0f5f73 100%); box-shadow:0 24px 70px rgba(2,6,23,.24); }
+            .activity-hero:before { content:''; position:absolute; inset:auto -8% -30% auto; width:320px; height:320px; border-radius:50%; background:radial-gradient(circle, rgba(34,197,94,.18), rgba(34,197,94,0)); }
+            .activity-title { margin:0; font-size:2rem; font-weight:700; letter-spacing:-.03em; }
+            .activity-copy { margin-top:.8rem; max-width:840px; color:rgba(226,232,240,.84); line-height:1.75; }
+            .activity-strip { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; margin-top:1.45rem; }
+            .activity-chip { padding:1rem 1.1rem; border-radius:18px; background:rgba(15,23,42,.34); border:1px solid rgba(148,163,184,.16); backdrop-filter:blur(10px); }
+            .activity-chip-label { display:block; font-size:.76rem; text-transform:uppercase; letter-spacing:.08em; color:rgba(191,219,254,.78); }
+            .activity-chip-value { display:block; margin-top:.35rem; color:#fff; font-size:1.28rem; font-weight:700; word-break:break-word; }
+            .activity-panel { height:100%; padding:1.15rem; border-radius:24px; background:#fff; border:1px solid rgba(203,213,225,.82); box-shadow:0 16px 44px rgba(15,23,42,.08); }
+            .activity-panel-dark { color:#dbeafe; background:linear-gradient(180deg, #0f1b2f 0%, #091321 100%); border-color:#0b1627; box-shadow:0 22px 48px rgba(2,6,23,.24); }
+            .activity-head { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:1rem; }
+            .activity-head-title { margin:0; font-size:1.08rem; font-weight:700; color:#0f172a; }
+            .activity-panel-dark .activity-head-title { color:#f8fafc; }
+            .activity-head-copy { margin-top:.2rem; font-size:.92rem; color:#64748b; line-height:1.55; }
+            .activity-panel-dark .activity-head-copy { color:#94a3b8; }
+            .activity-actions { display:flex; flex-wrap:wrap; gap:.75rem; }
+            .activity-filters { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:1rem; margin-top:1rem; }
+            .activity-filter-label { display:block; margin-bottom:.45rem; font-size:.84rem; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:.06em; }
+            .activity-filter-note { display:flex; align-items:center; min-height:42px; padding:.8rem 1rem; border-radius:14px; background:#f8fafc; border:1px solid #e2e8f0; color:#0f172a; font-weight:700; }
+            .activity-stat { height:100%; padding:1.1rem; border-radius:20px; border:1px solid rgba(203,213,225,.82); box-shadow:0 12px 36px rgba(15,23,42,.06); }
+            .activity-stat-kicker { display:block; color:#64748b; font-size:.78rem; text-transform:uppercase; letter-spacing:.08em; }
+            .activity-stat-value { display:block; margin-top:.5rem; font-size:1.85rem; font-weight:700; color:#0f172a; line-height:1.1; }
+            .activity-stat-copy { display:block; margin-top:.65rem; color:#475569; line-height:1.55; }
+            .activity-stat-blue { background:linear-gradient(180deg, #fff 0%, #eff6ff 100%); }
+            .activity-stat-green { background:linear-gradient(180deg, #fff 0%, #ecfdf5 100%); }
+            .activity-stat-amber { background:linear-gradient(180deg, #fff 0%, #fffbeb 100%); }
+            .activity-stat-red { background:linear-gradient(180deg, #fff 0%, #fef2f2 100%); }
+            .activity-chart { min-height: 340px; }
+            .activity-meta { display:flex; flex-wrap:wrap; gap:.55rem; margin-top:.65rem; }
+            .activity-badge { display:inline-flex; align-items:center; gap:.38rem; padding:.42rem .75rem; border-radius:999px; background:#eff6ff; color:#1d4ed8; font-size:.82rem; font-weight:600; }
+            .activity-table .ui-datatable-tablewrapper { border-radius:18px; overflow:hidden; }
+            .activity-table .ui-datatable thead th { background:#f8fafc; color:#334155; border-color:#e2e8f0; }
+            .activity-table .ui-datatable tbody td { vertical-align:top; border-color:#eef2f7; }
+            .activity-search { display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; }
+            .activity-search-title { font-weight:700; color:#0f172a; }
+            .activity-empty { padding:3rem 1.5rem; text-align:center; color:#64748b; line-height:1.8; }
+        </h:outputStylesheet>
+
         <h:form id="form">
-            <div class="col-12">
-                <p:breadCrumb>
-                    <p:menuitem url="#" icon="pi pi-home" />
-                    <p:menuitem value="User Management" url="#" />
-                    <p:menuitem value="User Activity" url="#" />
-                </p:breadCrumb>
-            </div>
-            <div class="grid crud-demo">
+            <div class="grid crud-demo activity-shell">
                 <div class="col-12">
-                    <p:outputPanel class="card" id="usrActMainPanelId">
-                        <p:growl id="messages" showDetail="true" />
+                    <p:breadCrumb>
+                        <p:menuitem url="#" icon="pi pi-home"/>
+                        <p:menuitem value="User Management" url="#"/>
+                        <p:menuitem value="User Activity" url="#"/>
+                    </p:breadCrumb>
+                </div>
 
-                        <p:toolbar styleClass="mb-4">
-                            <p:toolbarGroup>
-                                <p:commandButton value="Fetch UserActivities" icon="pi pi-search" 
-                                                 action="#{userActivityBean.searchButtonAction}" 
-                                                 update="@([id$=usrActMainPanelId])" process="@this" 
-                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+                <div class="col-12">
+                    <div class="activity-hero">
+                        <h2 class="activity-title">User Activity Intelligence</h2>
+                        <div class="activity-copy">
+                            Review operational behavior, security movement, change events, and audit signals across the platform from one high-clarity activity command view.
+                        </div>
+                        <div class="activity-strip">
+                            <div class="activity-chip">
+                                <span class="activity-chip-label">Total Records</span>
+                                <span class="activity-chip-value">#{userActivityBean.recordsCount}</span>
+                            </div>
+                            <div class="activity-chip">
+                                <span class="activity-chip-label">Active Users</span>
+                                <span class="activity-chip-value">#{userActivityBean.uniqueUserCount}</span>
+                            </div>
+                            <div class="activity-chip">
+                                <span class="activity-chip-label">Last Recorded</span>
+                                <span class="activity-chip-value" style="font-size:1rem; line-height:1.45;">#{userActivityBean.latestActivityLabel}</span>
+                            </div>
+                            <div class="activity-chip">
+                                <span class="activity-chip-label">Activity Mix</span>
+                                <span class="activity-chip-value" style="font-size:1rem; line-height:1.45;">#{userActivityBean.activityMixSummary}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                                <h:outputLabel value="Number of Records: " rendered="#{userActivityBean.datatableRendered}"/>
-                                <h:outputText value="#{userActivityBean.recordsCount}" rendered="#{userActivityBean.datatableRendered}"/>
-                            </p:toolbarGroup>
-                            <p:toolbarGroup align="right">
-                                <p:commandButton value="Export to PDF" icon="pi pi-upload" styleClass="ui-button-help"
-                                                 rendered="#{userActivityBean.datatableRendered}">
-                                    <p:dataExporter type="pdf" target="usrActDataTableId"
-                                                    fileName="useractivities_#{userActivityBean.currentDateTime}"/>
-                                </p:commandButton>
-                                <p:commandButton value="Export to Excel" icon="pi pi-file-excel"
-                                                 styleClass="ui-button-help"
-                                                 rendered="#{userActivityBean.datatableRendered}">
-                                    <p:dataExporter type="xlsx" target="usrActDataTableId"
-                                                    fileName="useractivities_#{userActivityBean.currentDateTime}"/>
-                                </p:commandButton>
-                            </p:toolbarGroup>
-                        </p:toolbar>
+                <div class="col-12">
+                    <p:outputPanel id="usrActMainPanelId">
+                        <p:growl id="messages" showDetail="true"/>
 
-                        <p:outputPanel id="datatablePanelId" rendered="#{userActivityBean.datatableRendered}">
-                            <figure class="highcharts-figure">
-                                <div id="container"></div>
-                            </figure>
-                            <h:outputScript>
-                                // Set up the chart
-                                var chart = new Highcharts.Chart({
-                                chart: {
-                                renderTo: 'container',
-                                type: 'column',
-                                options3d: {
-                                enabled: true,
-                                alpha: 0,
-                                beta: 0,
-                                depth: 100,
-                                viewDistance: 30
-                                }
-                                },
-                                xAxis: {
-                                type: 'category'
-                                },
-                                yAxis: {
-                                title: {
-                                enabled: false
-                                }
-                                },
-                                tooltip: {
-                                headerFormat: '<b>{point.key}</b><br/>',
-                                pointFormat: 'Activity: {point.y}'
-                                },
-                                title: {
-                                text: 'Overall User Activity Status',
-                                align: 'left'
-                                },
-                                subtitle: {
-                                text: 'Status',
-                                align: 'left'
-                                },
-                                legend: {
-                                enabled: false
-                                },
-                                plotOptions: {
-                                column: {
-                                depth: 25
-                                }
-                                },
-                                series: [{
-                                data: [
-                                ['Login', #{userActivityBean.loginCount}],
-                                ['Logout', #{userActivityBean.logoutCount}],
-                                ['Add', #{userActivityBean.addCount}],
-                                ['Edit', #{userActivityBean.updateCount}],
-                                ['Delete', #{userActivityBean.deleteCount}]
-                                ],
-                                colorByPoint: true
-                                }]
-                                });
-                            </h:outputScript>
-                            <p:dataTable id="usrActDataTableId" widgetVar="dataTableUsrAct" var="userActivity" value="#{userActivityBean.userActivityList}"
-                                         reflow="true" styleClass="commoncrud-table"
-                                         rowKey="#{userActivity.activityId}" paginator="true" rows="10"  paginatorPosition="bottom">
-                                <f:facet name="header">
-                                    <div class="products-table-header">
-                                        <span style="font-weight: bold">Search User Activity</span>
-
-                                        <span class="filter-container ui-input-icon-left">
-                                            <i class="pi pi-search"></i>
-                                            <p:inputText id="globalFilter" onkeyup="PF('dataTableUsrAct').filter()" placeholder="Search" />
-                                        </span>
+                        <div class="grid">
+                            <div class="col-12">
+                                <div class="activity-panel">
+                                    <div class="activity-head">
+                                        <div>
+                                            <h3 class="activity-head-title">Activity Controls</h3>
+                                            <div class="activity-head-copy">Refresh the live dataset and export the audit grid in report-friendly formats.</div>
+                                        </div>
                                     </div>
-                                </f:facet>
-                                <p:column headerText="User Id" sortBy="#{userActivity. userName}" filterBy="#{userActivity.userName}">
-                                    <h:outputText value="#{userActivity.userName}" />
-                                </p:column>
+                                    <div class="activity-actions">
+                                        <p:commandButton value="Refresh Activity"
+                                                         icon="pi pi-refresh"
+                                                         action="#{userActivityBean.searchButtonAction}"
+                                                         update=":form:usrActMainPanelId"
+                                                         process="@this"
+                                                         styleClass="ui-button-info"/>
+                                        <p:commandButton value="Export to PDF"
+                                                         icon="pi pi-upload"
+                                                         styleClass="ui-button-help"
+                                                         rendered="#{userActivityBean.datatableRendered}">
+                                            <p:dataExporter type="pdf" target="usrActDataTableId"
+                                                            fileName="useractivities_#{userActivityBean.currentDateTime}"/>
+                                        </p:commandButton>
+                                        <p:commandButton value="Export to Excel"
+                                                         icon="pi pi-file-excel"
+                                                         styleClass="ui-button-help"
+                                                         rendered="#{userActivityBean.datatableRendered}">
+                                            <p:dataExporter type="xlsx" target="usrActDataTableId"
+                                                            fileName="useractivities_#{userActivityBean.currentDateTime}"/>
+                                        </p:commandButton>
+                                    </div>
 
-                                <p:column headerText="Activity Type" sortBy="#{userActivity.activityType}" filterBy="#{userActivity.activityType}">
-                                    <h:outputText value="#{userActivity.activityType}" />
-                                </p:column>
-                                <p:column headerText="Activity Description" sortBy="#{userActivity.activityDescription}" filterBy="#{userActivity.activityDescription}">
-                                    <h:outputText value="#{userActivity.activityDescription}" />
-                                </p:column>
-                                <p:column headerText="IP Address" sortBy="#{userActivity.ipAddress}" filterBy="#{userActivity.ipAddress}">
-                                    <h:outputText value="#{userActivity.ipAddress}" />
-                                </p:column>
-                                <p:column headerText="Device Info" sortBy="#{userActivity.deviceInfo}" filterBy="#{userActivity.deviceInfo}">
-                                    <h:outputText value="#{userActivity.deviceInfo}" />
-                                </p:column>
-                                <p:column headerText="Browser Info" sortBy="#{userActivity.locationInfo}" filterBy="#{userActivity.locationInfo}">
-                                    <h:outputText value="#{userActivity.locationInfo}" />
-                                </p:column>
-                                <p:column headerText="Created At" sortBy="#{userActivity.createdAt}" filterBy="#{userActivity.createdAt}">
-                                    <h:outputText value="#{userActivity.createdAt}">
-                                        <f:convertDateTime pattern="dd/MM/yyyy hh:mm:ss a"/>
-                                    </h:outputText>
-                                </p:column>
-                               
-                            </p:dataTable>
-                        </p:outputPanel>
+                                    <div class="activity-filters">
+                                        <div>
+                                            <span class="activity-filter-label">Organization Scope</span>
+                                            <h:panelGroup rendered="#{userActivityBean.applicationAdmin}" layout="block">
+                                                <p:selectOneMenu value="#{userActivityBean.selectedOrganizationId}" style="width:100%">
+                                                    <f:selectItem itemLabel="All Organizations" itemValue="#{userActivityBean.allOrganizationsId}"/>
+                                                    <f:selectItems value="#{userActivityBean.organizationList}"
+                                                                   var="organization"
+                                                                   itemLabel="#{organization.organizationName}"
+                                                                   itemValue="#{organization.id}"/>
+                                                    <p:ajax listener="#{userActivityBean.organizationChanged}"
+                                                            update=":form:usrActMainPanelId"
+                                                            process="@this"/>
+                                                </p:selectOneMenu>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{not userActivityBean.applicationAdmin}" layout="block">
+                                                <div class="activity-filter-note">#{userActivityBean.currentOrganizationName}</div>
+                                            </h:panelGroup>
+                                        </div>
+                                        <div>
+                                            <span class="activity-filter-label">User Scope</span>
+                                            <p:selectOneMenu value="#{userActivityBean.selectedUserId}" style="width:100%">
+                                                <f:selectItem itemLabel="All Users" itemValue="#{null}" noSelectionOption="true"/>
+                                                <f:selectItems value="#{userActivityBean.filteredUserList}"
+                                                               var="appUser"
+                                                               itemLabel="#{appUser.userName}"
+                                                               itemValue="#{appUser.userId}"/>
+                                                <p:ajax listener="#{userActivityBean.userChanged}"
+                                                        update=":form:usrActMainPanelId"
+                                                        process="@this"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 md:col-6 xl:col-3">
+                                <div class="activity-stat activity-stat-blue">
+                                    <span class="activity-stat-kicker">Login Events</span>
+                                    <span class="activity-stat-value">#{userActivityBean.loginCount}</span>
+                                    <span class="activity-stat-copy">Authentication entries captured through the current audit list.</span>
+                                </div>
+                            </div>
+                            <div class="col-12 md:col-6 xl:col-3">
+                                <div class="activity-stat activity-stat-green">
+                                    <span class="activity-stat-kicker">Change Events</span>
+                                    <span class="activity-stat-value">#{userActivityBean.changeEventCount}</span>
+                                    <span class="activity-stat-copy">Add, edit, and delete actions that changed business data.</span>
+                                </div>
+                            </div>
+                            <div class="col-12 md:col-6 xl:col-3">
+                                <div class="activity-stat activity-stat-amber">
+                                    <span class="activity-stat-kicker">Unique IPs</span>
+                                    <span class="activity-stat-value">#{userActivityBean.uniqueIpCount}</span>
+                                    <span class="activity-stat-copy">Distinct network origins currently visible in the loaded activity history.</span>
+                                </div>
+                            </div>
+                            <div class="col-12 md:col-6 xl:col-3">
+                                <div class="activity-stat activity-stat-red">
+                                    <span class="activity-stat-kicker">Logout Events</span>
+                                    <span class="activity-stat-value">#{userActivityBean.logoutCount}</span>
+                                    <span class="activity-stat-copy">Exit and session-ending movements captured by the audit subsystem.</span>
+                                </div>
+                            </div>
+                            <div class="col-12 md:col-6 xl:col-3">
+                                <div class="activity-stat activity-stat-blue">
+                                    <span class="activity-stat-kicker">Most Active User</span>
+                                    <span class="activity-stat-value" style="font-size:1.2rem; line-height:1.35;">#{userActivityBean.mostActiveUser}</span>
+                                    <span class="activity-stat-copy">User with the highest visible activity volume in the loaded dataset.</span>
+                                </div>
+                            </div>
+                            <div class="col-12 md:col-6 xl:col-3">
+                                <div class="activity-stat activity-stat-green">
+                                    <span class="activity-stat-kicker">Top Activity Type</span>
+                                    <span class="activity-stat-value" style="font-size:1.2rem; line-height:1.35;">#{userActivityBean.mostUsedActivityType}</span>
+                                    <span class="activity-stat-copy">Most frequent operation pattern across the current audit history.</span>
+                                </div>
+                            </div>
+                            <div class="col-12 md:col-6 xl:col-3">
+                                <div class="activity-stat activity-stat-amber">
+                                    <span class="activity-stat-kicker">Security Events</span>
+                                    <span class="activity-stat-value">#{userActivityBean.securityEventCount}</span>
+                                    <span class="activity-stat-copy">Combined login and logout activity across the visible audit records.</span>
+                                </div>
+                            </div>
+                            <div class="col-12 md:col-6 xl:col-3">
+                                <div class="activity-stat activity-stat-red">
+                                    <span class="activity-stat-kicker">Change Operations</span>
+                                    <span class="activity-stat-value">#{userActivityBean.changeEventCount}</span>
+                                    <span class="activity-stat-copy">Combined add, edit, and delete operations across the loaded records.</span>
+                                </div>
+                            </div>
+
+                            <div class="col-12 lg:col-6" rendered="#{userActivityBean.datatableRendered}">
+                                <div class="activity-panel">
+                                    <div class="activity-head">
+                                        <div>
+                                            <h3 class="activity-head-title">Activity Distribution</h3>
+                                            <div class="activity-head-copy">A quick visual split of the main activity types in the current audit set.</div>
+                                        </div>
+                                    </div>
+
+                                    <figure class="highcharts-figure">
+                                        <div id="container" class="activity-chart"></div>
+                                    </figure>
+                                    <h:outputScript>
+                                        new Highcharts.Chart({
+                                            chart: {
+                                                renderTo: 'container',
+                                                type: 'column',
+                                                options3d: {
+                                                    enabled: true,
+                                                    alpha: 0,
+                                                    beta: 0,
+                                                    depth: 100,
+                                                    viewDistance: 30
+                                                }
+                                            },
+                                            xAxis: {
+                                                type: 'category'
+                                            },
+                                            yAxis: {
+                                                title: {
+                                                    enabled: false
+                                                }
+                                            },
+                                            tooltip: {
+                                                headerFormat: '<b>{point.key}</b><br/>',
+                                                pointFormat: 'Activity: {point.y}'
+                                            },
+                                            title: {
+                                                text: 'Overall User Activity Status',
+                                                align: 'left'
+                                            },
+                                            subtitle: {
+                                                text: 'Current audit mix',
+                                                align: 'left'
+                                            },
+                                            legend: {
+                                                enabled: false
+                                            },
+                                            plotOptions: {
+                                                column: {
+                                                    depth: 25
+                                                }
+                                            },
+                                            series: [{
+                                                data: [
+                                                    ['Login', #{userActivityBean.loginCount}],
+                                                    ['Logout', #{userActivityBean.logoutCount}],
+                                                    ['Add', #{userActivityBean.addCount}],
+                                                    ['Edit', #{userActivityBean.updateCount}],
+                                                    ['Delete', #{userActivityBean.deleteCount}]
+                                                ],
+                                                colorByPoint: true
+                                            }]
+                                        });
+                                    </h:outputScript>
+                                </div>
+                            </div>
+                            <div class="col-12 lg:col-6" rendered="#{userActivityBean.datatableRendered}">
+                                <div class="activity-panel">
+                                    <div class="activity-head">
+                                        <div>
+                                            <h3 class="activity-head-title">Browser Type Distribution</h3>
+                                            <div class="activity-head-copy">See which browser environments are generating the current visible audit traffic.</div>
+                                        </div>
+                                    </div>
+
+                                    <figure class="highcharts-figure">
+                                        <div id="activityBrowser" class="activity-chart"></div>
+                                    </figure>
+                                    <h:outputScript>
+                                        Highcharts.chart('activityBrowser', {
+                                            chart: {
+                                                type: 'pie'
+                                            },
+                                            title: {
+                                                text: 'Browser Mix',
+                                                align: 'left'
+                                            },
+                                            subtitle: {
+                                                text: 'Environment source profile',
+                                                align: 'left'
+                                            },
+                                            tooltip: {
+                                                pointFormat: '<b>{point.y}</b> events'
+                                            },
+                                            accessibility: {
+                                                point: {
+                                                    valueSuffix: ' events'
+                                                }
+                                            },
+                                            plotOptions: {
+                                                pie: {
+                                                    innerSize: '62%',
+                                                    dataLabels: {
+                                                        enabled: true,
+                                                        format: '{point.name}: {point.y}'
+                                                    }
+                                                }
+                                            },
+                                            series: [{
+                                                name: 'Events',
+                                                colorByPoint: true,
+                                                data: #{userActivityBean.browserChartData}
+                                            }]
+                                        });
+                                    </h:outputScript>
+                                </div>
+                            </div>
+                            <div class="col-12" rendered="#{userActivityBean.datatableRendered}">
+                                <div class="activity-panel">
+                                    <div class="activity-head">
+                                        <div>
+                                            <h3 class="activity-head-title">Activity Timeline</h3>
+                                            <div class="activity-head-copy">Track how audit volume changes across the recorded date and time sequence.</div>
+                                        </div>
+                                    </div>
+
+                                    <figure class="highcharts-figure">
+                                        <div id="activityTimeline" class="activity-chart"></div>
+                                    </figure>
+                                    <h:outputScript>
+                                        Highcharts.chart('activityTimeline', {
+                                            chart: {
+                                                type: 'line'
+                                            },
+                                            title: {
+                                                text: 'Activity Timeline',
+                                                align: 'left'
+                                            },
+                                            subtitle: {
+                                                text: 'Date/time based event flow',
+                                                align: 'left'
+                                            },
+                                            xAxis: {
+                                                categories: #{userActivityBean.activityTimelineCategories},
+                                                title: { text: null }
+                                            },
+                                            yAxis: {
+                                                min: 0,
+                                                title: {
+                                                    text: 'Events'
+                                                }
+                                            },
+                                            legend: {
+                                                enabled: false
+                                            },
+                                            series: [{
+                                                name: 'Events',
+                                                data: #{userActivityBean.activityTimelineSeries},
+                                                color: '#0ea5e9'
+                                            }]
+                                        });
+                                    </h:outputScript>
+                                </div>
+                            </div>
+
+                            <div class="col-12" rendered="#{userActivityBean.datatableRendered}">
+                                <div class="activity-panel">
+                                    <div class="activity-head">
+                                        <div>
+                                            <h3 class="activity-head-title">Audit Grid</h3>
+                                            <div class="activity-head-copy">Search, filter, export, and inspect the full captured activity history.</div>
+                                        </div>
+                                    </div>
+
+                                    <p:dataTable id="usrActDataTableId"
+                                                 widgetVar="dataTableUsrAct"
+                                                 var="userActivity"
+                                                 value="#{userActivityBean.userActivityList}"
+                                                 reflow="true"
+                                                 rowHover="true"
+                                                 styleClass="activity-table"
+                                                 rowKey="#{userActivity.activityId}"
+                                                 paginator="true"
+                                                 rows="10"
+                                                 paginatorPosition="bottom">
+                                        <f:facet name="header">
+                                            <div class="activity-search">
+                                                <span class="activity-search-title">Search User Activity</span>
+                                                <span class="filter-container ui-input-icon-left">
+                                                    <i class="pi pi-search"></i>
+                                                    <p:inputText id="globalFilter" onkeyup="PF('dataTableUsrAct').filter()" placeholder="Search activity grid"/>
+                                                </span>
+                                            </div>
+                                        </f:facet>
+
+                                        <p:column headerText="User" sortBy="#{userActivity.userName}" filterBy="#{userActivity.userName}">
+                                            <div style="font-weight:700;color:#0f172a;">#{userActivityBean.safeValue(userActivity.userName)}</div>
+                                            <div style="color:#64748b;">#{userActivityBean.safeValue(userActivity.ipAddress)}</div>
+                                        </p:column>
+
+                                        <p:column headerText="Activity" sortBy="#{userActivity.activityType}" filterBy="#{userActivity.activityType}">
+                                            <p:tag value="#{userActivityBean.safeValue(userActivity.activityType)}"
+                                                   severity="#{userActivityBean.activityTone(userActivity.activityType)}"/>
+                                            <div style="margin-top:.55rem;color:#475569;line-height:1.55;">#{userActivityBean.safeValue(userActivity.activityDescription)}</div>
+                                        </p:column>
+
+                                        <p:column headerText="Environment" sortBy="#{userActivity.deviceInfo}" filterBy="#{userActivity.deviceInfo}">
+                                            <div style="font-weight:700;color:#0f172a;">#{userActivityBean.safeValue(userActivity.deviceInfo)}</div>
+                                            <div style="color:#64748b;">#{userActivityBean.safeValue(userActivity.locationInfo)}</div>
+                                        </p:column>
+
+                                        <p:column headerText="Time" sortBy="#{userActivity.createdAt}" filterBy="#{userActivity.createdAt}">
+                                            <h:outputText value="#{userActivity.createdAt}">
+                                                <f:convertDateTime pattern="dd/MM/yyyy hh:mm:ss a"/>
+                                            </h:outputText>
+                                        </p:column>
+                                    </p:dataTable>
+                                </div>
+                            </div>
+                        </div>
                     </p:outputPanel>
                 </div>
             </div>
         </h:form>
-
     </ui:define>
 
 </ui:composition>
-

@@ -81,6 +81,8 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
     private static final Logger logger = LoggerFactory.getLogger(UserAdministrationBean.class);
     private static final DateTimeFormatter NOTIFICATION_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd-MMM-yyyy hh:mm:ss a");
     private static final int AVATAR_IMAGE_SIZE = 320;
+    private static final String ALL_ORGANIZATIONS = "__ALL_ORGANIZATIONS__";
+    private static final String ALL_USERS = "__ALL_USERS__";
     private List<UserDetails> usersList = new ArrayList<>();
     
     private boolean isAddOperation;
@@ -104,6 +106,8 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
     private String city;
     private String address;
     private String accessRight;
+    private String selectedOrganizationFilter;
+    private String selectedUserFilter;
     private UploadedFile profileImageFile;
     private CroppedImage croppedProfileImage;
     private boolean removeProfileImage;
@@ -136,6 +140,10 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
 
     public void initializePageAttributes() {
         logger.debug("entered into initializePageAttributes !!!");
+        if (FacesContext.getCurrentInstance() != null && FacesContext.getCurrentInstance().isPostback()) {
+            logger.debug("skipping initializePageAttributes during postback");
+            return;
+        }
         isAddOperation = true;
         datatableRendered = false;
         recordsCount = 0;
@@ -154,13 +162,15 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         setContact("");
         
         setRole("");
-        setOrganization("");
+        setOrganization(resolveScopedOrganizationName());
         setBranch("");
         setCountry("");
         setState("");
         setCity("");
         setAddress("");
         setAccessRight("");
+        selectedOrganizationFilter = resolveDefaultOrganizationFilter();
+        selectedUserFilter = ALL_USERS;
         profileImageFile = null;
         croppedProfileImage = null;
         removeProfileImage = false;
@@ -183,7 +193,7 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         setContact("");
         
         setRole("");
-        setOrganization("");
+        setOrganization(resolveScopedOrganizationName());
         setBranch("");
         setCountry("");
         setState("");
@@ -201,6 +211,14 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         resetFields();
     }
 
+    private String resolveScopedOrganizationName() {
+        return isApplicationAdmin() ? "" : getCurrentOrganizationName();
+    }
+
+    private String resolveDefaultOrganizationFilter() {
+        return isApplicationAdmin() ? ALL_ORGANIZATIONS : getCurrentOrganizationName();
+    }
+
     public void searchButtonAction() {
         logger.debug("entered into searchButtonAction !!!");
         fetchUserDetailsList();
@@ -209,6 +227,15 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
                         + "if(filterInput){filterInput.value='';}"
                         + "if (PF('countDataTable')) { PF('countDataTable').clearFilters(); PF('countDataTable').getPaginator().setPage(0); }");
         logger.debug("end of searchButtonAction !!!");
+    }
+
+    public void onOrganizationFilterChange() {
+        selectedUserFilter = ALL_USERS;
+        searchButtonAction();
+    }
+
+    public void onUserFilterChange() {
+        searchButtonAction();
     }
 
 
@@ -361,6 +388,30 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         }
 
         return branchList.stream().filter(t -> t.toLowerCase().startsWith(queryLowerCase)).collect(Collectors.toList());
+    }
+
+    public List<String> getOrganizationFilterOptions() {
+        List<String> organizationFilterOptions = new ArrayList<>();
+        List<Organizations> organizations = getAccessibleOrganizations(organizationService);
+        for (Organizations organizationEntity : organizations) {
+            if (organizationEntity != null && organizationEntity.getOrganizationName() != null) {
+                organizationFilterOptions.add(organizationEntity.getOrganizationName());
+            }
+        }
+        return organizationFilterOptions;
+    }
+
+    public List<String> getUserFilterOptions() {
+        List<String> userFilterOptions = new ArrayList<>();
+        List<UserDetails> candidateUsers = new ArrayList<>(userAdministrationService.getUserDetailsList());
+        candidateUsers.removeIf(user -> user == null || user.getUserName() == null || user.getUserName().trim().isEmpty());
+        candidateUsers.removeIf(user -> !matchesOrganizationFilter(user));
+        candidateUsers.stream()
+                .map(UserDetails::getUserName)
+                .distinct()
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .forEach(userFilterOptions::add);
+        return userFilterOptions;
     }
     
     
@@ -559,17 +610,57 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
             usersList.clear();
         }
         List<UserDetails> visibleUsers = new ArrayList<>(userAdministrationService.getUserDetailsList());
-        if (!isApplicationAdmin()) {
-            visibleUsers.removeIf(user -> user == null
-                    || user.getOrganization() == null
-                    || !canAccessOrganization(user.getOrganization().getId()));
-        }
+        visibleUsers.removeIf(user -> !matchesOrganizationFilter(user) || !matchesUserFilter(user));
         usersList.addAll(visibleUsers);
 
+        recalculateDashboardCounts();
         if (CollectionUtils.isNotEmpty(usersList)) {
             logger.debug("countriesList.size() : " + usersList.size());
             datatableRendered = true;
-            recordsCount = usersList.size();
+        }
+    }
+
+    private boolean matchesOrganizationFilter(UserDetails user) {
+        if (user == null) {
+            return false;
+        }
+        if (!isApplicationAdmin()) {
+            return user.getOrganization() != null && canAccessOrganization(user.getOrganization().getId());
+        }
+        if (selectedOrganizationFilter == null || selectedOrganizationFilter.trim().isEmpty()
+                || ALL_ORGANIZATIONS.equals(selectedOrganizationFilter)) {
+            return true;
+        }
+        return user.getOrganization() != null
+                && selectedOrganizationFilter.equalsIgnoreCase(user.getOrganization().getOrganizationName());
+    }
+
+    private boolean matchesUserFilter(UserDetails user) {
+        if (user == null) {
+            return false;
+        }
+        return selectedUserFilter == null || selectedUserFilter.trim().isEmpty()
+                || ALL_USERS.equals(selectedUserFilter)
+                || selectedUserFilter.equalsIgnoreCase(user.getUserName());
+    }
+
+    private void recalculateDashboardCounts() {
+        recordsCount = usersList.size();
+        usersLoggedInCount = 0;
+        usersLoggedOutCount = 0;
+        usersNeverLoggedinCount = 0;
+
+        for (UserDetails user : usersList) {
+            if (user == null) {
+                continue;
+            }
+            if (user.getStatus() == LoginConstants.SUCCESSFUL_LOGIN.getId()) {
+                usersLoggedInCount++;
+            } else if (user.getStatus() == LoginConstants.LOGOUT_SUCCESSFUL.getId()) {
+                usersLoggedOutCount++;
+            } else if (user.getStatus() == LoginConstants.NEVER_LOGIN_BEFORE.getId()) {
+                usersNeverLoggedinCount++;
+            }
         }
     }
 
@@ -614,6 +705,40 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
      */
     public void setUsersList(List<UserDetails> usersList) {
         this.usersList = usersList;
+    }
+
+    public String getSelectedOrganizationFilter() {
+        return selectedOrganizationFilter;
+    }
+
+    public void setSelectedOrganizationFilter(String selectedOrganizationFilter) {
+        this.selectedOrganizationFilter = selectedOrganizationFilter;
+    }
+
+    public String getSelectedUserFilter() {
+        return selectedUserFilter;
+    }
+
+    public void setSelectedUserFilter(String selectedUserFilter) {
+        this.selectedUserFilter = selectedUserFilter;
+    }
+
+    public String getSelectedOrganizationFilterLabel() {
+        if (!isApplicationAdmin()) {
+            return getCurrentOrganizationName();
+        }
+        if (selectedOrganizationFilter == null || selectedOrganizationFilter.trim().isEmpty()
+                || ALL_ORGANIZATIONS.equals(selectedOrganizationFilter)) {
+            return "All Organizations";
+        }
+        return selectedOrganizationFilter;
+    }
+
+    public String getSelectedUserFilterLabel() {
+        if (selectedUserFilter == null || selectedUserFilter.trim().isEmpty() || ALL_USERS.equals(selectedUserFilter)) {
+            return "All Users";
+        }
+        return selectedUserFilter;
     }
 
     /**

@@ -25,7 +25,8 @@ import java.util.List;
  */
 public enum ServerAndDBModule {
     SERVER_LOGS(1, "Server Logs"),
-    DATABASE(2, "Database");
+    DATABASE(2, "Database"),
+    ERROR_LOG_MONITOR(3, "Error Log Monitoring");
     
 
     private final int id;

@@ -17,6 +17,7 @@
 package com.web.coretix.general;
 
 import com.web.coretix.constants.SessionAttributes;
+import com.web.coretix.constants.UserTypeConstants;
 
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
@@ -39,6 +40,20 @@ public class NotificationService {
         for (HttpSession session : SessionListeners.getActiveSessions()) {
             Object sessionOrganizationId = session.getAttribute(SessionAttributes.ORGANIZATION_ID.getName());
             if (organizationId.equals(sessionOrganizationId)) {
+                storeNotification(session, message);
+            }
+        }
+    }
+
+    public static void sendGrowlMessageToApplicationAdmins(String message) {
+        if (message == null || message.trim().isEmpty()) {
+            return;
+        }
+
+        for (HttpSession session : SessionListeners.getActiveSessions()) {
+            Object sessionUserType = session.getAttribute(SessionAttributes.USER_TYPE.getName());
+            if (sessionUserType instanceof String
+                    && UserTypeConstants.APPLICATION_ADMIN == UserTypeConstants.fromValue((String) sessionUserType)) {
                 storeNotification(session, message);
             }
         }
