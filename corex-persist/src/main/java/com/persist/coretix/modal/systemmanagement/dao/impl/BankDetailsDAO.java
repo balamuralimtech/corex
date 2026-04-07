@@ -191,11 +191,14 @@ public class BankDetailsDAO implements IBankDetailsDAO {
         Transaction trans = session.beginTransaction();
 
         List<?> list = session
-                .createQuery("from BankDetails where id=?1").setParameter(1, id)
+                .createQuery("SELECT DISTINCT bd FROM BankDetails bd " +
+                            "LEFT JOIN FETCH bd.organization " +
+                            "WHERE bd.id = :id")
+                .setParameter("id", id)
                 .list();
 
         trans.commit();
-        return (BankDetails) list.get(0);
+        return list.isEmpty() ? null : (BankDetails) list.get(0);
     }
 
     public BankDetails getBankDetailsByOrgId(int orgId) {
@@ -203,11 +206,14 @@ public class BankDetailsDAO implements IBankDetailsDAO {
         Transaction trans = session.beginTransaction();
 
         List<?> list = session
-                .createQuery("from BankDetails where organization_id=?1").setParameter(1, orgId)
+                .createQuery("SELECT DISTINCT bd FROM BankDetails bd " +
+                            "LEFT JOIN FETCH bd.organization " +
+                            "WHERE bd.organization.id = :orgId")
+                .setParameter("orgId", orgId)
                 .list();
 
         trans.commit();
-        return (BankDetails) list.get(0);
+        return list.isEmpty() ? null : (BankDetails) list.get(0);
     }
 
     public List<BankDetails> getBankDetailsList() {
@@ -216,7 +222,9 @@ public class BankDetailsDAO implements IBankDetailsDAO {
         Transaction trans = session.beginTransaction();
 
         @SuppressWarnings("unchecked")
-        List<BankDetails> list = (List<BankDetails>) session.createQuery("from BankDetails").list();
+        List<BankDetails> list = (List<BankDetails>) session.createQuery(
+                "SELECT DISTINCT bd FROM BankDetails bd " +
+                "LEFT JOIN FETCH bd.organization").list();
 
         for (BankDetails bankDetails : list) {
             logger.debug("bankDetails getBankAccountDetails  : "+bankDetails.getBankAccountDetails());
@@ -231,7 +239,11 @@ public class BankDetailsDAO implements IBankDetailsDAO {
         Transaction trans = session.beginTransaction();
 
         @SuppressWarnings("unchecked")
-        List<BankDetails> list = (List<BankDetails>) session.createQuery("from BankDetails where organization_id=?1").setParameter(1, orgId).list();
+        List<BankDetails> list = (List<BankDetails>) session.createQuery(
+                "SELECT DISTINCT bd FROM BankDetails bd " +
+                "LEFT JOIN FETCH bd.organization " +
+                "WHERE bd.organization.id = :orgId")
+                .setParameter("orgId", orgId).list();
 
         for (BankDetails bankDetails : list) {
             logger.debug("bankDetails getBankAccountDetails  : "+bankDetails.getBankAccountDetails());

@@ -110,7 +110,15 @@ public class PatientDAO implements IPatientDAO {
         Session session = null;
         try {
             session = sessionFactory.openSession();
-            return patientId == null ? null : session.get(Patient.class, patientId);
+            if (patientId == null) {
+                return null;
+            }
+            return session.createQuery(
+                    "SELECT DISTINCT p FROM Patient p " +
+                    "LEFT JOIN FETCH p.organization " +
+                    "WHERE p.id = :patientId", Patient.class)
+                    .setParameter("patientId", patientId)
+                    .uniqueResult();
         } finally {
             if (session != null) {
                 session.close();
@@ -126,7 +134,11 @@ public class PatientDAO implements IPatientDAO {
             if (organizationId == null) {
                 return new ArrayList<>();
             }
-            return session.createQuery("from Patient p where p.organization.id = :organizationId order by p.patientName", Patient.class)
+            return session.createQuery(
+                    "SELECT DISTINCT p FROM Patient p " +
+                    "LEFT JOIN FETCH p.organization " +
+                    "WHERE p.organization.id = :organizationId " +
+                    "ORDER BY p.patientName", Patient.class)
                     .setParameter("organizationId", organizationId)
                     .list();
         } finally {

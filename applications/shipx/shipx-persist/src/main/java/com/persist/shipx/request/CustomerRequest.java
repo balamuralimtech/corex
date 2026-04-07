@@ -4,6 +4,7 @@ import com.persist.coretix.modal.systemmanagement.Countries;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -34,11 +35,11 @@ public class CustomerRequest implements Serializable {
     @Column(name = "customer_name", nullable = false, length = 255)
     private String customerName;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "origin_country_id", nullable = false)
     private Countries originCountry;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "destination_country_id", nullable = false)
     private Countries destinationCountry;
 

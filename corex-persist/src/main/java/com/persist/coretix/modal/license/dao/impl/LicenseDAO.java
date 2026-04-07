@@ -134,7 +134,10 @@ public class LicenseDAO implements ILicenseDAO {
     public Licenses getLicense(int id) {
         Session session = sessionFactory.getCurrentSession();
         @SuppressWarnings("unchecked")
-        List<Licenses> list = session.createQuery("from Licenses l where l.id = :id")
+        List<Licenses> list = session.createQuery(
+                "SELECT DISTINCT l FROM Licenses l " +
+                "LEFT JOIN FETCH l.organization " +
+                "WHERE l.id = :id")
                 .setParameter("id", id)
                 .list();
         return list.isEmpty() ? null : list.get(0);
@@ -144,7 +147,9 @@ public class LicenseDAO implements ILicenseDAO {
         Session session = sessionFactory.getCurrentSession();
         @SuppressWarnings("unchecked")
         List<Licenses> list = session.createQuery(
-                        "from Licenses l where l.organization.id = :organizationId")
+                        "SELECT DISTINCT l FROM Licenses l " +
+                        "LEFT JOIN FETCH l.organization " +
+                        "WHERE l.organization.id = :organizationId")
                 .setParameter("organizationId", organizationId)
                 .list();
         return list.isEmpty() ? null : list.get(0);
@@ -153,7 +158,10 @@ public class LicenseDAO implements ILicenseDAO {
     public List<Licenses> getLicenseList() {
         Session session = sessionFactory.getCurrentSession();
         @SuppressWarnings("unchecked")
-        List<Licenses> list = session.createQuery("from Licenses l order by l.id desc").list();
+        List<Licenses> list = session.createQuery(
+                "SELECT DISTINCT l FROM Licenses l " +
+                "LEFT JOIN FETCH l.organization " +
+                "ORDER BY l.id DESC").list();
         return list;
     }
 

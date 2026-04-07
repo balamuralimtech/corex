@@ -18,8 +18,10 @@ package com.persist.coretix.modal.systemmanagement;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -39,7 +41,7 @@ public class Organizations implements Serializable {
     @Column(name = "organization_name", nullable = false, length = 255)
     private String organizationName;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "country_id", nullable = false)
     private Countries country;  // Assuming you have a Countries entity
 
@@ -68,6 +70,7 @@ public class Organizations implements Serializable {
     private String website;
 
     @Lob
+    @Basic(fetch = FetchType.LAZY)
     @Column(name = "image", columnDefinition = "MEDIUMBLOB")
     private byte[] image;  // Storing the image as BLOB
 

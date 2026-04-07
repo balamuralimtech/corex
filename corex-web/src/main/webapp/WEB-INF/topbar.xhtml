@@ -50,8 +50,8 @@
                 <ul class="topbar-items fadeInDown animated">
                     <ui:fragment
                             rendered="#{guestPreferences.profileMode == 'overlay' or guestPreferences.horizontalMenuLayout}">
-                        <li class="profile-item">
-                            <a href="#">
+                        <li class="profile-item profile-dropdown-item">
+                            <a href="#" style="display:flex;align-items:center;gap:.55rem;">
                                 <h:panelGroup rendered="#{not empty guestPreferences.topbarProfileImageSrc}">
                                     <h:graphicImage value="#{guestPreferences.topbarProfileImageSrc}"
                                                     styleClass="profile-image"
@@ -65,7 +65,7 @@
                                 <span class="topbar-item-name">#{guestPreferences.userName}</span>
                             </a>
 
-                            <ul class="layout-menu animated">
+                            <ul class="layout-menu animated profile-dropdown">
                                 <li role="menuitem">
                                     <a href="#{request.contextPath}/user-profile">
                                         <i class="pi pi-fw pi-user"/>
@@ -83,13 +83,13 @@
                             </ul>
                         </li>
                     </ui:fragment>
-                    <li>
+                    <li class="language-selector-item">
                         <a href="#" style="display:flex;align-items:center;gap:.55rem;color:#ffffff !important;">
                             <i class="topbar-icon pi pi-fw pi-language" style="color:#ffffff !important;"/>
                             <span class="flag flag-#{guestPreferences.selectedLanguageFlag}" style="width:22px;height:15px;display:inline-block;border-radius:2px;flex:0 0 auto;"></span>
                             <span class="topbar-item-name" style="display:inline-block;color:#ffffff !important;">#{guestPreferences.selectedLanguageLabel}</span>
                         </a>
-                        <ul class="layout-menu animated">
+                        <ul class="layout-menu animated language-dropdown" style="max-height:300px;overflow-y:auto;">
                             <ui:repeat value="#{guestPreferences.topbarLanguageOptions}" var="languageOption">
                                 <li role="menuitem">
                                     <h:commandLink action="#{guestPreferences.changeLocaleAndReload}">
@@ -102,47 +102,54 @@
                             </ui:repeat>
                         </ul>
                     </li>
-                    <li>
-                        <a href="#">
-                            <i class="topbar-icon pi pi-fw pi-cog"/>
-                            <span class="topbar-item-name">#{i18n.core('settingsLabel')}</span>
-                        </a>
-                        <ul class="layout-menu animated">
-                            <li role="menuitem">
-                                <a href="#">
-                                    <i class="pi pi-fw pi-palette"/>
-                                    <span>Change Theme</span>
-                                </a>
-                            </li>
-                            <li role="menuitem">
-                                <a href="#">
-                                    <i class="pi pi-fw pi-star"/>
-                                    <span>Favorites</span>
-                                </a>
-                            </li>
-                            <li role="menuitem">
-                                <a href="#">
-                                    <i class="pi pi-fw pi-lock"/>
-                                    <span>Lock Screen</span>
-                                </a>
-                            </li>
-                            <li role="menuitem">
-                                <a href="#">
-                                    <i class="pi pi-fw pi-image"/>
-                                    <span>Wallpaper</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li>
-                        <a href="#" onclick="markTopbarNotificationsAsSeen();">
+                    <script type="text/javascript">
+                        jQuery(document).ready(function() {
+                            // Dropdown protection handler
+                            function setupDropdownProtection(itemClass, dropdownClass, isMouseOverVar) {
+                                var item = jQuery('.' + itemClass);
+                                var dropdown = item.find('.' + dropdownClass);
+                                var isMouseOver = false;
+
+                                // Track mouse over the dropdown menu
+                                dropdown.on('mouseenter', function() {
+                                    isMouseOver = true;
+                                }).on('mouseleave', function() {
+                                    isMouseOver = false;
+                                });
+
+                                // Click on dropdown items - prevent propagation to allow selection
+                                dropdown.on('click', 'a', function(e) {
+                                    e.stopPropagation();
+                                });
+
+                                // Intercept body click before layout.js handler
+                                jQuery(document.body).on('click.dropdownProtection' + itemClass, function(e) {
+                                    if (isMouseOver) {
+                                        var avalonWidget = PF('avalonMenuWidget');
+                                        if (avalonWidget) {
+                                            avalonWidget.topbarLinkClick = true;
+                                        }
+                                    }
+                                });
+                            }
+
+                            // Setup protection for all dropdowns
+                            setupDropdownProtection('language-selector-item', 'language-dropdown');
+                            setupDropdownProtection('profile-dropdown-item', 'profile-dropdown');
+                            setupDropdownProtection('settings-dropdown-item', 'settings-dropdown');
+                            setupDropdownProtection('messages-dropdown-item', 'messages-dropdown');
+                            setupDropdownProtection('alerts-dropdown-item', 'alerts-dropdown');
+                        });
+                    </script>
+                    <li class="messages-dropdown-item">
+                        <a href="#" onclick="markTopbarNotificationsAsSeen();" style="display:flex;align-items:center;gap:.55rem;">
                             <i class="topbar-icon animated swing pi pi-fw pi-envelope"/>
                             <p:outputPanel id="messageUnreadCount" layout="inline">
                                 <span class="topbar-badge animated rubberBand">#{guestPreferences.topbarMessageCount}</span>
                             </p:outputPanel>
                             <span class="topbar-item-name">#{i18n.core('messagesLabel')}</span>
                         </a>
-                        <ul class="layout-menu animated">
+                        <ul class="layout-menu animated messages-dropdown" style="max-height:300px;overflow-y:auto;">
                             <ui:repeat value="#{guestPreferences.displayedApplicationMessages}" var="topbarMessage">
                                 <li role="menuitem">
                                     <a href="#" class="topbar-message">
@@ -161,15 +168,15 @@
                             </ui:fragment>
                         </ul>
                     </li>
-                    <li>
-                        <a href="#" onclick="markTopbarAlertsAsSeen();">
+                    <li class="alerts-dropdown-item">
+                        <a href="#" onclick="markTopbarAlertsAsSeen();" style="display:flex;align-items:center;gap:.55rem;">
                             <i class="topbar-icon pi pi-fw pi-bell"/>
                             <p:outputPanel id="alertUnreadCount" layout="inline">
                                 <span class="topbar-badge animated rubberBand">#{guestPreferences.topbarAlertCount}</span>
                             </p:outputPanel>
                             <span class="topbar-item-name">#{i18n.core('alertsLabel')}</span>
                         </a>
-                        <ul class="layout-menu animated">
+                        <ul class="layout-menu animated alerts-dropdown" style="max-height:300px;overflow-y:auto;">
                             <ui:repeat value="#{guestPreferences.displayedTopbarMessages}" var="topbarAlert">
                                 <li role="menuitem">
                                     <a href="#" class="topbar-message">

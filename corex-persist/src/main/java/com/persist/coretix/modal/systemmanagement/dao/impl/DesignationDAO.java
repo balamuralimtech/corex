@@ -191,13 +191,16 @@ public class DesignationDAO implements IDesignationDAO {
         }
 
         List<?> list = session
-                .createQuery("from Designations where id=?1").setParameter(1, id)
+                .createQuery("SELECT DISTINCT d FROM Designations d " +
+                            "LEFT JOIN FETCH d.organization " +
+                            "WHERE d.id = :id")
+                .setParameter("id", id)
                 .list();
 
         if (startedTransaction && trans != null && trans.isActive()) {
             trans.commit();
         }
-        return (Designations) list.get(0);
+        return list.isEmpty() ? null : (Designations) list.get(0);
     }
 
     public List<Designations> getDesignationsList() {
@@ -209,7 +212,9 @@ public class DesignationDAO implements IDesignationDAO {
         }
 
         @SuppressWarnings("unchecked")
-        List<Designations> list = (List<Designations>) session.createQuery("from Designations").list();
+        List<Designations> list = (List<Designations>) session.createQuery(
+                "SELECT DISTINCT d FROM Designations d " +
+                "LEFT JOIN FETCH d.organization").list();
 
         if (startedTransaction && trans != null && trans.isActive()) {
             trans.commit();

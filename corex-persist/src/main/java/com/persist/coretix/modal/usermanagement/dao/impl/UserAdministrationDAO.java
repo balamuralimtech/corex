@@ -70,7 +70,15 @@ private static final Logger logger = LoggerFactory.getLogger(UserAdministrationD
         Session session = getSessionFactory().getCurrentSession();
         logger.debug("User Id inside getUserDetail(int id):" + id);
         List<?> list = session
-                .createQuery("from UserDetails where userId = ?1").setParameter(1, id)
+                .createQuery("SELECT DISTINCT u FROM UserDetails u " +
+                            "LEFT JOIN FETCH u.role " +
+                            "LEFT JOIN FETCH u.organization " +
+                            "LEFT JOIN FETCH u.branch " +
+                            "LEFT JOIN FETCH u.country " +
+                            "LEFT JOIN FETCH u.state " +
+                            "LEFT JOIN FETCH u.city " +
+                            "WHERE u.userId = :userId")
+                .setParameter("userId", id)
                 .list();
         return list.isEmpty() ? null : (UserDetails) list.get(0);
     }
@@ -79,7 +87,12 @@ private static final Logger logger = LoggerFactory.getLogger(UserAdministrationD
         Session session = getSessionFactory().getCurrentSession();
 
         List<?> list = session
-                .createQuery("from UserDetails where userName = ?1").setParameter(1, userName)
+                .createQuery("SELECT DISTINCT u FROM UserDetails u " +
+                            "LEFT JOIN FETCH u.role " +
+                            "LEFT JOIN FETCH u.organization " +
+                            "LEFT JOIN FETCH u.branch " +
+                            "WHERE u.userName = :userName")
+                .setParameter("userName", userName)
                 .list();
         return list.isEmpty() ? null : (UserDetails) list.get(0);
     }
@@ -88,7 +101,15 @@ private static final Logger logger = LoggerFactory.getLogger(UserAdministrationD
         Session session = getSessionFactory().getCurrentSession();
 
         @SuppressWarnings("unchecked")
-        List<UserDetails> list = (List<UserDetails>) session.createQuery("from UserDetails").list();
+        List<UserDetails> list = (List<UserDetails>) session
+                .createQuery("SELECT DISTINCT u FROM UserDetails u " +
+                            "LEFT JOIN FETCH u.role " +
+                            "LEFT JOIN FETCH u.organization " +
+                            "LEFT JOIN FETCH u.branch " +
+                            "LEFT JOIN FETCH u.country " +
+                            "LEFT JOIN FETCH u.state " +
+                            "LEFT JOIN FETCH u.city")
+                .list();
         return list;
     }
 
@@ -113,32 +134,51 @@ private static final Logger logger = LoggerFactory.getLogger(UserAdministrationD
         Session session = getSessionFactory().getCurrentSession();
 
         List<?> list = session
-                .createQuery("from UserDetails where userName = :username and password = :password")
+                .createQuery("SELECT DISTINCT u FROM UserDetails u " +
+                            "LEFT JOIN FETCH u.role " +
+                            "LEFT JOIN FETCH u.organization " +
+                            "WHERE u.userName = :username AND u.password = :password")
                 .setParameter("username", username)
                 .setParameter("password", password)
                 .list();
         return !list.isEmpty();
     }
 
-    public int getCountOfUsersLoggedOut() {
+    /**
+     * Optimized method to get user counts by status in a single query
+     * @return Map with status as key and count as value
+     */
+    public Map<Integer, Long> getUserCountsByStatus() {
         Session session = getSessionFactory().getCurrentSession();
 
-        Long count = (Long) session.createQuery("select count(*) from UserDetails where status = 6").uniqueResult();
-        return count.intValue();
+        @SuppressWarnings("unchecked")
+        List<Object[]> results = session.createQuery(
+            "SELECT u.status, COUNT(u) FROM UserDetails u " +
+            "WHERE u.status IN (1, 3, 6) " +
+            "GROUP BY u.status"
+        ).list();
+
+        Map<Integer, Long> countMap = new HashMap<>();
+        for (Object[] row : results) {
+            countMap.put((Integer) row[0], (Long) row[1]);
+        }
+
+        return countMap;
+    }
+
+    public int getCountOfUsersLoggedOut() {
+        Map<Integer, Long> counts = getUserCountsByStatus();
+        return counts.getOrDefault(6, 0L).intValue();
     }
 
     public int getCountOfUsersLoggedIn() {
-        Session session = getSessionFactory().getCurrentSession();
-
-        Long count = (Long) session.createQuery("select count(*) from UserDetails where status = 1").uniqueResult();
-        return count.intValue();
+        Map<Integer, Long> counts = getUserCountsByStatus();
+        return counts.getOrDefault(1, 0L).intValue();
     }
 
     public int getCountOfUsersNeverLoggedIn() {
-        Session session = getSessionFactory().getCurrentSession();
-
-        Long count = (Long) session.createQuery("select count(*) from UserDetails where status = 3").uniqueResult();
-        return count.intValue();
+        Map<Integer, Long> counts = getUserCountsByStatus();
+        return counts.getOrDefault(3, 0L).intValue();
     }
 
     public void updateUserStatus(int userId, int newStatus) {

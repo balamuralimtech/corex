@@ -105,10 +105,13 @@ public class UserAdministrationService implements IUserAdministrationService {
     @Transactional(readOnly = false)
     public UsersStatusCountTO populateUsersStatusCount()
     {
+        // Optimized: Single query instead of 3 separate queries
+        java.util.Map<Integer, Long> statusCounts = getUserDetailDAO().getUserCountsByStatus();
+
         UsersStatusCountTO usersStatusCountTO = new UsersStatusCountTO();
-        usersStatusCountTO.setUsersLoggedInCount(getUserDetailDAO().getCountOfUsersLoggedIn());
-        usersStatusCountTO.setUsersLoggedOutCount(getUserDetailDAO().getCountOfUsersLoggedOut());
-        usersStatusCountTO.setUsersNeverLoggedInCount(getUserDetailDAO().getCountOfUsersNeverLoggedIn());
+        usersStatusCountTO.setUsersLoggedInCount(statusCounts.getOrDefault(1, 0L).intValue());
+        usersStatusCountTO.setUsersLoggedOutCount(statusCounts.getOrDefault(6, 0L).intValue());
+        usersStatusCountTO.setUsersNeverLoggedInCount(statusCounts.getOrDefault(3, 0L).intValue());
 
         return usersStatusCountTO;
     }

@@ -117,7 +117,17 @@ public class DoctorDAO implements IDoctorDAO {
         Session session = null;
         try {
             session = sessionFactory.openSession();
-            return doctorId == null ? null : session.get(Doctor.class, doctorId);
+            if (doctorId == null) {
+                return null;
+            }
+            return session.createQuery(
+                    "SELECT DISTINCT d FROM Doctor d " +
+                    "LEFT JOIN FETCH d.organization " +
+                    "LEFT JOIN FETCH d.userDetail ud " +
+                    "LEFT JOIN FETCH ud.role " +
+                    "WHERE d.id = :doctorId", Doctor.class)
+                    .setParameter("doctorId", doctorId)
+                    .uniqueResult();
         } finally {
             if (session != null) {
                 session.close();
@@ -147,7 +157,13 @@ public class DoctorDAO implements IDoctorDAO {
                 return Collections.emptyList();
             }
             @SuppressWarnings("unchecked")
-            List<Doctor> doctors = session.createQuery("from Doctor d where d.organization.id = :organizationId order by d.doctorName")
+            List<Doctor> doctors = session.createQuery(
+                    "SELECT DISTINCT d FROM Doctor d " +
+                    "LEFT JOIN FETCH d.organization " +
+                    "LEFT JOIN FETCH d.userDetail ud " +
+                    "LEFT JOIN FETCH ud.role " +
+                    "WHERE d.organization.id = :organizationId " +
+                    "ORDER BY d.doctorName")
                     .setParameter("organizationId", organizationId)
                     .list();
             return doctors;

@@ -201,8 +201,10 @@ public class OrganizationDAO implements IOrganizationDAO {
     public Organizations getOrganization(int id) {
         Session session = getSessionFactory().getCurrentSession();
         List<?> list = session
-                .createQuery("from Organizations where id=?1")
-                .setParameter(1, id)
+                .createQuery("SELECT DISTINCT o FROM Organizations o " +
+                            "LEFT JOIN FETCH o.country " +
+                            "WHERE o.id = :id")
+                .setParameter("id", id)
                 .list();
 
         return list.isEmpty() ? null : (Organizations) list.get(0);
@@ -221,7 +223,10 @@ public class OrganizationDAO implements IOrganizationDAO {
     public List<Organizations> getOrganizationsList() {
         Session session = getSessionFactory().getCurrentSession();
         @SuppressWarnings("unchecked")
-        List<Organizations> list = (List<Organizations>) session.createQuery("from Organizations").list();
+        List<Organizations> list = (List<Organizations>) session
+                .createQuery("SELECT DISTINCT o FROM Organizations o " +
+                            "LEFT JOIN FETCH o.country")
+                .list();
 
         return list;
     }

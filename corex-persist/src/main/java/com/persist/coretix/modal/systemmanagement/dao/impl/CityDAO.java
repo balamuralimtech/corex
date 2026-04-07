@@ -173,7 +173,11 @@ public class CityDAO implements ICityDAO {
     public Cities getCity(int id) {
         Session session = getSessionFactory().getCurrentSession();
         List<?> list = session
-                .createQuery("from Cities where id=?1").setParameter(1, id)
+                .createQuery("SELECT DISTINCT c FROM Cities c " +
+                            "LEFT JOIN FETCH c.state " +
+                            "LEFT JOIN FETCH c.country " +
+                            "WHERE c.id = :id")
+                .setParameter("id", id)
                 .list();
 
         return list.isEmpty() ? null : (Cities) list.get(0);
@@ -182,7 +186,11 @@ public class CityDAO implements ICityDAO {
     public Cities getCityEntityByCityName(String cityName) {
         Session session = getSessionFactory().getCurrentSession();
         List<?> list = session
-                .createQuery("from Cities where name=?1").setParameter(1, cityName)
+                .createQuery("SELECT DISTINCT c FROM Cities c " +
+                            "LEFT JOIN FETCH c.state " +
+                            "LEFT JOIN FETCH c.country " +
+                            "WHERE c.name = :cityName")
+                .setParameter("cityName", cityName)
                 .list();
 
         return list.isEmpty() ? null : (Cities) list.get(0);
@@ -191,7 +199,10 @@ public class CityDAO implements ICityDAO {
     public List<Cities> getCitiesList() {
         Session session = getSessionFactory().getCurrentSession();
         @SuppressWarnings("unchecked")
-        List<Cities> list = (List<Cities>) session.createQuery("from Cities").list();
+        List<Cities> list = (List<Cities>) session.createQuery(
+                "SELECT DISTINCT c FROM Cities c " +
+                "LEFT JOIN FETCH c.state " +
+                "LEFT JOIN FETCH c.country").list();
 
         return list;
     }
@@ -200,9 +211,12 @@ public class CityDAO implements ICityDAO {
         Session session = getSessionFactory().getCurrentSession();
         @SuppressWarnings("unchecked")
         List<Cities> list = (List<Cities>) session
-                .createQuery("from Cities where country_id = ?1 and state_id = ?2")
-                .setParameter(1, countryId)
-                .setParameter(2, stateId)
+                .createQuery("SELECT DISTINCT c FROM Cities c " +
+                            "LEFT JOIN FETCH c.state " +
+                            "LEFT JOIN FETCH c.country " +
+                            "WHERE c.country.id = :countryId AND c.state.id = :stateId")
+                .setParameter("countryId", countryId)
+                .setParameter("stateId", stateId)
                 .list();
 
         return list;

@@ -42,6 +42,12 @@ public interface IUserAdministrationDAO {
 
     public boolean isUserValid(String username, String password);
 
+    /**
+     * Optimized method to get user counts by status in a single query
+     * @return Map with status as key and count as value
+     */
+    public java.util.Map<Integer, Long> getUserCountsByStatus();
+
     public int getCountOfUsersLoggedOut();
 
     public int getCountOfUsersLoggedIn();

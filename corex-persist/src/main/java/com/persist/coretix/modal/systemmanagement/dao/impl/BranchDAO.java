@@ -181,26 +181,39 @@ public class BranchDAO implements IBranchDAO {
 
     public Branches getBranch(int id) {
         Session session = getSessionFactory().getCurrentSession();
-        List<?> list = session
-                .createQuery("from Branches where id=?1").setParameter(1, id)
+        @SuppressWarnings("unchecked")
+        List<Branches> list = session
+                .createQuery("SELECT DISTINCT b FROM Branches b " +
+                             "LEFT JOIN FETCH b.organization " +
+                             "LEFT JOIN FETCH b.country " +
+                             "WHERE b.id = :id")
+                .setParameter("id", id)
                 .list();
 
-        return list.isEmpty() ? null : (Branches) list.get(0);
+        return list.isEmpty() ? null : list.get(0);
     }
 
     public Branches getBranchEntityByBranchName(String branchName) {
         Session session = getSessionFactory().getCurrentSession();
-        List<?> list = session
-                .createQuery("from Branches where branch_name=?1").setParameter(1, branchName)
+        @SuppressWarnings("unchecked")
+        List<Branches> list = session
+                .createQuery("SELECT DISTINCT b FROM Branches b " +
+                             "LEFT JOIN FETCH b.organization " +
+                             "LEFT JOIN FETCH b.country " +
+                             "WHERE b.branchName = :branchName")
+                .setParameter("branchName", branchName)
                 .list();
 
-        return list.isEmpty() ? null : (Branches) list.get(0);
+        return list.isEmpty() ? null : list.get(0);
     }
 
     public List<Branches> getBranchesList() {
         Session session = getSessionFactory().getCurrentSession();
         @SuppressWarnings("unchecked")
-        List<Branches> list = (List<Branches>) session.createQuery("from Branches").list();
+        List<Branches> list = session.createQuery(
+                "SELECT DISTINCT b FROM Branches b " +
+                "LEFT JOIN FETCH b.organization " +
+                "LEFT JOIN FETCH b.country").list();
 
         return list;
     }
@@ -209,7 +222,12 @@ public class BranchDAO implements IBranchDAO {
         logger.debug("inside getBranchesListByOrgId : "+orgId);
         Session session = getSessionFactory().getCurrentSession();
         @SuppressWarnings("unchecked")
-        List<Branches> list = (List<Branches>) session.createQuery("from Branches where organization_id=?1").setParameter(1, orgId).list();
+        List<Branches> list = session.createQuery(
+                "SELECT DISTINCT b FROM Branches b " +
+                "LEFT JOIN FETCH b.organization " +
+                "LEFT JOIN FETCH b.country " +
+                "WHERE b.organization.id = :orgId")
+                .setParameter("orgId", orgId).list();
         logger.debug("list size  : "+list.size());
         return list;
     }

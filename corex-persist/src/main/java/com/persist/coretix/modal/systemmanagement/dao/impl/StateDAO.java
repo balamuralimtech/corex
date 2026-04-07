@@ -177,7 +177,10 @@ public class StateDAO implements IStateDAO {
     public States getState(int id) {
         Session session = getSessionFactory().getCurrentSession();
         List<?> list = session
-                .createQuery("from States where id=?1").setParameter(1, id)
+                .createQuery("SELECT DISTINCT s FROM States s " +
+                            "LEFT JOIN FETCH s.country " +
+                            "WHERE s.id = :id")
+                .setParameter("id", id)
                 .list();
 
         return list.isEmpty() ? null : (States) list.get(0);
@@ -186,7 +189,10 @@ public class StateDAO implements IStateDAO {
     public States getStateEntityByStateName(String stateName) {
         Session session = getSessionFactory().getCurrentSession();
         List<?> list = session
-                .createQuery("from States where name=?1").setParameter(1, stateName)
+                .createQuery("SELECT DISTINCT s FROM States s " +
+                            "LEFT JOIN FETCH s.country " +
+                            "WHERE s.name = :stateName")
+                .setParameter("stateName", stateName)
                 .list();
 
         return list.isEmpty() ? null : (States) list.get(0);
@@ -195,7 +201,9 @@ public class StateDAO implements IStateDAO {
     public List<States> getStatesList() {
         Session session = getSessionFactory().getCurrentSession();
         @SuppressWarnings("unchecked")
-        List<States> list = (List<States>) session.createQuery("from States").list();
+        List<States> list = (List<States>) session.createQuery(
+                "SELECT DISTINCT s FROM States s " +
+                "LEFT JOIN FETCH s.country").list();
 
         return list;
     }
@@ -203,7 +211,11 @@ public class StateDAO implements IStateDAO {
     public List<States> getStatesListByCountryId(int countryId) {
         Session session = getSessionFactory().getCurrentSession();
         @SuppressWarnings("unchecked")
-        List<States> list = (List<States>) session.createQuery("from States where country_id=?1").setParameter(1, countryId).list();
+        List<States> list = (List<States>) session.createQuery(
+                "SELECT DISTINCT s FROM States s " +
+                "LEFT JOIN FETCH s.country " +
+                "WHERE s.country.id = :countryId")
+                .setParameter("countryId", countryId).list();
 
         return list;
     }

@@ -176,11 +176,14 @@ public class SubRegionDAO implements ISubRegionDAO {
         Transaction trans = session.beginTransaction();
 
         List<?> list = session
-                .createQuery("from SubRegions where id=?1").setParameter(1, id)
+                .createQuery("SELECT DISTINCT sr FROM Subregions sr " +
+                            "LEFT JOIN FETCH sr.region " +
+                            "WHERE sr.id = :id")
+                .setParameter("id", id)
                 .list();
 
         trans.commit();
-        return (Subregions) list.get(0);
+        return list.isEmpty() ? null : (Subregions) list.get(0);
     }
     
     public Subregions getSubregionBySubregionName(String subregionName) {
@@ -200,7 +203,9 @@ public class SubRegionDAO implements ISubRegionDAO {
         Transaction trans = session.beginTransaction();
 
         @SuppressWarnings("unchecked")
-        List<Subregions> list = (List<Subregions>) session.createQuery("from Subregions").list();
+        List<Subregions> list = (List<Subregions>) session.createQuery(
+                "SELECT DISTINCT sr FROM Subregions sr " +
+                "LEFT JOIN FETCH sr.region").list();
 
         trans.commit();
         return list;

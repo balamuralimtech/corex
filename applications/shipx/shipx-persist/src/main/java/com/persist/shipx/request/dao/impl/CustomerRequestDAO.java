@@ -114,7 +114,11 @@ public class CustomerRequestDAO implements ICustomerRequestDAO {
             session = sessionFactory.openSession();
             transaction = session.beginTransaction();
             List<CustomerRequest> requests = session.createQuery(
-                            "from CustomerRequest where flag = true order by createdAt desc, id desc")
+                            "SELECT DISTINCT cr FROM CustomerRequest cr " +
+                            "LEFT JOIN FETCH cr.originCountry " +
+                            "LEFT JOIN FETCH cr.destinationCountry " +
+                            "WHERE cr.flag = true " +
+                            "ORDER BY cr.createdAt DESC, cr.id DESC")
                     .list();
             transaction.commit();
             return requests;
@@ -134,8 +138,15 @@ public class CustomerRequestDAO implements ICustomerRequestDAO {
         try {
             session = sessionFactory.openSession();
             transaction = session.beginTransaction();
-            CustomerRequest customerRequest = session.get(CustomerRequest.class, id);
+            List<CustomerRequest> results = session.createQuery(
+                            "SELECT DISTINCT cr FROM CustomerRequest cr " +
+                            "LEFT JOIN FETCH cr.originCountry " +
+                            "LEFT JOIN FETCH cr.destinationCountry " +
+                            "WHERE cr.id = :id", CustomerRequest.class)
+                    .setParameter("id", id)
+                    .list();
             transaction.commit();
+            CustomerRequest customerRequest = results.isEmpty() ? null : results.get(0);
             return customerRequest != null && customerRequest.isFlag() ? customerRequest : null;
         } catch (Exception exception) {
             logger.error("Failed to fetch customer request {}", id, exception);

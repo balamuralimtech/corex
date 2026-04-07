@@ -4,6 +4,7 @@ import com.persist.shipx.request.CustomerRequest;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -29,7 +30,7 @@ public class Quotation implements Serializable {
     @Column(name = "quotation_reference", nullable = false, unique = true, length = 40)
     private String quotationReference;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_request_id")
     private CustomerRequest customerRequest;
 

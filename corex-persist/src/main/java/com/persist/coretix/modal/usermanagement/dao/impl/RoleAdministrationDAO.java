@@ -73,10 +73,13 @@ public class RoleAdministrationDAO implements IRoleAdministrationDAO {
         Session session = getSessionFactory().getCurrentSession();
 
         List<?> list = session
-                .createQuery("from Roles where id=?1").setParameter(1, id)
+                .createQuery("SELECT DISTINCT r FROM Roles r " +
+                            "LEFT JOIN FETCH r.rolePrivileges " +
+                            "WHERE r.id = :id")
+                .setParameter("id", id)
                 .list();
 
-        return (Roles) list.get(0);
+        return list.isEmpty() ? null : (Roles) list.get(0);
     }
 
     public List<RolePrivileges> getRolePrivilegesByModuleAndSubModule(int roleId, int moduleId, int subModuleId) {
@@ -116,7 +119,10 @@ public class RoleAdministrationDAO implements IRoleAdministrationDAO {
         Session session = getSessionFactory().getCurrentSession();
 
         List<?> list = session
-                .createQuery("from Roles where roleName=?1").setParameter(1, roleName)
+                .createQuery("SELECT DISTINCT r FROM Roles r " +
+                            "LEFT JOIN FETCH r.rolePrivileges " +
+                            "WHERE r.roleName = :roleName")
+                .setParameter("roleName", roleName)
                 .list();
 
         return list.isEmpty() ? null : (Roles) list.get(0);
@@ -126,7 +132,9 @@ public class RoleAdministrationDAO implements IRoleAdministrationDAO {
         Session session = getSessionFactory().getCurrentSession();
 
         @SuppressWarnings("unchecked")
-        List<Roles> list = (List<Roles>) session.createQuery("from Roles").list();
+        List<Roles> list = (List<Roles>) session.createQuery(
+                "SELECT DISTINCT r FROM Roles r " +
+                "LEFT JOIN FETCH r.rolePrivileges").list();
 
         return list;
     }

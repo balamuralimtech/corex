@@ -39,7 +39,7 @@ public class Designations implements Serializable
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;  // Unique identifier for each designation
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organization_id", nullable = false)
     private Organizations organization;
 

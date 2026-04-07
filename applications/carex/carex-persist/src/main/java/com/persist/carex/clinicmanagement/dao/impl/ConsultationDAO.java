@@ -124,11 +124,18 @@ public class ConsultationDAO implements IConsultationDAO {
         Session session = null;
         try {
             session = sessionFactory.openSession();
-            Consultation consultation = consultationId == null ? null : session.get(Consultation.class, consultationId);
-            if (consultation != null) {
-                consultation.getConsultationMedicines().size();
+            if (consultationId == null) {
+                return null;
             }
-            return consultation;
+            return session.createQuery(
+                    "SELECT DISTINCT c FROM Consultation c " +
+                    "LEFT JOIN FETCH c.organization " +
+                    "LEFT JOIN FETCH c.doctor " +
+                    "LEFT JOIN FETCH c.patient " +
+                    "LEFT JOIN FETCH c.consultationMedicines " +
+                    "WHERE c.id = :consultationId", Consultation.class)
+                    .setParameter("consultationId", consultationId)
+                    .uniqueResult();
         } finally {
             if (session != null) {
                 session.close();
@@ -145,10 +152,13 @@ public class ConsultationDAO implements IConsultationDAO {
                 return new ArrayList<>();
             }
             return session.createQuery(
-                            "select distinct c from Consultation c " +
-                                    "left join fetch c.consultationMedicines " +
-                                    "where c.organization.id = :organizationId " +
-                                    "order by c.consultationDate desc, c.id desc",
+                            "SELECT DISTINCT c FROM Consultation c " +
+                                    "LEFT JOIN FETCH c.organization " +
+                                    "LEFT JOIN FETCH c.doctor " +
+                                    "LEFT JOIN FETCH c.patient " +
+                                    "LEFT JOIN FETCH c.consultationMedicines " +
+                                    "WHERE c.organization.id = :organizationId " +
+                                    "ORDER BY c.consultationDate DESC, c.id DESC",
                             Consultation.class)
                     .setParameter("organizationId", organizationId)
                     .list();

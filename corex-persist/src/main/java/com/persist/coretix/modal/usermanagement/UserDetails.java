@@ -53,32 +53,32 @@ public class UserDetails implements Serializable {
     private String contact;
 
     // Role relationship
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id", nullable = false)
     private Roles role;
 
     // Organization relationship
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organization_id")
     private Organizations organization;
 
     // Branch relationship
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "branch_id")
     private Branches branch;
 
     // Country relationship
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "country_id")
     private Countries country;
 
     // State relationship
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "state_id")
     private States state;
 
     // City relationship
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "city_id")
     private Cities city;
 
@@ -109,7 +109,7 @@ public class UserDetails implements Serializable {
     private String lastSessionId;
 
     @Lob
-    @Basic(fetch = FetchType.EAGER)
+    @Basic(fetch = FetchType.LAZY)
     @Column(name = "profile_image")
     private byte[] profileImage;
 

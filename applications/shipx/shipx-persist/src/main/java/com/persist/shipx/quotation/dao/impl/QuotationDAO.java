@@ -114,7 +114,12 @@ public class QuotationDAO implements IQuotationDAO {
             session = sessionFactory.openSession();
             transaction = session.beginTransaction();
             List<Quotation> quotations = session.createQuery(
-                            "from Quotation where flag = true order by createdAt desc, id desc")
+                            "SELECT DISTINCT q FROM Quotation q " +
+                            "LEFT JOIN FETCH q.customerRequest cr " +
+                            "LEFT JOIN FETCH cr.originCountry " +
+                            "LEFT JOIN FETCH cr.destinationCountry " +
+                            "WHERE q.flag = true " +
+                            "ORDER BY q.createdAt DESC, q.id DESC")
                     .list();
             transaction.commit();
             return quotations;
@@ -134,8 +139,16 @@ public class QuotationDAO implements IQuotationDAO {
         try {
             session = sessionFactory.openSession();
             transaction = session.beginTransaction();
-            Quotation quotation = session.get(Quotation.class, id);
+            List<Quotation> results = session.createQuery(
+                            "SELECT DISTINCT q FROM Quotation q " +
+                            "LEFT JOIN FETCH q.customerRequest cr " +
+                            "LEFT JOIN FETCH cr.originCountry " +
+                            "LEFT JOIN FETCH cr.destinationCountry " +
+                            "WHERE q.id = :id", Quotation.class)
+                    .setParameter("id", id)
+                    .list();
             transaction.commit();
+            Quotation quotation = results.isEmpty() ? null : results.get(0);
             return quotation != null && quotation.isFlag() ? quotation : null;
         } catch (Exception exception) {
             logger.error("Failed to fetch quotation {}", id, exception);

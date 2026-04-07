@@ -181,13 +181,16 @@ public class DepartmentDAO implements IDepartmentDAO {
         }
 
         List<?> list = session
-                .createQuery("from Departments where id=?1").setParameter(1, id)
+                .createQuery("SELECT DISTINCT d FROM Departments d " +
+                            "LEFT JOIN FETCH d.organization " +
+                            "WHERE d.id = :id")
+                .setParameter("id", id)
                 .list();
 
         if (startedTransaction && trans != null && trans.isActive()) {
             trans.commit();
         }
-        return (Departments) list.get(0);
+        return list.isEmpty() ? null : (Departments) list.get(0);
     }
 
     public List<Departments> getDepartmentsList() {
@@ -200,7 +203,9 @@ public class DepartmentDAO implements IDepartmentDAO {
         }
 
         @SuppressWarnings("unchecked")
-        List<Departments> list = (List<Departments>) session.createQuery("from Departments").list();
+        List<Departments> list = (List<Departments>) session.createQuery(
+                "SELECT DISTINCT d FROM Departments d " +
+                "LEFT JOIN FETCH d.organization").list();
 
         for (Departments departments : list) {
             logger.debug("departments getDepartmentName  : "+departments.getDepartmentName());

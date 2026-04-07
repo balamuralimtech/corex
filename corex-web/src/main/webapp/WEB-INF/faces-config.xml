@@ -28,6 +28,8 @@
             <supported-locale>ta</supported-locale>
             <supported-locale>chinese</supported-locale>
         </locale-config>
+        <!-- Client-side state saving for better performance and scalability -->
+        <state-saving-method>client</state-saving-method>
         <el-resolver>
             org.springframework.web.jsf.el.SpringBeanFacesELResolver
         </el-resolver>
