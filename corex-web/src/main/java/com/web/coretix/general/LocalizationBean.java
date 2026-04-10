@@ -16,7 +16,7 @@ import java.util.ResourceBundle;
 public class LocalizationBean implements Serializable {
 
     private static final Logger logger = LoggerFactory.getLogger(LocalizationBean.class);
-    private static final String CORE_BUNDLE = "coreMessages";
+    private static final String CORE_BUNDLE = "coreAppMessages";
     private static final String CORE_APP_BUNDLE = "coreAppMessages";
 
     public String core(String key) {
@@ -64,7 +64,7 @@ public class LocalizationBean implements Serializable {
 
         String normalizedContext = contextPath.toLowerCase(Locale.ENGLISH);
         if (normalizedContext.endsWith("/carex")) {
-            return "carexMessages";
+            return "carexAppMessages";
         }
         if (normalizedContext.endsWith("/shipx")) {
             return "shipxMessages";

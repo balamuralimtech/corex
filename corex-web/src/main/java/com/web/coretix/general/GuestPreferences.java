@@ -39,6 +39,7 @@ import java.io.Serializable;
 import java.util.Base64;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.servlet.http.HttpSession;
 import org.slf4j.Logger;
@@ -52,7 +53,11 @@ import org.springframework.context.annotation.Scope;
 public class GuestPreferences extends GenericManagedBean implements Serializable {
 
     private static final Logger logger = LoggerFactory.getLogger(GuestPreferences.class);
-    private static final List<LanguageOption> SUPPORTED_LANGUAGE_OPTIONS = Collections.unmodifiableList(Arrays.asList(
+    private static final String CORE_BUNDLE_BASE_NAME = "coreAppMessages";
+    private static final String DEFAULT_LANGUAGE_CODE = "en";
+    private static final String FILE_EXTENSION = ".properties";
+    private static final String CLASSES_RESOURCE_PATH = "/WEB-INF/classes/";
+    private static final List<LanguageOption> KNOWN_LANGUAGE_OPTIONS = Collections.unmodifiableList(Arrays.asList(
             new LanguageOption("en", "English (US)", "us"),
             new LanguageOption("hi", "Hindi", "in"),
             new LanguageOption("ta", "Tamil", "in"),
@@ -115,9 +120,6 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
     private List<SelectItem> languageItems;
 
-
-    private  String BUNDLE_BASE_NAME = "messages";
-    private  String FILE_EXTENSION = ".properties";
 
     private String selectedLanguage;
     private boolean userManagementRendered;
@@ -203,6 +205,9 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         } else {
             selectedLanguage = locale == null ? "en" : locale.toLanguageTag();
         }
+
+        selectedLanguage = normalizeLanguageCode(selectedLanguage);
+        ensureSelectedLanguageIsAvailable(httpSession, facesContext);
 
         userName = (String) httpSession.getAttribute(SessionAttributes.USERNAME.getName());
         logger.debug("Username retrieved from session: " + userName);
@@ -293,7 +298,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     }
 
     public List<LanguageOption> getTopbarLanguageOptions() {
-        return SUPPORTED_LANGUAGE_OPTIONS;
+        return resolveTopbarLanguageOptions();
     }
 
     public String getSelectedLanguageLabel() {
@@ -305,15 +310,16 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     }
 
     private LanguageOption findLanguageOption(String languageCode) {
+        List<LanguageOption> availableOptions = resolveTopbarLanguageOptions();
         if (languageCode != null) {
-            for (LanguageOption languageOption : SUPPORTED_LANGUAGE_OPTIONS) {
+            for (LanguageOption languageOption : availableOptions) {
                 if (languageOption.getCode().equalsIgnoreCase(languageCode)) {
                     return languageOption;
                 }
             }
         }
 
-        return SUPPORTED_LANGUAGE_OPTIONS.get(0);
+        return availableOptions.isEmpty() ? KNOWN_LANGUAGE_OPTIONS.get(0) : availableOptions.get(0);
     }
 
 
@@ -599,33 +605,9 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     public  List<SelectItem> getAvailableResourceBundles() {
         logger.debug("entered into getAvailableResourceBundles !!");
         List<SelectItem> localeItems = new ArrayList<>();
-
-        // Get the path to the resources folder from the classpath
-        URL resourceUrl = GuestPreferences.class.getClassLoader().getResource("");
-        if (resourceUrl != null) {
-            File resourceFolder = new File(resourceUrl.getPath());
-
-            // Filter files to only include those with the correct naming pattern
-            File[] files = resourceFolder.listFiles((dir, name) -> name.startsWith(BUNDLE_BASE_NAME) && name.endsWith(FILE_EXTENSION));
-
-            if (files != null) {
-                for (File file : files) {
-                    String fileName = file.getName();
-                    logger.debug("fileName : " + fileName);
-                    String localeCode;
-                    if (fileName.equals(BUNDLE_BASE_NAME + FILE_EXTENSION)) {
-                        // Default locale if no locale code is in the file name
-                        localeCode = "";  // You can set to "" or use Locale.getDefault().toString();
-                    } else {
-                        // Extract locale part from file name when locale code is present
-                        localeCode = fileName.substring(BUNDLE_BASE_NAME.length() + 1, fileName.length() - FILE_EXTENSION.length());
-                    }
-
-                    logger.debug("localeCode : " + localeCode);
-                    Locale locale = localeCode.isEmpty() ? Locale.getDefault() : new Locale(localeCode);
-                    localeItems.add(new SelectItem(locale.toString(), locale.getDisplayName(locale)));
-                }
-            }
+        for (LanguageOption languageOption : resolveTopbarLanguageOptions()) {
+            Locale optionLocale = Locale.forLanguageTag(languageOption.getCode());
+            localeItems.add(new SelectItem(languageOption.getCode(), optionLocale.getDisplayLanguage(optionLocale)));
         }
         logger.debug("end of getAvailableResourceBundles !!");
         return localeItems;
@@ -951,7 +933,158 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     }
 
     public void setSelectedLanguage(String selectedLanguage) {
-        this.selectedLanguage = selectedLanguage;
+        this.selectedLanguage = normalizeLanguageCode(selectedLanguage);
+    }
+
+    private List<LanguageOption> resolveTopbarLanguageOptions() {
+        Set<String> availableLanguageCodes = discoverAvailableLanguageCodes();
+        List<LanguageOption> options = new ArrayList<>();
+        for (LanguageOption languageOption : KNOWN_LANGUAGE_OPTIONS) {
+            if (availableLanguageCodes.contains(languageOption.getCode())) {
+                options.add(languageOption);
+            }
+        }
+
+        if (options.isEmpty()) {
+            options.add(KNOWN_LANGUAGE_OPTIONS.get(0));
+        }
+
+        return options;
+    }
+
+    private Set<String> discoverAvailableLanguageCodes() {
+        Set<String> coreLanguageCodes = discoverBundleLanguageCodes(CORE_BUNDLE_BASE_NAME);
+        String appBundleBaseName = resolveAppBundleBaseName();
+        Set<String> appLanguageCodes = CORE_BUNDLE_BASE_NAME.equals(appBundleBaseName)
+                ? new LinkedHashSet<>(coreLanguageCodes)
+                : discoverBundleLanguageCodes(appBundleBaseName);
+
+        if (coreLanguageCodes.isEmpty() && appLanguageCodes.isEmpty()) {
+            return new LinkedHashSet<>(Collections.singleton(DEFAULT_LANGUAGE_CODE));
+        }
+        if (coreLanguageCodes.isEmpty()) {
+            return appLanguageCodes;
+        }
+        if (appLanguageCodes.isEmpty()) {
+            return coreLanguageCodes;
+        }
+
+        Set<String> intersection = new LinkedHashSet<>(coreLanguageCodes);
+        intersection.retainAll(appLanguageCodes);
+        return intersection.isEmpty() ? new LinkedHashSet<>(Collections.singleton(DEFAULT_LANGUAGE_CODE)) : intersection;
+    }
+
+    private Set<String> discoverBundleLanguageCodes(String bundleBaseName) {
+        Set<String> languageCodes = new LinkedHashSet<>();
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null) {
+            languageCodes.add(DEFAULT_LANGUAGE_CODE);
+            return languageCodes;
+        }
+
+        ExternalContext externalContext = facesContext.getExternalContext();
+        Set<String> resourcePaths = externalContext.getResourcePaths(CLASSES_RESOURCE_PATH);
+        if (resourcePaths == null || resourcePaths.isEmpty()) {
+            languageCodes.add(DEFAULT_LANGUAGE_CODE);
+            return languageCodes;
+        }
+
+        String defaultBundleFileName = bundleBaseName + FILE_EXTENSION;
+        String localizedBundlePrefix = bundleBaseName + "_";
+        for (String resourcePath : resourcePaths) {
+            if (resourcePath == null || !resourcePath.endsWith(FILE_EXTENSION)) {
+                continue;
+            }
+
+            String fileName = resourcePath.substring(resourcePath.lastIndexOf('/') + 1);
+            if (defaultBundleFileName.equals(fileName)) {
+                languageCodes.add(DEFAULT_LANGUAGE_CODE);
+                continue;
+            }
+
+            if (!fileName.startsWith(localizedBundlePrefix)) {
+                continue;
+            }
+
+            String localeToken = fileName.substring(localizedBundlePrefix.length(), fileName.length() - FILE_EXTENSION.length());
+            String normalizedCode = extractLanguageCode(localeToken);
+            if (!normalizedCode.isEmpty()) {
+                languageCodes.add(normalizedCode);
+            }
+        }
+
+        if (languageCodes.isEmpty()) {
+            languageCodes.add(DEFAULT_LANGUAGE_CODE);
+        }
+
+        return languageCodes;
+    }
+
+    private String extractLanguageCode(String localeToken) {
+        if (localeToken == null || localeToken.trim().isEmpty()) {
+            return "";
+        }
+
+        String normalizedToken = localeToken.trim().replace('-', '_');
+        String[] localeParts = normalizedToken.split("_");
+        return localeParts.length == 0 ? "" : normalizeLanguageCode(localeParts[0]);
+    }
+
+    private String normalizeLanguageCode(String languageCode) {
+        if (languageCode == null || languageCode.trim().isEmpty()) {
+            return DEFAULT_LANGUAGE_CODE;
+        }
+
+        String normalized = languageCode.trim().replace('-', '_');
+        String[] localeParts = normalized.split("_");
+        return localeParts.length == 0 ? DEFAULT_LANGUAGE_CODE : localeParts[0].toLowerCase(Locale.ENGLISH);
+    }
+
+    private void ensureSelectedLanguageIsAvailable(HttpSession session, FacesContext facesContext) {
+        List<LanguageOption> availableOptions = resolveTopbarLanguageOptions();
+        if (availableOptions.isEmpty()) {
+            selectedLanguage = DEFAULT_LANGUAGE_CODE;
+            return;
+        }
+
+        for (LanguageOption languageOption : availableOptions) {
+            if (languageOption.getCode().equalsIgnoreCase(selectedLanguage)) {
+                return;
+            }
+        }
+
+        selectedLanguage = availableOptions.get(0).getCode();
+        locale = Locale.forLanguageTag(selectedLanguage);
+        if (facesContext != null && facesContext.getViewRoot() != null) {
+            facesContext.getViewRoot().setLocale(locale);
+        }
+        if (session != null) {
+            session.setAttribute(SessionAttributes.LANGUAGE.getName(), selectedLanguage);
+        }
+    }
+
+    private String resolveAppBundleBaseName() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null) {
+            return CORE_BUNDLE_BASE_NAME;
+        }
+
+        String contextPath = facesContext.getExternalContext().getRequestContextPath();
+        if (contextPath == null) {
+            return CORE_BUNDLE_BASE_NAME;
+        }
+
+        String normalizedContext = contextPath.toLowerCase(Locale.ENGLISH);
+        if (normalizedContext.endsWith("/carex")) {
+            return "carexAppMessages";
+        }
+        if (normalizedContext.endsWith("/shipx")) {
+            return "shipxMessages";
+        }
+        if (normalizedContext.endsWith("/payrollx")) {
+            return "payrollxMessages";
+        }
+        return CORE_BUNDLE_BASE_NAME;
     }
 
     public List<SelectItem> getLanguageItems() {

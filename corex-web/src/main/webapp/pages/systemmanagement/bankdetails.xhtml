@@ -130,7 +130,7 @@
             <div class="col-12">
                 <p:breadCrumb>
                     <p:menuitem url="#" icon="pi pi-home" />
-                    <p:menuitem value="System Management" url="#" />
+                    <p:menuitem value="#{msg['systemManagementLabel']}" url="#" />
                     <p:menuitem value="#{msg['bankDetailsLabel']}" url="#" />
                 </p:breadCrumb>
             </div>
@@ -188,14 +188,14 @@
                                     </div>
                                 </f:facet>
 
-                                <p:column headerText="Id" sortBy="#{bankDetails.id}" filterBy="#{bankDetails.id}">
+                                <p:column headerText="#{msg['idLabel']}" sortBy="#{bankDetails.id}" filterBy="#{bankDetails.id}">
                                     <h:outputText value="#{bankDetails.id}" />
                                 </p:column>
 
                                 <p:column headerText="#{msg['organizationNameLabel']}" sortBy="#{bankDetails.organization.organizationName}" filterBy="#{bankDetails.organization.organizationName}">
                                     <h:outputText value="#{bankDetails.organization.organizationName}" />
                                 </p:column>
-                                <p:column headerText="Bank Details" sortBy="#{bankDetails.bankAccountDetails}" filterBy="#{bankDetails.bankAccountDetails}">
+                                <p:column headerText="#{msg['bankDetailsLabel']}" sortBy="#{bankDetails.bankAccountDetails}" filterBy="#{bankDetails.bankAccountDetails}">
                                     <h:outputText value="#{bankDetails.bankAccountDetails}" />
                                 </p:column>
 
@@ -235,7 +235,7 @@
                                     </div>
 
                                     <div class="field">
-                                        <p:outputLabel for="bankaccountdetails">Bank Account Details*</p:outputLabel>
+                                        <p:outputLabel for="bankaccountdetails">#{msg['bankAccountDetailsRequiredLabel']}</p:outputLabel>
                                         <p:inputTextarea id="bankaccountdetails" value="#{bankDetailsBean.bankAccountDetails}" onfocus="clearErrorStyles()" />
                                     </div>
 
@@ -248,7 +248,7 @@
                             </f:facet>
                         </p:dialog>
 
-                        <p:confirmDialog widgetVar="deleteTACDialog" showEffect="fade" width="300" message="Delete The Terms and Conditions?" header="#{msg['confirmLabel']}" severity="warn">
+                        <p:confirmDialog widgetVar="deleteTACDialog" showEffect="fade" width="300" message="#{msg['deleteBankDetailsLabel']}" header="#{msg['confirmLabel']}" severity="warn">
                             <p:commandButton value="#{msg['yesLabel']}" icon="pi pi-check" actionListener="#{bankDetailsBean.confirmDeleteBankDetails()}" process="@this" oncomplete="PF('deleteTACDialog').hide()"/>
                             <p:commandButton value="#{msg['noLabel']}" type="button" styleClass="ui-button-secondary" icon="pi pi-times" onclick="PF('deleteTACDialog').hide()" />
                         </p:confirmDialog>

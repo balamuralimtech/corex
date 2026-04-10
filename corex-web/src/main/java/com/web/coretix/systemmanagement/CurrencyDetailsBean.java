@@ -81,7 +81,7 @@ public class CurrencyDetailsBean implements Serializable {
         isAddOperation = true;
         datatableRendered = false;
         recordsCount = 0;
-        resourceBundle = ResourceBundle.getBundle("messages",FacesContext.getCurrentInstance().getViewRoot().getLocale());
+        resourceBundle = ResourceBundle.getBundle("coreAppMessages",FacesContext.getCurrentInstance().getViewRoot().getLocale());
 
 
         currencyName ="";

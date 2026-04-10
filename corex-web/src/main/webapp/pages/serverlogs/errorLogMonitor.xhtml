@@ -72,32 +72,32 @@
                 <div class="col-12">
                     <p:breadCrumb>
                         <p:menuitem url="#" icon="pi pi-home"/>
-                        <p:menuitem value="Server and DB" url="#"/>
-                        <p:menuitem value="Error Log Monitoring" url="#"/>
+                        <p:menuitem value="#{msg['serverAndDbLabel']}" url="#"/>
+                        <p:menuitem value="#{msg['errorLogMonitoringLabel']}" url="#"/>
                     </p:breadCrumb>
                 </div>
 
                 <div class="col-12">
                     <div class="monitor-hero">
-                        <h2 class="monitor-title">Error Log Monitoring Deck</h2>
+                        <h2 class="monitor-title">#{msg['errorLogMonitoringDeckLabel']}</h2>
                         <div class="monitor-copy">
-                            Watch warnings, errors, and exception signatures across server logs and application logs, correlate them to the nearest recorded user operation, and surface alert pressure to application admins before incidents spread.
+                            #{msg['errorLogMonitoringDeckSummaryLabel']}
                         </div>
                         <div class="monitor-strip">
                             <div class="monitor-chip">
-                                <span class="monitor-chip-label">Monitored Incidents</span>
+                                <span class="monitor-chip-label">#{msg['monitoredIncidentsLabel']}</span>
                                 <span class="monitor-chip-value">#{errorLogMonitorBean.incidentCount}</span>
                             </div>
                             <div class="monitor-chip">
-                                <span class="monitor-chip-label">Critical Signals</span>
+                                <span class="monitor-chip-label">#{msg['criticalSignalsLabel']}</span>
                                 <span class="monitor-chip-value">#{errorLogMonitorBean.criticalCount}</span>
                             </div>
                             <div class="monitor-chip">
-                                <span class="monitor-chip-label">Impacted Users</span>
+                                <span class="monitor-chip-label">#{msg['impactedUsersLabel']}</span>
                                 <span class="monitor-chip-value">#{errorLogMonitorBean.impactedUserCount}</span>
                             </div>
                             <div class="monitor-chip">
-                                <span class="monitor-chip-label">Last Scan</span>
+                                <span class="monitor-chip-label">#{msg['lastScanLabel']}</span>
                                 <span class="monitor-chip-value" style="font-size:1rem; line-height:1.45;">#{errorLogMonitorBean.lastScanLabel}</span>
                             </div>
                         </div>
@@ -111,17 +111,17 @@
                                 <div class="monitor-panel">
                                     <div class="monitor-head">
                                         <div>
-                                            <h3 class="monitor-head-title">Monitor Controls</h3>
-                                    <div class="monitor-head-copy">The monitor auto-refreshes every 30 seconds, scans all supported log files under the server log area, and pushes topbar alerts to application admins when new warning or error events are discovered.</div>
+                                            <h3 class="monitor-head-title">#{msg['monitorControlsLabel']}</h3>
+                                    <div class="monitor-head-copy">#{msg['monitorControlsSummaryLabel']}</div>
                                         </div>
                                     </div>
                                     <div class="monitor-actions">
-                                        <p:commandButton value="Refresh Now"
+                                        <p:commandButton value="#{msg['refreshNowLabel']}"
                                                          icon="pi pi-refresh"
                                                          action="#{errorLogMonitorBean.refreshView}"
                                                          update=":errorMonitorFormId:errorMonitorMainPanelId :topbar-items-form"
                                                          styleClass="ui-button-info"/>
-                                        <p:button value="Open Server Logs"
+                                        <p:button value="#{msg['openServerLogsLabel']}"
                                                   icon="pi pi-server"
                                                   href="#{request.contextPath}/server-logs"
                                                   styleClass="ui-button-secondary"/>
@@ -131,30 +131,30 @@
 
                             <div class="col-12 md:col-6 xl:col-3">
                                 <div class="monitor-stat monitor-stat-danger">
-                                    <span class="monitor-stat-kicker">Errors</span>
+                                    <span class="monitor-stat-kicker">#{msg['errorsLabel']}</span>
                                     <span class="monitor-stat-value">#{errorLogMonitorBean.errorCount}</span>
-                                    <span class="monitor-stat-copy">Hard failures and severe runtime breakdowns found in the monitored log set.</span>
+                                    <span class="monitor-stat-copy">#{msg['errorsSummaryLabel']}</span>
                                 </div>
                             </div>
                             <div class="col-12 md:col-6 xl:col-3">
                                 <div class="monitor-stat monitor-stat-warning">
-                                    <span class="monitor-stat-kicker">Warnings</span>
+                                    <span class="monitor-stat-kicker">#{msg['warningsLabel']}</span>
                                     <span class="monitor-stat-value">#{errorLogMonitorBean.warningCount}</span>
-                                    <span class="monitor-stat-copy">Signals that deserve review before they escalate into user-facing failures.</span>
+                                    <span class="monitor-stat-copy">#{msg['warningsSummaryLabel']}</span>
                                 </div>
                             </div>
                             <div class="col-12 md:col-6 xl:col-3">
                                 <div class="monitor-stat monitor-stat-info">
-                                    <span class="monitor-stat-kicker">Exceptions</span>
+                                    <span class="monitor-stat-kicker">#{msg['exceptionsLabel']}</span>
                                     <span class="monitor-stat-value">#{errorLogMonitorBean.exceptionCount}</span>
-                                    <span class="monitor-stat-copy">Unhandled or framework-thrown exception traces caught by the monitor.</span>
+                                    <span class="monitor-stat-copy">#{msg['exceptionsSummaryLabel']}</span>
                                 </div>
                             </div>
                             <div class="col-12 md:col-6 xl:col-3">
                                 <div class="monitor-stat monitor-stat-success">
-                                    <span class="monitor-stat-kicker">Scanned Files</span>
+                                    <span class="monitor-stat-kicker">#{msg['scannedFilesLabel']}</span>
                                     <span class="monitor-stat-value">#{errorLogMonitorBean.scannedFileCount}</span>
-                                    <span class="monitor-stat-copy">Latest server log files included in the current monitoring sweep.</span>
+                                    <span class="monitor-stat-copy">#{msg['scannedFilesSummaryLabel']}</span>
                                 </div>
                             </div>
 
@@ -162,8 +162,8 @@
                                 <div class="monitor-panel monitor-panel-dark">
                                     <div class="monitor-head">
                                         <div>
-                                            <h3 class="monitor-head-title">Alert Focus</h3>
-                                            <div class="monitor-head-copy">Immediate context from the newest monitored signal.</div>
+                                            <h3 class="monitor-head-title">#{msg['alertFocusLabel']}</h3>
+                                            <div class="monitor-head-copy">#{msg['alertFocusSummaryLabel']}</div>
                                         </div>
                                     </div>
 
@@ -173,7 +173,7 @@
                                     </div>
 
                                     <div class="monitor-insight">
-                                        Current scan covers #{errorLogMonitorBean.impactedLogFileCount} affected log files and #{errorLogMonitorBean.impactedUserCount} correlated users. Alerts are pushed into the standard topbar message stream for app admins.
+                                        #{msg['errorLogMonitorInsightPrefixLabel']} #{errorLogMonitorBean.impactedLogFileCount} #{msg['affectedLogFilesLabel']} #{msg['andLabel']} #{errorLogMonitorBean.impactedUserCount} #{msg['correlatedUsersLabel']}. #{msg['errorLogMonitorInsightSuffixLabel']}
                                     </div>
                                 </div>
                             </div>
@@ -182,8 +182,8 @@
                                 <div class="monitor-panel">
                                     <div class="monitor-head">
                                         <div>
-                                            <h3 class="monitor-head-title">Incident Stream</h3>
-                                            <div class="monitor-head-copy">Each row shows what happened, when it happened, and the closest tracked user action around that time.</div>
+                                            <h3 class="monitor-head-title">#{msg['incidentStreamLabel']}</h3>
+                                            <div class="monitor-head-copy">#{msg['incidentStreamSummaryLabel']}</div>
                                         </div>
                                     </div>
 
@@ -194,12 +194,12 @@
                                                      rows="10"
                                                      rowHover="true"
                                                      styleClass="monitor-table">
-                                            <p:column headerText="Type" style="width:130px;">
+                                            <p:column headerText="#{msg['typeLabel']}" style="width:130px;">
                                                 <p:tag value="#{incident.severityLabel}"
                                                        severity="#{errorLogMonitorBean.severityTone(incident)}"/>
                                             </p:column>
 
-                                            <p:column headerText="When" style="width:180px;">
+                                            <p:column headerText="#{msg['whenLabel']}" style="width:180px;">
                                                 <div class="monitor-meta">
                                                     <span class="monitor-badge">
                                                         <i class="pi pi-clock"></i>
@@ -208,12 +208,12 @@
                                                 </div>
                                             </p:column>
 
-                                            <p:column headerText="Log / Message">
+                                            <p:column headerText="#{msg['logMessageLabel']}">
                                                 <div style="font-weight:700;color:#0f172a;">#{incident.logFileName}</div>
                                                 <div class="monitor-snippet">#{incident.message}</div>
                                             </p:column>
 
-                                            <p:column headerText="User Operation">
+                                            <p:column headerText="#{msg['userOperationLabel']}">
                                                 <div style="font-weight:700;color:#0f172a;">#{incident.impactedUserName}</div>
                                                 <div class="monitor-snippet">#{incident.operationSummary}</div>
                                                 <div class="monitor-meta" style="margin-top:.55rem;">
@@ -228,7 +228,7 @@
                                                 </div>
                                             </p:column>
 
-                                            <p:column headerText="Session" style="width:170px;">
+                                            <p:column headerText="#{msg['sessionLabel']}" style="width:170px;">
                                                 <span class="monitor-snippet">#{incident.sessionId}</span>
                                             </p:column>
                                         </p:dataTable>
@@ -236,7 +236,7 @@
 
                                     <h:panelGroup rendered="#{not errorLogMonitorBean.incidentsAvailable}" layout="block">
                                         <div class="monitor-empty">
-                                            No warning, error, or exception lines are currently being tracked from the monitored server logs.
+                                            #{msg['noWarningErrorExceptionTrackedLabel']}
                                         </div>
                                     </h:panelGroup>
                                 </div>

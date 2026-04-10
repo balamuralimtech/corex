@@ -101,20 +101,24 @@ public class CarexDashboardBean extends CarexManagedBean implements Serializable
                 if (organization == null) {
                     continue;
                 }
-                doctorList.addAll(doctorService.getDoctorsByOrganizationId(organization.getId()));
-                patientList.addAll(patientService.getPatientsByOrganizationId(organization.getId()));
-                medicineList.addAll(medicineService.getMedicinesByOrganizationId(organization.getId()));
-                consultationList.addAll(consultationService.getConsultationsByOrganizationId(organization.getId()));
+                doctorList.addAll(safeList(doctorService.getDoctorsByOrganizationId(organization.getId())));
+                patientList.addAll(safeList(patientService.getPatientsByOrganizationId(organization.getId())));
+                medicineList.addAll(safeList(medicineService.getMedicinesByOrganizationId(organization.getId())));
+                consultationList.addAll(safeList(consultationService.getConsultationsByOrganizationId(organization.getId())));
             }
             clinicSettings = new ClinicSettings();
         } else {
-            doctorList = new ArrayList<>(doctorService.getDoctorsByOrganizationId(selectedOrganizationId));
-            patientList = new ArrayList<>(patientService.getPatientsByOrganizationId(selectedOrganizationId));
-            medicineList = new ArrayList<>(medicineService.getMedicinesByOrganizationId(selectedOrganizationId));
-            consultationList = new ArrayList<>(consultationService.getConsultationsByOrganizationId(selectedOrganizationId));
+            doctorList = new ArrayList<>(safeList(doctorService.getDoctorsByOrganizationId(selectedOrganizationId)));
+            patientList = new ArrayList<>(safeList(patientService.getPatientsByOrganizationId(selectedOrganizationId)));
+            medicineList = new ArrayList<>(safeList(medicineService.getMedicinesByOrganizationId(selectedOrganizationId)));
+            consultationList = new ArrayList<>(safeList(consultationService.getConsultationsByOrganizationId(selectedOrganizationId)));
             clinicSettings = fallbackClinicSettings(clinicSettingsService.getClinicSettingsByOrganizationId(selectedOrganizationId));
         }
 
+        doctorList = doctorList.stream().filter(doctor -> doctor != null).collect(Collectors.toList());
+        patientList = patientList.stream().filter(patient -> patient != null).collect(Collectors.toList());
+        medicineList = medicineList.stream().filter(medicine -> medicine != null).collect(Collectors.toList());
+        consultationList = consultationList.stream().filter(consultation -> consultation != null).collect(Collectors.toList());
         consultationList.sort(Comparator.comparing(Consultation::getConsultationDate, Comparator.nullsLast(Comparator.naturalOrder())).reversed());
         recentConsultations = consultationList.stream().limit(8).collect(Collectors.toList());
     }
@@ -174,7 +178,7 @@ public class CarexDashboardBean extends CarexManagedBean implements Serializable
     }
 
     public int getLinkedDoctors() {
-        return (int) doctorList.stream().filter(doctor -> doctor.getUserDetail() != null).count();
+        return (int) doctorList.stream().filter(this::hasLinkedUser).count();
     }
 
     public int getTotalPatients() {
@@ -430,6 +434,50 @@ public class CarexDashboardBean extends CarexManagedBean implements Serializable
         return consultation.getConsultationDate().toLocalDateTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
     }
 
+    public String getRecentConsultationDoctorName(Consultation consultation) {
+        try {
+            Doctor doctor = consultation == null ? null : consultation.getDoctor();
+            return doctor == null ? "-" : safeText(doctor.getDoctorName(), "-");
+        } catch (RuntimeException ex) {
+            return "-";
+        }
+    }
+
+    public String getRecentConsultationDoctorSpecialization(Consultation consultation) {
+        try {
+            Doctor doctor = consultation == null ? null : consultation.getDoctor();
+            return doctor == null ? "-" : safeText(doctor.getSpecialization(), "-");
+        } catch (RuntimeException ex) {
+            return "-";
+        }
+    }
+
+    public String getRecentConsultationPatientName(Consultation consultation) {
+        try {
+            Patient patient = consultation == null ? null : consultation.getPatient();
+            return patient == null ? "-" : safeText(patient.getPatientName(), "-");
+        } catch (RuntimeException ex) {
+            return "-";
+        }
+    }
+
+    public String getRecentConsultationPatientCode(Consultation consultation) {
+        try {
+            Patient patient = consultation == null ? null : consultation.getPatient();
+            return patient == null ? "-" : safeText(patient.getPatientCode(), "-");
+        } catch (RuntimeException ex) {
+            return "-";
+        }
+    }
+
+    public String getRecentConsultationStatus(Consultation consultation) {
+        try {
+            return consultation == null ? "-" : safeText(consultation.getStatus(), "-");
+        } catch (RuntimeException ex) {
+            return "-";
+        }
+    }
+
     public boolean isTimerEnabled() {
         return timerEnabled;
     }
@@ -479,6 +527,14 @@ public class CarexDashboardBean extends CarexManagedBean implements Serializable
         return value == null || value.trim().isEmpty() ? fallback : value.trim();
     }
 
+    private boolean hasLinkedUser(Doctor doctor) {
+        try {
+            return doctor != null && doctor.getUserDetail() != null;
+        } catch (RuntimeException ex) {
+            return false;
+        }
+    }
+
     private BigDecimal scaleAmount(BigDecimal value) {
         return value == null ? BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP) : value.setScale(2, RoundingMode.HALF_UP);
     }
@@ -492,5 +548,9 @@ public class CarexDashboardBean extends CarexManagedBean implements Serializable
 
     private String escapeJs(String value) {
         return safeText(value, "").replace("\\", "\\\\").replace("'", "\\'");
+    }
+
+    private <T> List<T> safeList(List<T> source) {
+        return source == null ? new ArrayList<>() : source;
     }
 }

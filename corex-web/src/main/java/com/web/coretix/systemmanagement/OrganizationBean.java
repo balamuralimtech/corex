@@ -128,7 +128,7 @@ public class OrganizationBean extends GenericManagedBean implements Serializable
     public void initializePageAttributes() {
         logger.debug("entered into initializePageAttributes !!!");
 
-        resourceBundle = ResourceBundle.getBundle("messages",FacesContext.getCurrentInstance().getViewRoot().getLocale());
+        resourceBundle = ResourceBundle.getBundle("coreAppMessages",FacesContext.getCurrentInstance().getViewRoot().getLocale());
 
         logger.debug("username : "+fetchCurrentUsername());
         logger.debug("user id : "+fetchCurrentUserId());

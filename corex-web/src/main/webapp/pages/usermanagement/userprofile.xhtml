@@ -119,22 +119,22 @@
 
                             <div class="profile-contact">
                                 <div class="contact-block">
-                                    <span class="contact-label">Email address</span>
+                                    <span class="contact-label">#{msg['emailAddressLabel']}</span>
                                     <div class="contact-value compact">#{userProfileBean.userDetails.emailId}</div>
                                 </div>
 
                                 <div class="contact-block">
-                                    <span class="contact-label">Phone</span>
+                                    <span class="contact-label">#{msg['phoneLabel']}</span>
                                     <div class="contact-value compact">#{userProfileBean.contactValue}</div>
                                 </div>
 
                                 <div class="contact-block">
-                                    <span class="contact-label">Organization</span>
+                                    <span class="contact-label">#{msg['organizationLabel']}</span>
                                     <div class="contact-value compact">#{userProfileBean.organizationName}</div>
                                 </div>
 
                                 <div class="contact-block">
-                                    <span class="contact-label">Address</span>
+                                    <span class="contact-label">#{msg['addressLabel']}</span>
                                     <div class="contact-value compact">#{userProfileBean.addressSummary}</div>
                                 </div>
                             </div>
@@ -142,45 +142,45 @@
 
                         <section class="profile-panel timeline-panel">
                             <p:tabView styleClass="profile-tabs">
-                                <p:tab title="Profile">
+                                <p:tab title="#{msg['profileLabel']}">
                                     <div class="profile-form-grid">
                                         <div class="profile-field">
-                                            <div class="field-label">Branch*</div>
+                                            <div class="field-label">#{msg['branchRequiredLabel']}</div>
                                             <div class="field-value">#{userProfileBean.branchName}</div>
                                         </div>
 
                                         <div class="profile-field">
-                                            <div class="field-label">Role*</div>
+                                            <div class="field-label">#{msg['roleRequiredLabel']}</div>
                                             <div class="field-value">#{userProfileBean.userDetails.role.roleName}</div>
                                         </div>
 
                                         <div class="profile-field">
-                                            <div class="field-label">Country*</div>
+                                            <div class="field-label">#{msg['countryRequiredLabel']}</div>
                                             <div class="field-value">#{not empty userProfileBean.userDetails.country ? userProfileBean.userDetails.country.name : ''}</div>
                                         </div>
 
                                         <div class="profile-field">
-                                            <div class="field-label">State*</div>
+                                            <div class="field-label">#{msg['stateRequiredLabel']}</div>
                                             <div class="field-value">#{not empty userProfileBean.userDetails.state ? userProfileBean.userDetails.state.name : ''}</div>
                                         </div>
 
                                         <div class="profile-field">
-                                            <div class="field-label">City*</div>
+                                            <div class="field-label">#{msg['cityRequiredLabel']}</div>
                                             <div class="field-value">#{not empty userProfileBean.userDetails.city ? userProfileBean.userDetails.city.name : ''}</div>
                                         </div>
 
                                         <div class="profile-field">
-                                            <div class="field-label">Address*</div>
+                                            <div class="field-label">#{msg['addressRequiredLabel']}</div>
                                             <div class="field-value">#{userProfileBean.userDetails.address}</div>
                                         </div>
 
                                         <div class="profile-field">
-                                            <div class="field-label">Session ID</div>
+                                            <div class="field-label">#{msg['sessionIdLabel']}</div>
                                             <div class="field-value">#{userProfileBean.userDetails.lastSessionId}</div>
                                         </div>
 
                                         <div class="profile-field">
-                                            <div class="field-label">Last Successful Login</div>
+                                            <div class="field-label">#{msg['lastSuccessfulLoginLabel']}</div>
                                             <div class="field-value">
                                                 <h:outputText value="#{userProfileBean.userDetails.lastSuccessfulLogin}">
                                                     <f:convertDateTime pattern="dd MMM yyyy, hh:mm a"/>
@@ -189,7 +189,7 @@
                                         </div>
 
                                         <div class="profile-field">
-                                            <div class="field-label">Last Seen</div>
+                                            <div class="field-label">#{msg['lastSeenLabel']}</div>
                                             <div class="field-value">
                                                 <h:outputText value="#{userProfileBean.userDetails.lastSeenAt}">
                                                     <f:convertDateTime pattern="dd MMM yyyy, hh:mm a"/>
@@ -198,7 +198,7 @@
                                         </div>
 
                                         <div class="profile-field">
-                                            <div class="field-label">Last Logout</div>
+                                            <div class="field-label">#{msg['lastLogoutLabel']}</div>
                                             <div class="field-value">
                                                 <h:outputText value="#{userProfileBean.userDetails.lastLogoutAt}">
                                                     <f:convertDateTime pattern="dd MMM yyyy, hh:mm a"/>
@@ -207,7 +207,7 @@
                                         </div>
 
                                         <div class="profile-field">
-                                            <div class="field-label">Last Password Change</div>
+                                            <div class="field-label">#{msg['lastPasswordChangeLabel']}</div>
                                             <div class="field-value">
                                                 <h:outputText value="#{userProfileBean.userDetails.lastPasswordChange}">
                                                     <f:convertDateTime pattern="dd MMM yyyy, hh:mm a"/>
@@ -216,7 +216,7 @@
                                         </div>
 
                                         <div class="profile-field">
-                                            <div class="field-label">Created At</div>
+                                            <div class="field-label">#{msg['createdAtLabel']}</div>
                                             <div class="field-value">
                                                 <h:outputText value="#{userProfileBean.userDetails.createdAt}">
                                                     <f:convertDateTime pattern="dd MMM yyyy, hh:mm a"/>
@@ -225,7 +225,7 @@
                                         </div>
 
                                         <div class="profile-field">
-                                            <div class="field-label">Updated At</div>
+                                            <div class="field-label">#{msg['updatedAtLabel']}</div>
                                             <div class="field-value">
                                                 <h:outputText value="#{userProfileBean.userDetails.updatedAt}">
                                                     <f:convertDateTime pattern="dd MMM yyyy, hh:mm a"/>
@@ -234,7 +234,7 @@
                                         </div>
 
                                         <div class="profile-field full">
-                                            <div class="field-label">Profile Image</div>
+                                            <div class="field-label">#{msg['profileImageLabel']}</div>
                                             <div class="field-value">
                                                 <div class="profile-preview">
                                                     <div class="profile-preview-card">
@@ -245,7 +245,7 @@
                                                             </h:panelGroup>
                                                         </div>
                                                         <div class="profile-preview-note">
-                                                            Current saved profile picture for this user account.
+                                                            #{msg['currentSavedProfilePictureLabel']}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -254,7 +254,7 @@
                                     </div>
                                 </p:tab>
 
-                                <p:tab title="Timeline">
+                                <p:tab title="#{msg['timelineLabel']}">
                                     <p:outputPanel rendered="#{not empty userProfileBean.profileActivities}">
                                         <div class="feed-list">
                                             <ui:repeat value="#{userProfileBean.profileActivities}" var="activity">
@@ -283,8 +283,8 @@
                                     <p:outputPanel rendered="#{empty userProfileBean.profileActivities}">
                                         <div class="empty-tab">
                                             <i class="pi pi-history"></i>
-                                            <h3>No user activity found</h3>
-                                            <p>This profile does not have recorded activity entries yet.</p>
+                                            <h3>#{msg['noUserActivityFoundLabel']}</h3>
+                                            <p>#{msg['profileNoActivityEntriesLabel']}</p>
                                         </div>
                                     </p:outputPanel>
                                 </p:tab>
@@ -296,8 +296,8 @@
                 <p:outputPanel rendered="#{empty userProfileBean.userDetails}">
                     <section class="profile-panel empty-tab">
                         <i class="pi pi-exclamation-circle"></i>
-                        <h3>Profile details are not available</h3>
-                        <p>The account could not be resolved from the current session. Refresh the page or sign in again to load the profile data.</p>
+                        <h3>#{msg['profileDetailsUnavailableLabel']}</h3>
+                        <p>#{msg['profileDetailsUnavailableSummaryLabel']}</p>
                     </section>
                 </p:outputPanel>
             </div>

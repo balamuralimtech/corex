@@ -76,7 +76,7 @@
                     <div class="license-hero">
                         <div class="grid align-items-start">
                             <div class="col-12 lg:col-8">
-                                <h2 class="license-hero-title">License Command Center</h2>
+                                <h2 class="license-hero-title">#{msg['licenseCommandCenterLabel']}</h2>
                                 <div class="license-hero-copy">
                                     #{licenseBean.portfolioSummary}
                                     #{licenseBean.licensePulseSummary}
@@ -84,26 +84,26 @@
                             </div>
                             <div class="col-12 lg:col-4">
                                 <div class="license-hero-chip">
-                                    <span class="license-hero-label">Most Exposed Organization</span>
+                                    <span class="license-hero-label">#{msg['mostExposedOrganizationLabel']}</span>
                                     <span class="license-hero-value">#{licenseBean.mostExposedOrganizationName}</span>
                                 </div>
                             </div>
                         </div>
                         <div class="license-hero-strip">
                             <div class="license-hero-chip">
-                                <span class="license-hero-label">Licensed Organizations</span>
+                                <span class="license-hero-label">#{msg['licensedOrganizationsLabel']}</span>
                                 <span class="license-hero-value">#{licenseBean.totalLicenseCount}</span>
                             </div>
                             <div class="license-hero-chip">
-                                <span class="license-hero-label">Licensed Users</span>
+                                <span class="license-hero-label">#{msg['licensedUsersLabel']}</span>
                                 <span class="license-hero-value">#{licenseBean.licensedUserCount}</span>
                             </div>
                             <div class="license-hero-chip">
-                                <span class="license-hero-label">Expiring Soon</span>
+                                <span class="license-hero-label">#{msg['expiringSoonLabel']}</span>
                                 <span class="license-hero-value">#{licenseBean.expiringSoonCount}</span>
                             </div>
                             <div class="license-hero-chip">
-                                <span class="license-hero-label">Earliest Expiry</span>
+                                <span class="license-hero-label">#{msg['earliestExpiryLabel']}</span>
                                 <span class="license-hero-value" style="font-size:1.05rem;line-height:1.4;">#{licenseBean.earliestExpiryLabel}</span>
                             </div>
                         </div>
@@ -114,30 +114,30 @@
                     <div class="grid">
                         <div class="col-12 md:col-6 xl:col-3">
                             <div class="license-grid-card license-card-tone-success">
-                                <span class="license-card-kicker">Active Licenses</span>
+                                <span class="license-card-kicker">#{msg['activeLicensesLabel']}</span>
                                 <span class="license-card-value">#{licenseBean.activeLicenseCount}</span>
-                                <span class="license-card-foot">Healthy license coverage currently available to accessible organizations.</span>
+                                <span class="license-card-foot">#{msg['activeLicensesSummaryLabel']}</span>
                             </div>
                         </div>
                         <div class="col-12 md:col-6 xl:col-3">
                             <div class="license-grid-card license-card-tone-warning">
-                                <span class="license-card-kicker">Expiring in 30 Days</span>
+                                <span class="license-card-kicker">#{msg['expiringIn30DaysLabel']}</span>
                                 <span class="license-card-value">#{licenseBean.expiringSoonCount}</span>
-                                <span class="license-card-foot">Renewal attention required before these organizations lose access.</span>
+                                <span class="license-card-foot">#{msg['expiringIn30DaysSummaryLabel']}</span>
                             </div>
                         </div>
                         <div class="col-12 md:col-6 xl:col-3">
                             <div class="license-grid-card license-card-tone-danger">
-                                <span class="license-card-kicker">Expired Licenses</span>
+                                <span class="license-card-kicker">#{msg['expiredLicensesLabel']}</span>
                                 <span class="license-card-value">#{licenseBean.expiredLicenseCount}</span>
-                                <span class="license-card-foot">Organizations already outside their valid operating license window.</span>
+                                <span class="license-card-foot">#{msg['expiredLicensesSummaryLabel']}</span>
                             </div>
                         </div>
                         <div class="col-12 md:col-6 xl:col-3">
                             <div class="license-grid-card">
-                                <span class="license-card-kicker">Unlicensed Organizations</span>
+                                <span class="license-card-kicker">#{msg['unlicensedOrganizationsLabel']}</span>
                                 <span class="license-card-value">#{licenseBean.unlicensedOrganizationCount}</span>
-                                <span class="license-card-foot">Accessible organizations without a registered license record.</span>
+                                <span class="license-card-foot">#{msg['unlicensedOrganizationsSummaryLabel']}</span>
                             </div>
                         </div>
                     </div>
@@ -149,15 +149,15 @@
                             <div class="license-panel">
                                 <div class="license-panel-head">
                                     <div>
-                                        <h3 class="license-panel-title">License Health Score</h3>
-                                        <div class="license-panel-subtitle">Share of visible licenses that are currently active</div>
+                                        <h3 class="license-panel-title">#{msg['licenseHealthScoreLabel']}</h3>
+                                        <div class="license-panel-subtitle">#{msg['licenseHealthScoreSummaryLabel']}</div>
                                     </div>
-                                    <span class="license-mini-tag">Live</span>
+                                    <span class="license-mini-tag">#{msg['liveLabel']}</span>
                                 </div>
                                 <div class="license-health-ring" style="#{licenseBean.licenseHealthRingStyle}">
                                     <div class="license-health-ring-inner">
                                         <div class="license-health-score">#{licenseBean.licenseHealthScore}%</div>
-                                        <div class="license-health-caption">Healthy</div>
+                                        <div class="license-health-caption">#{msg['healthyLabel']}</div>
                                     </div>
                                 </div>
                                 <div class="license-insight">
@@ -170,36 +170,36 @@
                             <div class="license-panel">
                                 <div class="license-panel-head">
                                     <div>
-                                        <h3 class="license-panel-title">Renewal Pressure Board</h3>
-                                        <div class="license-panel-subtitle">Organizations sorted by expiry risk and user exposure</div>
+                                        <h3 class="license-panel-title">#{msg['renewalPressureBoardLabel']}</h3>
+                                        <div class="license-panel-subtitle">#{msg['renewalPressureBoardSummaryLabel']}</div>
                                     </div>
                                 </div>
                                 <p:dataTable value="#{licenseBean.licenseDashboardRows}" var="dashboardRow"
                                              reflow="true" rows="5" paginator="true" paginatorPosition="bottom"
                                              styleClass="commoncrud-table">
-                                    <p:column headerText="Organization">
+                                    <p:column headerText="#{msg['organizationLabel']}">
                                         <h:outputText value="#{dashboardRow.organizationName}"/>
                                     </p:column>
-                                    <p:column headerText="Users">
+                                    <p:column headerText="#{msg['usersLabel']}">
                                         <h:outputText value="#{dashboardRow.userCount}"/>
                                     </p:column>
-                                    <p:column headerText="Expiry">
+                                    <p:column headerText="#{msg['expiryLabel']}">
                                         <h:outputText value="#{dashboardRow.expiryDate}"/>
                                     </p:column>
-                                    <p:column headerText="Window">
+                                    <p:column headerText="#{msg['windowLabel']}">
                                         <h:outputText value="#{licenseBean.formatDaysRemaining(dashboardRow.daysRemaining)}"/>
                                     </p:column>
-                                    <p:column headerText="Health">
+                                    <p:column headerText="#{msg['healthLabel']}">
                                         <p:tag value="#{dashboardRow.healthLabel}"
                                                severity="#{licenseBean.statusSeverity(dashboardRow.healthLabel)}"
                                                styleClass="#{licenseBean.statusStyleClass(dashboardRow.healthLabel)}"/>
                                     </p:column>
-                                    <p:column headerText="Remarks">
+                                    <p:column headerText="#{msg['remarksLabel']}">
                                         <h:outputText value="#{empty dashboardRow.remarks ? '-' : dashboardRow.remarks}"/>
                                     </p:column>
-                                    <p:column headerText="Notify" exportable="false">
+                                    <p:column headerText="#{msg['notifyLabel']}" exportable="false">
                                         <p:commandButton icon="pi pi-bell"
-                                                         value="Notify"
+                                                         value="#{msg['notifyLabel']}"
                                                          rendered="#{licenseBean.shouldRenderNotifyButton(dashboardRow.healthLabel)}"
                                                          actionListener="#{licenseBean.notifyOrganizationUsers(dashboardRow)}"
                                                          update=":form:messages :form:licenseMainPanelId"
@@ -214,25 +214,25 @@
                             <div class="license-panel">
                                 <div class="license-panel-head">
                                     <div>
-                                        <h3 class="license-panel-title">Exposure Summary</h3>
-                                        <div class="license-panel-subtitle">Key checkpoints for renewal planning and access continuity</div>
+                                        <h3 class="license-panel-title">#{msg['exposureSummaryLabel']}</h3>
+                                        <div class="license-panel-subtitle">#{msg['exposureSummarySubtitleLabel']}</div>
                                     </div>
                                 </div>
                                 <div class="license-stat-list">
                                     <div class="license-stat-row">
-                                        <span class="license-stat-name">Most exposed organization</span>
+                                        <span class="license-stat-name">#{msg['mostExposedOrganizationStatLabel']}</span>
                                         <span class="license-stat-value">#{licenseBean.mostExposedOrganizationName}</span>
                                     </div>
                                     <div class="license-stat-row">
-                                        <span class="license-stat-name">Closest expiry</span>
+                                        <span class="license-stat-name">#{msg['closestExpiryLabel']}</span>
                                         <span class="license-stat-value">#{licenseBean.earliestExpiryLabel}</span>
                                     </div>
                                     <div class="license-stat-row">
-                                        <span class="license-stat-name">Total visible records</span>
+                                        <span class="license-stat-name">#{msg['totalVisibleRecordsLabel']}</span>
                                         <span class="license-stat-value">#{licenseBean.recordsCount}</span>
                                     </div>
                                     <div class="license-stat-row">
-                                        <span class="license-stat-name">Protected user accounts</span>
+                                        <span class="license-stat-name">#{msg['protectedUserAccountsLabel']}</span>
                                         <span class="license-stat-value">#{licenseBean.licensedUserCount}</span>
                                     </div>
                                 </div>
@@ -243,15 +243,15 @@
                             <div class="license-panel">
                                 <div class="license-panel-head">
                                     <div>
-                                        <h3 class="license-panel-title">Command Notes</h3>
-                                        <div class="license-panel-subtitle">What this dashboard is telling you right now</div>
+                                        <h3 class="license-panel-title">#{msg['commandNotesLabel']}</h3>
+                                        <div class="license-panel-subtitle">#{msg['commandNotesSubtitleLabel']}</div>
                                     </div>
                                 </div>
                                 <div class="license-insight" style="margin-bottom:.8rem;">
                                     #{licenseBean.licensePulseSummary}
                                 </div>
                                 <div class="license-insight" style="background:#f8fafc;border-color:#e2e8f0;color:#334155;">
-                                    Keep licenses healthy for organizations with the highest user counts first. That lowers operational risk fastest.
+                                    #{msg['licensePriorityNoteLabel']}
                                 </div>
                             </div>
                         </div>

@@ -62,7 +62,7 @@
                     </div>
                     <div class="grid">
                         <div class="col-12 md:col-3">
-                            <label>#{i18n.core('organizationLabel')}</label>
+                                        <label>#{msg['organizationLabel']}</label>
                             <h:panelGroup rendered="#{invoiceHistoryReportBean.applicationAdmin}" layout="block">
                                 <p:selectOneMenu value="#{invoiceHistoryReportBean.selectedOrganizationId}" style="width:100%;">
                                     <f:selectItem itemLabel="#{i18n.app('selectOrganizationLabel')}" itemValue="#{null}" noSelectionOption="true"/>

@@ -98,7 +98,7 @@ public class LicenseBean extends GenericManagedBean implements Serializable {
     private IUserAdministrationService userAdministrationService;
 
     public void initializePageAttributes() {
-        resourceBundle = ResourceBundle.getBundle("messages", FacesContext.getCurrentInstance().getViewRoot().getLocale());
+        resourceBundle = ResourceBundle.getBundle("coreAppMessages", FacesContext.getCurrentInstance().getViewRoot().getLocale());
         isAddOperation = true;
         datatableRendered = false;
         recordsCount = 0;

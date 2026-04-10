@@ -87,33 +87,33 @@
                 <div class="col-12">
                     <p:breadCrumb>
                         <p:menuitem url="#" icon="pi pi-home"/>
-                        <p:menuitem value="User Management" url="#"/>
-                        <p:menuitem value="User Administration" url="#"/>
+                        <p:menuitem value="#{msg['userManagementLabel']}" url="#"/>
+                        <p:menuitem value="#{msg['userAdministrationLabel']}" url="#"/>
                     </p:breadCrumb>
                 </div>
 
                 <div class="col-12">
                     <p:outputPanel id="usersMainPanelId">
                         <div class="user-admin-hero">
-                            <h2 class="user-admin-title">User Administration Command Center</h2>
+                            <h2 class="user-admin-title">#{msg['userAdministrationCommandCenterLabel']}</h2>
                             <div class="user-admin-copy">
-                                Manage user accounts, login status, access footprint, and profile readiness from a sharper operational workspace. The underlying add, edit, delete, upload, and crop flows remain unchanged.
+                                #{msg['userAdministrationSummaryLabel']}
                             </div>
                             <div class="user-admin-strip">
                                 <div class="user-admin-chip">
-                                    <span class="user-admin-chip-label">Records Loaded</span>
+                                    <span class="user-admin-chip-label">#{msg['recordsLoadedLabel']}</span>
                                     <span class="user-admin-chip-value">#{userAdministrationBean.recordsCount}</span>
                                 </div>
                                 <div class="user-admin-chip">
-                                    <span class="user-admin-chip-label">Logged In</span>
+                                    <span class="user-admin-chip-label">#{msg['loggedInLabel']}</span>
                                     <span class="user-admin-chip-value">#{userAdministrationBean.usersLoggedInCount}</span>
                                 </div>
                                 <div class="user-admin-chip">
-                                    <span class="user-admin-chip-label">Logged Out</span>
+                                    <span class="user-admin-chip-label">#{msg['loggedOutLabel']}</span>
                                     <span class="user-admin-chip-value">#{userAdministrationBean.usersLoggedOutCount}</span>
                                 </div>
                                 <div class="user-admin-chip">
-                                    <span class="user-admin-chip-label">Never Logged In</span>
+                                    <span class="user-admin-chip-label">#{msg['neverLoggedInLabel']}</span>
                                     <span class="user-admin-chip-value">#{userAdministrationBean.usersNeverLoggedinCount}</span>
                                 </div>
                             </div>
@@ -126,46 +126,46 @@
                                 <div class="user-admin-panel">
                                     <div class="user-admin-head">
                                         <div>
-                                            <h3 class="user-admin-head-title">Actions</h3>
-                                            <div class="user-admin-head-copy">Create, fetch, export, and maintain user accounts from the same existing action flow, with page-level organization and user scope controls.</div>
+                                            <h3 class="user-admin-head-title">#{msg['actionsLabel']}</h3>
+                                            <div class="user-admin-head-copy">#{msg['userAdministrationActionsSummaryLabel']}</div>
                                         </div>
                                     </div>
                                     <div class="user-admin-filter-grid" rendered="#{userAdministrationBean.datatableRendered}">
                                         <p:outputPanel styleClass="user-admin-filter-box" rendered="#{userAdministrationBean.applicationAdmin}">
-                                            <span class="user-admin-filter-label">Organization Scope</span>
+                                            <span class="user-admin-filter-label">#{msg['organizationScopeLabel']}</span>
                                             <p:selectOneMenu value="#{userAdministrationBean.selectedOrganizationFilter}" style="width:100%">
-                                                <f:selectItem itemLabel="All Organizations" itemValue="__ALL_ORGANIZATIONS__"/>
+                                                <f:selectItem itemLabel="#{msg['allOrganizationsLabel']}" itemValue="__ALL_ORGANIZATIONS__"/>
                                                 <f:selectItems value="#{userAdministrationBean.organizationFilterOptions}"/>
                                                 <p:ajax listener="#{userAdministrationBean.onOrganizationFilterChange}" process="@this" update="@([id$=usersMainPanelId])"/>
                                             </p:selectOneMenu>
                                         </p:outputPanel>
                                         <p:outputPanel styleClass="user-admin-filter-box" rendered="#{not userAdministrationBean.applicationAdmin}">
-                                            <span class="user-admin-filter-label">Organization Scope</span>
+                                            <span class="user-admin-filter-label">#{msg['organizationScopeLabel']}</span>
                                             <div class="user-admin-filter-static">#{userAdministrationBean.selectedOrganizationFilterLabel}</div>
                                         </p:outputPanel>
                                         <div class="user-admin-filter-box">
-                                            <span class="user-admin-filter-label">User Scope</span>
+                                            <span class="user-admin-filter-label">#{msg['userScopeLabel']}</span>
                                             <p:selectOneMenu value="#{userAdministrationBean.selectedUserFilter}" style="width:100%">
-                                                <f:selectItem itemLabel="All Users" itemValue="__ALL_USERS__"/>
+                                                <f:selectItem itemLabel="#{msg['allUsersLabel']}" itemValue="__ALL_USERS__"/>
                                                 <f:selectItems value="#{userAdministrationBean.userFilterOptions}"/>
                                                 <p:ajax listener="#{userAdministrationBean.onUserFilterChange}" process="@this" update="@([id$=usersMainPanelId])"/>
                                             </p:selectOneMenu>
                                         </div>
                                     </div>
                                     <div class="user-admin-actions">
-                                        <p:commandButton value="New User" icon="pi pi-plus"
+                                        <p:commandButton value="#{msg['newUserLabel']}" icon="pi pi-plus"
                                                          actionListener="#{userAdministrationBean.addButtonAction}"
                                                          update="@([id$=addEditCountPanelId])"
                                                          process="@([id$=addEditCountPanelId]) @this"
                                                          oncomplete="PF('ManageUserDialog').show()"
                                                          styleClass="ui-button-success"/>
-                                        <p:commandButton value="Fetch Users" icon="pi pi-search"
+                                        <p:commandButton value="#{msg['fetchUsersLabel']}" icon="pi pi-search"
                                                          action="#{userAdministrationBean.searchButtonAction}"
                                                          update="@([id$=usersMainPanelId])" process="@this"
                                                          styleClass="ui-button-info"/>
-                                        <p:commandButton value="Export PDF" icon="pi pi-upload" styleClass="ui-button-help"
+                                        <p:commandButton value="#{msg['exportPdfLabel']}" icon="pi pi-upload" styleClass="ui-button-help"
                                                          rendered="#{userAdministrationBean.datatableRendered}">
-                                            <p:dataExporter type="pdf" target="usersDataTableId" fileName="Users"/>
+                                            <p:dataExporter type="pdf" target="usersDataTableId" fileName="#{msg['usersLabel']}"/>
                                         </p:commandButton>
                                     </div>
                                 </div>
@@ -175,8 +175,8 @@
                                 <div class="user-admin-panel">
                                     <div class="user-admin-head">
                                         <div>
-                                            <h3 class="user-admin-head-title">Status Share</h3>
-                                            <div class="user-admin-head-copy">Understand how the user population is distributed across active, inactive, and never-used accounts.</div>
+                                            <h3 class="user-admin-head-title">#{msg['statusShareLabel']}</h3>
+                                            <div class="user-admin-head-copy">#{msg['statusShareSummaryLabel']}</div>
                                         </div>
                                     </div>
                                     <figure class="highcharts-figure">
@@ -188,15 +188,15 @@
                                                 type: 'pie'
                                             },
                                             title: {
-                                                text: 'User Status Share',
+                                                text: "#{msg['userStatusShareChartLabel']}",
                                                 align: 'left'
                                             },
                                             subtitle: {
-                                                text: 'Live account split',
+                                                text: "#{msg['liveAccountSplitLabel']}",
                                                 align: 'left'
                                             },
                                             tooltip: {
-                                                pointFormat: '<b>{point.y}</b> users'
+                                                pointFormat: "<b>{point.y}</b> #{msg['usersLabel']}"
                                             },
                                             plotOptions: {
                                                 pie: {
@@ -209,16 +209,16 @@
                                                 }
                                             },
                                             series: [{
-                                                name: 'Users',
+                                                name: "#{msg['usersLabel']}",
                                                 colorByPoint: true,
                                                 data: [{
-                                                    name: 'Logged In',
+                                                    name: "#{msg['loggedInLabel']}",
                                                     y: #{userAdministrationBean.usersLoggedInCount}
                                                 }, {
-                                                    name: 'Logged Out',
+                                                    name: "#{msg['loggedOutLabel']}",
                                                     y: #{userAdministrationBean.usersLoggedOutCount}
                                                 }, {
-                                                    name: 'Never Logged In',
+                                                    name: "#{msg['neverLoggedInLabel']}",
                                                     y: #{userAdministrationBean.usersNeverLoggedinCount}
                                                 }]
                                             }]
@@ -231,8 +231,8 @@
                                 <div class="user-admin-panel">
                                     <div class="user-admin-head">
                                         <div>
-                                            <h3 class="user-admin-head-title">Status Comparison</h3>
-                                            <div class="user-admin-head-copy">Compare user lifecycle states side by side for faster admin review.</div>
+                                            <h3 class="user-admin-head-title">#{msg['statusComparisonLabel']}</h3>
+                                            <div class="user-admin-head-copy">#{msg['statusComparisonSummaryLabel']}</div>
                                         </div>
                                     </div>
                                     <figure class="highcharts-figure">
@@ -244,27 +244,27 @@
                                                 type: 'column'
                                             },
                                             title: {
-                                                text: 'User Status Comparison',
+                                                text: "#{msg['userStatusComparisonChartLabel']}",
                                                 align: 'left'
                                             },
                                             subtitle: {
-                                                text: 'Account lifecycle status',
+                                                text: "#{msg['accountLifecycleStatusLabel']}",
                                                 align: 'left'
                                             },
                                             xAxis: {
-                                                categories: ['Logged In', 'Logged Out', 'Never Logged In']
+                                                categories: ["#{msg['loggedInLabel']}", "#{msg['loggedOutLabel']}", "#{msg['neverLoggedInLabel']}"]
                                             },
                                             yAxis: {
                                                 min: 0,
                                                 title: {
-                                                    text: 'Users'
+                                                    text: "#{msg['usersLabel']}"
                                                 }
                                             },
                                             legend: {
                                                 enabled: false
                                             },
                                             series: [{
-                                                name: 'Users',
+                                                name: "#{msg['usersLabel']}",
                                                 colorByPoint: true,
                                                 data: [
                                                     #{userAdministrationBean.usersLoggedInCount},
@@ -281,8 +281,8 @@
                                 <div class="user-admin-panel">
                                     <div class="user-admin-head">
                                         <div>
-                                            <h3 class="user-admin-head-title">Users Grid</h3>
-                                            <div class="user-admin-head-copy">Search, inspect avatars, review status, and open the existing edit/delete flows from the main grid.</div>
+                                            <h3 class="user-admin-head-title">#{msg['usersGridLabel']}</h3>
+                                            <div class="user-admin-head-copy">#{msg['usersGridSummaryLabel']}</div>
                                         </div>
                                     </div>
 
@@ -292,21 +292,21 @@
                                                  rowKey="#{user.userId}" paginator="true" rows="10" paginatorPosition="bottom">
                                         <f:facet name="header">
                                             <div class="user-admin-search">
-                                                <span class="user-admin-search-title">Search Users</span>
+                                                <span class="user-admin-search-title">#{msg['searchUsersLabel']}</span>
                                                 <span class="filter-container ui-input-icon-left">
                                                     <i class="pi pi-search"></i>
                                                     <p:inputText id="globalFilter" onkeyup="PF('countDataTable').filter()"
-                                                                 placeholder="Search"/>
+                                                                 placeholder="#{msg['searchLabel']}"/>
                                                 </span>
                                             </div>
                                         </f:facet>
 
-                                        <p:column headerText="User" sortBy="#{user.userName}" filterBy="#{user.userName}">
+                                        <p:column headerText="#{msg['userLabel']}" sortBy="#{user.userName}" filterBy="#{user.userName}">
                                             <div style="font-weight:700;color:#0f172a;">#{user.userName}</div>
                                             <div style="color:#64748b;">#{user.emailId}</div>
                                         </p:column>
 
-                                        <p:column headerText="Image">
+                                        <p:column headerText="#{msg['imageLabel']}">
                                             <h:panelGroup rendered="#{not empty user.profileImage}">
                                                 <h:graphicImage value="data:#{user.profileImageContentType};base64,#{userAdministrationBean.encodeImage(user.profileImage)}"
                                                                 style="width: 46px; height: 46px; border-radius: 50%; object-fit: cover;"/>
@@ -318,20 +318,20 @@
                                             </h:panelGroup>
                                         </p:column>
 
-                                        <p:column headerText="Status">
-                                            <p:tag value="#{user.status == 1 ? 'Logged In' : user.status == 6 ? 'Logged Out' : user.status == 3 ? 'Never Logged In' : 'Unknown'}"
+                                        <p:column headerText="#{msg['statusLabel']}">
+                                            <p:tag value="#{user.status == 1 ? msg['loggedInLabel'] : user.status == 6 ? msg['loggedOutLabel'] : user.status == 3 ? msg['neverLoggedInLabel'] : msg['unknownLabel']}"
                                                    rounded="true" severity="#{user.status == 1 ? 'success' : user.status == 6 ? 'danger' : user.status == 3 ? 'warning' : 'info'}"/>
                                         </p:column>
 
-                                        <p:column headerText="Role" sortBy="#{user.role.roleName}" filterBy="#{user.role.roleName}">
+                                        <p:column headerText="#{msg['roleLabel']}" sortBy="#{user.role.roleName}" filterBy="#{user.role.roleName}">
                                             <h:outputText value="#{empty user.role ? '-' : user.role.roleName}"/>
                                         </p:column>
 
-                                        <p:column headerText="Organization" sortBy="#{user.organization.organizationName}" filterBy="#{user.organization.organizationName}">
-                                            <h:outputText value="#{empty user.organization ? 'Application Admin' : user.organization.organizationName}"/>
+                                        <p:column headerText="#{msg['organizationLabel']}" sortBy="#{user.organization.organizationName}" filterBy="#{user.organization.organizationName}">
+                                            <h:outputText value="#{empty user.organization ? msg['applicationAdminLabel'] : user.organization.organizationName}"/>
                                         </p:column>
 
-                                        <p:column headerText="Country" sortBy="#{user.country.name}" filterBy="#{user.country.name}">
+                                        <p:column headerText="#{msg['countryLabel']}" sortBy="#{user.country.name}" filterBy="#{user.country.name}">
                                             <span class="flag flag-#{user.country.iso2.toLowerCase()}"
                                                   rendered="#{not empty user.country and not empty user.country.iso2}"
                                                   style="width: 30px; height: 20px"/>

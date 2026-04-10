@@ -173,17 +173,22 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
     }
 
     private String resolveSubmittedPassword() {
+        String fallbackPassword = password == null ? null : password.trim();
         try {
             if (StringUtils.isNotBlank(encryptedPassword)) {
                 return decryptSubmittedPassword(encryptedPassword).trim();
             }
         } catch (Exception exception) {
             logger.warn("Unable to decrypt submitted password", exception);
+            if (StringUtils.isNotBlank(fallbackPassword)) {
+                logger.info("Falling back to transport-protected password submission because login encryption state is unavailable");
+                return fallbackPassword;
+            }
             return null;
         } finally {
             encryptedPassword = null;
         }
-        return password == null ? null : password.trim();
+        return fallbackPassword;
     }
 
     private String decryptSubmittedPassword(String encryptedValue) throws Exception {

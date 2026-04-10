@@ -96,7 +96,7 @@ public class CityBean implements Serializable {
         setDatatableRendered(false);
 
         setRecordsCount(0);
-        resourceBundle = ResourceBundle.getBundle("messages",FacesContext.getCurrentInstance().getViewRoot().getLocale());
+        resourceBundle = ResourceBundle.getBundle("coreAppMessages",FacesContext.getCurrentInstance().getViewRoot().getLocale());
 
 
 

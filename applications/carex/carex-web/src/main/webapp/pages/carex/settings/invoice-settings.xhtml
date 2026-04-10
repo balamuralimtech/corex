@@ -49,7 +49,7 @@
                         </p>
                     </div>
                     <div class="surface-100 border-round px-3 py-2">
-                        <label for="organizationSelect"><strong>#{i18n.core('organizationLabel')}:</strong></label>
+                    <label for="organizationSelect"><strong>#{msg['organizationLabel']}:</strong></label>
                         <h:panelGroup rendered="#{invoiceSettingsBean.applicationAdmin}" layout="block">
                             <p:selectOneMenu id="organizationSelect" value="#{invoiceSettingsBean.selectedOrganizationId}" style="display:block;min-width:18rem;margin-top:.35rem;">
                                 <f:selectItem itemLabel="#{i18n.app('selectOrganizationLabel')}" itemValue="#{null}" noSelectionOption="true"/>

@@ -262,7 +262,7 @@
                                                       update="messages cropperPanel"
                                                       listener="#{organizationBean.handleFileUpload}"
                                                       sizeLimit="512000"
-                                                      invalidSizeMessage="Organization logo must be 500 KB or smaller."
+                                                      invalidSizeMessage="#{msg['organizationLogoSizeLimitLabel']}"
                                                       accept=".gif,.jpeg,.jpg,.png"/>
 
                                         <p:outputPanel id="cropperPanel">

@@ -16,17 +16,11 @@
     <!-- JSF and Spring are integrated -->
     <application>
         <resource-bundle>
-            <base-name>messages</base-name>
+            <base-name>coreAppMessages</base-name>
             <var>msg</var>
         </resource-bundle>
         <locale-config>
             <default-locale>en</default-locale>
-            <supported-locale>es</supported-locale>
-            <supported-locale>fr</supported-locale>
-            <supported-locale>malay</supported-locale>
-            <supported-locale>ur</supported-locale>
-            <supported-locale>ta</supported-locale>
-            <supported-locale>chinese</supported-locale>
         </locale-config>
         <!-- Client-side state saving for better performance and scalability -->
         <state-saving-method>client</state-saving-method>

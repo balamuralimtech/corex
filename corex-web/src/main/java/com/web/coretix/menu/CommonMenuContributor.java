@@ -56,12 +56,12 @@ public class CommonMenuContributor implements MenuContributor {
                         "/subregion", 90, "#{guestPreferences.subregionRendered}"))
                 .addItem(new AppMenuItem("m_currency", "#{msg['currencyLabel']}", "pi pi-fw pi-dollar",
                         "/currency", 100, "#{guestPreferences.currencyRendered}"))
-                .addItem(new AppMenuItem("m_bankdetails", "Bank Details", "pi pi-fw pi-dollar",
+                .addItem(new AppMenuItem("m_bankdetails", "#{msg['bankDetailsLabel']}", "pi pi-fw pi-dollar",
                         "/bank-details", 110, "#{guestPreferences.bankDetailsRendered}"))
                 .addItem(new AppMenuItem("m_notificationsettings", "#{msg['notificationSettingsLabel']}",
                         "pi pi-fw pi-at", "/notification-settings", 120,
                         "#{guestPreferences.notificationSettingRendered}"))
-                .addItem(new AppMenuItem("m_applicationnotifications", "Application Notifications",
+                .addItem(new AppMenuItem("m_applicationnotifications", "#{msg['applicationNotificationsLabel']}",
                         "pi pi-fw pi-envelope", "/application-notifications", 130,
                         "#{guestPreferences.notificationSettingRendered}"));
 
@@ -84,7 +84,7 @@ public class CommonMenuContributor implements MenuContributor {
                         "/server-logs", 10, "#{guestPreferences.serverLogRendered}"))
                 .addItem(new AppMenuItem("m_databasedetails", "#{msg['databaseLabel']}", "pi pi-fw pi-server",
                         "/database-details", 20, "#{guestPreferences.dbDetailsRendered}"))
-                .addItem(new AppMenuItem("m_errorlogmonitor", "Error Log Monitoring", "pi pi-fw pi-bell",
+                .addItem(new AppMenuItem("m_errorlogmonitor", "#{msg['errorLogMonitoringLabel']}", "pi pi-fw pi-bell",
                         "/error-log-monitor", 30, "#{guestPreferences.errorLogMonitorRendered}"));
 
         return Arrays.asList(userManagement, systemManagement, license, serverLogs);

@@ -91,7 +91,7 @@ public class NotificationSettingBean extends GenericManagedBean implements Seria
         setIsAddOperation(true);
         setDatatableRendered(false);
         setRecordsCount(0);
-        resourceBundle = ResourceBundle.getBundle("messages",FacesContext.getCurrentInstance().getViewRoot().getLocale());
+        resourceBundle = ResourceBundle.getBundle("coreAppMessages",FacesContext.getCurrentInstance().getViewRoot().getLocale());
 
 
         resetFields();

@@ -19,7 +19,7 @@
                         <p style="margin:.5rem 0 0 0;color:#64748b;">#{i18n.app('manageDoctorDescription')}</p>
                     </div>
                     <div class="surface-100 border-round px-3 py-2">
-                <label for="organizationFilter"><strong>#{i18n.core('organizationLabel')}:</strong></label>
+                    <label for="organizationFilter"><strong>#{msg['organizationLabel']}:</strong></label>
                         <h:panelGroup rendered="#{doctorBean.applicationAdmin}" layout="block">
                             <p:selectOneMenu id="organizationFilter" value="#{doctorBean.selectedOrganizationId}" style="display:block;min-width:18rem;margin-top:.35rem;">
                     <f:selectItem itemLabel="#{i18n.app('selectOrganizationLabel')}" itemValue="#{null}" noSelectionOption="true"/>
@@ -45,7 +45,7 @@
                                              update="form:doctorMainPanel" process="@this" styleClass="ui-button-info" style="margin-left:.5rem;"/>
                         </p:toolbarGroup>
                         <p:toolbarGroup align="right">
-                            <span style="font-weight:600;">#{i18n.core('recordsLabel')}: #{doctorBean.doctorList.size()}</span>
+                        <span style="font-weight:600;">#{msg['recordsLabel']}: #{doctorBean.doctorList.size()}</span>
                         </p:toolbarGroup>
                     </p:toolbar>
 
@@ -119,7 +119,7 @@
                     <p:messages id="dialogMessages" showDetail="true" closable="true"/>
                     <div class="grid">
                         <div class="col-12">
-                                    <label>#{i18n.core('organizationLabel')} *</label>
+                            <label>#{msg['organizationLabel']} *</label>
                             <h:panelGroup rendered="#{doctorBean.applicationAdmin}" layout="block">
                                 <p:selectOneMenu value="#{doctorBean.formOrganizationId}" style="width:100%;">
                                             <f:selectItem itemLabel="#{i18n.app('selectOrganizationLabel')}" itemValue="#{null}" noSelectionOption="true"/>
@@ -195,7 +195,7 @@
                             </div>
                         </div>
                         <div class="col-12">
-                                    <label>#{i18n.core('notesLabel')}</label>
+                            <label>#{msg['notesLabel']}</label>
                             <p:inputTextarea value="#{doctorBean.doctor.notes}" rows="4" autoResize="false" maxlength="500"/>
                         </div>
                     </div>
@@ -203,17 +203,17 @@
                 <f:facet name="footer">
                             <p:commandButton value="#{i18n.app('saveDoctorLabel')}" icon="pi pi-check" actionListener="#{doctorBean.saveDoctor}"
                                      process="doctorDialogPanel @this" update="doctorDialogPanel :form:doctorMainPanel :form:messages"/>
-                            <p:commandButton value="#{i18n.core('cancelLabel')}" icon="pi pi-times" type="button"
+                            <p:commandButton value="#{msg['cancelLabel']}" icon="pi pi-times" type="button"
                                      onclick="PF('manageDoctorDialog').hide()" styleClass="ui-button-secondary"/>
                 </f:facet>
             </p:dialog>
 
             <p:confirmDialog widgetVar="deleteDoctorDialog" header="#{i18n.app('confirmDeleteLabel')}" severity="warn"
                              message="#{i18n.app('deleteSelectedDoctorMessage')}">
-                    <p:commandButton value="#{i18n.core('yesLabel')}" icon="pi pi-check" actionListener="#{doctorBean.confirmDeleteDoctor}"
+                    <p:commandButton value="#{msg['yesLabel']}" icon="pi pi-check" actionListener="#{doctorBean.confirmDeleteDoctor}"
                                  process="@this" update=":form:doctorMainPanel :form:messages"
                                  oncomplete="PF('deleteDoctorDialog').hide()"/>
-                    <p:commandButton value="#{i18n.core('noLabel')}" type="button" icon="pi pi-times"
+                    <p:commandButton value="#{msg['noLabel']}" type="button" icon="pi pi-times"
                                  onclick="PF('deleteDoctorDialog').hide()" styleClass="ui-button-secondary"/>
             </p:confirmDialog>
         </h:form>

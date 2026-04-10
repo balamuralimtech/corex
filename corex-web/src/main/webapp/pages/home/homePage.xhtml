@@ -78,19 +78,19 @@
                 <div class="dashboard-hero">
                     <div class="grid align-items-start">
                         <div class="col-12 lg:col-8">
-                            <h2 class="dashboard-hero-title">Admin Control Dashboard</h2>
+                            <h2 class="dashboard-hero-title">#{msg['adminControlDashboardLabel']}</h2>
                             <div class="dashboard-hero-copy">#{homePageBean.dashboardInsights}</div>
                         </div>
                         <div class="col-12 lg:col-4">
                             <div class="hero-chip">
-                                <span class="hero-chip-label">Auto Refresh</span>
+                                <span class="hero-chip-label">#{msg['autoRefreshLabel']}</span>
                                 <span class="hero-chip-value"><span id="countdownDisplay">60</span><span id="countdownSuffix">s</span></span>
                             </div>
                             <div style="margin-top:1rem;">
-                                <label for="organizationSelect" style="display:block;font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(226,232,240,.75);">Organization Scope</label>
+                                <label for="organizationSelect" style="display:block;font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(226,232,240,.75);">#{msg['organizationScopeLabel']}</label>
                                 <h:panelGroup rendered="#{homePageBean.applicationAdmin}" layout="block">
                                     <p:selectOneMenu id="organizationSelect" value="#{homePageBean.selectedOrganizationId}" style="display:block;width:100%;margin-top:.55rem;">
-                                        <f:selectItem itemLabel="All Organizations" itemValue="-1"/>
+                                        <f:selectItem itemLabel="#{msg['allOrganizationsLabel']}" itemValue="-1"/>
                                         <f:selectItems value="#{homePageBean.organizationList}" var="organization"
                                                        itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
                                         <p:ajax event="change"
@@ -107,14 +107,14 @@
                                 </h:panelGroup>
                             </div>
                             <div class="dashboard-hero-actions">
-                                <p:commandButton value="Refresh Now"
+                                <p:commandButton value="#{msg['refreshNowLabel']}"
                                                  action="#{homePageBean.refreshForm}"
                                                  update="dashboardFormId"
                                                  onstart="beginDashboardRefresh();"
                                                  oncomplete="restartDashboardCountdown(); renderDashboardCharts();"
                                                  styleClass="dashboard-refresh-btn"/>
                                 <div style="display:flex;align-items:center;gap:.5rem;padding:.55rem .8rem;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);">
-                                    <span style="font-size:.9rem;font-weight:600;color:#f8fafc;">Auto Refresh</span>
+                                    <span style="font-size:.9rem;font-weight:600;color:#f8fafc;">#{msg['autoRefreshLabel']}</span>
                                     <p:inputSwitch value="#{homePageBean.timerEnabled}"
                                                    onLabel="On"
                                                    offLabel="Off"
@@ -130,133 +130,133 @@
 
                     <div class="dashboard-hero-strip">
                         <div class="hero-chip">
-                            <span class="hero-chip-label">Total Users</span>
+                            <span class="hero-chip-label">#{msg['totalUsersLabel']}</span>
                             <span class="hero-chip-value">#{homePageBean.coreDashboardTO.userCount}</span>
                         </div>
                         <div class="hero-chip">
-                            <span class="hero-chip-label">Tracked Activities</span>
+                            <span class="hero-chip-label">#{msg['trackedActivitiesLabel']}</span>
                             <span class="hero-chip-value">#{homePageBean.totalTrackedActivities}</span>
                         </div>
                         <div class="hero-chip">
-                            <span class="hero-chip-label">Role Utilization</span>
+                            <span class="hero-chip-label">#{msg['roleUtilizationLabel']}</span>
                             <span class="hero-chip-value">#{homePageBean.roleUsageRate}%</span>
                         </div>
                         <div class="hero-chip">
-                            <span class="hero-chip-label">Active User Rate</span>
+                            <span class="hero-chip-label">#{msg['activeUserRateLabel']}</span>
                             <span class="hero-chip-value">#{homePageBean.activeUserRate}%</span>
                         </div>
                         <div class="hero-chip">
-                            <span class="hero-chip-label">Licensed Orgs</span>
+                            <span class="hero-chip-label">#{msg['licensedOrgsLabel']}</span>
                             <span class="hero-chip-value">#{homePageBean.licensedOrganizationCount}</span>
                         </div>
                         <div class="hero-chip">
-                            <span class="hero-chip-label">Expiring Licenses</span>
+                            <span class="hero-chip-label">#{msg['expiringLicensesLabel']}</span>
                             <span class="hero-chip-value">#{homePageBean.expiringSoonLicenseCount}</span>
                         </div>
                     </div>
                 </div>
 
                 <div class="grid">
-                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">Organizations</span><div class="metric-card-value">#{homePageBean.coreDashboardTO.organizationCount}</div><div class="metric-card-foot">#{homePageBean.averageBranchesPerOrganization} branches per organization</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">Users</span><div class="metric-card-value">#{homePageBean.coreDashboardTO.userCount}</div><div class="metric-card-foot">#{homePageBean.averageUsersPerRole} users per role</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">Roles</span><div class="metric-card-value">#{homePageBean.coreDashboardTO.roleCount}</div><div class="metric-card-foot">#{homePageBean.coreDashboardTO.rolesUsedCount} in active use</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">User Activities</span><div class="metric-card-value">#{homePageBean.coreDashboardTO.userActivityCount}</div><div class="metric-card-foot">#{homePageBean.averageActivitiesPerUser} activities per user</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">Geography Footprint</span><div class="metric-card-value">#{homePageBean.totalGeographyCount}</div><div class="metric-card-foot">#{homePageBean.averageCitiesPerState} cities per state</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">Structure Inventory</span><div class="metric-card-value">#{homePageBean.totalStructureCount}</div><div class="metric-card-foot">#{homePageBean.averageDepartmentsPerOrganization} departments per organization</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">Authentication Share</span><div class="metric-card-value">#{homePageBean.authenticationShare}%</div><div class="metric-card-foot">Login and logout events out of tracked activity</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">Change Share</span><div class="metric-card-value">#{homePageBean.changeShare}%</div><div class="metric-card-foot">Add, update, and delete events combined</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">Licensed Users</span><div class="metric-card-value">#{homePageBean.licensedUserCount}</div><div class="metric-card-foot">Users attached to organizations with registered licenses</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">Active Licenses</span><div class="metric-card-value">#{homePageBean.activeLicenseCount}</div><div class="metric-card-foot">#{homePageBean.expiredLicenseCount} expired and #{homePageBean.expiringSoonLicenseCount} nearing renewal</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">License Coverage</span><div class="metric-card-value">#{homePageBean.licenseCoverageRate}%</div><div class="metric-card-foot">Share of licensed organizations that are still active</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">Unlicensed Orgs</span><div class="metric-card-value">#{homePageBean.unlicensedOrganizationCount}</div><div class="metric-card-foot">Organizations without any registered license entry</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">#{msg['organizationsLabel']}</span><div class="metric-card-value">#{homePageBean.coreDashboardTO.organizationCount}</div><div class="metric-card-foot">#{homePageBean.averageBranchesPerOrganization} #{msg['branchesPerOrganizationLabel']}</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">#{msg['usersLabel']}</span><div class="metric-card-value">#{homePageBean.coreDashboardTO.userCount}</div><div class="metric-card-foot">#{homePageBean.averageUsersPerRole} #{msg['usersPerRoleLabel']}</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">#{msg['rolesLabel']}</span><div class="metric-card-value">#{homePageBean.coreDashboardTO.roleCount}</div><div class="metric-card-foot">#{homePageBean.coreDashboardTO.rolesUsedCount} #{msg['inActiveUseLabel']}</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">#{msg['userActivitiesLabel']}</span><div class="metric-card-value">#{homePageBean.coreDashboardTO.userActivityCount}</div><div class="metric-card-foot">#{homePageBean.averageActivitiesPerUser} #{msg['activitiesPerUserLabel']}</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">#{msg['geographyFootprintLabel']}</span><div class="metric-card-value">#{homePageBean.totalGeographyCount}</div><div class="metric-card-foot">#{homePageBean.averageCitiesPerState} #{msg['citiesPerStateLabel']}</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">#{msg['structureInventoryLabel']}</span><div class="metric-card-value">#{homePageBean.totalStructureCount}</div><div class="metric-card-foot">#{homePageBean.averageDepartmentsPerOrganization} #{msg['departmentsPerOrganizationLabel']}</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">#{msg['authenticationShareLabel']}</span><div class="metric-card-value">#{homePageBean.authenticationShare}%</div><div class="metric-card-foot">#{msg['authenticationShareSummaryLabel']}</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">#{msg['changeShareLabel']}</span><div class="metric-card-value">#{homePageBean.changeShare}%</div><div class="metric-card-foot">#{msg['changeShareSummaryLabel']}</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">#{msg['licensedUsersLabel']}</span><div class="metric-card-value">#{homePageBean.licensedUserCount}</div><div class="metric-card-foot">#{msg['licensedUsersSummaryLabel']}</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">#{msg['activeLicensesLabel']}</span><div class="metric-card-value">#{homePageBean.activeLicenseCount}</div><div class="metric-card-foot">#{homePageBean.expiredLicenseCount} #{msg['expiredAndLabel']} #{homePageBean.expiringSoonLicenseCount} #{msg['nearingRenewalLabel']}</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">#{msg['licenseCoverageLabel']}</span><div class="metric-card-value">#{homePageBean.licenseCoverageRate}%</div><div class="metric-card-foot">#{msg['licenseCoverageSummaryLabel']}</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">#{msg['unlicensedOrgsLabel']}</span><div class="metric-card-value">#{homePageBean.unlicensedOrganizationCount}</div><div class="metric-card-foot">#{msg['unlicensedOrgsSummaryLabel']}</div></div></div>
                 </div>
 
                 <div class="grid">
                     <div class="col-12 xl:col-8">
                         <div class="dashboard-panel">
-                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">System Entity Footprint</h3><div class="dashboard-panel-subtitle">Absolute volume across structure, geography, security, and usage objects</div></div></div>
+                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">#{msg['systemEntityFootprintLabel']}</h3><div class="dashboard-panel-subtitle">#{msg['systemEntityFootprintSummaryLabel']}</div></div></div>
                             <div id="entityFootprintChart" class="dashboard-chart"></div>
                         </div>
                     </div>
                     <div class="col-12 xl:col-4">
                         <div class="dashboard-panel">
-                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">User State Mix</h3><div class="dashboard-panel-subtitle">Current user population by lifecycle status</div></div></div>
+                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">#{msg['userStateMixLabel']}</h3><div class="dashboard-panel-subtitle">#{msg['userStateMixSummaryLabel']}</div></div></div>
                             <div id="userStateChart" class="dashboard-chart-sm"></div>
                         </div>
                     </div>
                     <div class="col-12 xl:col-4">
                         <div class="dashboard-panel">
-                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">Role Utilization</h3><div class="dashboard-panel-subtitle">Used versus dormant roles in the system</div></div></div>
+                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">#{msg['roleUtilizationLabel']}</h3><div class="dashboard-panel-subtitle">#{msg['roleUtilizationSummaryLabel']}</div></div></div>
                             <div id="roleUsageChart" class="dashboard-chart-sm"></div>
                         </div>
                     </div>
                     <div class="col-12 xl:col-4">
                         <div class="dashboard-panel">
-                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">Activity Mix</h3><div class="dashboard-panel-subtitle">Volume split across authentication and data change actions</div></div></div>
+                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">#{msg['activityMixLabel']}</h3><div class="dashboard-panel-subtitle">#{msg['activityMixSummaryLabel']}</div></div></div>
                             <div id="activityMixChart" class="dashboard-chart-sm"></div>
                         </div>
                     </div>
                     <div class="col-12 xl:col-4">
                         <div class="dashboard-panel">
-                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">Portfolio Mix</h3><div class="dashboard-panel-subtitle">Grouped by structure, geography, and identity assets</div></div></div>
+                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">#{msg['portfolioMixLabel']}</h3><div class="dashboard-panel-subtitle">#{msg['portfolioMixSummaryLabel']}</div></div></div>
                             <div id="portfolioMixChart" class="dashboard-chart-sm"></div>
                         </div>
                     </div>
                     <div class="col-12 xl:col-6">
                         <div class="dashboard-panel">
-                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">Operational Ratios</h3><div class="dashboard-panel-subtitle">Percent-based dashboard health indicators</div></div></div>
+                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">#{msg['operationalRatiosLabel']}</h3><div class="dashboard-panel-subtitle">#{msg['operationalRatiosSummaryLabel']}</div></div></div>
                             <div id="operationsPulseChart" class="dashboard-chart-sm"></div>
                         </div>
                     </div>
                     <div class="col-12 xl:col-6">
                         <div class="dashboard-panel">
-                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">Efficiency Radar</h3><div class="dashboard-panel-subtitle">Density metrics across structure, geography, and identity layers</div></div></div>
+                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">#{msg['efficiencyRadarLabel']}</h3><div class="dashboard-panel-subtitle">#{msg['efficiencyRadarSummaryLabel']}</div></div></div>
                             <div id="efficiencyRadarChart" class="dashboard-chart-sm"></div>
                         </div>
                     </div>
                     <div class="col-12 xl:col-6">
                         <div class="dashboard-panel">
-                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">Density Statistics</h3><div class="dashboard-panel-subtitle">Best available ratios derived from the current dataset</div></div></div>
+                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">#{msg['densityStatisticsLabel']}</h3><div class="dashboard-panel-subtitle">#{msg['densityStatisticsSummaryLabel']}</div></div></div>
                             <div class="dashboard-stat-list">
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Branches per organization</span><span class="dashboard-stat-value">#{homePageBean.averageBranchesPerOrganization}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Departments per organization</span><span class="dashboard-stat-value">#{homePageBean.averageDepartmentsPerOrganization}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Designations per department</span><span class="dashboard-stat-value">#{homePageBean.averageDesignationsPerDepartment}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Users per organization</span><span class="dashboard-stat-value">#{homePageBean.averageUsersPerOrganization}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Users per role</span><span class="dashboard-stat-value">#{homePageBean.averageUsersPerRole}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Activities per user</span><span class="dashboard-stat-value">#{homePageBean.averageActivitiesPerUser}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">States per country</span><span class="dashboard-stat-value">#{homePageBean.averageStatesPerCountry}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Cities per state</span><span class="dashboard-stat-value">#{homePageBean.averageCitiesPerState}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Activities per role</span><span class="dashboard-stat-value">#{homePageBean.averageActivitiesPerRole}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['branchesPerOrganizationStatLabel']}</span><span class="dashboard-stat-value">#{homePageBean.averageBranchesPerOrganization}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['departmentsPerOrganizationStatLabel']}</span><span class="dashboard-stat-value">#{homePageBean.averageDepartmentsPerOrganization}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['designationsPerDepartmentLabel']}</span><span class="dashboard-stat-value">#{homePageBean.averageDesignationsPerDepartment}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['usersPerOrganizationLabel']}</span><span class="dashboard-stat-value">#{homePageBean.averageUsersPerOrganization}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['usersPerRoleStatLabel']}</span><span class="dashboard-stat-value">#{homePageBean.averageUsersPerRole}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['activitiesPerUserStatLabel']}</span><span class="dashboard-stat-value">#{homePageBean.averageActivitiesPerUser}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['statesPerCountryLabel']}</span><span class="dashboard-stat-value">#{homePageBean.averageStatesPerCountry}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['citiesPerStateStatLabel']}</span><span class="dashboard-stat-value">#{homePageBean.averageCitiesPerState}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['activitiesPerRoleLabel']}</span><span class="dashboard-stat-value">#{homePageBean.averageActivitiesPerRole}</span></div>
                             </div>
                         </div>
                     </div>
                     <div class="col-12 xl:col-6">
                         <div class="dashboard-panel">
-                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">License Pulse</h3><div class="dashboard-panel-subtitle">Current license coverage and renewal pressure across organizations</div></div></div>
+                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">#{msg['licensePulseLabel']}</h3><div class="dashboard-panel-subtitle">#{msg['licensePulseSummaryLabel']}</div></div></div>
                             <div class="dashboard-stat-list" style="margin-bottom:1rem;">
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Licensed organizations</span><span class="dashboard-stat-value">#{homePageBean.licensedOrganizationCount}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Active / expired licenses</span><span class="dashboard-stat-value">#{homePageBean.activeLicenseCount} / #{homePageBean.expiredLicenseCount}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Expiring within 30 days</span><span class="dashboard-stat-value">#{homePageBean.expiringSoonLicenseCount}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Licensed user accounts</span><span class="dashboard-stat-value">#{homePageBean.licensedUserCount}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Unlicensed organizations</span><span class="dashboard-stat-value">#{homePageBean.unlicensedOrganizationCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['licensedOrganizationsStatLabel']}</span><span class="dashboard-stat-value">#{homePageBean.licensedOrganizationCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['activeExpiredLicensesLabel']}</span><span class="dashboard-stat-value">#{homePageBean.activeLicenseCount} / #{homePageBean.expiredLicenseCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['expiringWithin30DaysLabel']}</span><span class="dashboard-stat-value">#{homePageBean.expiringSoonLicenseCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['licensedUserAccountsLabel']}</span><span class="dashboard-stat-value">#{homePageBean.licensedUserCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['unlicensedOrganizationsStatLabel']}</span><span class="dashboard-stat-value">#{homePageBean.unlicensedOrganizationCount}</span></div>
                             </div>
                             <div class="dashboard-panel-subtitle">#{homePageBean.licenseSummary}</div>
                         </div>
                     </div>
                     <div class="col-12 xl:col-6">
                         <div class="dashboard-panel">
-                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">Coverage Summary</h3><div class="dashboard-panel-subtitle">Raw counts that support the derived visuals</div></div></div>
+                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">#{msg['coverageSummaryLabel']}</h3><div class="dashboard-panel-subtitle">#{msg['coverageSummarySubtitleLabel']}</div></div></div>
                             <div class="dashboard-stat-list">
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Organizations</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.organizationCount}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Branches</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.branchCount}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Departments</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.departmentCount}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Designations</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.designationCount}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Countries / States / Cities</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.countryCount} / #{homePageBean.coreDashboardTO.stateCount} / #{homePageBean.coreDashboardTO.cityCount}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Currencies</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.currencyCount}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Roles used / unused</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.rolesUsedCount} / #{homePageBean.coreDashboardTO.rolesNotUsedCount}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Users logged in / logged out / never</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.usersLoggedInCount} / #{homePageBean.coreDashboardTO.usersLoggedOutCount} / #{homePageBean.coreDashboardTO.usersNeverLoggedinCount}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Login / logout events</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.loginCount} / #{homePageBean.coreDashboardTO.logoutCount}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Add / update / delete events</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.addCount} / #{homePageBean.coreDashboardTO.updateCount} / #{homePageBean.coreDashboardTO.deleteCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['organizationsLabel']}</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.organizationCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['branchesLabel']}</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.branchCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['departmentsLabel']}</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.departmentCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['designationsLabel']}</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.designationCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['countriesStatesCitiesLabel']}</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.countryCount} / #{homePageBean.coreDashboardTO.stateCount} / #{homePageBean.coreDashboardTO.cityCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['currenciesLabel']}</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.currencyCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['rolesUsedUnusedLabel']}</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.rolesUsedCount} / #{homePageBean.coreDashboardTO.rolesNotUsedCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['usersLoggedInOutNeverLabel']}</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.usersLoggedInCount} / #{homePageBean.coreDashboardTO.usersLoggedOutCount} / #{homePageBean.coreDashboardTO.usersNeverLoggedinCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['loginLogoutEventsLabel']}</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.loginCount} / #{homePageBean.coreDashboardTO.logoutCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['addUpdateDeleteEventsLabel']}</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.addCount} / #{homePageBean.coreDashboardTO.updateCount} / #{homePageBean.coreDashboardTO.deleteCount}</span></div>
                             </div>
                         </div>
                     </div>

@@ -80,7 +80,7 @@ public class RegionBean implements Serializable {
         recordsCount = 0;
         regionName = "";
 
-        resourceBundle = ResourceBundle.getBundle("messages",FacesContext.getCurrentInstance().getViewRoot().getLocale());
+        resourceBundle = ResourceBundle.getBundle("coreAppMessages",FacesContext.getCurrentInstance().getViewRoot().getLocale());
 
 
         if (CollectionUtils.isNotEmpty(getRegionList())) {

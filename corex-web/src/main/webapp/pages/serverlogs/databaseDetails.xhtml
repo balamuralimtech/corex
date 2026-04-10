@@ -67,32 +67,32 @@
                 <div class="col-12">
                     <p:breadCrumb>
                         <p:menuitem url="#" icon="pi pi-home"/>
-                        <p:menuitem value="Server and DB" url="#"/>
-                        <p:menuitem value="Database" url="#"/>
+                        <p:menuitem value="#{msg['serverAndDbLabel']}" url="#"/>
+                        <p:menuitem value="#{msg['databaseLabel']}" url="#"/>
                     </p:breadCrumb>
                 </div>
 
                 <div class="col-12">
                     <div class="db-hero">
-                        <h2 class="db-hero-title">Database Runtime Control</h2>
+                        <h2 class="db-hero-title">#{msg['databaseRuntimeControlLabel']}</h2>
                         <div class="db-hero-copy">
                             #{databaseDetailsBean.databaseSummary}
                         </div>
                         <div class="db-strip">
                             <div class="db-chip">
-                                <span class="db-chip-label">Connection State</span>
+                                <span class="db-chip-label">#{msg['connectionStateLabel']}</span>
                                 <span class="db-chip-value">#{databaseDetailsBean.connectionStatus}</span>
                             </div>
                             <div class="db-chip">
-                                <span class="db-chip-label">Engine</span>
+                                <span class="db-chip-label">#{msg['engineLabel']}</span>
                                 <span class="db-chip-value">#{databaseDetailsBean.databaseEngineLabel}</span>
                             </div>
                             <div class="db-chip">
-                                <span class="db-chip-label">Runtime</span>
+                                <span class="db-chip-label">#{msg['runtimeLabel']}</span>
                                 <span class="db-chip-value">#{databaseDetailsBean.databaseFlavorTone}</span>
                             </div>
                             <div class="db-chip">
-                                <span class="db-chip-label">Datasource User</span>
+                                <span class="db-chip-label">#{msg['datasourceUserLabel']}</span>
                                 <span class="db-chip-value">#{empty databaseDetailsBean.jdbcUsername ? '-' : databaseDetailsBean.jdbcUsername}</span>
                             </div>
                         </div>
@@ -103,30 +103,30 @@
                     <div class="grid">
                         <div class="col-12 md:col-6 xl:col-3">
                             <div class="db-stat-card db-tone-success">
-                                <span class="db-stat-kicker">Availability</span>
+                                <span class="db-stat-kicker">#{msg['availabilityLabel']}</span>
                                 <span class="db-stat-value">#{databaseDetailsBean.connectionStatus}</span>
-                                <span class="db-stat-copy">Live datasource reachability as seen from the running application server.</span>
+                                <span class="db-stat-copy">#{msg['availabilitySummaryLabel']}</span>
                             </div>
                         </div>
                         <div class="col-12 md:col-6 xl:col-3">
                             <div class="db-stat-card db-tone-info">
-                                <span class="db-stat-kicker">Product</span>
+                                <span class="db-stat-kicker">#{msg['productLabel']}</span>
                                 <span class="db-stat-value">#{databaseDetailsBean.databaseEngineLabel}</span>
-                                <span class="db-stat-copy">Database product reported by JDBC metadata.</span>
+                                <span class="db-stat-copy">#{msg['productSummaryLabel']}</span>
                             </div>
                         </div>
                         <div class="col-12 md:col-6 xl:col-3">
                             <div class="db-stat-card db-tone-warn">
-                                <span class="db-stat-kicker">Version</span>
+                                <span class="db-stat-kicker">#{msg['versionLabel']}</span>
                                 <span class="db-stat-value">#{empty databaseDetailsBean.jdbcProductVersion ? '-' : databaseDetailsBean.jdbcProductVersion}</span>
-                                <span class="db-stat-copy">Server version currently exposed by the connected engine.</span>
+                                <span class="db-stat-copy">#{msg['versionSummaryLabel']}</span>
                             </div>
                         </div>
                         <div class="col-12 md:col-6 xl:col-3">
                             <div class="db-stat-card">
-                                <span class="db-stat-kicker">Datasource User</span>
+                                <span class="db-stat-kicker">#{msg['datasourceUserLabel']}</span>
                                 <span class="db-stat-value">#{empty databaseDetailsBean.jdbcUsername ? '-' : databaseDetailsBean.jdbcUsername}</span>
-                                <span class="db-stat-copy">Authentication identity currently attached to the application datasource.</span>
+                                <span class="db-stat-copy">#{msg['datasourceUserSummaryLabel']}</span>
                             </div>
                         </div>
                     </div>
@@ -136,8 +136,8 @@
                     <div class="db-panel db-panel-dark">
                         <div class="db-head">
                             <div>
-                                <h3 class="db-head-title">Connection Pulse</h3>
-                                <div class="db-head-copy">Quick operational read of the active datasource and engine handshake.</div>
+                                <h3 class="db-head-title">#{msg['connectionPulseLabel']}</h3>
+                                <div class="db-head-copy">#{msg['connectionPulseSummaryLabel']}</div>
                             </div>
                             <p:tag value="#{databaseDetailsBean.connectionStatus}" severity="#{databaseDetailsBean.connectionSeverity}"/>
                         </div>
@@ -145,7 +145,7 @@
                         <div class="db-seal">
                             <div class="db-seal-inner">
                                 <div class="db-seal-value">DB</div>
-                                <div class="db-seal-label">Online</div>
+                                <div class="db-seal-label">#{msg['onlineLabel']}</div>
                             </div>
                         </div>
 
@@ -159,26 +159,26 @@
                     <div class="db-panel">
                         <div class="db-head">
                             <div>
-                                <h3 class="db-head-title">Technical Details</h3>
-                                <div class="db-head-copy">Datasource metadata captured directly from JDBC and formatted for fast inspection.</div>
+                                <h3 class="db-head-title">#{msg['technicalDetailsLabel']}</h3>
+                                <div class="db-head-copy">#{msg['technicalDetailsSummaryLabel']}</div>
                             </div>
                         </div>
 
                         <div class="db-detail-grid">
                             <div class="db-detail-row">
-                                <span class="db-detail-label">JDBC URL</span>
+                                <span class="db-detail-label">#{msg['jdbcUrlLabel']}</span>
                                 <span class="db-detail-value">#{databaseDetailsBean.jdbcUrlMasked}</span>
                             </div>
                             <div class="db-detail-row">
-                                <span class="db-detail-label">Datasource Username</span>
+                                <span class="db-detail-label">#{msg['datasourceUsernameLabel']}</span>
                                 <span class="db-detail-value">#{empty databaseDetailsBean.jdbcUsername ? '-' : databaseDetailsBean.jdbcUsername}</span>
                             </div>
                             <div class="db-detail-row">
-                                <span class="db-detail-label">Database Product Name</span>
+                                <span class="db-detail-label">#{msg['databaseProductNameLabel']}</span>
                                 <span class="db-detail-value">#{empty databaseDetailsBean.jdbcProductName ? '-' : databaseDetailsBean.jdbcProductName}</span>
                             </div>
                             <div class="db-detail-row">
-                                <span class="db-detail-label">Database Product Version</span>
+                                <span class="db-detail-label">#{msg['databaseProductVersionLabel']}</span>
                                 <span class="db-detail-value">#{empty databaseDetailsBean.jdbcProductVersion ? '-' : databaseDetailsBean.jdbcProductVersion}</span>
                             </div>
                         </div>

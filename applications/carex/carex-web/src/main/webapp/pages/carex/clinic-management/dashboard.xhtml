@@ -87,7 +87,7 @@
                                     <span class="clinic-hero-chip-label">Auto Refresh</span>
                                     <span class="clinic-hero-chip-value"><span id="carexCountdownDisplay">60</span><span id="carexCountdownSuffix">s</span></span>
                                 </div>
-                                <label for="organizationSelect" style="display:block;font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(204,251,241,.82);">#{i18n.core('organizationScopeLabel')}</label>
+                                <label for="organizationSelect" style="display:block;font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(204,251,241,.82);">#{msg['organizationScopeLabel']}</label>
                                 <h:panelGroup rendered="#{carexDashboardBean.applicationAdmin}" layout="block">
                                     <p:selectOneMenu id="organizationSelect" value="#{carexDashboardBean.selectedOrganizationId}" style="display:block;width:100%;margin-top:.55rem;">
                                         <f:selectItem itemLabel="#{i18n.app('allOrganizationsLabel')}" itemValue="-1"/>
@@ -115,8 +115,8 @@
                                     <div style="display:flex;align-items:center;gap:.5rem;padding:.55rem .8rem;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);">
                                         <span style="font-size:.9rem;font-weight:600;color:#f8fafc;">#{i18n.app('autoRefreshLabel')}</span>
                                         <p:inputSwitch value="#{carexDashboardBean.timerEnabled}"
-                                                       onLabel="On"
-                                                       offLabel="Off"
+                                                       onLabel="#{i18n.app('switchOnLabel')}"
+                                                       offLabel="#{i18n.app('switchOffLabel')}"
                                                        onchange="applyCarexDashboardAutoRefreshState(this.checked);">
                                             <p:ajax process="@this"
                                                     update="@none"
@@ -243,23 +243,23 @@
                                     <div style="font-size:.84rem;color:#64748b;">#{carexDashboardBean.getRecentConsultationDate(consultationRow)}</div>
                                 </p:column>
                                 <p:column headerText="#{i18n.app('doctorLabel')}">
-                                    <div>#{consultationRow.doctor.doctorName}</div>
-                                    <div style="font-size:.84rem;color:#64748b;">#{consultationRow.doctor.specialization}</div>
+                                    <div>#{carexDashboardBean.getRecentConsultationDoctorName(consultationRow)}</div>
+                                    <div style="font-size:.84rem;color:#64748b;">#{carexDashboardBean.getRecentConsultationDoctorSpecialization(consultationRow)}</div>
                                 </p:column>
                                 <p:column headerText="#{i18n.app('patientLabel')}">
-                                    <div>#{consultationRow.patient.patientName}</div>
-                                    <div style="font-size:.84rem;color:#64748b;">#{consultationRow.patient.patientCode}</div>
+                                    <div>#{carexDashboardBean.getRecentConsultationPatientName(consultationRow)}</div>
+                                    <div style="font-size:.84rem;color:#64748b;">#{carexDashboardBean.getRecentConsultationPatientCode(consultationRow)}</div>
                                 </p:column>
                                 <p:column headerText="#{i18n.app('documentsLabel')}">
-                                    <span class="clinic-table-chip #{consultationRow.issueInvoice ? 'clinic-chip-invoice' : 'clinic-chip-noinvoice'}">#{i18n.app('invoiceShortLabel')}: #{consultationRow.issueInvoice ? i18n.core('yesLabel') : i18n.core('noLabel')}</span>
+                                        <span class="clinic-table-chip #{consultationRow.issueInvoice ? 'clinic-chip-invoice' : 'clinic-chip-noinvoice'}">#{i18n.app('invoiceShortLabel')}: #{consultationRow.issueInvoice ? msg['yesLabel'] : msg['noLabel']}</span>
                                     <br/>
-                                    <span class="clinic-table-chip #{consultationRow.issueMedicalCertificate ? 'clinic-chip-invoice' : 'clinic-chip-noinvoice'}" style="margin-top:.35rem;">#{i18n.app('medicalCertificateShortLabel')}: #{consultationRow.issueMedicalCertificate ? i18n.core('yesLabel') : i18n.core('noLabel')}</span>
+                                        <span class="clinic-table-chip #{consultationRow.issueMedicalCertificate ? 'clinic-chip-invoice' : 'clinic-chip-noinvoice'}" style="margin-top:.35rem;">#{i18n.app('medicalCertificateShortLabel')}: #{consultationRow.issueMedicalCertificate ? msg['yesLabel'] : msg['noLabel']}</span>
                                 </p:column>
                                 <p:column headerText="#{i18n.app('revenueLabel')}">
                                     #{carexDashboardBean.formatCurrency(consultationRow.invoiceTotal)}
                                 </p:column>
                                 <p:column headerText="#{i18n.app('statusLabel')}">
-                                    <p:tag value="#{consultationRow.status}" severity="info"/>
+                                    <p:tag value="#{carexDashboardBean.getRecentConsultationStatus(consultationRow)}" severity="info"/>
                                 </p:column>
                             </p:dataTable>
                         </div>

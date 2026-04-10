@@ -68,32 +68,32 @@
                 <div class="col-12">
                     <p:breadCrumb>
                         <p:menuitem url="#" icon="pi pi-home"/>
-                        <p:menuitem value="User Management" url="#"/>
-                        <p:menuitem value="User Activity" url="#"/>
+                        <p:menuitem value="#{msg['userManagementLabel']}" url="#"/>
+                        <p:menuitem value="#{msg['userActivityLabel']}" url="#"/>
                     </p:breadCrumb>
                 </div>
 
                 <div class="col-12">
                     <div class="activity-hero">
-                        <h2 class="activity-title">User Activity Intelligence</h2>
+                        <h2 class="activity-title">#{msg['userActivityIntelligenceLabel']}</h2>
                         <div class="activity-copy">
-                            Review operational behavior, security movement, change events, and audit signals across the platform from one high-clarity activity command view.
+                            #{msg['userActivityIntelligenceSummaryLabel']}
                         </div>
                         <div class="activity-strip">
                             <div class="activity-chip">
-                                <span class="activity-chip-label">Total Records</span>
+                                <span class="activity-chip-label">#{msg['totalRecordsLabel']}</span>
                                 <span class="activity-chip-value">#{userActivityBean.recordsCount}</span>
                             </div>
                             <div class="activity-chip">
-                                <span class="activity-chip-label">Active Users</span>
+                                <span class="activity-chip-label">#{msg['activeUsersLabel']}</span>
                                 <span class="activity-chip-value">#{userActivityBean.uniqueUserCount}</span>
                             </div>
                             <div class="activity-chip">
-                                <span class="activity-chip-label">Last Recorded</span>
+                                <span class="activity-chip-label">#{msg['lastRecordedLabel']}</span>
                                 <span class="activity-chip-value" style="font-size:1rem; line-height:1.45;">#{userActivityBean.latestActivityLabel}</span>
                             </div>
                             <div class="activity-chip">
-                                <span class="activity-chip-label">Activity Mix</span>
+                                <span class="activity-chip-label">#{msg['activityMixLabel']}</span>
                                 <span class="activity-chip-value" style="font-size:1rem; line-height:1.45;">#{userActivityBean.activityMixSummary}</span>
                             </div>
                         </div>
@@ -109,25 +109,25 @@
                                 <div class="activity-panel">
                                     <div class="activity-head">
                                         <div>
-                                            <h3 class="activity-head-title">Activity Controls</h3>
-                                            <div class="activity-head-copy">Refresh the live dataset and export the audit grid in report-friendly formats.</div>
+                                            <h3 class="activity-head-title">#{msg['activityControlsLabel']}</h3>
+                                            <div class="activity-head-copy">#{msg['activityControlsSummaryLabel']}</div>
                                         </div>
                                     </div>
                                     <div class="activity-actions">
-                                        <p:commandButton value="Refresh Activity"
+                                        <p:commandButton value="#{msg['refreshActivityLabel']}"
                                                          icon="pi pi-refresh"
                                                          action="#{userActivityBean.searchButtonAction}"
                                                          update=":form:usrActMainPanelId"
                                                          process="@this"
                                                          styleClass="ui-button-info"/>
-                                        <p:commandButton value="Export to PDF"
+                                        <p:commandButton value="#{msg['exportToPdfLabel']}"
                                                          icon="pi pi-upload"
                                                          styleClass="ui-button-help"
                                                          rendered="#{userActivityBean.datatableRendered}">
                                             <p:dataExporter type="pdf" target="usrActDataTableId"
                                                             fileName="useractivities_#{userActivityBean.currentDateTime}"/>
                                         </p:commandButton>
-                                        <p:commandButton value="Export to Excel"
+                                        <p:commandButton value="#{msg['exportToExcelLabel']}"
                                                          icon="pi pi-file-excel"
                                                          styleClass="ui-button-help"
                                                          rendered="#{userActivityBean.datatableRendered}">
@@ -138,10 +138,10 @@
 
                                     <div class="activity-filters">
                                         <div>
-                                            <span class="activity-filter-label">Organization Scope</span>
+                                            <span class="activity-filter-label">#{msg['organizationScopeLabel']}</span>
                                             <h:panelGroup rendered="#{userActivityBean.applicationAdmin}" layout="block">
                                                 <p:selectOneMenu value="#{userActivityBean.selectedOrganizationId}" style="width:100%">
-                                                    <f:selectItem itemLabel="All Organizations" itemValue="#{userActivityBean.allOrganizationsId}"/>
+                                                    <f:selectItem itemLabel="#{msg['allOrganizationsLabel']}" itemValue="#{userActivityBean.allOrganizationsId}"/>
                                                     <f:selectItems value="#{userActivityBean.organizationList}"
                                                                    var="organization"
                                                                    itemLabel="#{organization.organizationName}"
@@ -156,9 +156,9 @@
                                             </h:panelGroup>
                                         </div>
                                         <div>
-                                            <span class="activity-filter-label">User Scope</span>
+                                            <span class="activity-filter-label">#{msg['userScopeLabel']}</span>
                                             <p:selectOneMenu value="#{userActivityBean.selectedUserId}" style="width:100%">
-                                                <f:selectItem itemLabel="All Users" itemValue="#{null}" noSelectionOption="true"/>
+                                                <f:selectItem itemLabel="#{msg['allUsersLabel']}" itemValue="#{null}" noSelectionOption="true"/>
                                                 <f:selectItems value="#{userActivityBean.filteredUserList}"
                                                                var="appUser"
                                                                itemLabel="#{appUser.userName}"
@@ -174,58 +174,58 @@
 
                             <div class="col-12 md:col-6 xl:col-3">
                                 <div class="activity-stat activity-stat-blue">
-                                    <span class="activity-stat-kicker">Login Events</span>
+                                    <span class="activity-stat-kicker">#{msg['loginEventsLabel']}</span>
                                     <span class="activity-stat-value">#{userActivityBean.loginCount}</span>
-                                    <span class="activity-stat-copy">Authentication entries captured through the current audit list.</span>
+                                    <span class="activity-stat-copy">#{msg['loginEventsSummaryLabel']}</span>
                                 </div>
                             </div>
                             <div class="col-12 md:col-6 xl:col-3">
                                 <div class="activity-stat activity-stat-green">
-                                    <span class="activity-stat-kicker">Change Events</span>
+                                    <span class="activity-stat-kicker">#{msg['changeEventsLabel']}</span>
                                     <span class="activity-stat-value">#{userActivityBean.changeEventCount}</span>
-                                    <span class="activity-stat-copy">Add, edit, and delete actions that changed business data.</span>
+                                    <span class="activity-stat-copy">#{msg['changeEventsSummaryLabel']}</span>
                                 </div>
                             </div>
                             <div class="col-12 md:col-6 xl:col-3">
                                 <div class="activity-stat activity-stat-amber">
-                                    <span class="activity-stat-kicker">Unique IPs</span>
+                                    <span class="activity-stat-kicker">#{msg['uniqueIpsLabel']}</span>
                                     <span class="activity-stat-value">#{userActivityBean.uniqueIpCount}</span>
-                                    <span class="activity-stat-copy">Distinct network origins currently visible in the loaded activity history.</span>
+                                    <span class="activity-stat-copy">#{msg['uniqueIpsSummaryLabel']}</span>
                                 </div>
                             </div>
                             <div class="col-12 md:col-6 xl:col-3">
                                 <div class="activity-stat activity-stat-red">
-                                    <span class="activity-stat-kicker">Logout Events</span>
+                                    <span class="activity-stat-kicker">#{msg['logoutEventsLabel']}</span>
                                     <span class="activity-stat-value">#{userActivityBean.logoutCount}</span>
-                                    <span class="activity-stat-copy">Exit and session-ending movements captured by the audit subsystem.</span>
+                                    <span class="activity-stat-copy">#{msg['logoutEventsSummaryLabel']}</span>
                                 </div>
                             </div>
                             <div class="col-12 md:col-6 xl:col-3">
                                 <div class="activity-stat activity-stat-blue">
-                                    <span class="activity-stat-kicker">Most Active User</span>
+                                    <span class="activity-stat-kicker">#{msg['mostActiveUserLabel']}</span>
                                     <span class="activity-stat-value" style="font-size:1.2rem; line-height:1.35;">#{userActivityBean.mostActiveUser}</span>
-                                    <span class="activity-stat-copy">User with the highest visible activity volume in the loaded dataset.</span>
+                                    <span class="activity-stat-copy">#{msg['mostActiveUserSummaryLabel']}</span>
                                 </div>
                             </div>
                             <div class="col-12 md:col-6 xl:col-3">
                                 <div class="activity-stat activity-stat-green">
-                                    <span class="activity-stat-kicker">Top Activity Type</span>
+                                    <span class="activity-stat-kicker">#{msg['topActivityTypeLabel']}</span>
                                     <span class="activity-stat-value" style="font-size:1.2rem; line-height:1.35;">#{userActivityBean.mostUsedActivityType}</span>
-                                    <span class="activity-stat-copy">Most frequent operation pattern across the current audit history.</span>
+                                    <span class="activity-stat-copy">#{msg['topActivityTypeSummaryLabel']}</span>
                                 </div>
                             </div>
                             <div class="col-12 md:col-6 xl:col-3">
                                 <div class="activity-stat activity-stat-amber">
-                                    <span class="activity-stat-kicker">Security Events</span>
+                                    <span class="activity-stat-kicker">#{msg['securityEventsLabel']}</span>
                                     <span class="activity-stat-value">#{userActivityBean.securityEventCount}</span>
-                                    <span class="activity-stat-copy">Combined login and logout activity across the visible audit records.</span>
+                                    <span class="activity-stat-copy">#{msg['securityEventsSummaryLabel']}</span>
                                 </div>
                             </div>
                             <div class="col-12 md:col-6 xl:col-3">
                                 <div class="activity-stat activity-stat-red">
-                                    <span class="activity-stat-kicker">Change Operations</span>
+                                    <span class="activity-stat-kicker">#{msg['changeOperationsLabel']}</span>
                                     <span class="activity-stat-value">#{userActivityBean.changeEventCount}</span>
-                                    <span class="activity-stat-copy">Combined add, edit, and delete operations across the loaded records.</span>
+                                    <span class="activity-stat-copy">#{msg['changeOperationsSummaryLabel']}</span>
                                 </div>
                             </div>
 
@@ -233,8 +233,8 @@
                                 <div class="activity-panel">
                                     <div class="activity-head">
                                         <div>
-                                            <h3 class="activity-head-title">Activity Distribution</h3>
-                                            <div class="activity-head-copy">A quick visual split of the main activity types in the current audit set.</div>
+                                            <h3 class="activity-head-title">#{msg['activityDistributionLabel']}</h3>
+                                            <div class="activity-head-copy">#{msg['activityDistributionSummaryLabel']}</div>
                                         </div>
                                     </div>
 
@@ -264,14 +264,14 @@
                                             },
                                             tooltip: {
                                                 headerFormat: '<b>{point.key}</b><br/>',
-                                                pointFormat: 'Activity: {point.y}'
+                                                pointFormat: "#{msg['activityLabel']}: {point.y}"
                                             },
                                             title: {
-                                                text: 'Overall User Activity Status',
+                                                text: "#{msg['overallUserActivityStatusLabel']}",
                                                 align: 'left'
                                             },
                                             subtitle: {
-                                                text: 'Current audit mix',
+                                                text: "#{msg['currentAuditMixLabel']}",
                                                 align: 'left'
                                             },
                                             legend: {
@@ -284,11 +284,11 @@
                                             },
                                             series: [{
                                                 data: [
-                                                    ['Login', #{userActivityBean.loginCount}],
-                                                    ['Logout', #{userActivityBean.logoutCount}],
-                                                    ['Add', #{userActivityBean.addCount}],
-                                                    ['Edit', #{userActivityBean.updateCount}],
-                                                    ['Delete', #{userActivityBean.deleteCount}]
+                                                    ["#{msg['loginLabel']}", #{userActivityBean.loginCount}],
+                                                    ["#{msg['logoutLabel']}", #{userActivityBean.logoutCount}],
+                                                    ["#{msg['addLabel']}", #{userActivityBean.addCount}],
+                                                    ["#{msg['editLabel']}", #{userActivityBean.updateCount}],
+                                                    ["#{msg['deleteLabel']}", #{userActivityBean.deleteCount}]
                                                 ],
                                                 colorByPoint: true
                                             }]
@@ -300,8 +300,8 @@
                                 <div class="activity-panel">
                                     <div class="activity-head">
                                         <div>
-                                            <h3 class="activity-head-title">Browser Type Distribution</h3>
-                                            <div class="activity-head-copy">See which browser environments are generating the current visible audit traffic.</div>
+                                            <h3 class="activity-head-title">#{msg['browserTypeDistributionLabel']}</h3>
+                                            <div class="activity-head-copy">#{msg['browserTypeDistributionSummaryLabel']}</div>
                                         </div>
                                     </div>
 
@@ -314,19 +314,19 @@
                                                 type: 'pie'
                                             },
                                             title: {
-                                                text: 'Browser Mix',
+                                                text: "#{msg['browserMixLabel']}",
                                                 align: 'left'
                                             },
                                             subtitle: {
-                                                text: 'Environment source profile',
+                                                text: "#{msg['environmentSourceProfileLabel']}",
                                                 align: 'left'
                                             },
                                             tooltip: {
-                                                pointFormat: '<b>{point.y}</b> events'
+                                                pointFormat: "<b>{point.y}</b> #{msg['eventsLabel']}"
                                             },
                                             accessibility: {
                                                 point: {
-                                                    valueSuffix: ' events'
+                                                    valueSuffix: " #{msg['eventsLabel']}"
                                                 }
                                             },
                                             plotOptions: {
@@ -339,7 +339,7 @@
                                                 }
                                             },
                                             series: [{
-                                                name: 'Events',
+                                                name: "#{msg['eventsLabel']}",
                                                 colorByPoint: true,
                                                 data: #{userActivityBean.browserChartData}
                                             }]
@@ -351,8 +351,8 @@
                                 <div class="activity-panel">
                                     <div class="activity-head">
                                         <div>
-                                            <h3 class="activity-head-title">Activity Timeline</h3>
-                                            <div class="activity-head-copy">Track how audit volume changes across the recorded date and time sequence.</div>
+                                            <h3 class="activity-head-title">#{msg['activityTimelineLabel']}</h3>
+                                            <div class="activity-head-copy">#{msg['activityTimelineSummaryLabel']}</div>
                                         </div>
                                     </div>
 
@@ -365,11 +365,11 @@
                                                 type: 'line'
                                             },
                                             title: {
-                                                text: 'Activity Timeline',
+                                                text: "#{msg['activityTimelineLabel']}",
                                                 align: 'left'
                                             },
                                             subtitle: {
-                                                text: 'Date/time based event flow',
+                                                text: "#{msg['dateTimeBasedEventFlowLabel']}",
                                                 align: 'left'
                                             },
                                             xAxis: {
@@ -379,14 +379,14 @@
                                             yAxis: {
                                                 min: 0,
                                                 title: {
-                                                    text: 'Events'
+                                                    text: "#{msg['eventsLabel']}"
                                                 }
                                             },
                                             legend: {
                                                 enabled: false
                                             },
                                             series: [{
-                                                name: 'Events',
+                                                name: "#{msg['eventsLabel']}",
                                                 data: #{userActivityBean.activityTimelineSeries},
                                                 color: '#0ea5e9'
                                             }]
@@ -399,8 +399,8 @@
                                 <div class="activity-panel">
                                     <div class="activity-head">
                                         <div>
-                                            <h3 class="activity-head-title">Audit Grid</h3>
-                                            <div class="activity-head-copy">Search, filter, export, and inspect the full captured activity history.</div>
+                                            <h3 class="activity-head-title">#{msg['auditGridLabel']}</h3>
+                                            <div class="activity-head-copy">#{msg['auditGridSummaryLabel']}</div>
                                         </div>
                                     </div>
 
@@ -417,31 +417,31 @@
                                                  paginatorPosition="bottom">
                                         <f:facet name="header">
                                             <div class="activity-search">
-                                                <span class="activity-search-title">Search User Activity</span>
+                                                <span class="activity-search-title">#{msg['searchUserActivityLabel']}</span>
                                                 <span class="filter-container ui-input-icon-left">
                                                     <i class="pi pi-search"></i>
-                                                    <p:inputText id="globalFilter" onkeyup="PF('dataTableUsrAct').filter()" placeholder="Search activity grid"/>
+                                                    <p:inputText id="globalFilter" onkeyup="PF('dataTableUsrAct').filter()" placeholder="#{msg['searchActivityGridLabel']}"/>
                                                 </span>
                                             </div>
                                         </f:facet>
 
-                                        <p:column headerText="User" sortBy="#{userActivity.userName}" filterBy="#{userActivity.userName}">
+                                        <p:column headerText="#{msg['userLabel']}" sortBy="#{userActivity.userName}" filterBy="#{userActivity.userName}">
                                             <div style="font-weight:700;color:#0f172a;">#{userActivityBean.safeValue(userActivity.userName)}</div>
                                             <div style="color:#64748b;">#{userActivityBean.safeValue(userActivity.ipAddress)}</div>
                                         </p:column>
 
-                                        <p:column headerText="Activity" sortBy="#{userActivity.activityType}" filterBy="#{userActivity.activityType}">
+                                        <p:column headerText="#{msg['activityLabel']}" sortBy="#{userActivity.activityType}" filterBy="#{userActivity.activityType}">
                                             <p:tag value="#{userActivityBean.safeValue(userActivity.activityType)}"
                                                    severity="#{userActivityBean.activityTone(userActivity.activityType)}"/>
                                             <div style="margin-top:.55rem;color:#475569;line-height:1.55;">#{userActivityBean.safeValue(userActivity.activityDescription)}</div>
                                         </p:column>
 
-                                        <p:column headerText="Environment" sortBy="#{userActivity.deviceInfo}" filterBy="#{userActivity.deviceInfo}">
+                                        <p:column headerText="#{msg['environmentLabel']}" sortBy="#{userActivity.deviceInfo}" filterBy="#{userActivity.deviceInfo}">
                                             <div style="font-weight:700;color:#0f172a;">#{userActivityBean.safeValue(userActivity.deviceInfo)}</div>
                                             <div style="color:#64748b;">#{userActivityBean.safeValue(userActivity.locationInfo)}</div>
                                         </p:column>
 
-                                        <p:column headerText="Time" sortBy="#{userActivity.createdAt}" filterBy="#{userActivity.createdAt}">
+                                        <p:column headerText="#{msg['timeLabel']}" sortBy="#{userActivity.createdAt}" filterBy="#{userActivity.createdAt}">
                                             <h:outputText value="#{userActivity.createdAt}">
                                                 <f:convertDateTime pattern="dd/MM/yyyy hh:mm:ss a"/>
                                             </h:outputText>

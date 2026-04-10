@@ -120,7 +120,7 @@
                         <div class="flex flex-column lg:flex-row lg:justify-content-between lg:align-items-end gap-3">
                             <div class="flex flex-column md:flex-row gap-3" style="flex:1;">
                                 <div style="min-width:18rem;">
-                                    <label for="organizationFilter"><strong>#{i18n.core('organizationLabel')}:</strong></label>
+                        <label for="organizationFilter"><strong>#{msg['organizationLabel']}:</strong></label>
                                     <h:panelGroup rendered="#{consultationBean.applicationAdmin}" layout="block">
                                         <p:selectOneMenu id="organizationFilter" value="#{consultationBean.selectedOrganizationId}" style="display:block;width:100%;margin-top:.35rem;">
                                             <f:selectItem itemLabel="#{i18n.app('selectOrganizationLabel')}" itemValue="#{null}" noSelectionOption="true"/>
@@ -156,7 +156,7 @@
                             <p:dataTable value="#{consultationBean.consultationList}" var="consultationRow" widgetVar="consultationTableWidget"
                                          rendered="#{consultationBean.consultationResultsLoaded}"
                                          paginator="true" rows="10" rowsPerPageTemplate="10,25,50" paginatorPosition="bottom"
-                                         currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords}" reflow="true" rowKey="#{consultationRow.id}"
+                                         currentPageReportTemplate="#{i18n.app('currentPageReportTemplateLabel')}" reflow="true" rowKey="#{consultationRow.id}"
                                          emptyMessage="#{i18n.app('noConsultationsFoundMessage')}">
                                 <f:facet name="header">
                                     <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-2">
@@ -185,10 +185,10 @@
                                     #{consultationRow.patient.patientName}
                                 </p:column>
                                 <p:column headerText="#{i18n.app('invoiceLabel')}">
-                                    <p:tag value="#{consultationRow.issueInvoice ? i18n.core('yesLabel') : i18n.core('noLabel')}" severity="#{consultationRow.issueInvoice ? 'success' : 'warning'}"/>
+                                <p:tag value="#{consultationRow.issueInvoice ? msg['yesLabel'] : msg['noLabel']}" severity="#{consultationRow.issueInvoice ? 'success' : 'warning'}"/>
                                 </p:column>
                                 <p:column headerText="#{i18n.app('medicalCertificateShortLabel')}">
-                                    <p:tag value="#{consultationRow.issueMedicalCertificate ? i18n.core('yesLabel') : i18n.core('noLabel')}" severity="#{consultationRow.issueMedicalCertificate ? 'success' : 'warning'}"/>
+                                <p:tag value="#{consultationRow.issueMedicalCertificate ? msg['yesLabel'] : msg['noLabel']}" severity="#{consultationRow.issueMedicalCertificate ? 'success' : 'warning'}"/>
                                 </p:column>
                                 <p:column headerText="#{i18n.app('totalLabel')}">#{consultationBean.previewCurrencySymbol} #{consultationRow.invoiceTotal}</p:column>
                                 <p:column headerText="#{i18n.app('actionsLabel')}" style="width:16rem;">
@@ -499,10 +499,10 @@
 
             <p:confirmDialog widgetVar="deleteConsultationDialog" header="#{i18n.app('confirmDeleteLabel')}" severity="warn"
                              message="#{i18n.app('deleteSelectedConsultationMessage')}">
-                <p:commandButton value="#{i18n.core('yesLabel')}" icon="pi pi-check" actionListener="#{consultationBean.confirmDeleteConsultation}"
+                    <p:commandButton value="#{msg['yesLabel']}" icon="pi pi-check" actionListener="#{consultationBean.confirmDeleteConsultation}"
                                  process="@this" update=":form:contentModePanel :form:messages"
                                  oncomplete="PF('deleteConsultationDialog').hide()"/>
-                <p:commandButton value="#{i18n.core('noLabel')}" type="button" icon="pi pi-times" onclick="PF('deleteConsultationDialog').hide()"
+                    <p:commandButton value="#{msg['noLabel']}" type="button" icon="pi pi-times" onclick="PF('deleteConsultationDialog').hide()"
                                  styleClass="ui-button-secondary"/>
             </p:confirmDialog>
         </h:form>

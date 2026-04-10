@@ -114,7 +114,7 @@ public class HomePageBean extends GenericManagedBean implements Serializable {
 //    private String memoryJson;
 
     public void initializePageAttributes() {
-        resourceBundle = ResourceBundle.getBundle("messages",
+        resourceBundle = ResourceBundle.getBundle("coreAppMessages",
                 FacesContext.getCurrentInstance().getViewRoot().getLocale());
         organizationList = new ArrayList<>(getAccessibleOrganizations(organizationService));
         selectedOrganizationId = resolveDashboardOrganizationId(selectedOrganizationId);

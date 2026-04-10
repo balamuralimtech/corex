@@ -69,33 +69,32 @@
                 <div class="col-12">
                     <p:breadCrumb>
                         <p:menuitem url="#" icon="pi pi-home"/>
-                        <p:menuitem value="Server and DB" url="#"/>
-                        <p:menuitem value="Server Logs" url="#"/>
+                        <p:menuitem value="#{msg['serverAndDbLabel']}" url="#"/>
+                        <p:menuitem value="#{msg['serverLogsLabel']}" url="#"/>
                     </p:breadCrumb>
                 </div>
 
                 <div class="col-12">
                     <div class="logs-hero">
-                        <h2 class="logs-title">Server Log Command Deck</h2>
+                        <h2 class="logs-title">#{msg['serverLogCommandDeckLabel']}</h2>
                         <div class="logs-copy">
-                            Inspect runtime logs, open the selected file instantly, and download the current artifact without leaving the page.
-                            Built for fast triage when production or UAT starts misbehaving.
+                            #{msg['serverLogCommandDeckSummaryLabel']}
                         </div>
                         <div class="logs-strip">
                             <div class="logs-chip">
-                                <span class="logs-chip-label">Log Files</span>
+                                <span class="logs-chip-label">#{msg['logFilesLabel']}</span>
                                 <span class="logs-chip-value">#{logViewerBean.logFileCount}</span>
                             </div>
                             <div class="logs-chip">
-                                <span class="logs-chip-label">Selected File</span>
-                                <span class="logs-chip-value">#{empty logViewerBean.selectedFileName ? 'No file selected' : logViewerBean.selectedFileName}</span>
+                                <span class="logs-chip-label">#{msg['selectedFileLabel']}</span>
+                                <span class="logs-chip-value">#{empty logViewerBean.selectedFileName ? msg['noFileSelectedLabel'] : logViewerBean.selectedFileName}</span>
                             </div>
                             <div class="logs-chip">
-                                <span class="logs-chip-label">Selected Size</span>
+                                <span class="logs-chip-label">#{msg['selectedSizeLabel']}</span>
                                 <span class="logs-chip-value">#{logViewerBean.selectedFileSizeLabel}</span>
                             </div>
                             <div class="logs-chip">
-                                <span class="logs-chip-label">Log Location</span>
+                                <span class="logs-chip-label">#{msg['logLocationLabel']}</span>
                                 <span class="logs-chip-value" style="font-size:1rem; line-height:1.45;">#{logViewerBean.serverLogsLocation}</span>
                             </div>
                         </div>
@@ -110,20 +109,20 @@
                                     <p:outputPanel id="logActionPanelId">
                                     <div class="logs-head">
                                         <div>
-                                            <h3 class="logs-head-title">Actions</h3>
-                                            <div class="logs-head-copy">Refresh the explorer, open the current file in a dialog, or download what you are investigating.</div>
+                                            <h3 class="logs-head-title">#{msg['actionsLabel']}</h3>
+                                            <div class="logs-head-copy">#{msg['serverLogActionsSummaryLabel']}</div>
                                         </div>
                                     </div>
                                     <div class="logs-actions">
                                         <p:commandButton id="refreshButtonId"
-                                                         value="Refresh Explorer"
+                                                         value="#{msg['refreshExplorerLabel']}"
                                                          icon="pi pi-refresh"
                                                          action="#{logViewerBean.refreshButtonAction}"
                                                          update=":appserverlogFormId:appserverlogMainPanelId :appserverlogFormId:logDialog"
                                                          styleClass="ui-button-info"/>
 
                                         <p:commandButton id="loadLogButtonId"
-                                                         value="Open Full Viewer"
+                                                         value="#{msg['openFullViewerLabel']}"
                                                          icon="pi pi-external-link"
                                                          disabled="#{not logViewerBean.fileSelected}"
                                                          oncomplete="PF('logDialog').show()"
@@ -132,7 +131,7 @@
                                                          styleClass="ui-button-success"/>
 
                                         <p:commandButton id="downloadFileId"
-                                                         value="Download Selected"
+                                                         value="#{msg['downloadSelectedLabel']}"
                                                          icon="pi pi-download"
                                                          disabled="#{not logViewerBean.fileSelected}"
                                                          ajax="false"
@@ -141,14 +140,14 @@
                                         </p:commandButton>
 
                                         <p:commandButton id="downloadZipId"
-                                                         value="Download ZIP"
+                                                         value="#{msg['downloadZipLabel']}"
                                                          disabled="true"
                                                          icon="pi pi-box"
                                                          styleClass="ui-button-secondary">
                                             <p:fileDownload value="#{logViewerBean.zipToDownload}"/>
                                         </p:commandButton>
 
-                                        <p:button value="Error Monitor"
+                                        <p:button value="#{msg['errorMonitorLabel']}"
                                                   icon="pi pi-bell"
                                                   href="#{request.contextPath}/error-log-monitor"
                                                   styleClass="ui-button-warning"/>
@@ -161,12 +160,12 @@
                                 <div class="logs-panel logs-panel-dark">
                                     <div class="logs-head">
                                         <div>
-                                            <h3 class="logs-head-title">Log Explorer</h3>
-                                            <div class="logs-head-copy">Folders and `.log` files under the server log directory.</div>
+                                            <h3 class="logs-head-title">#{msg['logExplorerLabel']}</h3>
+                                            <div class="logs-head-copy">#{msg['logExplorerSummaryLabel']}</div>
                                         </div>
                                         <span class="logs-badge">
                                             <i class="pi pi-folder-open"></i>
-                                            #{logViewerBean.logFileCount} files
+                                            #{logViewerBean.logFileCount} #{msg['filesLabel']}
                                         </span>
                                     </div>
 
@@ -196,8 +195,8 @@
                                     <p:outputPanel id="logPreviewPanelId">
                                     <div class="logs-head">
                                         <div>
-                                            <h3 class="logs-head-title">Live Preview</h3>
-                                            <div class="logs-head-copy">Immediate view of the selected log file with download and full-view actions kept close.</div>
+                                            <h3 class="logs-head-title">#{msg['livePreviewLabel']}</h3>
+                                            <div class="logs-head-copy">#{msg['livePreviewSummaryLabel']}</div>
                                         </div>
                                     </div>
 
@@ -205,11 +204,11 @@
                                         <div class="logs-meta">
                                             <span class="logs-badge">
                                                 <i class="pi pi-file"></i>
-                                                #{empty logViewerBean.selectedFileName ? 'Awaiting selection' : logViewerBean.selectedFileName}
+                                                #{empty logViewerBean.selectedFileName ? msg['awaitingSelectionLabel'] : logViewerBean.selectedFileName}
                                             </span>
                                             <span class="logs-badge">
                                                 <i class="pi pi-align-left"></i>
-                                                #{logViewerBean.selectedFileLineCount} lines
+                                                #{logViewerBean.selectedFileLineCount} #{msg['linesLabel']}
                                             </span>
                                             <span class="logs-badge">
                                                 <i class="pi pi-database"></i>
@@ -221,12 +220,12 @@
                                     <div class="logs-preview">
                                         <div class="logs-preview-header">
                                             <div>
-                                                <div class="logs-preview-title">#{empty logViewerBean.selectedFileName ? 'No file selected' : logViewerBean.selectedFileName}</div>
+                                                <div class="logs-preview-title">#{empty logViewerBean.selectedFileName ? msg['noFileSelectedLabel'] : logViewerBean.selectedFileName}</div>
                                                 <div class="logs-preview-subtitle">#{logViewerBean.serverLogsLocation}</div>
                                             </div>
                                             <span class="logs-badge">
                                                 <i class="pi pi-eye"></i>
-                                                Inline Preview
+                                                #{msg['inlinePreviewLabel']}
                                             </span>
                                         </div>
 
@@ -235,7 +234,7 @@
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{not logViewerBean.fileSelected}" layout="block">
                                             <div class="logs-empty">
-                                                Select a log file from the explorer to preview its contents here.
+                                                #{msg['selectLogFilePreviewLabel']}
                                             </div>
                                         </h:panelGroup>
                                     </div>
@@ -247,7 +246,7 @@
                 </div>
             </div>
 
-            <p:dialog header="Log File: #{logViewerBean.selectedFileName}"
+            <p:dialog header="#{msg['logFileDialogLabel']}: #{logViewerBean.selectedFileName}"
                       widgetVar="logDialog"
                       modal="true"
                       responsive="true"

@@ -91,7 +91,7 @@ public class BankDetailsBean extends GenericManagedBean implements Serializable 
     {
         logger.debug("entered into initializePageAttributes !!!");
 
-        resourceBundle = ResourceBundle.getBundle("messages",FacesContext.getCurrentInstance().getViewRoot().getLocale());
+        resourceBundle = ResourceBundle.getBundle("coreAppMessages",FacesContext.getCurrentInstance().getViewRoot().getLocale());
 
 
         isAddOperation = true;

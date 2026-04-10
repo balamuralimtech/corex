@@ -21,7 +21,7 @@
                         </p>
                     </div>
                     <div class="surface-100 border-round px-3 py-2">
-                        <label for="organizationSelect"><strong>#{i18n.core('organizationLabel')}:</strong></label>
+                    <label for="organizationSelect"><strong>#{msg['organizationLabel']}:</strong></label>
                         <h:panelGroup rendered="#{clinicSettingsBean.applicationAdmin}" layout="block">
                             <p:selectOneMenu id="organizationSelect" value="#{clinicSettingsBean.selectedOrganizationId}" style="display:block;min-width:18rem;margin-top:.35rem;">
                                 <f:selectItem itemLabel="#{i18n.app('selectOrganizationLabel')}" itemValue="#{null}" noSelectionOption="true"/>
@@ -44,47 +44,47 @@
                                 <h3 style="margin-top:0;">#{i18n.app('clinicSettingsIdentityLabel')}</h3>
                                 <div class="grid">
                                     <div class="col-12 md:col-6">
-                                        <label>Clinic Name</label>
+                                        <label>#{i18n.app('clinicNameLabel')}</label>
                                         <p:inputText value="#{clinicSettingsBean.clinicSettings.clinicName}" style="width:100%;"/>
                                     </div>
                                     <div class="col-12 md:col-6">
-                                        <label>Clinic Tagline</label>
+                                        <label>#{i18n.app('clinicTaglineLabel')}</label>
                                         <p:inputText value="#{clinicSettingsBean.clinicSettings.clinicTagline}" style="width:100%;"/>
                                     </div>
                                     <div class="col-12 md:col-4">
-                                        <label>Doctor Name</label>
+                                        <label>#{i18n.app('doctorNameLabel')}</label>
                                         <p:inputText value="#{clinicSettingsBean.clinicSettings.doctorName}" style="width:100%;"/>
                                     </div>
                                     <div class="col-12 md:col-4">
-                                        <label>Doctor Qualification</label>
+                                        <label>#{i18n.app('doctorQualificationLabel')}</label>
                                         <p:inputText value="#{clinicSettingsBean.clinicSettings.doctorQualification}" style="width:100%;"/>
                                     </div>
                                     <div class="col-12 md:col-4">
-                                        <label>Registration Number</label>
+                                        <label>#{i18n.app('registrationNumberLabel')}</label>
                                         <p:inputText value="#{clinicSettingsBean.clinicSettings.registrationNumber}" style="width:100%;"/>
                                     </div>
                                     <div class="col-12">
-                                        <label>Doctor Specialization / Credentials Line</label>
+                                        <label>#{i18n.app('doctorSpecializationCredentialsLineLabel')}</label>
                                         <p:inputText value="#{clinicSettingsBean.clinicSettings.doctorSpecialization}" style="width:100%;"/>
                                     </div>
                                     <div class="col-12 md:col-6">
-                                        <label>Clinic Email</label>
+                                        <label>#{i18n.app('clinicEmailLabel')}</label>
                                         <p:inputText value="#{clinicSettingsBean.clinicSettings.clinicEmail}" style="width:100%;"/>
                                     </div>
                                     <div class="col-12 md:col-6">
-                                        <label>Appointment Contact</label>
+                                        <label>#{i18n.app('appointmentContactLabel')}</label>
                                         <p:inputText value="#{clinicSettingsBean.clinicSettings.appointmentContact}" style="width:100%;"/>
                                     </div>
                                     <div class="col-12">
-                                        <label>Clinic Address</label>
+                                        <label>#{i18n.app('clinicAddressLabel')}</label>
                                         <p:inputTextarea value="#{clinicSettingsBean.clinicSettings.clinicAddress}" rows="3" autoResize="false" style="width:100%;"/>
                                     </div>
                                     <div class="col-12">
-                                        <label>Schedule Footer Line 1</label>
+                                        <label>#{i18n.app('scheduleFooterLineOneLabel')}</label>
                                         <p:inputText value="#{clinicSettingsBean.clinicSettings.scheduleLineOne}" style="width:100%;"/>
                                     </div>
                                     <div class="col-12">
-                                        <label>Schedule Footer Line 2</label>
+                                        <label>#{i18n.app('scheduleFooterLineTwoLabel')}</label>
                                         <p:inputText value="#{clinicSettingsBean.clinicSettings.scheduleLineTwo}" style="width:100%;"/>
                                     </div>
                                 </div>
@@ -142,14 +142,14 @@
                                                     <p:graphicImage value="#{clinicSettingsBean.sealPreview}" cache="false"
                                                                     style="max-width:180px;max-height:180px;object-fit:contain;display:block;margin:0 auto;"/>
                                                     <div style="margin-top:.75rem;font-size:.85rem;color:#64748b;">
-                                                        Mode: #{clinicSettingsBean.clinicSettings.sealDisplayMode} | Size: #{clinicSettingsBean.clinicSettings.sealSizePx}px
+                                                        #{i18n.app('modeLabel')}: #{clinicSettingsBean.clinicSettings.sealDisplayMode} | #{i18n.app('sizeLabel')}: #{clinicSettingsBean.clinicSettings.sealSizePx}px
                                                     </div>
                                                 </div>
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{not clinicSettingsBean.sealAvailable}">
                                                 <div style="text-align:center;color:#94a3b8;">
                                                     <div style="width:132px;height:132px;border:2px dashed #cbd5e1;border-radius:999px;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem auto;font-weight:700;">
-                                                        SEAL
+                                                        #{i18n.app('sealShortLabel')}
                                                     </div>
                                                     <div>#{i18n.app('clinicSettingsNoSealLabel')}</div>
                                                 </div>
@@ -166,34 +166,34 @@
                                 <div class="grid">
                                     <div class="col-12 md:col-4">
                                         <label>#{i18n.app('clinicSettingsWeekdaysOpenLabel')}</label>
-                                        <p:selectBooleanButton value="#{clinicSettingsBean.clinicSettings.weekdaysOpen}" onLabel="#{i18n.core('yesLabel')}" offLabel="#{i18n.core('noLabel')}" style="display:block;"/>
+                                        <p:selectBooleanButton value="#{clinicSettingsBean.clinicSettings.weekdaysOpen}" onLabel="#{msg['yesLabel']}" offLabel="#{msg['noLabel']}" style="display:block;"/>
                                     </div>
                                     <div class="col-12 md:col-4">
                                         <label>#{i18n.app('clinicSettingsSaturdayOpenLabel')}</label>
-                                        <p:selectBooleanButton value="#{clinicSettingsBean.clinicSettings.saturdayOpen}" onLabel="#{i18n.core('yesLabel')}" offLabel="#{i18n.core('noLabel')}" style="display:block;"/>
+                                        <p:selectBooleanButton value="#{clinicSettingsBean.clinicSettings.saturdayOpen}" onLabel="#{msg['yesLabel']}" offLabel="#{msg['noLabel']}" style="display:block;"/>
                                     </div>
                                     <div class="col-12 md:col-4">
                                         <label>#{i18n.app('clinicSettingsSundayOpenLabel')}</label>
-                                        <p:selectBooleanButton value="#{clinicSettingsBean.clinicSettings.sundayOpen}" onLabel="#{i18n.core('yesLabel')}" offLabel="#{i18n.core('noLabel')}" style="display:block;"/>
+                                        <p:selectBooleanButton value="#{clinicSettingsBean.clinicSettings.sundayOpen}" onLabel="#{msg['yesLabel']}" offLabel="#{msg['noLabel']}" style="display:block;"/>
                                     </div>
                                     <div class="col-12 md:col-6">
-                                        <label>Opening Time</label>
+                                        <label>#{i18n.app('clinicSettingsOpeningTimeLabel')}</label>
                                         <p:datePicker value="#{clinicSettingsBean.clinicSettings.openingTime}" timeOnly="true" pattern="hh:mm a" showIcon="true" style="width:100%;"/>
                                     </div>
                                     <div class="col-12 md:col-6">
-                                        <label>Closing Time</label>
+                                        <label>#{i18n.app('clinicSettingsClosingTimeLabel')}</label>
                                         <p:datePicker value="#{clinicSettingsBean.clinicSettings.closingTime}" timeOnly="true" pattern="hh:mm a" showIcon="true" style="width:100%;"/>
                                     </div>
                                     <div class="col-12 md:col-6">
-                                        <label>Break Start Time</label>
+                                        <label>#{i18n.app('clinicSettingsBreakStartTimeLabel')}</label>
                                         <p:datePicker value="#{clinicSettingsBean.clinicSettings.breakStartTime}" timeOnly="true" pattern="hh:mm a" showIcon="true" style="width:100%;"/>
                                     </div>
                                     <div class="col-12 md:col-6">
-                                        <label>Break End Time</label>
+                                        <label>#{i18n.app('clinicSettingsBreakEndTimeLabel')}</label>
                                         <p:datePicker value="#{clinicSettingsBean.clinicSettings.breakEndTime}" timeOnly="true" pattern="hh:mm a" showIcon="true" style="width:100%;"/>
                                     </div>
                                     <div class="col-12">
-                                        <label>Consultation Slot Duration (Minutes)</label>
+                                        <label>#{i18n.app('clinicSettingsSlotDurationLabel')}</label>
                                         <p:spinner value="#{clinicSettingsBean.clinicSettings.slotDurationMinutes}" min="1" stepFactor="5" style="width:100%;"/>
                                     </div>
                                 </div>
@@ -218,7 +218,7 @@
                                         </small>
                                     </div>
                                     <div class="col-12 md:col-6">
-                                        <label>Consultation Fee</label>
+                                        <label>#{i18n.app('consultationFeeLabel')}</label>
                                         <p:inputNumber value="#{clinicSettingsBean.clinicSettings.consultationFee}" decimalPlaces="2" minValue="0" style="width:100%;"/>
                                     </div>
                                     <div class="col-12 md:col-6">
@@ -230,7 +230,7 @@
                                         <p:inputNumber value="#{clinicSettingsBean.clinicSettings.registrationFee}" decimalPlaces="2" minValue="0" style="width:100%;"/>
                                     </div>
                                     <div class="col-12 md:col-6">
-                                        <label>Medical Certificate Fee</label>
+                                        <label>#{i18n.app('medicalCertificateFeeLabel')}</label>
                                         <p:inputNumber value="#{clinicSettingsBean.clinicSettings.medicalCertificateFee}" decimalPlaces="2" minValue="0" style="width:100%;"/>
                                     </div>
                                 </div>
@@ -253,7 +253,7 @@
 
                         <div class="col-12 lg:col-6">
                             <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
-                                <h3 style="margin-top:0;">Internal Notes</h3>
+                                <h3 style="margin-top:0;">#{i18n.app('internalNotesLabel')}</h3>
                                 <p:inputTextarea value="#{clinicSettingsBean.clinicSettings.notes}" rows="6" autoResize="false" maxlength="500" style="width:100%;"/>
                             </div>
                         </div>

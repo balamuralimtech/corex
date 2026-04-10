@@ -45,7 +45,7 @@
                 <p:breadCrumb>
                     <p:menuitem url="#" icon="pi pi-home" />
                     <p:menuitem value="#{msg['systemManagementLabel']}" url="#" />
-                    <p:menuitem value="Application Notifications" url="#" />
+                    <p:menuitem value="#{msg['applicationNotificationsLabel']}" url="#" />
                 </p:breadCrumb>
             </div>
             <div class="grid crud-demo">
@@ -60,7 +60,7 @@
                                                  update="addEditNotificationPanelId" process="@this"
                                                  oncomplete="PF('manageApplicationNotificationDialog').show()"
                                                  styleClass="ui-button-success" style="margin-right: .5rem" />
-                                <p:commandButton value="Fetch Notifications" icon="pi pi-search"
+                                <p:commandButton value="#{msg['fetchNotificationsLabel']}" icon="pi pi-search"
                                                  action="#{applicationNotificationBean.searchButtonAction}"
                                                  update="notificationMainPanelId" process="@this"
                                                  styleClass="ui-button-success" style="margin-right: .5rem" />
@@ -71,7 +71,7 @@
                             <p:toolbarGroup align="right">
                                 <p:commandButton value="#{msg['exportLabel']}" icon="pi pi-upload" styleClass="ui-button-help"
                                                  rendered="#{applicationNotificationBean.datatableRendered}">
-                                    <p:dataExporter type="pdf" target="notificationDataTableId" fileName="application-notifications"/>
+                                    <p:dataExporter type="pdf" target="notificationDataTableId" fileName="#{msg['applicationNotificationsFileLabel']}"/>
                                 </p:commandButton>
                             </p:toolbarGroup>
                         </p:toolbar>
@@ -83,7 +83,7 @@
                                          rowKey="#{notification.id}" paginator="true" rows="10" paginatorPosition="bottom">
                                 <f:facet name="header">
                                     <div class="products-table-header">
-                                        <span style="font-weight: bold">Search Application Notifications</span>
+                                        <span style="font-weight: bold">#{msg['searchApplicationNotificationsLabel']}</span>
                                         <span class="filter-container ui-input-icon-left">
                                             <i class="pi pi-search"></i>
                                             <p:inputText id="globalFilter" onkeyup="PF('applicationNotificationTable').filter()" placeholder="#{msg['searchLabel']}" />
@@ -94,13 +94,13 @@
                                 <p:column headerText="#{msg['idLabel']}" sortBy="#{notification.id}" filterBy="#{notification.id}">
                                     <h:outputText value="#{notification.id}" />
                                 </p:column>
-                                <p:column headerText="Message" sortBy="#{notification.message}" filterBy="#{notification.message}">
+                                <p:column headerText="#{msg['messageLabel']}" sortBy="#{notification.message}" filterBy="#{notification.message}">
                                     <h:outputText value="#{notification.message}" />
                                 </p:column>
-                                <p:column headerText="Created By" sortBy="#{notification.createdByUserName}" filterBy="#{notification.createdByUserName}">
+                                <p:column headerText="#{msg['createdByLabel']}" sortBy="#{notification.createdByUserName}" filterBy="#{notification.createdByUserName}">
                                     <h:outputText value="#{notification.createdByUserName}" />
                                 </p:column>
-                                <p:column headerText="Created At" sortBy="#{notification.createdAt}" filterBy="#{notification.createdAt}">
+                                <p:column headerText="#{msg['createdAtLabel']}" sortBy="#{notification.createdAt}" filterBy="#{notification.createdAt}">
                                     <h:outputText value="#{notification.createdAt}">
                                         <f:convertDateTime pattern="dd-MMM-yyyy hh:mm:ss a"/>
                                     </h:outputText>
@@ -125,7 +125,7 @@
                             </p:dataTable>
                         </p:outputPanel>
 
-                        <p:dialog header="Application Notification Details"
+                        <p:dialog header="#{msg['applicationNotificationDetailsLabel']}"
                                   showEffect="fade"
                                   modal="true"
                                   widgetVar="manageApplicationNotificationDialog"
@@ -133,7 +133,7 @@
                                   width="60%">
                             <p:outputPanel id="addEditNotificationPanelId" class="ui-fluid">
                                 <div class="field">
-                                    <p:outputLabel for="notificationMessage" value="Message" />
+                                    <p:outputLabel for="notificationMessage" value="#{msg['messageLabel']}" />
                                     <p:inputTextarea id="notificationMessage"
                                                      value="#{applicationNotificationBean.message}"
                                                      rows="8"
@@ -159,7 +159,7 @@
                         <p:confirmDialog widgetVar="deleteApplicationNotificationDialog"
                                          showEffect="fade"
                                          width="300"
-                                         message="Delete the selected application notification?"
+                                         message="#{msg['deleteSelectedApplicationNotificationLabel']}"
                                          header="#{msg['confirmLabel']}"
                                          severity="warn">
                             <p:commandButton value="#{msg['yesLabel']}" icon="pi pi-check"
