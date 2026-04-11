@@ -21,4 +21,6 @@ public interface IApplicationNotificationService {
     int getUnreadNotificationCountForUser(int userId);
 
     GeneralConstants markAllNotificationsAsSeen(int userId);
+
+    GeneralConstants addPublicApplicationNotification(ApplicationNotification applicationNotification);
 }

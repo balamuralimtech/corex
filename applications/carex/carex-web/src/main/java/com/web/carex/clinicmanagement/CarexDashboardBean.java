@@ -21,6 +21,7 @@ import javax.inject.Named;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -30,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 @Named("carexDashboardBean")
@@ -414,8 +416,7 @@ public class CarexDashboardBean extends CarexManagedBean implements Serializable
     }
 
     public String getOpenSignals() {
-        return String.format(Locale.US,
-                "%d low-stock items, %d consultations requiring invoices, %d consultations requiring medical certificates, and %d doctors already linked to user accounts.",
+        return MessageFormat.format(localizedMessage("openSignalsText"),
                 getLowStockMedicines(),
                 getConsultationsWithInvoice(),
                 getConsultationsWithMedicalCertificate(),
@@ -548,6 +549,17 @@ public class CarexDashboardBean extends CarexManagedBean implements Serializable
 
     private String escapeJs(String value) {
         return safeText(value, "").replace("\\", "\\\\").replace("'", "\\'");
+    }
+
+    private String localizedMessage(String key) {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        Locale locale = Locale.ENGLISH;
+        if (facesContext != null && facesContext.getViewRoot() != null && facesContext.getViewRoot().getLocale() != null) {
+            locale = facesContext.getViewRoot().getLocale();
+        }
+
+        ResourceBundle bundle = ResourceBundle.getBundle("carexAppMessages", locale);
+        return bundle.containsKey(key) ? bundle.getString(key) : key;
     }
 
     private <T> List<T> safeList(List<T> source) {

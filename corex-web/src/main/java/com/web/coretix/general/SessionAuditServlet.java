@@ -50,7 +50,10 @@ public class SessionAuditServlet extends HttpServlet {
 
         if ("browser-close".equalsIgnoreCase(action)) {
             logger.debug("Received browser close audit for session {}", session.getId());
-            SessionAuditSupport.auditSessionTermination(session, LoginConstants.LOGOUT_SUCCESSFUL, "BROWSER_CLOSE", true);
+            // Browser lifecycle events (pagehide/beacon) are not reliable enough to
+            // distinguish tab close from normal in-app navigation across all clients.
+            // Do not invalidate here to avoid terminating active sessions mid-workflow.
+            SessionAuditSupport.auditSessionTermination(session, LoginConstants.LOGOUT_SUCCESSFUL, "BROWSER_CLOSE", false);
             response.setStatus(HttpServletResponse.SC_NO_CONTENT);
             return;
         }

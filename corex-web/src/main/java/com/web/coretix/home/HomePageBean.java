@@ -44,6 +44,7 @@ import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
@@ -303,17 +304,28 @@ public class HomePageBean extends GenericManagedBean implements Serializable {
             return "[]";
         }
         return String.format(Locale.US,
-                "[['Organizations', %d], ['Branches', %d], ['Departments', %d], ['Designations', %d], ['Countries', %d], ['States', %d], ['Cities', %d], ['Currencies', %d], ['Roles', %d], ['Users', %d], ['Activities', %d]]",
+                "[['%s', %d], ['%s', %d], ['%s', %d], ['%s', %d], ['%s', %d], ['%s', %d], ['%s', %d], ['%s', %d], ['%s', %d], ['%s', %d], ['%s', %d]]",
+                jsLabel("organizationsLabel"),
                 coreDashboardTO.getOrganizationCount(),
+                jsLabel("branchesLabel"),
                 coreDashboardTO.getBranchCount(),
+                jsLabel("departmentsLabel"),
                 coreDashboardTO.getDepartmentCount(),
+                jsLabel("designationsLabel"),
                 coreDashboardTO.getDesignationCount(),
+                jsLabel("countriesLabel"),
                 coreDashboardTO.getCountryCount(),
+                jsLabel("statesLabel"),
                 coreDashboardTO.getStateCount(),
+                jsLabel("citiesLabel"),
                 coreDashboardTO.getCityCount(),
+                jsLabel("currenciesLabel"),
                 coreDashboardTO.getCurrencyCount(),
+                jsLabel("rolesLabel"),
                 coreDashboardTO.getRoleCount(),
+                jsLabel("usersLabel"),
                 coreDashboardTO.getUserCount(),
+                jsLabel("activitiesLabel"),
                 coreDashboardTO.getUserActivityCount());
     }
 
@@ -322,9 +334,12 @@ public class HomePageBean extends GenericManagedBean implements Serializable {
             return "[]";
         }
         return String.format(Locale.US,
-                "[['Logged In', %d], ['Logged Out', %d], ['Never Logged In', %d]]",
+                "[['%s', %d], ['%s', %d], ['%s', %d]]",
+                jsLabel("chartLoggedInLabel"),
                 coreDashboardTO.getUsersLoggedInCount(),
+                jsLabel("chartLoggedOutLabel"),
                 coreDashboardTO.getUsersLoggedOutCount(),
+                jsLabel("neverLoggedInLabel"),
                 coreDashboardTO.getUsersNeverLoggedinCount());
     }
 
@@ -333,8 +348,10 @@ public class HomePageBean extends GenericManagedBean implements Serializable {
             return "[]";
         }
         return String.format(Locale.US,
-                "[['Used Roles', %d], ['Unused Roles', %d]]",
+                "[['%s', %d], ['%s', %d]]",
+                jsLabel("chartUsedRolesLabel"),
                 coreDashboardTO.getRolesUsedCount(),
+                jsLabel("chartUnusedRolesLabel"),
                 coreDashboardTO.getRolesNotUsedCount());
     }
 
@@ -343,19 +360,27 @@ public class HomePageBean extends GenericManagedBean implements Serializable {
             return "[]";
         }
         return String.format(Locale.US,
-                "[['Login', %d], ['Logout', %d], ['Add', %d], ['Update', %d], ['Delete', %d]]",
+                "[['%s', %d], ['%s', %d], ['%s', %d], ['%s', %d], ['%s', %d]]",
+                jsLabel("loginLabel"),
                 coreDashboardTO.getLoginCount(),
+                jsLabel("logoutLabel"),
                 coreDashboardTO.getLogoutCount(),
+                jsLabel("addLabel"),
                 coreDashboardTO.getAddCount(),
+                jsLabel("updateLabel"),
                 coreDashboardTO.getUpdateCount(),
+                jsLabel("deleteLabel"),
                 coreDashboardTO.getDeleteCount());
     }
 
     public String getPortfolioMixJson() {
         return String.format(Locale.US,
-                "[['Structure', %d], ['Geography', %d], ['Identity', %d]]",
+                "[['%s', %d], ['%s', %d], ['%s', %d]]",
+                jsLabel("chartStructureLabel"),
                 getTotalStructureCount(),
+                jsLabel("chartGeographyLabel"),
                 getTotalGeographyCount(),
+                jsLabel("chartIdentityLabel"),
                 getTotalIdentityCount());
     }
 
@@ -380,21 +405,24 @@ public class HomePageBean extends GenericManagedBean implements Serializable {
     }
 
     public String getDashboardInsights() {
+        String activeUserRate = String.format(Locale.US, "%.1f", getActiveUserRate());
+        String roleUsageRate = String.format(Locale.US, "%.1f", getRoleUsageRate());
+        String avgActivitiesPerUser = String.format(Locale.US, "%.2f", getAverageActivitiesPerUser());
+        int activeLicenseCount = getActiveLicenseCount();
+
         if (!isAllOrganizationsSelected() && selectedOrganizationId != null) {
-            return String.format(Locale.US,
-                    "%s currently has %.1f%% active users, %.1f%% role utilization, %.2f tracked activities per user, and %d active licenses in view.",
+            return formatMessage("dashboardInsightsScopedTemplate",
                     getSelectedOrganizationName(),
-                    getActiveUserRate(),
-                    getRoleUsageRate(),
-                    getAverageActivitiesPerUser(),
-                    getActiveLicenseCount());
+                    activeUserRate,
+                    roleUsageRate,
+                    avgActivitiesPerUser,
+                    activeLicenseCount);
         }
-        return String.format(Locale.US,
-                "Active users are %.1f%% of the tracked user base. Roles are utilized at %.1f%%, each user generates %.2f tracked activities on average, and %d organizations currently have active licenses.",
-                getActiveUserRate(),
-                getRoleUsageRate(),
-                getAverageActivitiesPerUser(),
-                getActiveLicenseCount());
+        return formatMessage("dashboardInsightsGlobalTemplate",
+                activeUserRate,
+                roleUsageRate,
+                avgActivitiesPerUser,
+                activeLicenseCount);
     }
 
     public int getLicensedOrganizationCount() {
@@ -467,8 +495,7 @@ public class HomePageBean extends GenericManagedBean implements Serializable {
     }
 
     public String getLicenseSummary() {
-        return String.format(Locale.US,
-                "%d licensed organizations cover %d users. %d licenses are active, %d are expired, and %d need renewal inside 30 days.",
+        return formatMessage("licenseSummaryTemplate",
                 getLicensedOrganizationCount(),
                 getLicensedUserCount(),
                 getActiveLicenseCount(),
@@ -590,6 +617,36 @@ public class HomePageBean extends GenericManagedBean implements Serializable {
 
     private double round(double value) {
         return Math.round(value * 100.0) / 100.0;
+    }
+
+    private String formatMessage(String key, Object... args) {
+        String pattern = localizedLabel(key);
+        return MessageFormat.format(pattern, args);
+    }
+
+    private String jsLabel(String key) {
+        return escapeForSingleQuotedJs(localizedLabel(key));
+    }
+
+    public String js(String key) {
+        return jsLabel(key);
+    }
+
+    private String escapeForSingleQuotedJs(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.replace("\\", "\\\\").replace("'", "\\'");
+    }
+
+    private String localizedLabel(String key) {
+        ResourceBundle bundle = resourceBundle;
+        if (bundle == null) {
+            Locale locale = FacesContext.getCurrentInstance().getViewRoot().getLocale();
+            bundle = ResourceBundle.getBundle("coreAppMessages", locale);
+            resourceBundle = bundle;
+        }
+        return bundle.containsKey(key) ? bundle.getString(key) : key;
     }
 
     // Getter for the memory data as JSON

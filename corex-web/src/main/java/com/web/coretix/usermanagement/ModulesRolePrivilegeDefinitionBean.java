@@ -151,6 +151,17 @@ public class ModulesRolePrivilegeDefinitionBean implements Serializable {
                 if (privilegeList != null) {
                     privilegeList.add(modulePrivilege.getId() + "/" + RolePrivilegeConstants.getById(modulePrivilege.getPrivilegeId()).getValue());
                 }
+            } else if (CoreAppModule.getById(modulePrivilege.getModuleId()).getValue().equalsIgnoreCase(CoreAppModule.APPLICATION_MANAGEMENT.getValue())) {
+                logger.debug("I" + modulePrivilege.getId() + " M : " + CoreAppModule.getById(modulePrivilege.getModuleId()).getValue()
+                        + " S : " + ApplicationManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue()
+                        + " P : " + RolePrivilegeConstants.getById(modulePrivilege.getPrivilegeId()).getValue());
+                outerMap.putIfAbsent(CoreAppModule.getById(modulePrivilege.getModuleId()).getValue(), new LinkedHashMap<>());
+                Map<String, List<String>> innerMap = outerMap.get(CoreAppModule.getById(modulePrivilege.getModuleId()).getValue());
+                innerMap.putIfAbsent(ApplicationManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue(), new ArrayList<>());
+                List<String> privilegeList = innerMap.get(ApplicationManagementModule.getById(modulePrivilege.getSubmoduleId()).getValue());
+                if (privilegeList != null) {
+                    privilegeList.add(modulePrivilege.getId() + "/" + RolePrivilegeConstants.getById(modulePrivilege.getPrivilegeId()).getValue());
+                }
             }
 
 
@@ -256,6 +267,20 @@ public class ModulesRolePrivilegeDefinitionBean implements Serializable {
                 }
 
                 bean.setRoleSubModuleBeanList(roleSubModuleBeanList);
+            } else if (module.equalsIgnoreCase(CoreAppModule.APPLICATION_MANAGEMENT.getValue())) {
+                List<RoleSubModuleBean> roleSubModuleBeanList = new ArrayList<>();
+                for (String subModule : ApplicationManagementModule.getAllValues()) {
+                    RoleSubModuleBean roleSubModuleBean = new RoleSubModuleBean();
+                    roleSubModuleBean.setSubModule(subModule);
+                    List<String> rolePrivilegeBeanList = new ArrayList<>();
+                    roleSubModuleBean.setSelectedPrivilegeList(defViewPrivilegeBeanList);
+                    rolePrivilegeBeanList.addAll(RolePrivilegeConstants.getAllValues());
+
+                    roleSubModuleBean.setRolePrivilegeBeanList(rolePrivilegeBeanList);
+                    roleSubModuleBeanList.add(roleSubModuleBean);
+                }
+
+                bean.setRoleSubModuleBeanList(roleSubModuleBeanList);
             }
 
             roleModuleList.add(bean);
@@ -289,6 +314,8 @@ public class ModulesRolePrivilegeDefinitionBean implements Serializable {
                         modulePrivileges.setSubmoduleId(LicenseManagementModule.getByValue(roleSubModuleBean.getSubModule()).getId());
                     } else if (roleModuleBean.getModule().equalsIgnoreCase(CoreAppModule.SERVER_AND_DB.getValue())) {
                         modulePrivileges.setSubmoduleId(ServerAndDBModule.getByValue(roleSubModuleBean.getSubModule()).getId());
+                    } else if (roleModuleBean.getModule().equalsIgnoreCase(CoreAppModule.APPLICATION_MANAGEMENT.getValue())) {
+                        modulePrivileges.setSubmoduleId(ApplicationManagementModule.getByValue(roleSubModuleBean.getSubModule()).getId());
                     }
 
                     modulePrivileges.setPrivilegeId(RolePrivilegeConstants.getByValue(privilege).getId());

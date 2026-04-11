@@ -41,9 +41,17 @@
         <servlet-name>SessionAuditServlet</servlet-name>
         <servlet-class>com.web.coretix.general.SessionAuditServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>DemoRequestServlet</servlet-name>
+        <servlet-class>com.web.coretix.applicationmanagement.DemoRequestServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>SessionAuditServlet</servlet-name>
         <url-pattern>/session-audit</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>DemoRequestServlet</servlet-name>
+        <url-pattern>/demo-request</url-pattern>
     </servlet-mapping>
     <!-- Client-side state saving for better performance (70% memory reduction) -->
     <context-param>

@@ -13,7 +13,7 @@
 
         <h:outputStylesheet>
             .report-shell { display:flex; flex-direction:column; gap:1.25rem; }
-            .report-hero { position:relative; overflow:hidden; padding:1.75rem; border-radius:22px; background:linear-gradient(135deg,#1d4ed8 0%,#1e40af 100%); color:#f8fafc; box-shadow:0 22px 70px rgba(29,78,216,.22); }
+            .report-hero { position:relative; overflow:hidden; padding:1.75rem; border-radius:22px; background:linear-gradient(135deg,#1e3c72 0%,#2a5298 100%); color:#eff6ff; box-shadow:0 22px 70px rgba(30,60,114,.22); }
             .report-hero:before { content:''; position:absolute; inset:auto -10% -45% auto; width:320px; height:320px; border-radius:50%; background:radial-gradient(circle,rgba(255,255,255,.16) 0%,rgba(255,255,255,0) 72%); }
             .report-title { margin:0; font-size:1.95rem; font-weight:700; letter-spacing:-.03em; }
             .report-copy { margin-top:.7rem; max-width:780px; color:rgba(219,234,254,.92); line-height:1.6; }
@@ -26,8 +26,9 @@
             .report-metric-foot { margin-top:.75rem; color:#475569; font-size:.92rem; line-height:1.5; }
             .report-chart { min-height:320px; }
         </h:outputStylesheet>
+        <h:outputStylesheet library="carex" name="css/clinic-command-theme.css"/>
 
-        <h:form id="form">
+        <h:form id="form" styleClass="carex-unified-theme">
             <div class="report-shell">
                 <p:messages id="messages" showDetail="true" closable="true"/>
 
@@ -200,7 +201,7 @@
                         Highcharts.setOptions({
                             lang: { thousandsSep: ',' },
                             credits: { enabled: false },
-                            colors: ['#1d4ed8', '#0f766e', '#f97316', '#7c3aed', '#ef4444', '#14b8a6']
+                            colors: ['#1e3c72', '#2a5298', '#1d4ed8', '#2563eb', '#3b82f6', '#60a5fa']
                         });
 
                         Highcharts.chart('medicineMixChart', {

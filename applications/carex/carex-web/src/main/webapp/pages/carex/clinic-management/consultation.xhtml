@@ -9,7 +9,9 @@
     <ui:define name="content">
         <f:event listener="#{consultationBean.initializePageAttributes}" type="preRenderView"/>
 
-        <h:form id="form">
+        <h:outputStylesheet library="carex" name="css/clinic-command-theme.css"/>
+
+        <h:form id="form" styleClass="carex-unified-theme">
             <p:remoteCommand name="refreshConsultationPreview" process="consultationEditorPanel medicineLinePanel" update="form:previewTabsPanel"/>
 
             <h:outputScript target="body">

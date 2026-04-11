@@ -18,6 +18,7 @@ package com.web.coretix.customhandlers;
 
 import com.module.coretix.usermanagement.IRoleAdministrationService;
 import com.web.coretix.constants.CoreAppModule;
+import com.web.coretix.constants.ApplicationManagementModule;
 import com.web.coretix.constants.LicenseManagementModule;
 import com.web.coretix.constants.ServerAndDBModule;
 import com.web.coretix.constants.SessionAttributes;
@@ -88,7 +89,8 @@ public class AuthorizationFilter implements Filter {
         boolean resourceRequest = req.getRequestURI().startsWith(req.getContextPath() + "/javax.faces.resource");
         boolean bootstrapRequired = userAdministrationService != null && userAdministrationService.getUserCount() == 0;
 
-        if (bootstrapRequired && !(setupRequest || setupInternalRequest || resourceRequest || videoRequest)) {
+        if (bootstrapRequired && !(setupRequest || setupInternalRequest || publicFriendlyRequest
+                || publicInternalRequest || resourceRequest || videoRequest)) {
             res.sendRedirect(setupURI);
             return;
         }
@@ -161,6 +163,7 @@ public class AuthorizationFilter implements Filter {
         rules.put("/currency", new int[]{CoreAppModule.SYSTEM_MANAGEMENT.getId(), SystemManagementModule.CURRENCY.getId()});
         rules.put("/bank-details", new int[]{CoreAppModule.SYSTEM_MANAGEMENT.getId(), SystemManagementModule.BANK_DETAILS.getId()});
         rules.put("/notification-settings", new int[]{CoreAppModule.SYSTEM_MANAGEMENT.getId(), SystemManagementModule.NOTIFICATION_SETTING.getId()});
+        rules.put("/demo-requests", new int[]{CoreAppModule.APPLICATION_MANAGEMENT.getId(), ApplicationManagementModule.DEMO_REQUESTS.getId()});
         rules.put("/license", new int[]{CoreAppModule.LICENCE.getId(), LicenseManagementModule.LICENSE.getId()});
         rules.put("/server-logs", new int[]{CoreAppModule.SERVER_AND_DB.getId(), ServerAndDBModule.SERVER_LOGS.getId()});
         rules.put("/database-details", new int[]{CoreAppModule.SERVER_AND_DB.getId(), ServerAndDBModule.DATABASE.getId()});

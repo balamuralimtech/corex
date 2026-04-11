@@ -43,6 +43,7 @@ public class FriendlyUrlFilter implements Filter {
     private static final String DASHBOARD_CYCLE_INDEX = "dashboardCycleIndex";
 
     private static final Set<String> SHARED_PAGE_DIRECTORIES = Set.of(
+            "applicationmanagement",
             "errorandwarningpages",
             "home",
             "license",
@@ -55,6 +56,7 @@ public class FriendlyUrlFilter implements Filter {
             "/landing",
             "/login",
             "/setup",
+            "/demo-request",
             "/customer-request-form",
             "/error",
             "/bad-request",
@@ -132,8 +134,8 @@ public class FriendlyUrlFilter implements Filter {
     private static Map<String, String> buildFriendlyToInternalPaths() {
         Map<String, String> paths = new LinkedHashMap<>();
 
-        paths.put("/", "/login2.xhtml");
-        paths.put("/landing", "/login2.xhtml");
+        paths.put("/", "/landing.xhtml");
+        paths.put("/landing", "/landing.xhtml");
         paths.put("/login", "/login.xhtml");
         paths.put("/setup", "/setup.xhtml");
         paths.put("/home", CORE_DASHBOARD_INTERNAL_PATH);
@@ -158,6 +160,7 @@ public class FriendlyUrlFilter implements Filter {
         paths.put("/bank-details", "/pages/systemmanagement/bankdetails.xhtml");
         paths.put("/notification-settings", "/pages/systemmanagement/notificationsettings.xhtml");
         paths.put("/application-notifications", "/pages/systemmanagement/applicationnotifications.xhtml");
+        paths.put("/demo-requests", "/pages/applicationmanagement/demorequests.xhtml");
 
         paths.put("/license", "/pages/license/license.xhtml");
         paths.put("/server-logs", "/pages/serverlogs/serverlogs.xhtml");

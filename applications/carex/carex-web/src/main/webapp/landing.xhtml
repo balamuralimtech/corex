@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      lang="en">
+<h:head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="referrer" content="no-referrer"/>
+    <meta
+        name="description"
+        content="CareX helps clinics manage consultations, digital prescriptions, invoices, medical certificates, and analytics in one refined clinic platform."
+    />
+    <title>CareX | Clinic Management, Reimagined</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+    <h:outputStylesheet library="landing" name="carex-landing.css"/>
+</h:head>
+<h:body>
+    <header class="site-header">
+        <div class="nav-wrap">
+            <a class="brand" href="#top" aria-label="CareX home">
+                <span class="mark"></span>
+                <span class="bcopy">
+                    <span class="bname">CareX</span>
+                    <span class="bsub">Clinic and hospital operations platform</span>
+                </span>
+            </a>
+            <nav class="nav">
+                <a href="#overview">Overview</a>
+                <a href="#documents">Documents</a>
+                <a href="#analytics">Analytics</a>
+                <a href="#contact">Contact</a>
+            </nav>
+            <h:outputLink styleClass="nav-cta" value="#{request.contextPath}/login">Login</h:outputLink>
+        </div>
+    </header>
+
+    <main id="top">
+        <section class="hero">
+            <div class="hero-copy reveal">
+                <p class="eyebrow">Clinic management for modern practices</p>
+                <p class="trial-note">Trial Phase: CareX is currently in trial and will be available very soon.</p>
+                <h1>
+                    The clinic platform
+                    <span>designed for digital prescription.</span>
+                </h1>
+                <p class="hero-text">
+                    CareX helps small and medium clinics run consultations, generate digital prescriptions, issue invoices and medical certificates, and understand performance through beautifully clear analytics.
+                </p>
+                <div class="hero-actions">
+                    <h:outputLink styleClass="button button-primary" value="#{request.contextPath}/login">Go to Login</h:outputLink>
+                    <a class="button button-secondary" href="#overview">Learn More</a>
+                </div>
+            </div>
+
+            <div class="hero-device reveal reveal-delay" aria-hidden="true">
+                <div class="device-frame">
+                    <div class="device-top">
+                        <span class="device-pill">CareX Clinic Workspace</span>
+                        <span class="device-status">Live</span>
+                    </div>
+                    <div class="device-body">
+                        <div class="device-card feature-tone">
+                            <small>Today's flow</small>
+                            <strong>Consult, prescribe, invoice.</strong>
+                            <span>Everything connected in one screen.</span>
+                        </div>
+                        <div class="device-grid">
+                            <article class="device-mini">
+                                <small>Consultations</small>
+                                <strong data-count="126">126</strong>
+                            </article>
+                            <article class="device-mini">
+                                <small>Digital Rx</small>
+                                <strong data-count="342">342</strong>
+                            </article>
+                            <article class="device-mini">
+                                <small>Certificates</small>
+                                <strong data-count="47">47</strong>
+                            </article>
+                            <article class="device-mini">
+                                <small>Revenue</small>
+                                <strong data-count="28400">$28.4K</strong>
+                            </article>
+                        </div>
+                        <div class="device-strip">
+                            <div class="strip-copy">
+                                <small>Custom documents</small>
+                                <strong>Design your prescription, invoice, and medical certificate.</strong>
+                            </div>
+                            <div class="sheet-stack">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="intro-band reveal">
+            <p>
+                One platform for clinic registration, consultation, digital prescription, billing, certification, and intelligence.
+            </p>
+        </section>
+
+        <section class="section overview" id="overview">
+            <div class="section-copy reveal">
+                <p class="eyebrow">Overview</p>
+                <h2>Run the entire clinic from a single, calm, powerful workflow.</h2>
+                <p>
+                    Doctors can register their clinic, consult patients, generate prescriptions, create invoices, and issue medical certificates without moving across disconnected tools.
+                </p>
+            </div>
+
+            <div class="panel-grid">
+                <article class="panel panel-large reveal">
+                    <p class="panel-label">Clinic Management</p>
+                    <h3>Built specifically for small and medium scale clinics.</h3>
+                    <p>
+                        CareX removes operational friction with a system made for everyday clinical work, not oversized enterprise complexity.
+                    </p>
+                </article>
+
+                <article class="panel reveal">
+                    <p class="panel-label">Consultation</p>
+                    <h3>Faster doctor workflow.</h3>
+                    <p>Keep patient care, records, and prescribing in one uninterrupted flow.</p>
+                </article>
+
+                <article class="panel reveal">
+                    <p class="panel-label">Documents</p>
+                    <h3>Issue instantly.</h3>
+                    <p>Create prescription, invoice, and medical certificate outputs directly after consultation.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="section spotlight" id="documents">
+            <div class="spotlight-copy reveal">
+                <p class="eyebrow">Digital Documents</p>
+                <h2>Prescription is no longer paper work. It becomes part of the product experience.</h2>
+                <p>
+                    CareX gives clinics control over how prescriptions, invoices, and medical certificates look, so every patient document feels professional, consistent, and clinic-branded.
+                </p>
+            </div>
+
+            <div class="document-stage reveal reveal-delay" aria-hidden="true">
+                <div class="stage-glow"></div>
+                <div class="doc doc-left"></div>
+                <div class="doc doc-center">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <div class="doc doc-right"></div>
+            </div>
+        </section>
+
+        <section class="section analytics" id="analytics">
+            <div class="section-copy reveal">
+                <p class="eyebrow">Analytics</p>
+                <h2>Know your clinic better. Know your doctors, patients, medicines, and revenue better too.</h2>
+                <p>
+                    CareX brings together clinic data into clear reports that help teams understand operations, doctor performance, patient activity, medicine usage, and revenue trends with confidence.
+                </p>
+            </div>
+
+            <div class="stats-grid">
+                <article class="stat-panel reveal">
+                    <p class="panel-label">Clinic Reports</p>
+                    <strong>360 degree visibility</strong>
+                    <span>Operational health across your clinic.</span>
+                </article>
+                <article class="stat-panel reveal">
+                    <p class="panel-label">Doctor Reports</p>
+                    <strong>Better performance insight</strong>
+                    <span>Understand contribution and workflow patterns.</span>
+                </article>
+                <article class="stat-panel reveal">
+                    <p class="panel-label">Patient Reports</p>
+                    <strong>Stronger continuity of care</strong>
+                    <span>Track patient behavior and history with more clarity.</span>
+                </article>
+                <article class="stat-panel reveal">
+                    <p class="panel-label">Medicine &amp; Revenue</p>
+                    <strong>Decisions backed by numbers</strong>
+                    <span>See medicine data and financial movement in one view.</span>
+                </article>
+            </div>
+        </section>
+
+        <section class="section value-strip">
+            <div class="value-copy reveal">
+                <p class="eyebrow">Why CareX</p>
+                <h2>Designed to help clinics understand themselves better.</h2>
+                <p>
+                    When consultations, prescriptions, invoices, certificates, and reporting all live together, clinics gain a clearer picture of how they operate and how they can improve.
+                </p>
+            </div>
+        </section>
+
+        <section class="section cta" id="contact">
+            <div class="cta-panel reveal">
+                <p class="eyebrow">Get Started</p>
+                <h2>Bring digital prescription and clinic intelligence into one elegant system.</h2>
+                <p>
+                    CareX is built for clinics ready to move faster, look more professional, and make better decisions.
+                </p>
+                <form class="contact-form" id="demo-request-form" method="post"
+                      action="#{request.contextPath}/demo-request"
+                      autocomplete="off"
+                      data-endpoint="#{request.contextPath}/demo-request">
+                    <input type="text" name="clinicName" placeholder="Clinic name" required="required" autocomplete="off"/>
+                    <input type="email" name="workEmail" placeholder="Work email" required="required" autocomplete="off"/>
+                    <textarea rows="4" name="notes" placeholder="Tell us what feature you are looking for" autocomplete="off"></textarea>
+                    <button class="button button-primary" type="submit">Request Demo</button>
+                    <p class="form-status" id="demo-request-status" aria-live="polite"></p>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <h:outputScript library="landing" name="carex-landing.js"/>
+</h:body>
+</html>

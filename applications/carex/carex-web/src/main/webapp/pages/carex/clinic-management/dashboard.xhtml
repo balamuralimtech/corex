@@ -18,10 +18,10 @@
             .clinic-dashboard-hero:before { content:''; position:absolute; inset:auto auto -42% -8%; width:360px; height:360px; border-radius:50%; background:radial-gradient(circle,rgba(255,255,255,.15) 0%,rgba(255,255,255,0) 72%); }
             .clinic-dashboard-hero:after { content:''; position:absolute; inset:-15% -10% auto auto; width:280px; height:280px; border-radius:40px; transform:rotate(18deg); background:linear-gradient(135deg,rgba(255,255,255,.11),rgba(255,255,255,0)); }
             .clinic-dashboard-title { margin:0; font-size:2rem; font-weight:700; letter-spacing:-.03em; }
-            .clinic-dashboard-copy { margin-top:.75rem; max-width:760px; color:rgba(240,253,250,.9); line-height:1.65; }
+            .clinic-dashboard-copy { margin-top:.75rem; max-width:760px; color:rgba(219,234,254,.92); line-height:1.65; }
             .clinic-dashboard-hero-strip { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:.85rem; margin-top:1.4rem; }
             .clinic-hero-chip { padding:1rem 1rem; border-radius:18px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); backdrop-filter:blur(10px); }
-            .clinic-hero-chip-label { display:block; font-size:.8rem; text-transform:uppercase; letter-spacing:.09em; color:rgba(204,251,241,.82); }
+            .clinic-hero-chip-label { display:block; font-size:.8rem; text-transform:uppercase; letter-spacing:.09em; color:rgba(191,219,254,.9); }
             .clinic-hero-chip-value { display:block; margin-top:.4rem; font-size:1.5rem; font-weight:700; color:#fff; }
             .clinic-dashboard-actions { display:flex; gap:.75rem; flex-wrap:wrap; align-items:center; justify-content:flex-end; }
             .clinic-refresh-btn.ui-button { border:none !important; border-radius:999px !important; padding:.2rem !important; background:transparent !important; box-shadow:none !important; }
@@ -48,18 +48,19 @@
             .clinic-signal h4 { margin:0 0 .35rem 0; font-size:.95rem; }
             .clinic-signal p { margin:0; font-size:.9rem; line-height:1.55; }
             .clinic-signal-amber { background:#fff7ed; border:1px solid #fdba74; color:#9a3412; }
-            .clinic-signal-teal { background:#ecfeff; border:1px solid #67e8f9; color:#155e75; }
+            .clinic-signal-teal { background:#eff6ff; border:1px solid #93c5fd; color:#1e3a8a; }
             .clinic-signal-slate { background:#f8fafc; border:1px solid #cbd5e1; color:#334155; }
             .clinic-table-chip { display:inline-flex; align-items:center; gap:.35rem; padding:.35rem .65rem; border-radius:999px; font-size:.82rem; font-weight:600; }
-            .clinic-chip-invoice { background:#dcfce7; color:#166534; }
-            .clinic-chip-noinvoice { background:#fef3c7; color:#92400e; }
+            .clinic-chip-invoice { background:#dbeafe; color:#1e40af; }
+            .clinic-chip-noinvoice { background:#e0ecff; color:#1d4ed8; }
             @media (max-width: 768px) {
                 .clinic-dashboard-title { font-size:1.6rem; }
                 .clinic-dashboard-actions { justify-content:flex-start; }
             }
         </h:outputStylesheet>
+        <h:outputStylesheet library="carex" name="css/clinic-command-theme.css"/>
 
-        <h:form id="dashboardFormId">
+        <h:form id="dashboardFormId" styleClass="carex-unified-theme">
             <div class="clinic-dashboard-shell">
                 <div class="col-12">
                     <p:breadCrumb>
@@ -84,10 +85,10 @@
                         <div class="col-12 lg:col-4">
                             <div class="clinic-control-card">
                                 <div class="clinic-hero-chip" style="margin-bottom:1rem;">
-                                    <span class="clinic-hero-chip-label">Auto Refresh</span>
+                                    <span class="clinic-hero-chip-label">#{i18n.app('autoRefreshLabel')}</span>
                                     <span class="clinic-hero-chip-value"><span id="carexCountdownDisplay">60</span><span id="carexCountdownSuffix">s</span></span>
                                 </div>
-                                <label for="organizationSelect" style="display:block;font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(204,251,241,.82);">#{msg['organizationScopeLabel']}</label>
+                                <label for="organizationSelect" style="display:block;font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(191,219,254,.9);">#{msg['organizationScopeLabel']}</label>
                                 <h:panelGroup rendered="#{carexDashboardBean.applicationAdmin}" layout="block">
                                     <p:selectOneMenu id="organizationSelect" value="#{carexDashboardBean.selectedOrganizationId}" style="display:block;width:100%;margin-top:.55rem;">
                                         <f:selectItem itemLabel="#{i18n.app('allOrganizationsLabel')}" itemValue="-1"/>
@@ -303,7 +304,7 @@
                     var carexDashboardAutoRefreshEnabled = #{carexDashboardBean.timerEnabled};
 
                     function applyCarexDashboardHeroColors(layoutTheme) {
-                        var colors = carexDashboardThemeColors[layoutTheme] || carexDashboardThemeColors['joomla'];
+                        var colors = carexDashboardThemeColors['joomla'];
                         document.documentElement.style.setProperty('--dashboard-hero-primary', colors[0]);
                         document.documentElement.style.setProperty('--dashboard-hero-secondary', colors[1]);
                     }
@@ -434,7 +435,7 @@
                         Highcharts.setOptions({
                             lang: { thousandsSep: ',' },
                             credits: { enabled: false },
-                            colors: ['#0f766e', '#f97316', '#0ea5e9', '#7c3aed', '#ef4444', '#14b8a6', '#f59e0b', '#1d4ed8']
+                            colors: ['#1e3c72', '#2a5298', '#1d4ed8', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#1e40af']
                         });
 
                         Highcharts.chart('clinicMixChart', {

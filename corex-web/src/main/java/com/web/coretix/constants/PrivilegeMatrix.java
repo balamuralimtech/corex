@@ -116,6 +116,8 @@ public final class PrivilegeMatrix {
                 EnumSet.of(RolePrivilegeConstants.VIEW));
 
         //Application Privileges can be added here below
+        pagePrivileges.put(ApplicationManagementModule.DEMO_REQUESTS.getValue(),
+                EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.EXPORT));
 
         return pagePrivileges;
     }

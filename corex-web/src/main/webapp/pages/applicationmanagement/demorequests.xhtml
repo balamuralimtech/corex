@@ -1,0 +1,216 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="head">
+        <style type="text/css">
+            .demo-dashboard-shell {
+                background: linear-gradient(140deg, #f9fbff 0%, #eef4ff 60%, #f7fbff 100%);
+                border-radius: 20px;
+                padding: 1.2rem;
+            }
+            .demo-hero {
+                border-radius: 20px;
+                padding: 1.2rem 1.4rem;
+                color: #0f172a;
+                background: linear-gradient(120deg, #ffffff 0%, #eef5ff 100%);
+                border: 1px solid #d9e6ff;
+                margin-bottom: 1rem;
+            }
+            .demo-hero h2 {
+                margin: 0;
+                font-size: 1.45rem;
+            }
+            .demo-hero p {
+                margin: .4rem 0 0;
+                color: #334155;
+            }
+            .analytics-grid {
+                display: grid;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: .9rem;
+                margin: 0 0 1rem;
+            }
+            .analytics-card {
+                border-radius: 16px;
+                border: 1px solid #dbeafe;
+                background: #ffffff;
+                padding: .95rem 1rem;
+                box-shadow: 0 8px 24px rgba(37, 99, 235, 0.08);
+            }
+            .analytics-card .label {
+                font-size: .78rem;
+                color: #64748b;
+                text-transform: uppercase;
+                letter-spacing: .03em;
+            }
+            .analytics-card .value {
+                font-size: 1.7rem;
+                font-weight: 700;
+                color: #0f172a;
+                line-height: 1.1;
+                margin-top: .2rem;
+            }
+            .analytics-card .meta {
+                color: #475569;
+                font-size: .82rem;
+                margin-top: .2rem;
+            }
+            .status-pill {
+                border-radius: 999px;
+                display: inline-block;
+                padding: .22rem .58rem;
+                font-weight: 700;
+                font-size: .74rem;
+            }
+            .status-pill.done {
+                background: #dcfce7;
+                color: #166534;
+                border: 1px solid #86efac;
+            }
+            .status-pill.pending {
+                background: #ffedd5;
+                color: #9a3412;
+                border: 1px solid #fdba74;
+            }
+            @media (max-width: 1000px) {
+                .analytics-grid {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+            }
+            @media (max-width: 640px) {
+                .analytics-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+    </ui:define>
+
+    <ui:define name="content">
+        <f:event listener="#{demoRequestsBean.initializePageAttributes}" type="preRenderView"/>
+        <h:form id="form">
+            <p:growl id="messages" showDetail="true" />
+            <div class="demo-dashboard-shell">
+                <div class="col-12">
+                    <p:breadCrumb>
+                        <p:menuitem url="#" icon="pi pi-home" />
+                        <p:menuitem value="#{msg['applicationManagementLabel']}" url="#" />
+                        <p:menuitem value="#{msg['demoRequestsLabel']}" url="#" />
+                    </p:breadCrumb>
+                </div>
+
+                <p:outputPanel id="dashboardPanel">
+                    <div class="demo-hero">
+                        <h2>Demo Request Command Center</h2>
+                        <p>Track incoming clinic interest, conversion velocity, and demo closure from one operational dashboard.</p>
+                    </div>
+
+                    <p:outputPanel id="analyticsPanel">
+                        <div class="analytics-grid">
+                            <article class="analytics-card">
+                                <div class="label">Total Requests</div>
+                                <div class="value">#{demoRequestsBean.totalRequests}</div>
+                                <div class="meta">All time loaded entries</div>
+                            </article>
+                            <article class="analytics-card">
+                                <div class="label">Pending Demos</div>
+                                <div class="value">#{demoRequestsBean.pendingDemoCount}</div>
+                                <div class="meta">Awaiting business follow-up</div>
+                            </article>
+                            <article class="analytics-card">
+                                <div class="label">Completed Demos</div>
+                                <div class="value">#{demoRequestsBean.completedDemoCount}</div>
+                                <div class="meta">Marked as shown to clinic</div>
+                            </article>
+                            <article class="analytics-card">
+                                <div class="label">Completion Rate</div>
+                                <div class="value">#{demoRequestsBean.completionRateLabel}</div>
+                                <div class="meta">Requests in last 7 days: #{demoRequestsBean.requestsLast7Days}</div>
+                            </article>
+                        </div>
+                    </p:outputPanel>
+
+                    <p:outputPanel class="card" id="demoRequestMainPanelId">
+                        <p:toolbar styleClass="mb-4">
+                            <p:toolbarGroup>
+                                <p:commandButton value="#{msg['refreshNowLabel']}" icon="pi pi-refresh"
+                                                 action="#{demoRequestsBean.searchButtonAction}"
+                                                 update=":form:analyticsPanel :form:demoRequestMainPanelId :form:messages :topbar-items-form"
+                                                 process="@this"
+                                                 styleClass="ui-button-success" style="margin-right: .5rem" />
+                                <h:outputLabel value="#{msg['noOfRecordsLabel']}: "
+                                               rendered="#{demoRequestsBean.datatableRendered}"/>
+                                <h:outputText value="#{demoRequestsBean.recordsCount}"
+                                              rendered="#{demoRequestsBean.datatableRendered}"/>
+                            </p:toolbarGroup>
+                            <p:toolbarGroup align="right">
+                                <p:commandButton value="#{msg['exportLabel']}" icon="pi pi-upload" styleClass="ui-button-help"
+                                                 rendered="#{demoRequestsBean.datatableRendered}">
+                                    <p:dataExporter type="pdf" target="demoRequestDataTableId"
+                                                    fileName="#{msg['demoRequestsFileLabel']}"/>
+                                </p:commandButton>
+                            </p:toolbarGroup>
+                        </p:toolbar>
+
+                        <p:outputPanel id="datatablePanelId" rendered="#{demoRequestsBean.datatableRendered}">
+                            <p:dataTable id="demoRequestDataTableId" widgetVar="demoRequestTable"
+                                         var="requestItem" value="#{demoRequestsBean.demoRequests}"
+                                         reflow="true" styleClass="commoncrud-table"
+                                         rowKey="#{requestItem.id}" paginator="true" rows="12" paginatorPosition="bottom">
+                                <f:facet name="header">
+                                    <div class="products-table-header">
+                                        <span style="font-weight: bold">#{msg['searchDemoRequestsLabel']}</span>
+                                        <span class="filter-container ui-input-icon-left">
+                                            <i class="pi pi-search"></i>
+                                            <p:inputText id="globalFilter" onkeyup="PF('demoRequestTable').filter()"
+                                                         placeholder="#{msg['searchLabel']}" />
+                                        </span>
+                                    </div>
+                                </f:facet>
+
+                            <p:column headerText="#{msg['idLabel']}" sortBy="#{requestItem.id}" filterBy="#{requestItem.id}">
+                                <h:outputText value="#{requestItem.id}" />
+                            </p:column>
+                            <p:column headerText="#{msg['clinicNameLabel']}" sortBy="#{requestItem.clinicName}" filterBy="#{requestItem.clinicName}">
+                                <h:outputText value="#{requestItem.clinicName}" />
+                            </p:column>
+                            <p:column headerText="#{msg['emailLabel']}" sortBy="#{requestItem.workEmail}" filterBy="#{requestItem.workEmail}">
+                                <h:outputText value="#{requestItem.workEmail}" />
+                            </p:column>
+                            <p:column headerText="#{msg['notesLabel']}" sortBy="#{requestItem.notes}" filterBy="#{requestItem.notes}">
+                                <h:outputText value="#{requestItem.notes}" />
+                            </p:column>
+                            <p:column headerText="#{msg['statusLabel']}" sortBy="#{requestItem.demoDone}">
+                                <h:outputText value="#{requestItem.demoDone ? 'Demo Done' : 'Pending'}"
+                                              styleClass="status-pill #{requestItem.demoDone ? 'done' : 'pending'}" />
+                            </p:column>
+                            <p:column headerText="#{msg['createdAtLabel']}" sortBy="#{requestItem.createdAt}" filterBy="#{requestItem.createdAt}">
+                                <h:outputText value="#{requestItem.createdAt}">
+                                    <f:convertDateTime pattern="dd-MMM-yyyy hh:mm:ss a"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="#{msg['updatedAtLabel']}" sortBy="#{requestItem.demoDoneAt}" filterBy="#{requestItem.demoDoneAt}">
+                                <h:outputText value="#{requestItem.demoDoneAt}" rendered="#{requestItem.demoDoneAt ne null}">
+                                    <f:convertDateTime pattern="dd-MMM-yyyy hh:mm:ss a"/>
+                                </h:outputText>
+                                <h:outputText value="-" rendered="#{requestItem.demoDoneAt eq null}" />
+                            </p:column>
+                                <p:column headerText="#{msg['actionsLabel']}" exportable="false">
+                                    <p:commandButton value="#{requestItem.demoDone ? 'Mark Pending' : 'Mark Demo Done'}"
+                                                     icon="#{requestItem.demoDone ? 'pi pi-undo' : 'pi pi-check'}"
+                                                     actionListener="#{demoRequestsBean.toggleDemoStatus(requestItem)}"
+                                                     update=":form:analyticsPanel :form:demoRequestMainPanelId :form:messages :topbar-items-form"
+                                                     process="@this"
+                                                     styleClass="#{requestItem.demoDone ? 'ui-button-warning' : 'ui-button-success'}"/>
+                                </p:column>
+                            </p:dataTable>
+                        </p:outputPanel>
+                    </p:outputPanel>
+                </p:outputPanel>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

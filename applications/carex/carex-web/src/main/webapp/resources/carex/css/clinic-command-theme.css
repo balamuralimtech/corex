@@ -1,0 +1,84 @@
+.carex-unified-theme {
+    --carex-primary: #1e3c72;
+    --carex-secondary: #2a5298;
+    --carex-accent: #2563eb;
+    --carex-surface: #f6f9ff;
+    --carex-border: #dbe7ff;
+    --carex-text: #0f172a;
+    --carex-muted: #64748b;
+}
+
+.carex-unified-theme .card,
+.carex-unified-theme .report-panel,
+.carex-unified-theme .clinic-panel,
+.carex-unified-theme .clinic-metric-card,
+.carex-unified-theme .report-metric-card {
+    border: 1px solid var(--carex-border);
+    box-shadow: 0 10px 34px rgba(30, 60, 114, 0.10);
+}
+
+.carex-unified-theme .surface-100 {
+    background: var(--carex-surface) !important;
+    border: 1px solid var(--carex-border);
+}
+
+.carex-unified-theme h1,
+.carex-unified-theme .report-title,
+.carex-unified-theme .clinic-dashboard-title {
+    color: var(--carex-text);
+}
+
+.carex-unified-theme .report-copy,
+.carex-unified-theme .clinic-dashboard-copy,
+.carex-unified-theme .report-panel-subtitle,
+.carex-unified-theme .clinic-panel-subtitle,
+.carex-unified-theme .clinic-metric-foot,
+.carex-unified-theme .report-metric-foot {
+    color: var(--carex-muted);
+}
+
+.carex-unified-theme .report-hero,
+.carex-unified-theme .clinic-dashboard-hero {
+    background: linear-gradient(135deg, var(--carex-primary) 0%, var(--carex-secondary) 100%) !important;
+    color: #eff6ff;
+    box-shadow: 0 24px 72px rgba(30, 60, 114, 0.26) !important;
+}
+
+.carex-unified-theme .report-hero .report-copy,
+.carex-unified-theme .clinic-dashboard-hero .clinic-dashboard-copy,
+.carex-unified-theme .report-hero [style*="color:rgba"],
+.carex-unified-theme .clinic-dashboard-hero [style*="color:rgba"] {
+    color: rgba(219, 234, 254, 0.95) !important;
+}
+
+.carex-unified-theme .ui-toolbar {
+    border: 1px solid var(--carex-border);
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    border-radius: 14px;
+}
+
+.carex-unified-theme .ui-datatable .ui-datatable-thead > tr > th {
+    background: #eef4ff;
+    color: #1e3a8a;
+    border-color: #d7e3ff;
+}
+
+.carex-unified-theme .ui-paginator .ui-paginator-pages .ui-paginator-page.ui-state-active {
+    background: var(--carex-accent);
+    border-color: var(--carex-accent);
+    color: #fff;
+}
+
+.carex-unified-theme .report-chip-emerald,
+.carex-unified-theme .report-chip-success,
+.carex-unified-theme .clinic-chip-invoice {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.carex-unified-theme .report-chip-cyan,
+.carex-unified-theme .report-chip-info,
+.carex-unified-theme .clinic-chip-noinvoice {
+    background: #e0ecff;
+    color: #1d4ed8;
+}

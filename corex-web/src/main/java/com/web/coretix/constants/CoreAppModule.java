@@ -27,7 +27,8 @@ public enum CoreAppModule {
     USER_MANAGEMENT(1, "User Management"),
     SYSTEM_MANAGEMENT(2, "System Management"),
     LICENCE(3, "License"),
-    SERVER_AND_DB(4, "Server and DB");
+    SERVER_AND_DB(4, "Server and DB"),
+    APPLICATION_MANAGEMENT(5, "Application Management");
 
 
     private final int id;

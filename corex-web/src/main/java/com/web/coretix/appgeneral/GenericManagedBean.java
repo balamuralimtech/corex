@@ -38,6 +38,7 @@ import com.web.coretix.constants.UserTypeConstants;
 import com.web.coretix.constants.SystemManagementModule;
 import com.web.coretix.constants.LicenseManagementModule;
 import com.web.coretix.constants.ServerAndDBModule;
+import com.web.coretix.constants.ApplicationManagementModule;
 import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -310,6 +311,9 @@ public class GenericManagedBean
             }
             if (moduleId == CoreAppModule.SERVER_AND_DB.getId()) {
                 return enumIds(ServerAndDBModule.values());
+            }
+            if (moduleId == CoreAppModule.APPLICATION_MANAGEMENT.getId()) {
+                return enumIds(ApplicationManagementModule.values());
             }
             return new ArrayList<>();
         }

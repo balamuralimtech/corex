@@ -77,6 +77,7 @@
                 <value>com.persist.coretix.modal.coretix.ApplicationTheme</value>
                 <value>com.persist.coretix.modal.coretix.ApplicationNotification</value>
                 <value>com.persist.coretix.modal.coretix.UserNotificationReceipt</value>
+                <value>com.persist.coretix.modal.coretix.DemoRequest</value>
                 <value>com.persist.carex.settings.ClinicSettings</value>
                 <value>com.persist.carex.settings.PrescriptionSettings</value>
                 <value>com.persist.carex.settings.InvoiceSettings</value>

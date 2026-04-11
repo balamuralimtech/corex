@@ -33,12 +33,15 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Named("invoiceSettingsBean")
 @Scope("session")
 public class InvoiceSettingsBean extends CarexManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger LOGGER = Logger.getLogger(InvoiceSettingsBean.class.getName());
 
     @Inject
     private IInvoiceSettingsService invoiceSettingsService;
@@ -56,15 +59,25 @@ public class InvoiceSettingsBean extends CarexManagedBean implements Serializabl
     private String downloadPreviewFooterHtml;
     private StreamedContent sampleInvoicePdf;
     private boolean initialized;
+    private boolean renderDataWarningShown;
 
     public void initializePageAttributes() {
         FacesContext facesContext = FacesContext.getCurrentInstance();
         if (facesContext != null && facesContext.isPostback() && initialized) {
             return;
         }
-        loadOrganizations();
-        selectedOrganizationId = resolveDefaultOrganizationId(organizationList, selectedOrganizationId);
-        loadInvoiceSettings();
+        try {
+            loadOrganizations();
+            selectedOrganizationId = resolveDefaultOrganizationId(organizationList, selectedOrganizationId);
+            loadInvoiceSettings();
+        } catch (Exception exception) {
+            LOGGER.log(Level.SEVERE, "Failed to initialize invoice settings page", exception);
+            organizationList = new ArrayList<>();
+            selectedOrganizationId = null;
+            invoiceSettings = createDefaultInvoiceSettings();
+            addMessage(FacesMessage.SEVERITY_ERROR, "Invoice settings unavailable",
+                    "Unable to load invoice settings data. Default values are shown.");
+        }
         initialized = true;
     }
 
@@ -233,10 +246,16 @@ public class InvoiceSettingsBean extends CarexManagedBean implements Serializabl
     public String getPreviewCurrencySymbol() { return safeText(getActiveClinicSettings().getBaseCurrencySymbol(), ""); }
 
     private void loadInvoiceSettings() {
-        InvoiceSettings existing = selectedOrganizationId == null
-                ? null
-                : invoiceSettingsService.getInvoiceSettingsByOrganizationId(selectedOrganizationId);
-        invoiceSettings = existing == null ? createDefaultInvoiceSettings() : existing;
+        try {
+            InvoiceSettings existing = selectedOrganizationId == null
+                    ? null
+                    : invoiceSettingsService.getInvoiceSettingsByOrganizationId(selectedOrganizationId);
+            invoiceSettings = existing == null ? createDefaultInvoiceSettings() : existing;
+        } catch (Exception exception) {
+            invoiceSettings = createDefaultInvoiceSettings();
+            addMessage(FacesMessage.SEVERITY_ERROR, "Invoice settings unavailable",
+                    "Unable to load saved invoice settings. Default values are shown.");
+        }
     }
 
     private void loadOrganizations() {
@@ -247,15 +266,25 @@ public class InvoiceSettingsBean extends CarexManagedBean implements Serializabl
         if (selectedOrganizationId == null) {
             return null;
         }
-        return organizationService.getOrganizationById(selectedOrganizationId);
+        try {
+            return organizationService.getOrganizationById(selectedOrganizationId);
+        } catch (Exception exception) {
+            logRenderDataIssue("Failed to load organization details for invoice preview", exception);
+            return null;
+        }
     }
 
     private ClinicSettings getActiveClinicSettings() {
         if (selectedOrganizationId == null) {
             return new ClinicSettings();
         }
-        ClinicSettings settings = clinicSettingsService.getClinicSettingsByOrganizationId(selectedOrganizationId);
-        return settings == null ? new ClinicSettings() : settings;
+        try {
+            ClinicSettings settings = clinicSettingsService.getClinicSettingsByOrganizationId(selectedOrganizationId);
+            return settings == null ? new ClinicSettings() : settings;
+        } catch (Exception exception) {
+            logRenderDataIssue("Failed to load clinic settings for invoice preview", exception);
+            return new ClinicSettings();
+        }
     }
 
     private InvoiceSettings createDefaultInvoiceSettings() {
@@ -495,6 +524,15 @@ public class InvoiceSettingsBean extends CarexManagedBean implements Serializabl
 
     private void addMessage(FacesMessage.Severity severity, String summary, String detail) {
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, summary, detail));
+    }
+
+    private void logRenderDataIssue(String message, Exception exception) {
+        LOGGER.log(Level.SEVERE, message, exception);
+        if (!renderDataWarningShown) {
+            renderDataWarningShown = true;
+            addMessage(FacesMessage.SEVERITY_WARN, "Partial data unavailable",
+                    "Some clinic/organization preview data could not be loaded.");
+        }
     }
 
     private String safeHtmlFragment(String html) {

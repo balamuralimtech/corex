@@ -8,8 +8,9 @@
 
     <ui:define name="content">
         <f:event listener="#{doctorBean.initializePageAttributes}" type="preRenderView"/>
+        <h:outputStylesheet library="carex" name="css/clinic-command-theme.css"/>
 
-        <h:form id="form">
+        <h:form id="form" styleClass="carex-unified-theme">
             <div class="card">
                 <p:growl id="messages" showDetail="true"/>
 

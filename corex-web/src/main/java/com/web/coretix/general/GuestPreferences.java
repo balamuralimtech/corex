@@ -124,6 +124,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     private String selectedLanguage;
     private boolean userManagementRendered;
     private boolean systemManagementRendered;
+    private boolean applicationManagementRendered;
     private boolean licenseManagementRendered;
     private boolean dbAndServerLogRendered;
 
@@ -145,6 +146,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     private boolean currencyRendered;
     private boolean bankDetailsRendered;
     private boolean notificationSettingRendered;
+    private boolean demoRequestsRendered;
 
 
 
@@ -327,8 +329,10 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
         userManagementRendered = false;
         systemManagementRendered = false;
+        applicationManagementRendered = false;
         licenseManagementRendered = false;
         dbAndServerLogRendered = false;
+        demoRequestsRendered = false;
 
         List<CoreAppModule> modules = getRoleModuleList();
 
@@ -346,6 +350,11 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
                         systemManagementRendered = true;
                         getSystemManagementPageList();
                         logger.debug("System management available");
+                        break;
+                    case APPLICATION_MANAGEMENT:
+                        applicationManagementRendered = true;
+                        getApplicationManagementPageList();
+                        logger.debug("Application management available");
                         break;
                     case LICENCE:
                         licenseManagementRendered = true;
@@ -606,8 +615,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         logger.debug("entered into getAvailableResourceBundles !!");
         List<SelectItem> localeItems = new ArrayList<>();
         for (LanguageOption languageOption : resolveTopbarLanguageOptions()) {
-            Locale optionLocale = Locale.forLanguageTag(languageOption.getCode());
-            localeItems.add(new SelectItem(languageOption.getCode(), optionLocale.getDisplayLanguage(optionLocale)));
+            localeItems.add(new SelectItem(languageOption.getCode(), languageOption.getLabel()));
         }
         logger.debug("end of getAvailableResourceBundles !!");
         return localeItems;
@@ -1063,6 +1071,28 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         }
     }
 
+    private void getApplicationManagementPageList() {
+        logger.debug("getApplicationManagementPageList");
+        List<Integer> pageList = getSubModuleDetailsByRoleandModuleId(CoreAppModule.APPLICATION_MANAGEMENT.getId());
+
+        if (CollectionUtils.isNotEmpty(pageList)) {
+            for (Integer pageId : pageList) {
+                logger.debug("getApplicationManagementPageList : pageId : " + pageId);
+                logger.debug("{}", ApplicationManagementModule.getById(pageId));
+
+                switch (ApplicationManagementModule.getById(pageId)) {
+                    case DEMO_REQUESTS:
+                        demoRequestsRendered = true;
+                        logger.debug("Demo Requests available");
+                        break;
+                    default:
+                        logger.error("Unsupported module: " + ApplicationManagementModule.getById(pageId));
+                        break;
+                }
+            }
+        }
+    }
+
     private String resolveAppBundleBaseName() {
         FacesContext facesContext = FacesContext.getCurrentInstance();
         if (facesContext == null) {
@@ -1095,6 +1125,25 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         this.languageItems = languageItems;
     }
 
+    private static String buildTopbarLanguageLabel(String languageCode, String englishLabel) {
+        if (languageCode == null || englishLabel == null) {
+            return englishLabel;
+        }
+        if ("en".equalsIgnoreCase(languageCode)) {
+            return englishLabel;
+        }
+
+        Locale locale = Locale.forLanguageTag(languageCode);
+        String nativeLabel = locale.getDisplayLanguage(locale);
+        if (nativeLabel == null || nativeLabel.trim().isEmpty()) {
+            return englishLabel;
+        }
+        if (nativeLabel.equalsIgnoreCase(englishLabel)) {
+            return englishLabel;
+        }
+        return nativeLabel + "/" + englishLabel;
+    }
+
     public static final class LanguageOption implements Serializable {
         private final String code;
         private final String label;
@@ -1111,7 +1160,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         }
 
         public String getLabel() {
-            return label;
+            return buildTopbarLanguageLabel(code, label);
         }
 
         public String getFlagCode() {
@@ -1133,6 +1182,14 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
     public void setSystemManagementRendered(boolean systemManagementRendered) {
         this.systemManagementRendered = systemManagementRendered;
+    }
+
+    public boolean isApplicationManagementRendered() {
+        return applicationManagementRendered;
+    }
+
+    public void setApplicationManagementRendered(boolean applicationManagementRendered) {
+        this.applicationManagementRendered = applicationManagementRendered;
     }
 
     public boolean isLicenseManagementRendered() {
@@ -1301,6 +1358,14 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
     public void setNotificationSettingRendered(boolean notificationSettingRendered) {
         this.notificationSettingRendered = notificationSettingRendered;
+    }
+
+    public boolean isDemoRequestsRendered() {
+        return demoRequestsRendered;
+    }
+
+    public void setDemoRequestsRendered(boolean demoRequestsRendered) {
+        this.demoRequestsRendered = demoRequestsRendered;
     }
 
     public boolean isLicenseRendered() {

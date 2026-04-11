@@ -157,6 +157,12 @@
                 }
             }
 
+            function handleGlobalPollError() {
+                // Do not force session-timeout for every AJAX failure.
+                // Route to generic internal error so real exceptions are visible in logs/monitoring.
+                window.location = '#{request.contextPath}/internal-server-error';
+            }
+
             window.addEventListener('load', function() {
                 applyStoredUiPreferences();
                 startSessionHeartbeat();
@@ -307,7 +313,7 @@
             <p:growl id="growl" widgetVar="growlWidget" life="10000" />
             <p:poll interval="5" listener="#{guestPreferences.checkForGrowlMessage}" update="growl :topbar-items-form" global="false"
                     oncomplete="PrimeFaces.AvalonConfigurator.refreshTopbarState();"
-                    onerror="window.location='#{request.contextPath}/session-timeout';"/>
+                    onerror="handleGlobalPollError();"/>
             <p:remoteCommand name="roleUpdateForceLogout"
                              actionListener="#{guestPreferences.handleForcedRoleUpdateLogout}"
                              oncomplete="window.location='#{request.contextPath}/landing';" />

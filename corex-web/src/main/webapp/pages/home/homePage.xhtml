@@ -116,8 +116,8 @@
                                 <div style="display:flex;align-items:center;gap:.5rem;padding:.55rem .8rem;border-radius:999px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);">
                                     <span style="font-size:.9rem;font-weight:600;color:#f8fafc;">#{msg['autoRefreshLabel']}</span>
                                     <p:inputSwitch value="#{homePageBean.timerEnabled}"
-                                                   onLabel="On"
-                                                   offLabel="Off"
+                                                   onLabel="#{msg['switchOnLabel']}"
+                                                   offLabel="#{msg['switchOffLabel']}"
                                                    onchange="applyDashboardAutoRefreshState(this.checked);">
                                         <p:ajax process="@this"
                                                 update="@none"
@@ -433,67 +433,67 @@
                             chart: { type: 'column', backgroundColor: 'transparent' },
                             title: { text: null },
                             xAxis: { type: 'category', crosshair: true },
-                            yAxis: { min: 0, title: { text: 'Count' } },
+                            yAxis: { min: 0, title: { text: '#{homePageBean.js("chartCountLabel")}' } },
                             legend: { enabled: false },
-                            tooltip: { pointFormat: '<b>{point.y}</b> records' },
+                            tooltip: { pointFormat: '<b>{point.y}</b> #{homePageBean.js("recordsLabel")}' },
                             plotOptions: { column: { borderRadius: 8, colorByPoint: true } },
-                            series: [{ name: 'Entities', data: #{homePageBean.entityDistributionJson} }]
+                            series: [{ name: '#{homePageBean.js("chartEntitiesSeriesLabel")}', data: #{homePageBean.entityDistributionJson} }]
                         });
 
                         Highcharts.chart('userStateChart', {
                             chart: { type: 'pie', backgroundColor: 'transparent' },
                             title: { text: null },
-                            tooltip: { pointFormat: '<b>{point.y}</b> users ({point.percentage:.1f}%)' },
+                            tooltip: { pointFormat: '<b>{point.y}</b> #{homePageBean.js("usersLabel")} ({point.percentage:.1f}%)' },
                             plotOptions: { pie: { innerSize: '62%', dataLabels: { enabled: true, format: '{point.name}<br/><b>{point.y}</b>' } } },
-                            series: [{ name: 'Users', data: #{homePageBean.userStatusJson} }]
+                            series: [{ name: '#{homePageBean.js("usersLabel")}', data: #{homePageBean.userStatusJson} }]
                         });
 
                         Highcharts.chart('roleUsageChart', {
                             chart: { type: 'pie', backgroundColor: 'transparent' },
                             title: { text: null },
-                            tooltip: { pointFormat: '<b>{point.y}</b> roles ({point.percentage:.1f}%)' },
+                            tooltip: { pointFormat: '<b>{point.y}</b> #{homePageBean.js("rolesLabel")} ({point.percentage:.1f}%)' },
                             plotOptions: { pie: { innerSize: '68%', startAngle: -90, endAngle: 270, dataLabels: { enabled: true, distance: 12, format: '{point.name}: {point.y}' } } },
-                            series: [{ name: 'Roles', data: #{homePageBean.roleUsageJson} }]
+                            series: [{ name: '#{homePageBean.js("rolesLabel")}', data: #{homePageBean.roleUsageJson} }]
                         });
 
                         Highcharts.chart('activityMixChart', {
                             chart: { type: 'bar', backgroundColor: 'transparent' },
                             title: { text: null },
                             xAxis: { type: 'category' },
-                            yAxis: { min: 0, title: { text: 'Events' } },
+                            yAxis: { min: 0, title: { text: '#{homePageBean.js("eventsLabel")}' } },
                             legend: { enabled: false },
                             plotOptions: { bar: { borderRadius: 7, colorByPoint: true } },
-                            series: [{ name: 'Activities', data: #{homePageBean.activityMixJson} }]
+                            series: [{ name: '#{homePageBean.js("activitiesLabel")}', data: #{homePageBean.activityMixJson} }]
                         });
 
                         Highcharts.chart('portfolioMixChart', {
                             chart: { type: 'pie', backgroundColor: 'transparent' },
                             title: { text: null },
-                            tooltip: { pointFormat: '<b>{point.y}</b> total objects' },
+                            tooltip: { pointFormat: '<b>{point.y}</b> #{homePageBean.js("chartTotalObjectsLabel")}' },
                             plotOptions: { pie: { dataLabels: { enabled: true, format: '{point.name}: {point.y}' } } },
-                            series: [{ name: 'Portfolio', data: #{homePageBean.portfolioMixJson} }]
+                            series: [{ name: '#{homePageBean.js("chartPortfolioSeriesLabel")}', data: #{homePageBean.portfolioMixJson} }]
                         });
 
                         Highcharts.chart('operationsPulseChart', {
                             chart: { type: 'column', backgroundColor: 'transparent' },
                             title: { text: null },
-                            xAxis: { categories: ['Active Users', 'Role Utilization', 'Auth Share', 'Change Share'] },
-                            yAxis: { max: 100, min: 0, title: { text: 'Percent' } },
+                            xAxis: { categories: ['#{homePageBean.js("activeUsersLabel")}', '#{homePageBean.js("roleUtilizationLabel")}', '#{homePageBean.js("authenticationShareLabel")}', '#{homePageBean.js("changeShareLabel")}'] },
+                            yAxis: { max: 100, min: 0, title: { text: '#{homePageBean.js("chartPercentLabel")}' } },
                             legend: { enabled: false },
                             tooltip: { pointFormat: '<b>{point.y:.2f}%</b>' },
                             plotOptions: { column: { borderRadius: 8, colorByPoint: true } },
-                            series: [{ name: 'Percent', data: #{homePageBean.operationsPulseJson} }]
+                            series: [{ name: '#{homePageBean.js("chartPercentLabel")}', data: #{homePageBean.operationsPulseJson} }]
                         });
 
                         Highcharts.chart('efficiencyRadarChart', {
                             chart: { polar: true, type: 'line', backgroundColor: 'transparent' },
                             title: { text: null },
                             pane: { size: '80%' },
-                            xAxis: { categories: ['Branches/Org', 'Departments/Org', 'Users/Org', 'Users/Role', 'States/Country', 'Cities/State'], tickmarkPlacement: 'on', lineWidth: 0 },
+                            xAxis: { categories: ['#{homePageBean.js("branchesPerOrganizationLabel")}', '#{homePageBean.js("departmentsPerOrganizationLabel")}', '#{homePageBean.js("usersPerOrganizationLabel")}', '#{homePageBean.js("usersPerRoleLabel")}', '#{homePageBean.js("statesPerCountryLabel")}', '#{homePageBean.js("citiesPerStateLabel")}'], tickmarkPlacement: 'on', lineWidth: 0 },
                             yAxis: { gridLineInterpolation: 'polygon', lineWidth: 0, min: 0 },
                             tooltip: { shared: true, pointFormat: '<span style="color:{series.color}">{point.category}: <b>{point.y:.2f}</b><br/></span>' },
                             legend: { enabled: false },
-                            series: [{ name: 'Density', data: #{homePageBean.efficiencyRadarJson}, pointPlacement: 'on', lineWidth: 3, marker: { radius: 4 } }]
+                            series: [{ name: '#{homePageBean.js("chartDensityLabel")}', data: #{homePageBean.efficiencyRadarJson}, pointPlacement: 'on', lineWidth: 3, marker: { radius: 4 } }]
                         });
                     }
 

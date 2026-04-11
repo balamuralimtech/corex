@@ -11,9 +11,13 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Named
 public class InvoiceSettingsDAO implements IInvoiceSettingsDAO {
+
+    private static final Logger LOGGER = Logger.getLogger(InvoiceSettingsDAO.class.getName());
 
     @Inject
     private SessionFactory sessionFactory;
@@ -46,6 +50,7 @@ public class InvoiceSettingsDAO implements IInvoiceSettingsDAO {
             if (transaction != null) {
                 transaction.rollback();
             }
+            LOGGER.log(Level.SEVERE, "Failed to save invoice settings", exception);
             return GeneralConstants.FAILED;
         } finally {
             if (session != null) {
@@ -64,6 +69,12 @@ public class InvoiceSettingsDAO implements IInvoiceSettingsDAO {
             InvoiceSettings settings = findByOrganizationId(session, organizationId);
             transaction.commit();
             return settings;
+        } catch (Exception exception) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            LOGGER.log(Level.SEVERE, "Failed to fetch invoice settings for organizationId=" + organizationId, exception);
+            return null;
         } finally {
             if (session != null) {
                 session.close();

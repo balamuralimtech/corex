@@ -76,6 +76,12 @@ public class ApplicationNotificationService implements IApplicationNotificationS
         return applicationNotificationDAO.markAllNotificationsAsSeen(userId);
     }
 
+    @Override
+    @Transactional(readOnly = false)
+    public GeneralConstants addPublicApplicationNotification(ApplicationNotification applicationNotification) {
+        return applicationNotificationDAO.addApplicationNotification(applicationNotification);
+    }
+
     private void addUserActivity(UserActivityTO userActivityTO) {
         logger.debug("User Activity - UserId: {}", userActivityTO.getUserId());
         logger.debug("User Activity - UserName: {}", userActivityTO.getUserName());
