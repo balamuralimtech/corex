@@ -29,10 +29,10 @@ public class PatientBean extends CarexManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Inject
-    private IPatientService patientService;
+    private transient IPatientService patientService;
 
     @Inject
-    private IOrganizationService organizationService;
+    private transient IOrganizationService organizationService;
 
     private List<Patient> patientList = new ArrayList<>();
     private List<Organizations> organizationList = new ArrayList<>();

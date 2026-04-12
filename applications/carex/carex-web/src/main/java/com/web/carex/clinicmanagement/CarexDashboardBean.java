@@ -43,22 +43,22 @@ public class CarexDashboardBean extends CarexManagedBean implements Serializable
     private static final Integer ALL_ORGANIZATIONS_ID = -1;
 
     @Inject
-    private IOrganizationService organizationService;
+    private transient IOrganizationService organizationService;
 
     @Inject
-    private IDoctorService doctorService;
+    private transient IDoctorService doctorService;
 
     @Inject
-    private IPatientService patientService;
+    private transient IPatientService patientService;
 
     @Inject
-    private IMedicineService medicineService;
+    private transient IMedicineService medicineService;
 
     @Inject
-    private IConsultationService consultationService;
+    private transient IConsultationService consultationService;
 
     @Inject
-    private IClinicSettingsService clinicSettingsService;
+    private transient IClinicSettingsService clinicSettingsService;
 
     private boolean initialized;
     private boolean timerEnabled = true;
@@ -515,7 +515,7 @@ public class CarexDashboardBean extends CarexManagedBean implements Serializable
             if (requestedOrganizationId != null) {
                 return requestedOrganizationId;
             }
-            return organizationList == null || organizationList.isEmpty() ? null : ALL_ORGANIZATIONS_ID;
+            return ALL_ORGANIZATIONS_ID;
         }
         return resolveAccessibleOrganizationId(requestedOrganizationId);
     }

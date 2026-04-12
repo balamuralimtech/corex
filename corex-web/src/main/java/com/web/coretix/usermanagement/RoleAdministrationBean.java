@@ -69,13 +69,13 @@ public class RoleAdministrationBean implements Serializable {
     private final String viewPrivilegeValue = RolePrivilegeConstants.VIEW.getValue();
 
     @Inject
-    private IModulePrivilegeService modulePrivilegeService;
+    private transient IModulePrivilegeService modulePrivilegeService;
 
     @Inject
-    private IRoleAdministrationService roleAdministrationService;
+    private transient IRoleAdministrationService roleAdministrationService;
 
     @Inject
-    private IUserAdministrationService userAdministrationService;
+    private transient IUserAdministrationService userAdministrationService;
 
     private String roleName;
     private List<Roles> rolesList = new ArrayList<>();
@@ -813,7 +813,6 @@ public class RoleAdministrationBean implements Serializable {
     }
 
 }
-
 
 
 

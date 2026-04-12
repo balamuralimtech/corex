@@ -20,7 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public enum ApplicationManagementModule {
-    DEMO_REQUESTS(1, "Demo Requests");
+    DEMO_REQUESTS(1, "Demo Requests"),
+    APPLICATION_PRICING(2, "Application Pricing"),
+    REFERRAL_MANAGEMENT(3, "Referral Management"),
+    REFERRAL_DASHBOARD(4, "Referral Dashboard");
 
     private final int id;
     private final String value;

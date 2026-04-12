@@ -73,10 +73,10 @@ public class SubRegionBean implements Serializable {
     private boolean regionError = false;
 
     @Inject
-    private IRegionService regionService;
+    private transient IRegionService regionService;
 
     @Inject
-    private ISubRegionService subregionService;
+    private transient ISubRegionService subregionService;
 
     public void initializePageAttributes() {
         logger.debug("entered into initializePageAttributes !!!");
@@ -432,7 +432,6 @@ public class SubRegionBean implements Serializable {
     }
 
 }
-
 
 
 

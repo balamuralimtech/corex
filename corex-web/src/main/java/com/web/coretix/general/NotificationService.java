@@ -59,6 +59,19 @@ public class NotificationService {
         }
     }
 
+    public static void sendGrowlMessageToUserAccount(Integer userAccountId, String message) {
+        if (userAccountId == null || message == null || message.trim().isEmpty()) {
+            return;
+        }
+
+        for (HttpSession session : SessionListeners.getActiveSessions()) {
+            Object sessionUserId = session.getAttribute(SessionAttributes.USER_ACCOUNT_ID.getName());
+            if (userAccountId.equals(sessionUserId)) {
+                storeNotification(session, message);
+            }
+        }
+    }
+
     private static void storeNotification(HttpSession session, String message) {
         session.setAttribute(SessionAttributes.APPLICATION_NOTIFICATION_GROWL.getName(), message);
         session.setAttribute(SessionAttributes.APPLICATION_NOTIFICATION_MESSAGES.getName(),
@@ -87,7 +100,6 @@ public class NotificationService {
     }
 
 }
-
 
 
 

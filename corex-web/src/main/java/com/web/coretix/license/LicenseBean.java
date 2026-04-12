@@ -89,13 +89,13 @@ public class LicenseBean extends GenericManagedBean implements Serializable {
     private Licenses selectedLicense = new Licenses();
 
     @Inject
-    private ILicenseService licenseService;
+    private transient ILicenseService licenseService;
 
     @Inject
-    private IOrganizationService organizationService;
+    private transient IOrganizationService organizationService;
 
     @Inject
-    private IUserAdministrationService userAdministrationService;
+    private transient IUserAdministrationService userAdministrationService;
 
     public void initializePageAttributes() {
         resourceBundle = ResourceBundle.getBundle("coreAppMessages", FacesContext.getCurrentInstance().getViewRoot().getLocale());
@@ -703,7 +703,6 @@ public class LicenseBean extends GenericManagedBean implements Serializable {
         }
     }
 }
-
 
 
 

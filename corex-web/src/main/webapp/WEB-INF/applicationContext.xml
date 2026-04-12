@@ -78,6 +78,11 @@
                 <value>com.persist.coretix.modal.coretix.ApplicationNotification</value>
                 <value>com.persist.coretix.modal.coretix.UserNotificationReceipt</value>
                 <value>com.persist.coretix.modal.coretix.DemoRequest</value>
+                <value>com.persist.coretix.modal.coretix.ApplicationPricing</value>
+                <value>com.persist.coretix.modal.coretix.ReferrerProfile</value>
+                <value>com.persist.coretix.modal.coretix.OrganizationReferralProfile</value>
+                <value>com.persist.coretix.modal.coretix.ReferralAttribution</value>
+                <value>com.persist.coretix.modal.coretix.ReferralCommission</value>
                 <value>com.persist.carex.settings.ClinicSettings</value>
                 <value>com.persist.carex.settings.PrescriptionSettings</value>
                 <value>com.persist.carex.settings.InvoiceSettings</value>
@@ -112,9 +117,7 @@
               class="org.springframework.orm.hibernate5.HibernateTransactionManager">
         <property name="sessionFactory" ref="SessionFactory" />
     </bean>
-    <context:component-scan base-package="com.persist.coretix, com.web.coretix, com.module.coretix, com.persist.carex, com.web.carex, com.module.carex">
-        <context:exclude-filter type="regex" expression="com\.web\.coretix\.menu\..*"/>
-    </context:component-scan>
+    <context:component-scan base-package="com.persist.coretix, com.web.coretix, com.module.coretix, com.persist.carex, com.web.carex, com.module.carex"/>
 
 
 </beans>

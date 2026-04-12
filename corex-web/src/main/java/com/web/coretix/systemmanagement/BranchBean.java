@@ -89,19 +89,19 @@ public class BranchBean extends GenericManagedBean implements Serializable {
     private Branches selectedBranch = new Branches();
 
     @Inject
-    private IOrganizationService organizationService;
+    private transient IOrganizationService organizationService;
 
     @Inject
-    private IBranchService branchService;
+    private transient IBranchService branchService;
 
     @Inject
-    private ICountryService countryService;
+    private transient ICountryService countryService;
 
     @Inject
-    private IStateService stateService;
+    private transient IStateService stateService;
 
     @Inject
-    private ICityService cityService;
+    private transient ICityService cityService;
 
 
     public void initializePageAttributes()
@@ -834,7 +834,6 @@ public class BranchBean extends GenericManagedBean implements Serializable {
     }
 
 }
-
 
 
 

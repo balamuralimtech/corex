@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS `ClinicSettings` (
     `base_currency_name` VARCHAR(100) NULL,
     `require_invoice` TINYINT(1) NOT NULL DEFAULT 1,
     `require_medical_certificate` TINYINT(1) NOT NULL DEFAULT 0,
+    `reception_token_workflow_enabled` TINYINT(1) NOT NULL DEFAULT 1,
     `slot_duration_minutes` INT NOT NULL DEFAULT 15,
     `notes` VARCHAR(500) NULL,
     `seal_image` LONGBLOB NULL,

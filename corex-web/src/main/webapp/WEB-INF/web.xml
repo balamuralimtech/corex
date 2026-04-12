@@ -45,6 +45,18 @@
         <servlet-name>DemoRequestServlet</servlet-name>
         <servlet-class>com.web.coretix.applicationmanagement.DemoRequestServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>ClinicRegistrationServlet</servlet-name>
+        <servlet-class>com.web.coretix.applicationmanagement.ClinicRegistrationServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>RazorpayOrderServlet</servlet-name>
+        <servlet-class>com.web.coretix.applicationmanagement.RazorpayOrderServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>RazorpayPaymentVerificationServlet</servlet-name>
+        <servlet-class>com.web.coretix.applicationmanagement.RazorpayPaymentVerificationServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>SessionAuditServlet</servlet-name>
         <url-pattern>/session-audit</url-pattern>
@@ -52,6 +64,18 @@
     <servlet-mapping>
         <servlet-name>DemoRequestServlet</servlet-name>
         <url-pattern>/demo-request</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ClinicRegistrationServlet</servlet-name>
+        <url-pattern>/clinic-register</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>RazorpayOrderServlet</servlet-name>
+        <url-pattern>/payments/razorpay/order</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>RazorpayPaymentVerificationServlet</servlet-name>
+        <url-pattern>/payments/razorpay/verify</url-pattern>
     </servlet-mapping>
     <!-- Client-side state saving for better performance (70% memory reduction) -->
     <context-param>
@@ -97,11 +121,18 @@
         <param-value>/WEB-INF/primefaces-avalon.taglib.xml</param-value>
     </context-param>
     <listener>
-        <listener-class>org.apache.webbeans.servlet.WebBeansConfigurationListener</listener-class>
-    </listener>
-    <listener>
         <listener-class>com.sun.faces.config.ConfigureListener</listener-class>
     </listener>
+    <filter>
+        <filter-name>ApplicationExceptionFilter</filter-name>
+        <filter-class>com.web.coretix.customhandlers.ApplicationExceptionFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>ApplicationExceptionFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
+    </filter-mapping>
     <filter>
         <filter-name>SessionExpiryFilter</filter-name>
         <filter-class>com.web.coretix.filter.SessionExpiryFilter</filter-class>

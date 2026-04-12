@@ -65,8 +65,8 @@
             <div class="grid crud-demo">
                 <div class="col-12">
                     <p:breadCrumb>
-                        <p:menuitem url="#" icon="pi pi-home"/>
-                        <p:menuitem value="#{msg['licenseLabel']}" url="#"/>
+                        <p:menuitem url="#{request.contextPath}/home" icon="pi pi-home"/>
+                        <p:menuitem value="#{msg['licenseLabel']}"/>
                     </p:breadCrumb>
                 </div>
                 <div class="col-12">
@@ -384,4 +384,3 @@
     </ui:define>
 
 </ui:composition>
-

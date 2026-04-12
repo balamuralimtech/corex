@@ -50,7 +50,7 @@ public class ChangePasswordBean extends GenericManagedBean implements Serializab
     private boolean confirmPasswordError = false;
 
     @Inject
-    private IUserAdministrationService userAdministrationService;
+    private transient IUserAdministrationService userAdministrationService;
 
     public void initializePageAttributes() {
         logger.debug("entered into initializePageAttributes !!!");
@@ -216,7 +216,6 @@ public class ChangePasswordBean extends GenericManagedBean implements Serializab
     }
 
 }
-
 
 
 

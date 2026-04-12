@@ -43,10 +43,10 @@ public class SetupBean implements Serializable {
     private static final String APPLICATION_ADMIN_ROLE = "Application Admin";
 
     @Inject
-    private IUserAdministrationService userAdministrationService;
+    private transient IUserAdministrationService userAdministrationService;
 
     @Inject
-    private IRoleAdministrationService roleAdministrationService;
+    private transient IRoleAdministrationService roleAdministrationService;
 
     private String username;
     private String password;

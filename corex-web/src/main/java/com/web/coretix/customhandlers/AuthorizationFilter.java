@@ -164,6 +164,9 @@ public class AuthorizationFilter implements Filter {
         rules.put("/bank-details", new int[]{CoreAppModule.SYSTEM_MANAGEMENT.getId(), SystemManagementModule.BANK_DETAILS.getId()});
         rules.put("/notification-settings", new int[]{CoreAppModule.SYSTEM_MANAGEMENT.getId(), SystemManagementModule.NOTIFICATION_SETTING.getId()});
         rules.put("/demo-requests", new int[]{CoreAppModule.APPLICATION_MANAGEMENT.getId(), ApplicationManagementModule.DEMO_REQUESTS.getId()});
+        rules.put("/application-pricing", new int[]{CoreAppModule.APPLICATION_MANAGEMENT.getId(), ApplicationManagementModule.APPLICATION_PRICING.getId()});
+        rules.put("/referral-management", new int[]{CoreAppModule.APPLICATION_MANAGEMENT.getId(), ApplicationManagementModule.REFERRAL_MANAGEMENT.getId()});
+        rules.put("/referral-dashboard", new int[]{CoreAppModule.APPLICATION_MANAGEMENT.getId(), ApplicationManagementModule.REFERRAL_DASHBOARD.getId()});
         rules.put("/license", new int[]{CoreAppModule.LICENCE.getId(), LicenseManagementModule.LICENSE.getId()});
         rules.put("/server-logs", new int[]{CoreAppModule.SERVER_AND_DB.getId(), ServerAndDBModule.SERVER_LOGS.getId()});
         rules.put("/database-details", new int[]{CoreAppModule.SERVER_AND_DB.getId(), ServerAndDBModule.DATABASE.getId()});
@@ -171,7 +174,4 @@ public class AuthorizationFilter implements Filter {
         return java.util.Collections.unmodifiableMap(rules);
     }
 }
-
-
-
 

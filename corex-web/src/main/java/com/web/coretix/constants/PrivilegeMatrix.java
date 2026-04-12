@@ -118,6 +118,14 @@ public final class PrivilegeMatrix {
         //Application Privileges can be added here below
         pagePrivileges.put(ApplicationManagementModule.DEMO_REQUESTS.getValue(),
                 EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.EXPORT));
+        pagePrivileges.put(ApplicationManagementModule.APPLICATION_PRICING.getValue(),
+                EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.ADD, RolePrivilegeConstants.EDIT,
+                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT));
+        pagePrivileges.put(ApplicationManagementModule.REFERRAL_MANAGEMENT.getValue(),
+                EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.ADD, RolePrivilegeConstants.EDIT,
+                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT));
+        pagePrivileges.put(ApplicationManagementModule.REFERRAL_DASHBOARD.getValue(),
+                EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.EXPORT));
 
         return pagePrivileges;
     }
@@ -129,7 +137,5 @@ public final class PrivilegeMatrix {
         }
     }
 }
-
-
 
 

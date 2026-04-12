@@ -16,6 +16,7 @@
  */
 package com.web.coretix.general;
 
+import com.mysql.cj.jdbc.AbandonedConnectionCleanupThread;
 import com.module.coretix.usermanagement.IUserActivityService;
 import com.web.coretix.applicationserverlogsanddb.ErrorLogMonitorSupport;
 import java.io.File;
@@ -74,6 +75,7 @@ public class BackgroundThreadsKillerListener implements ServletContextListener
         {
             logger.info("Going to close the resources used by application");
             ErrorLogMonitorSupport.stopBackgroundMonitoring();
+            AbandonedConnectionCleanupThread.checkedShutdown();
             WebApplicationContext context = (WebApplicationContext) sce.getServletContext().getAttribute(
                     WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
             logger.info("Successfully closed the all the resources created/used by application.");
@@ -84,7 +86,5 @@ public class BackgroundThreadsKillerListener implements ServletContextListener
         }
     }
 }
-
-
 
 

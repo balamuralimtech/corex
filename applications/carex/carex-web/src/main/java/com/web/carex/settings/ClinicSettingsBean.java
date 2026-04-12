@@ -38,13 +38,13 @@ public class ClinicSettingsBean extends CarexManagedBean implements Serializable
     private static final long serialVersionUID = 1L;
 
     @Inject
-    private IClinicSettingsService clinicSettingsService;
+    private transient IClinicSettingsService clinicSettingsService;
 
     @Inject
-    private IOrganizationService organizationService;
+    private transient IOrganizationService organizationService;
 
     @Inject
-    private ICurrencyDetailsService currencyDetailsService;
+    private transient ICurrencyDetailsService currencyDetailsService;
 
     private ClinicSettings clinicSettings = new ClinicSettings();
     private List<Organizations> organizationList = new ArrayList<>();
@@ -230,6 +230,7 @@ public class ClinicSettingsBean extends CarexManagedBean implements Serializable
         settings.setSundayOpen(false);
         settings.setRequireInvoice(true);
         settings.setRequireMedicalCertificate(false);
+        settings.setReceptionTokenWorkflowEnabled(true);
         settings.setSlotDurationMinutes(15);
         settings.setConsultationFee(BigDecimal.ZERO);
         settings.setFollowupFee(BigDecimal.ZERO);

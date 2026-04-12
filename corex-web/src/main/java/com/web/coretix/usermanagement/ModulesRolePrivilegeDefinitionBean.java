@@ -58,7 +58,7 @@ public class ModulesRolePrivilegeDefinitionBean implements Serializable {
     private final String viewPrivilegeValue = RolePrivilegeConstants.VIEW.getValue();
 
     @Inject
-    private IModulePrivilegeService iModulePrivilegeService;
+    private transient IModulePrivilegeService iModulePrivilegeService;
 
     public void initializePageAttributes() {
         if (CollectionUtils.isNotEmpty(roleModuleList)) {
@@ -389,7 +389,6 @@ public class ModulesRolePrivilegeDefinitionBean implements Serializable {
     }
 
 }
-
 
 
 

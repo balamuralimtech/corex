@@ -1,23 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourcePerFileMappings">
-    <file url="file://$PROJECT_DIR$/applications/carex/carex-db/clinic-settings/clinic_settings.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
-    <file url="file://$PROJECT_DIR$/applications/carex/carex-db/consultation/consultation.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
-    <file url="file://$PROJECT_DIR$/applications/carex/carex-db/doctor/doctor.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
-    <file url="file://$PROJECT_DIR$/applications/carex/carex-db/invoice-settings/invoice_settings.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
-    <file url="file://$PROJECT_DIR$/applications/carex/carex-db/medical-certificate-settings/medical_certificate_settings.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
-    <file url="file://$PROJECT_DIR$/applications/carex/carex-db/medicine/medicine.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
-    <file url="file://$PROJECT_DIR$/applications/carex/carex-db/patient/patient.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
-    <file url="file://$PROJECT_DIR$/applications/carex/carex-db/prescription-settings/prescription_settings.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
-    <file url="file://$PROJECT_DIR$/applications/shipx/shipx-db/customer-request/customer_request.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
-    <file url="file://$PROJECT_DIR$/applications/shipx/shipx-db/quotation/shipx_quotation.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
-    <file url="file://$PROJECT_DIR$/corex-db/applicationmanagement/demo_request.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
-    <file url="file://$PROJECT_DIR$/corex-db/applicationmanagement/demo_request_add_status_columns.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
-    <file url="file://$PROJECT_DIR$/corex-db/applicationnotification/applicationnotification.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
-    <file url="file://$PROJECT_DIR$/corex-db/applicationtheme/applicationtheme.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
-    <file url="file://$PROJECT_DIR$/corex-db/systemmanagement/organization.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
-    <file url="file://$PROJECT_DIR$/corex-db/usermanagement/UserDetails.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
-    <file url="file://$PROJECT_DIR$/corex-db/usermanagement/performance_indexes.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
-    <file url="file://$PROJECT_DIR$/corex-db/usermanagement/useractivities.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
+    <file url="file://$PROJECT_DIR$/applications/carex/carex-db/clinic-settings/clinic_settings_add_consultation_workflow.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
+    <file url="file://$PROJECT_DIR$/applications/carex/carex-db/consultation/consultation_queue_fields.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
+    <file url="file://$PROJECT_DIR$/corex-db/applicationmanagement/application_pricing.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
+    <file url="file://$PROJECT_DIR$/corex-db/applicationmanagement/referral_management.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
+    <file url="file://$PROJECT_DIR$/corex-db/systemmanagement/organization_add_referral_code.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
   </component>
 </project>

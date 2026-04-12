@@ -564,6 +564,82 @@ p {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.pricing-section {
+  display: grid;
+  gap: 30px;
+}
+
+.pricing-copy {
+  max-width: 860px;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.pricing-card {
+  position: relative;
+  padding: 34px;
+  border-radius: 32px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 248, 250, 0.96));
+  border: 1px solid rgba(17, 17, 17, 0.08);
+  box-shadow: 0 24px 70px rgba(17, 17, 17, 0.07);
+}
+
+.pricing-card-featured {
+  background:
+    radial-gradient(circle at top, rgba(0, 113, 227, 0.12), transparent 52%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(244, 249, 255, 0.98));
+  border-color: rgba(0, 113, 227, 0.18);
+  transform: translateY(-8px);
+}
+
+.pricing-duration {
+  margin-bottom: 10px;
+  color: var(--blue);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.pricing-card h3 {
+  max-width: 12ch;
+}
+
+.pricing-summary {
+  margin-top: 18px;
+  min-height: 84px;
+}
+
+.pricing-points {
+  margin: 24px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 12px;
+}
+
+.pricing-points li {
+  position: relative;
+  padding-left: 20px;
+  color: #3d3d42;
+  line-height: 1.55;
+}
+
+.pricing-points li:before {
+  content: "";
+  position: absolute;
+  top: 0.62rem;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--blue);
+}
+
 .stat-panel strong {
   display: block;
   margin-top: 10px;
@@ -608,12 +684,23 @@ p {
 .contact-form {
   display: grid;
   gap: 14px;
-  max-width: 680px;
+  max-width: 760px;
   margin: 32px auto 0;
 }
 
+.registration-form {
+  text-align: left;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
 .contact-form input,
-.contact-form textarea {
+.contact-form textarea,
+.contact-form select {
   width: 100%;
   padding: 18px 20px;
   border-radius: 20px;
@@ -624,9 +711,58 @@ p {
 }
 
 .contact-form input:focus,
-.contact-form textarea:focus {
+.contact-form textarea:focus,
+.contact-form select:focus {
   outline: 2px solid rgba(0, 113, 227, 0.18);
   border-color: rgba(0, 113, 227, 0.28);
+}
+
+.registration-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.select-field {
+  display: grid;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.select-field span {
+  padding-left: 4px;
+}
+
+.gateway-note {
+  padding: 18px 20px;
+  border-radius: 22px;
+  background: rgba(11, 76, 166, 0.08);
+  color: #184a8c;
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+
+.contact-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: 760px;
+  margin: 22px auto 8px;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.contact-divider::before,
+.contact-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(17, 17, 17, 0.12);
+}
+
+.demo-form {
+  max-width: 640px;
 }
 
 .form-status {
@@ -676,6 +812,7 @@ p {
 @media (max-width: 1060px) {
   .panel-grid,
   .stats-grid,
+  .pricing-grid,
   .device-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -686,6 +823,10 @@ p {
 
   .panel-large {
     grid-column: 1 / -1;
+  }
+
+  .pricing-card-featured {
+    transform: none;
   }
 
   .doc-left {
@@ -724,8 +865,18 @@ p {
 
   .device-grid,
   .panel-grid,
-  .stats-grid {
+  .stats-grid,
+  .pricing-grid {
     grid-template-columns: 1fr;
+  }
+
+  .pricing-card {
+    padding: 28px 24px;
+    border-radius: 26px;
+  }
+
+  .pricing-summary {
+    min-height: auto;
   }
 
   .device-strip {
@@ -753,5 +904,10 @@ p {
 
   .cta-panel {
     padding: 32px 22px;
+  }
+
+  .form-grid,
+  .registration-meta {
+    grid-template-columns: 1fr;
   }
 }

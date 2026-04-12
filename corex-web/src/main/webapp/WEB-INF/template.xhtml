@@ -158,9 +158,9 @@
             }
 
             function handleGlobalPollError() {
-                // Do not force session-timeout for every AJAX failure.
-                // Route to generic internal error so real exceptions are visible in logs/monitoring.
-                window.location = '#{request.contextPath}/internal-server-error';
+                if (window.console && typeof window.console.warn === 'function') {
+                    window.console.warn('CoreX topbar poll failed. Leaving the current page in place.');
+                }
             }
 
             window.addEventListener('load', function() {
@@ -194,6 +194,76 @@
             //]]>
         </script>
         <style>
+            .layout-wrapper .ui-breadcrumb {
+                display:flex;
+                align-items:center;
+                flex-wrap:wrap;
+                gap:.35rem;
+                margin:0 0 1rem 0;
+                padding:.85rem 1rem;
+                border-radius:18px;
+                border:1px solid rgba(148,163,184,.18);
+                background:linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+                box-shadow:0 10px 34px rgba(15,23,42,.06);
+            }
+            .layout-wrapper .ui-breadcrumb ul {
+                display:flex;
+                align-items:center;
+                flex-wrap:wrap;
+                gap:.35rem;
+                width:100%;
+                margin:0;
+                padding:0;
+            }
+            .layout-wrapper .ui-breadcrumb ul li {
+                display:inline-flex;
+                align-items:center;
+                float:none;
+                margin:0;
+            }
+            .layout-wrapper .ui-breadcrumb ul li .ui-menuitem-link {
+                display:inline-flex;
+                align-items:center;
+                gap:.45rem;
+                min-height:2rem;
+                padding:.45rem .8rem;
+                border-radius:999px;
+                color:#334155;
+                font-weight:600;
+                transition:background-color .18s ease, color .18s ease, box-shadow .18s ease;
+            }
+            .layout-wrapper .ui-breadcrumb ul li .ui-menuitem-link .ui-menuitem-icon {
+                color:#0f766e;
+                font-size:.95rem;
+            }
+            .layout-wrapper .ui-breadcrumb ul li .ui-menuitem-link .ui-menuitem-text {
+                color:inherit;
+            }
+            .layout-wrapper .ui-breadcrumb ul li .ui-menuitem-link:hover,
+            .layout-wrapper .ui-breadcrumb ul li .ui-menuitem-link:focus {
+                background:#ecfeff;
+                color:#115e59;
+                box-shadow:inset 0 0 0 1px rgba(15,118,110,.12);
+            }
+            .layout-wrapper .ui-breadcrumb ul li.ui-breadcrumb-chevron {
+                color:#94a3b8;
+                font-size:.8rem;
+                margin:0 .1rem;
+            }
+            .layout-wrapper .ui-breadcrumb ul li:last-child .ui-menuitem-link {
+                background:#f1f5f9;
+                color:#0f172a;
+            }
+            @media (max-width: 768px) {
+                .layout-wrapper .ui-breadcrumb {
+                    padding:.75rem .85rem;
+                    border-radius:16px;
+                }
+                .layout-wrapper .ui-breadcrumb ul li .ui-menuitem-link {
+                    padding:.42rem .68rem;
+                    font-size:.88rem;
+                }
+            }
             /*******************
                 Preloader
                 ********************/
@@ -363,4 +433,3 @@
     </h:body>
 </f:view>
 </html>
-

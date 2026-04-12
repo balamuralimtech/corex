@@ -72,13 +72,13 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
     private transient PrivateKey loginEncryptionPrivateKey;
 
     @Inject
-    private IUserAdministrationService userAdministrationService;
+    private transient IUserAdministrationService userAdministrationService;
 
     @Inject
-    private IUserActivityService userActivityService;
+    private transient IUserActivityService userActivityService;
 
     @Inject
-    private ILicenseService licenseService;
+    private transient ILicenseService licenseService;
 
     public String navigateToLoginPage() {
         logger.debug("entered into LoginBean navigateToLoginPage !!!");
@@ -426,7 +426,6 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
     }
 
 }
-
 
 
 

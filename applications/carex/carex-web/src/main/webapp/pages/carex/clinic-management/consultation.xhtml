@@ -13,6 +13,11 @@
 
         <h:form id="form" styleClass="carex-unified-theme">
             <p:remoteCommand name="refreshConsultationPreview" process="consultationEditorPanel medicineLinePanel" update="form:previewTabsPanel"/>
+            <p:poll interval="15"
+                    rendered="#{consultationBean.searchMode and consultationBean.receptionTokenWorkflowEnabled}"
+                    listener="#{consultationBean.refreshQueue}"
+                    update="form:queuePanel"
+                    global="false"/>
 
             <h:outputScript target="body">
                 var consultationPreviewTimer = null;
@@ -149,6 +154,74 @@
                             </div>
                         </div>
 
+                        <p:outputPanel id="queuePanel" styleClass="card" style="margin-top:1rem;border:1px solid #e2e8f0;box-shadow:none;"
+                                       rendered="#{consultationBean.receptionTokenWorkflowEnabled}">
+                            <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-2">
+                                <div>
+                                    <h3 style="margin:0;">Active Consultation Queue</h3>
+                                    <div style="margin-top:.35rem;color:#64748b;font-size:.9rem;">
+                                        Admissions are ordered by token so the assigned doctor can accept and finish them in sequence.
+                                    </div>
+                                </div>
+                                <p:commandButton value="Refresh Queue" icon="pi pi-refresh" process="@this"
+                                                 actionListener="#{consultationBean.refreshQueue}"
+                                                 update="form:queuePanel form:messages"
+                                                 styleClass="ui-button-secondary ui-button-sm"/>
+                            </div>
+
+                            <p:dataTable value="#{consultationBean.activeQueueList}" var="queueRow"
+                                         rendered="#{consultationBean.queueAvailable}"
+                                         reflow="true" style="margin-top:1rem;"
+                                         emptyMessage="No active queue items are waiting right now.">
+                                <p:column headerText="Token" style="width:6rem;">
+                                    <span style="display:inline-flex;align-items:center;justify-content:center;min-width:42px;height:42px;border-radius:14px;background:#d1fae5;color:#065f46;font-weight:700;">
+                                        #{queueRow.tokenNumber}
+                                    </span>
+                                </p:column>
+                                <p:column headerText="Patient">
+                                    <div style="display:flex;flex-direction:column;gap:.25rem;">
+                                        <strong>#{queueRow.patient.patientName}</strong>
+                                        <span style="font-size:.85rem;color:#64748b;">#{consultationBean.getQueueVitalsSummary(queueRow)}</span>
+                                    </div>
+                                </p:column>
+                                <p:column headerText="Doctor">
+                                    #{queueRow.doctor.doctorName}
+                                </p:column>
+                                <p:column headerText="Status" style="width:8rem;">
+                                    <p:tag value="#{queueRow.status}" severity="#{consultationBean.queueSeverity(queueRow.status)}"/>
+                                </p:column>
+                                <p:column headerText="Notes">
+                                    <h:outputText value="#{queueRow.symptoms}"/>
+                                </p:column>
+                                <p:column headerText="Actions" style="width:12rem;">
+                                    <div class="flex flex-wrap gap-2">
+                                        <p:commandButton value="Accept" icon="pi pi-check" process="@this"
+                                                         rendered="#{consultationBean.canManageQueueConsultation(queueRow) and queueRow.status eq 'Waiting'}"
+                                                         actionListener="#{consultationBean.acceptQueuedConsultation(queueRow.id)}"
+                                                         update="form:queuePanel form:messages"
+                                                         styleClass="ui-button-warning ui-button-sm"/>
+                                        <p:commandButton value="Finish" icon="pi pi-play" process="@this"
+                                                         rendered="#{consultationBean.canManageQueueConsultation(queueRow) and queueRow.status ne 'Waiting'}"
+                                                         actionListener="#{consultationBean.continueQueuedConsultation(queueRow.id)}"
+                                                         update="form:contentModePanel form:messages"
+                                                         styleClass="ui-button-success ui-button-sm"/>
+                                    </div>
+                                </p:column>
+                            </p:dataTable>
+
+                            <p:outputPanel rendered="#{not consultationBean.queueAvailable}" style="margin-top:1rem;color:#64748b;">
+                                No active admissions are waiting in the consultation queue.
+                            </p:outputPanel>
+                        </p:outputPanel>
+
+                        <p:outputPanel rendered="#{not consultationBean.receptionTokenWorkflowEnabled}" styleClass="card"
+                                       style="margin-top:1rem;border:1px solid #dbeafe;background:#f8fbff;box-shadow:none;">
+                            <h3 style="margin:0;color:#1d4ed8;">Direct doctor consultation mode</h3>
+                            <div style="margin-top:.45rem;color:#475569;">
+                                Reception token queue is disabled in Clinic Settings. Doctors can register and attend patients directly from this page.
+                            </div>
+                        </p:outputPanel>
+
                         <p:outputPanel id="consultationMainPanel" styleClass="card" style="margin-top:1rem;border:1px solid #e2e8f0;box-shadow:none;">
                             <p:outputPanel rendered="#{not consultationBean.consultationResultsLoaded}">
                                 <div style="padding:1rem 0;color:#64748b;">
@@ -268,7 +341,7 @@
                                                      update="form:contentModePanel form:messages" styleClass="ui-button-secondary ui-button-sm"/>
                                         <p:commandButton value="#{i18n.app('newLabel')}" icon="pi pi-plus" process="@this" actionListener="#{consultationBean.startNewConsultation}"
                                                      update="form:contentModePanel form:messages" styleClass="ui-button-success ui-button-sm"/>
-                                        <p:commandButton value="#{i18n.app('saveConsultationLabel')}" icon="pi pi-check" process="@form"
+                                        <p:commandButton value="Save and Complete Consultation" icon="pi pi-check" process="@form"
                                                      actionListener="#{consultationBean.saveConsultation}"
                                                      disabled="#{consultationBean.readOnlyMode}"
                                                      update="form:contentModePanel form:messages"
@@ -302,9 +375,43 @@
                                         <f:selectItem itemLabel="#{i18n.app('selectPatientLabel')}" itemValue="#{null}" noSelectionOption="true"/>
                                         <f:selectItems value="#{consultationBean.patientList}" var="patient"
                                                        itemValue="#{patient.id}" itemLabel="#{patient.patientCode} - #{patient.patientName}"/>
-                                        <p:ajax listener="#{consultationBean.onPatientChange}" process="@this" update="form:previewTabsPanel"/>
+                                        <p:ajax listener="#{consultationBean.onPatientChange}" process="@this" update="form:contentModePanel form:previewTabsPanel"/>
                                     </p:selectOneMenu>
                                 </div>
+                                <p:outputPanel rendered="#{not empty consultationBean.selectedPatientId}" styleClass="col-12">
+                                    <div style="padding:1rem;border-radius:14px;background:#f8fafc;border:1px solid #e2e8f0;">
+                                        <div class="grid">
+                                            <div class="col-12 md:col-3">
+                                                <label style="font-weight:600;">#{i18n.app('patientNameLabel')}</label>
+                                                <div>#{consultationBean.previewPatientName}</div>
+                                            </div>
+                                            <div class="col-12 md:col-2">
+                                                <label style="font-weight:600;">#{i18n.app('genderLabel')}</label>
+                                                <div>#{consultationBean.previewPatientGender}</div>
+                                            </div>
+                                            <div class="col-12 md:col-2">
+                                                <label style="font-weight:600;">Age</label>
+                                                <div>#{consultationBean.previewPatientAgeText}</div>
+                                            </div>
+                                            <div class="col-12 md:col-2">
+                                                <label style="font-weight:600;">#{i18n.app('phoneLabel')}</label>
+                                                <div>#{consultationBean.selectedPatientPhoneNumber}</div>
+                                            </div>
+                                            <div class="col-12 md:col-3">
+                                                <label style="font-weight:600;">Blood Group</label>
+                                                <div>#{empty consultationBean.selectedPatientBloodGroup ? '-' : consultationBean.selectedPatientBloodGroup}</div>
+                                            </div>
+                                            <div class="col-12 md:col-6">
+                                                <label style="font-weight:600;">#{i18n.app('emailAddressLabel')}</label>
+                                                <div>#{empty consultationBean.selectedPatientEmailAddress ? '-' : consultationBean.selectedPatientEmailAddress}</div>
+                                            </div>
+                                            <div class="col-12 md:col-6">
+                                                <label style="font-weight:600;">Emergency Contact</label>
+                                                <div>#{empty consultationBean.selectedPatientEmergencyContact ? '-' : consultationBean.selectedPatientEmergencyContact}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </p:outputPanel>
                                 <div class="col-12 md:col-4">
                                     <label>#{i18n.app('consultationFeeLabel')}</label>
                                     <p:inputNumber value="#{consultationBean.consultation.consultationFee}" decimalPlaces="2" minValue="0" readonly="#{consultationBean.readOnlyMode}">
@@ -345,31 +452,52 @@
                                 </div>
                                 <div class="col-12">
                                     <label>#{i18n.app('symptomsLabel')}</label>
-                                    <p:inputTextarea value="#{consultationBean.consultation.symptoms}" rows="3" autoResize="false" style="width:100%;" readonly="#{consultationBean.readOnlyMode}"/>
+                                    <p:inputTextarea value="#{consultationBean.consultation.symptoms}" rows="3" autoResize="false" style="width:100%;" readonly="#{consultationBean.readOnlyMode}">
+                                        <p:ajax event="keyup" delay="300" process="@this" update="form:previewTabsPanel"/>
+                                        <p:ajax event="blur" process="@this" update="form:previewTabsPanel"/>
+                                    </p:inputTextarea>
                                 </div>
                                 <div class="col-12">
                                     <label>#{i18n.app('familyHistoryLabel')}</label>
-                                    <p:inputTextarea value="#{consultationBean.consultation.familyHistory}" rows="2" autoResize="false" style="width:100%;" readonly="#{consultationBean.readOnlyMode}"/>
+                                    <p:inputTextarea value="#{consultationBean.consultation.familyHistory}" rows="2" autoResize="false" style="width:100%;" readonly="#{consultationBean.readOnlyMode}">
+                                        <p:ajax event="keyup" delay="300" process="@this" update="form:previewTabsPanel"/>
+                                        <p:ajax event="blur" process="@this" update="form:previewTabsPanel"/>
+                                    </p:inputTextarea>
                                 </div>
                                 <div class="col-12 md:col-6">
                                     <label>#{i18n.app('vitalsLabel')}</label>
-                                    <p:inputTextarea value="#{consultationBean.consultation.vitals}" rows="3" autoResize="false" style="width:100%;" readonly="#{consultationBean.readOnlyMode}"/>
+                                    <p:inputTextarea value="#{consultationBean.consultation.vitals}" rows="3" autoResize="false" style="width:100%;" readonly="#{consultationBean.readOnlyMode}">
+                                        <p:ajax event="keyup" delay="300" process="@this" update="form:previewTabsPanel"/>
+                                        <p:ajax event="blur" process="@this" update="form:previewTabsPanel"/>
+                                    </p:inputTextarea>
                                 </div>
                                 <div class="col-12 md:col-6">
                                     <label>#{i18n.app('findingsLabel')}</label>
-                                    <p:inputTextarea value="#{consultationBean.consultation.findings}" rows="3" autoResize="false" style="width:100%;" readonly="#{consultationBean.readOnlyMode}"/>
+                                    <p:inputTextarea value="#{consultationBean.consultation.findings}" rows="3" autoResize="false" style="width:100%;" readonly="#{consultationBean.readOnlyMode}">
+                                        <p:ajax event="keyup" delay="300" process="@this" update="form:previewTabsPanel"/>
+                                        <p:ajax event="blur" process="@this" update="form:previewTabsPanel"/>
+                                    </p:inputTextarea>
                                 </div>
                                 <div class="col-12">
                                     <label>#{i18n.app('diagnosisLabel')}</label>
-                                    <p:inputTextarea value="#{consultationBean.consultation.diagnosis}" rows="3" autoResize="false" style="width:100%;" readonly="#{consultationBean.readOnlyMode}"/>
+                                    <p:inputTextarea value="#{consultationBean.consultation.diagnosis}" rows="3" autoResize="false" style="width:100%;" readonly="#{consultationBean.readOnlyMode}">
+                                        <p:ajax event="keyup" delay="300" process="@this" update="form:previewTabsPanel"/>
+                                        <p:ajax event="blur" process="@this" update="form:previewTabsPanel"/>
+                                    </p:inputTextarea>
                                 </div>
                                 <div class="col-12">
                                     <label>#{i18n.app('followUpLabel')}</label>
-                                    <p:inputTextarea value="#{consultationBean.consultation.followUpNote}" rows="2" autoResize="false" style="width:100%;" readonly="#{consultationBean.readOnlyMode}"/>
+                                    <p:inputTextarea value="#{consultationBean.consultation.followUpNote}" rows="2" autoResize="false" style="width:100%;" readonly="#{consultationBean.readOnlyMode}">
+                                        <p:ajax event="keyup" delay="300" process="@this" update="form:previewTabsPanel"/>
+                                        <p:ajax event="blur" process="@this" update="form:previewTabsPanel"/>
+                                    </p:inputTextarea>
                                 </div>
                                 <div class="col-12">
                                     <label>#{i18n.app('doctorNotesLabel')}</label>
-                                    <p:inputTextarea value="#{consultationBean.consultation.doctorNotes}" rows="3" autoResize="false" style="width:100%;" readonly="#{consultationBean.readOnlyMode}"/>
+                                    <p:inputTextarea value="#{consultationBean.consultation.doctorNotes}" rows="3" autoResize="false" style="width:100%;" readonly="#{consultationBean.readOnlyMode}">
+                                        <p:ajax event="keyup" delay="300" process="@this" update="form:previewTabsPanel"/>
+                                        <p:ajax event="blur" process="@this" update="form:previewTabsPanel"/>
+                                    </p:inputTextarea>
                                 </div>
                             </div>
 

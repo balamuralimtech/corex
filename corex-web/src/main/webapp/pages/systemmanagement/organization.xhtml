@@ -129,9 +129,9 @@
         <h:form id="form">
             <div class="col-12">
                 <p:breadCrumb>
-                    <p:menuitem url="#" icon="pi pi-home" />
+                    <p:menuitem url="#{request.contextPath}/home" icon="pi pi-home" />
                     <p:menuitem value="#{msg['systemManagementLabel']}" url="#" />
-                    <p:menuitem value="#{msg['organizationLabel']}" url="#" />
+                    <p:menuitem value="#{msg['organizationLabel']}" />
                 </p:breadCrumb>
             </div>
             <div class="grid crud-demo">
@@ -201,6 +201,9 @@
                                 <p:column headerText="#{msg['websiteLabel']}" sortBy="#{organization.website}" filterBy="#{organization.website}">
                                     <h:outputText value="#{organization.website}" />
                                 </p:column>
+                                <p:column headerText="#{msg['referralCodeLabel']}" sortBy="#{organization.referralCode}" filterBy="#{organization.referralCode}">
+                                    <h:outputText value="#{empty organization.referralCode ? '-' : organization.referralCode}" />
+                                </p:column>
 
                                 <p:column exportable="false">
                                     <p:commandButton icon="pi pi-pencil" update=":form:addEditOrgPanelId" oncomplete="PF('manageOrgDialog').show()"
@@ -255,6 +258,12 @@
                                         <p:inputText id="website" value="#{organizationBean.organizationWebsite}" onfocus="clearErrorStyles()" />
                                     </div>
                                     <div class="field">
+                                        <p:outputLabel for="referralCode">#{msg['referralCodeLabel']}</p:outputLabel>
+                                        <p:inputText id="referralCode" value="#{organizationBean.organizationReferralCode}"
+                                                     maxlength="150" onfocus="clearErrorStyles()"
+                                                     placeholder="#{msg['referralCodeOptionalLabel']}" />
+                                    </div>
+                                    <div class="field">
 
                                         <p:fileUpload mode="advanced"
                                                       auto="true"
@@ -307,4 +316,3 @@
         </h:form>
     </ui:define>
 </ui:composition>
-

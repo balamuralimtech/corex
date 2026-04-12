@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -57,6 +58,28 @@ public class ErrorLogMonitorBean extends GenericManagedBean implements Serializa
         return getIncidents().size();
     }
 
+    public List<ErrorLogMonitorSupport.ErrorIncident> getServerIncidents() {
+        return filterIncidentsBySource("SERVER");
+    }
+
+    public List<ErrorLogMonitorSupport.ErrorIncident> getApplicationIncidents() {
+        return filterIncidentsBySource("APPLICATION");
+    }
+
+    private List<ErrorLogMonitorSupport.ErrorIncident> filterIncidentsBySource(String sourceType) {
+        if (snapshot == null || snapshot.getIncidents() == null || snapshot.getIncidents().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<ErrorLogMonitorSupport.ErrorIncident> filteredIncidents = new ArrayList<>();
+        for (ErrorLogMonitorSupport.ErrorIncident incident : snapshot.getIncidents()) {
+            if (incident != null && sourceType.equals(incident.getSourceType())) {
+                filteredIncidents.add(incident);
+            }
+        }
+        return filteredIncidents;
+    }
+
     public int getErrorCount() {
         return snapshot == null ? 0 : snapshot.getErrorCount();
     }
@@ -85,8 +108,24 @@ public class ErrorLogMonitorBean extends GenericManagedBean implements Serializa
         return snapshot == null ? 0 : snapshot.getScannedFileCount();
     }
 
+    public int getServerIncidentCount() {
+        return snapshot == null ? 0 : snapshot.getServerIncidentCount();
+    }
+
+    public int getApplicationIncidentCount() {
+        return snapshot == null ? 0 : snapshot.getApplicationIncidentCount();
+    }
+
     public boolean isIncidentsAvailable() {
         return !getIncidents().isEmpty();
+    }
+
+    public boolean isServerIncidentsAvailable() {
+        return !getServerIncidents().isEmpty();
+    }
+
+    public boolean isApplicationIncidentsAvailable() {
+        return !getApplicationIncidents().isEmpty();
     }
 
     public String getLastScanLabel() {
@@ -137,5 +176,15 @@ public class ErrorLogMonitorBean extends GenericManagedBean implements Serializa
             return "monitor-pulse";
         }
         return "";
+    }
+
+    public String sourceTone(ErrorLogMonitorSupport.ErrorIncident incident) {
+        if (incident == null) {
+            return "info";
+        }
+        if ("APPLICATION".equals(incident.getSourceType())) {
+            return "warning";
+        }
+        return "info";
     }
 }

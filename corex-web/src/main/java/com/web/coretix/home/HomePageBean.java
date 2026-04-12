@@ -64,31 +64,31 @@ public class HomePageBean extends GenericManagedBean implements Serializable {
     private static final Integer ALL_ORGANIZATIONS_ID = -1;
     private ResourceBundle resourceBundle;
     @Inject
-    private ICoreDashboardService coreDashboardService;
+    private transient ICoreDashboardService coreDashboardService;
 
     @Inject
-    private ILicenseService licenseService;
+    private transient ILicenseService licenseService;
 
     @Inject
-    private IUserAdministrationService userAdministrationService;
+    private transient IUserAdministrationService userAdministrationService;
 
     @Inject
-    private IOrganizationService organizationService;
+    private transient IOrganizationService organizationService;
 
     @Inject
-    private IBranchService branchService;
+    private transient IBranchService branchService;
 
     @Inject
-    private IDepartmentService departmentService;
+    private transient IDepartmentService departmentService;
 
     @Inject
-    private IDesignationService designationService;
+    private transient IDesignationService designationService;
 
     @Inject
-    private IRoleAdministrationService roleAdministrationService;
+    private transient IRoleAdministrationService roleAdministrationService;
 
     @Inject
-    private IUserActivityService userActivityService;
+    private transient IUserActivityService userActivityService;
 
     private CoreDashboardTO coreDashboardTO;
     private Integer selectedOrganizationId;
@@ -654,7 +654,6 @@ public class HomePageBean extends GenericManagedBean implements Serializable {
 //        return memoryJson;
 //    }
 }
-
 
 
 

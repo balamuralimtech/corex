@@ -49,6 +49,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -63,37 +64,38 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     @Inject
-    private IConsultationService consultationService;
+    private transient IConsultationService consultationService;
 
     @Inject
-    private IDoctorService doctorService;
+    private transient IDoctorService doctorService;
 
     @Inject
-    private IPatientService patientService;
+    private transient IPatientService patientService;
 
     @Inject
-    private IMedicineService medicineService;
+    private transient IMedicineService medicineService;
 
     @Inject
-    private IOrganizationService organizationService;
+    private transient IOrganizationService organizationService;
 
     @Inject
-    private IClinicSettingsService clinicSettingsService;
+    private transient IClinicSettingsService clinicSettingsService;
 
     @Inject
-    private IPrescriptionSettingsService prescriptionSettingsService;
+    private transient IPrescriptionSettingsService prescriptionSettingsService;
 
     @Inject
-    private IInvoiceSettingsService invoiceSettingsService;
+    private transient IInvoiceSettingsService invoiceSettingsService;
 
     @Inject
-    private IMedicalCertificateSettingsService medicalCertificateSettingsService;
+    private transient IMedicalCertificateSettingsService medicalCertificateSettingsService;
 
     private List<Organizations> organizationList = new ArrayList<>();
     private List<Doctor> doctorList = new ArrayList<>();
     private List<Patient> patientList = new ArrayList<>();
     private List<Medicine> medicineList = new ArrayList<>();
     private List<Consultation> consultationList = new ArrayList<>();
+    private List<Consultation> activeQueueList = new ArrayList<>();
 
     private Consultation consultation = new Consultation();
     private Consultation selectedConsultation;
@@ -140,6 +142,7 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
         selectedOrganizationId = resolveDefaultOrganizationId(organizationList, selectedOrganizationId);
         loadScopedReferenceData();
         consultationList = new ArrayList<>();
+        activeQueueList = new ArrayList<>();
         consultationResultsLoaded = false;
         addButtonAction();
         searchMode = true;
@@ -148,8 +151,13 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
 
     public void onOrganizationChange() {
         loadScopedReferenceData();
-        consultationList = new ArrayList<>();
-        consultationResultsLoaded = false;
+        if (selectedOrganizationId != null || isApplicationAdmin()) {
+            fetchConsultationList();
+        } else {
+            consultationList = new ArrayList<>();
+            activeQueueList = new ArrayList<>();
+            consultationResultsLoaded = false;
+        }
         addButtonAction();
         searchMode = true;
         PrimeFaces.current().ajax().update("form:contentModePanel", "form:messages");
@@ -168,6 +176,9 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
 
     public void onPatientChange() {
         selectedPatient = findPatientInList(selectedPatientId);
+        if (selectedPatient != null) {
+            searchMode = false;
+        }
     }
 
     public void onDraftMedicineChange() {
@@ -407,6 +418,7 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
             consultation.addConsultationMedicine(line);
         }
         recalculateTotals();
+        consultation.setStatus("Completed");
         UserActivityTO userActivityTO = populateUserActivityTO();
         GeneralConstants result;
         if (addOperation) {
@@ -443,6 +455,59 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
                 ? new ArrayList<>()
                 : new ArrayList<>(consultationService.getConsultationsByOrganizationId(selectedOrganizationId));
         consultationResultsLoaded = true;
+        refreshQueue();
+    }
+
+    public void refreshQueue() {
+        if (selectedOrganizationId != null) {
+            activeQueueList = new ArrayList<>(consultationService.getActiveQueueByOrganizationId(selectedOrganizationId));
+            return;
+        }
+
+        if (!isApplicationAdmin()) {
+            activeQueueList = new ArrayList<>();
+            return;
+        }
+
+        activeQueueList = new ArrayList<>();
+        for (Organizations organization : organizationList) {
+            if (organization == null) {
+                continue;
+            }
+            List<Consultation> organizationQueue = consultationService.getActiveQueueByOrganizationId(organization.getId());
+            if (organizationQueue != null) {
+                activeQueueList.addAll(organizationQueue);
+            }
+        }
+        activeQueueList.sort(Comparator
+                .comparing(Consultation::getTokenNumber, Comparator.nullsLast(Comparator.naturalOrder()))
+                .thenComparing(Consultation::getConsultationDate, Comparator.nullsLast(Comparator.naturalOrder()))
+                .thenComparing(Consultation::getId, Comparator.nullsLast(Comparator.naturalOrder())));
+    }
+
+    public void acceptQueuedConsultation(Integer consultationId) {
+        if (!loadSelectedConsultation(consultationId) || !canManageQueueConsultation(selectedConsultation)) {
+            addMessage(FacesMessage.SEVERITY_WARN, "Not allowed", "Only the assigned doctor can accept this consultation.");
+            PrimeFaces.current().ajax().update("form:queuePanel", "form:messages");
+            return;
+        }
+        selectedConsultation.setStatus("In Progress");
+        updateQueueConsultationStatus(selectedConsultation, "Queue accepted", "Consultation moved to in-progress.");
+    }
+
+    public void continueQueuedConsultation(Integer consultationId) {
+        if (!loadSelectedConsultation(consultationId) || !canManageQueueConsultation(selectedConsultation)) {
+            addMessage(FacesMessage.SEVERITY_WARN, "Not allowed", "Only the assigned doctor can continue this consultation.");
+            PrimeFaces.current().ajax().update("form:queuePanel", "form:messages");
+            return;
+        }
+        if (!"In Progress".equalsIgnoreCase(safeText(selectedConsultation.getStatus(), ""))) {
+            selectedConsultation.setStatus("In Progress");
+            updateQueueConsultationStatus(selectedConsultation, null, null);
+        }
+        confirmEditButtonAction();
+        searchMode = false;
+        PrimeFaces.current().ajax().update("form:contentModePanel", "form:messages");
     }
 
     public void preparePrescriptionDownload() {
@@ -529,6 +594,37 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
         LocalDate dob = patient.getDateOfBirth().toLocalDate();
         Period period = Period.between(dob, LocalDate.now());
         return period.getYears() + " year(s) " + Math.max(period.getMonths(), 0) + " month(s)";
+    }
+
+    public String getSelectedPatientPhoneNumber() {
+        Patient patient = getSelectedPatient();
+        return patient == null ? "" : safeText(patient.getPhoneNumber(), "");
+    }
+
+    public String getSelectedPatientBloodGroup() {
+        Patient patient = getSelectedPatient();
+        return patient == null ? "" : safeText(patient.getBloodGroup(), "");
+    }
+
+    public String getSelectedPatientEmailAddress() {
+        Patient patient = getSelectedPatient();
+        return patient == null ? "" : safeText(patient.getEmailAddress(), "");
+    }
+
+    public String getSelectedPatientEmergencyContact() {
+        Patient patient = getSelectedPatient();
+        if (patient == null) {
+            return "";
+        }
+        String name = safeText(patient.getEmergencyContactName(), "");
+        String number = safeText(patient.getEmergencyContactNumber(), "");
+        if (name.isEmpty()) {
+            return number;
+        }
+        if (number.isEmpty()) {
+            return name;
+        }
+        return name + " - " + number;
     }
 
     public String getPreviewPatientCode() {
@@ -635,6 +731,9 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
     public boolean isMedicalCertificateAvailable() { return consultation.isIssueMedicalCertificate(); }
     public boolean isSearchMode() { return searchMode; }
     public boolean isReadOnlyMode() { return readOnlyMode; }
+    public boolean isQueueAvailable() { return activeQueueList != null && !activeQueueList.isEmpty(); }
+    public boolean isCurrentDoctorUser() { return resolveCurrentUserAccountId() != null; }
+    public boolean isReceptionTokenWorkflowEnabled() { return clinicSettings == null || clinicSettings.isReceptionTokenWorkflowEnabled(); }
     public int getActivePreviewTabIndex() { return activePreviewTabIndex; }
     public void setActivePreviewTabIndex(int activePreviewTabIndex) { this.activePreviewTabIndex = activePreviewTabIndex; }
 
@@ -645,6 +744,7 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
     public List<Patient> getPatientList() { return patientList; }
     public List<Medicine> getMedicineList() { return medicineList; }
     public List<Consultation> getConsultationList() { return consultationList; }
+    public List<Consultation> getActiveQueueList() { return activeQueueList; }
     public Consultation getSelectedConsultation() { return selectedConsultation; }
     public void setSelectedConsultation(Consultation selectedConsultation) { this.selectedConsultation = selectedConsultation; }
     public Integer getSelectedOrganizationId() { return selectedOrganizationId; }
@@ -686,6 +786,48 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
     public StreamedContent getConsultationMedicalCertificatePdf() { return consultationMedicalCertificatePdf; }
     public boolean isConsultationResultsLoaded() { return consultationResultsLoaded; }
 
+    public boolean canManageQueueConsultation(Consultation consultationRow) {
+        if (consultationRow == null) {
+            return false;
+        }
+        if (isApplicationAdmin()) {
+            return true;
+        }
+        Integer currentUserId = resolveCurrentUserAccountId();
+        return currentUserId != null
+                && consultationRow.getDoctor() != null
+                && consultationRow.getDoctor().getUserDetail() != null
+                && currentUserId.equals(consultationRow.getDoctor().getUserDetail().getUserId());
+    }
+
+    public String queueSeverity(String status) {
+        String normalized = safeText(status, "").toLowerCase();
+        if ("waiting".equals(normalized)) {
+            return "warning";
+        }
+        if ("in progress".equals(normalized)) {
+            return "info";
+        }
+        return "success";
+    }
+
+    public String getQueueVitalsSummary(Consultation consultationRow) {
+        if (consultationRow == null) {
+            return "";
+        }
+        List<String> parts = new ArrayList<>();
+        if (consultationRow.getPatientAgeYears() != null) {
+            parts.add(consultationRow.getPatientAgeYears() + " yrs");
+        }
+        if (!isBlank(consultationRow.getTemperatureCelsius())) {
+            parts.add("Temp " + consultationRow.getTemperatureCelsius().trim());
+        }
+        if (!isBlank(consultationRow.getBloodPressure())) {
+            parts.add("BP " + consultationRow.getBloodPressure().trim());
+        }
+        return String.join(" | ", parts);
+    }
+
     private boolean loadSelectedConsultation(Integer consultationId) {
         if (consultationId == null) {
             selectedConsultation = null;
@@ -709,6 +851,7 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
         selectedDoctor = findDoctorInList(selectedDoctorId);
         selectedPatient = findPatientInList(selectedPatientId);
         loadSettings();
+        refreshQueue();
     }
 
     private void loadSettings() {
@@ -913,6 +1056,28 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
         userActivityTO.setLocationInfo((String) sessionMap.get("browserClientInfo"));
         userActivityTO.setCreatedAt(new Date());
         return userActivityTO;
+    }
+
+    private void updateQueueConsultationStatus(Consultation consultationRow, String successSummary, String successDetail) {
+        UserActivityTO userActivityTO = populateUserActivityTO();
+        userActivityTO.setActivityType("Update");
+        GeneralConstants result = consultationService.updateConsultation(userActivityTO, consultationRow);
+        if (result == GeneralConstants.SUCCESSFUL && !isBlank(successSummary)) {
+            addMessage(FacesMessage.SEVERITY_INFO, successSummary, successDetail);
+        } else if (result != GeneralConstants.SUCCESSFUL) {
+            addMessage(FacesMessage.SEVERITY_ERROR, "Queue update failed", "Unable to update the consultation queue.");
+        }
+        refreshQueue();
+        fetchConsultationList();
+    }
+
+    private Integer resolveCurrentUserAccountId() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null) {
+            return null;
+        }
+        Object userId = facesContext.getExternalContext().getSessionMap().get("userAccountId");
+        return userId instanceof Integer ? (Integer) userId : null;
     }
 
     private Doctor getSelectedDoctor() {

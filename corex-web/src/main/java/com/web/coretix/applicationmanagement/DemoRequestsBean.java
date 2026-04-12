@@ -48,7 +48,7 @@ public class DemoRequestsBean implements Serializable {
     private String completionRateLabel = "0%";
 
     @Inject
-    private IDemoRequestService demoRequestService;
+    private transient IDemoRequestService demoRequestService;
 
     public void initializePageAttributes() {
         fetchDemoRequests();

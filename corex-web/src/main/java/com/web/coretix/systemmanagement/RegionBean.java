@@ -70,7 +70,7 @@ public class RegionBean implements Serializable {
 
 
     @Inject
-    private IRegionService regionService;
+    private transient IRegionService regionService;
 
 
     public void initializePageAttributes() {
@@ -382,7 +382,6 @@ public class RegionBean implements Serializable {
     }
 
 }
-
 
 
 

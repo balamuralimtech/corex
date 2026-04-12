@@ -130,6 +130,7 @@ public class OrganizationDAO implements IOrganizationDAO {
             existingOrganization.setPhoneNumber(organization.getPhoneNumber());
             existingOrganization.setEmail(organization.getEmail());
             existingOrganization.setWebsite(organization.getWebsite());
+            existingOrganization.setReferralCode(organization.getReferralCode());
             if (organization.getImage() != null && organization.getImage().length > 0) {
                 existingOrganization.setImage(organization.getImage());
             }
@@ -231,7 +232,6 @@ public class OrganizationDAO implements IOrganizationDAO {
         return list;
     }
 }
-
 
 
 

@@ -99,13 +99,13 @@ public class CountryBean implements Serializable {
     private boolean subregionError = false;
 
     @Inject
-    private ICountryService countryService;
+    private transient ICountryService countryService;
 
     @Inject
-    private IRegionService regionService;
+    private transient IRegionService regionService;
 
     @Inject
-    private ISubRegionService subregionService;
+    private transient ISubRegionService subregionService;
 
     /**
      * @return the countriesList
@@ -824,7 +824,6 @@ public class CountryBean implements Serializable {
     }
 
 }
-
 
 
 

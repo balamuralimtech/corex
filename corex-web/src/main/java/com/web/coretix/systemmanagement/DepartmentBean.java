@@ -85,10 +85,10 @@ public class DepartmentBean extends GenericManagedBean implements Serializable {
     private Departments selectedDepartment = new Departments();
 
     @Inject
-    private IOrganizationService organizationService;
+    private transient IOrganizationService organizationService;
     
     @Inject
-    private IDepartmentService departmentService;
+    private transient IDepartmentService departmentService;
     
 
 
@@ -584,7 +584,6 @@ public class DepartmentBean extends GenericManagedBean implements Serializable {
     }
 
 }
-
 
 
 

@@ -46,6 +46,21 @@ public class Consultation implements Serializable {
     @Column(name = "consultation_date", nullable = false)
     private Timestamp consultationDate;
 
+    @Column(name = "token_number")
+    private Integer tokenNumber;
+
+    @Column(name = "patient_age_years")
+    private Integer patientAgeYears;
+
+    @Column(name = "temperature_celsius", length = 20)
+    private String temperatureCelsius;
+
+    @Column(name = "weight_kg", length = 20)
+    private String weightKg;
+
+    @Column(name = "blood_pressure", length = 30)
+    private String bloodPressure;
+
     @Column(name = "symptoms", length = 2000)
     private String symptoms;
 
@@ -133,6 +148,16 @@ public class Consultation implements Serializable {
     public void setConsultationNumber(String consultationNumber) { this.consultationNumber = consultationNumber; }
     public Timestamp getConsultationDate() { return consultationDate; }
     public void setConsultationDate(Timestamp consultationDate) { this.consultationDate = consultationDate; }
+    public Integer getTokenNumber() { return tokenNumber; }
+    public void setTokenNumber(Integer tokenNumber) { this.tokenNumber = tokenNumber; }
+    public Integer getPatientAgeYears() { return patientAgeYears; }
+    public void setPatientAgeYears(Integer patientAgeYears) { this.patientAgeYears = patientAgeYears; }
+    public String getTemperatureCelsius() { return temperatureCelsius; }
+    public void setTemperatureCelsius(String temperatureCelsius) { this.temperatureCelsius = temperatureCelsius; }
+    public String getWeightKg() { return weightKg; }
+    public void setWeightKg(String weightKg) { this.weightKg = weightKg; }
+    public String getBloodPressure() { return bloodPressure; }
+    public void setBloodPressure(String bloodPressure) { this.bloodPressure = bloodPressure; }
     public String getSymptoms() { return symptoms; }
     public void setSymptoms(String symptoms) { this.symptoms = symptoms; }
     public String getFamilyHistory() { return familyHistory; }

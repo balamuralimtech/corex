@@ -82,10 +82,7 @@ public class CarexManagedBean {
 
     protected Integer resolveDefaultOrganizationId(List<Organizations> organizations, Integer requestedOrganizationId) {
         if (isApplicationAdmin()) {
-            if (requestedOrganizationId != null) {
-                return requestedOrganizationId;
-            }
-            return organizations == null || organizations.isEmpty() ? null : organizations.get(0).getId();
+            return requestedOrganizationId;
         }
 
         return resolveAccessibleOrganizationId(requestedOrganizationId);

@@ -71,9 +71,9 @@
             <div class="grid crud-demo monitor-shell">
                 <div class="col-12">
                     <p:breadCrumb>
-                        <p:menuitem url="#" icon="pi pi-home"/>
+                        <p:menuitem url="#{request.contextPath}/home" icon="pi pi-home"/>
                         <p:menuitem value="#{msg['serverAndDbLabel']}" url="#"/>
-                        <p:menuitem value="#{msg['errorLogMonitoringLabel']}" url="#"/>
+                        <p:menuitem value="#{msg['errorLogMonitoringLabel']}"/>
                     </p:breadCrumb>
                 </div>
 
@@ -99,6 +99,10 @@
                             <div class="monitor-chip">
                                 <span class="monitor-chip-label">#{msg['lastScanLabel']}</span>
                                 <span class="monitor-chip-value" style="font-size:1rem; line-height:1.45;">#{errorLogMonitorBean.lastScanLabel}</span>
+                            </div>
+                            <div class="monitor-chip">
+                                <span class="monitor-chip-label">#{msg['applicationLogsLabel']}</span>
+                                <span class="monitor-chip-value">#{errorLogMonitorBean.applicationIncidentCount}</span>
                             </div>
                         </div>
                     </div>
@@ -187,58 +191,123 @@
                                         </div>
                                     </div>
 
-                                    <h:panelGroup rendered="#{errorLogMonitorBean.incidentsAvailable}" layout="block">
-                                        <p:dataTable value="#{errorLogMonitorBean.incidents}"
-                                                     var="incident"
-                                                     paginator="true"
-                                                     rows="10"
-                                                     rowHover="true"
-                                                     styleClass="monitor-table">
-                                            <p:column headerText="#{msg['typeLabel']}" style="width:130px;">
-                                                <p:tag value="#{incident.severityLabel}"
-                                                       severity="#{errorLogMonitorBean.severityTone(incident)}"/>
-                                            </p:column>
+                                    <p:tabView dynamic="false" cache="true">
+                                        <p:tab title="#{msg['serverLogsLabel']} (#{errorLogMonitorBean.serverIncidentCount})">
+                                            <h:panelGroup rendered="#{errorLogMonitorBean.serverIncidentsAvailable}" layout="block">
+                                                <p:dataTable value="#{errorLogMonitorBean.serverIncidents}"
+                                                             var="incident"
+                                                             paginator="true"
+                                                             rows="10"
+                                                             rowHover="true"
+                                                             styleClass="monitor-table">
+                                                    <p:column headerText="#{msg['typeLabel']}" style="width:160px;">
+                                                        <p:tag value="#{incident.severityLabel}"
+                                                               severity="#{errorLogMonitorBean.severityTone(incident)}"/>
+                                                        <p:tag value="#{incident.sourceLabel}"
+                                                               severity="#{errorLogMonitorBean.sourceTone(incident)}"
+                                                               style="margin-left:.45rem;"/>
+                                                    </p:column>
 
-                                            <p:column headerText="#{msg['whenLabel']}" style="width:180px;">
-                                                <div class="monitor-meta">
-                                                    <span class="monitor-badge">
-                                                        <i class="pi pi-clock"></i>
-                                                        #{incident.detectedAtLabel}
-                                                    </span>
+                                                    <p:column headerText="#{msg['whenLabel']}" style="width:180px;">
+                                                        <div class="monitor-meta">
+                                                            <span class="monitor-badge">
+                                                                <i class="pi pi-clock"></i>
+                                                                #{incident.detectedAtLabel}
+                                                            </span>
+                                                        </div>
+                                                    </p:column>
+
+                                                    <p:column headerText="#{msg['logMessageLabel']}">
+                                                        <div style="font-weight:700;color:#0f172a;">#{incident.logFileName}</div>
+                                                        <div class="monitor-snippet">#{incident.message}</div>
+                                                    </p:column>
+
+                                                    <p:column headerText="#{msg['userOperationLabel']}">
+                                                        <div style="font-weight:700;color:#0f172a;">#{incident.impactedUserName}</div>
+                                                        <div class="monitor-snippet">#{incident.operationSummary}</div>
+                                                        <div class="monitor-meta" style="margin-top:.55rem;">
+                                                            <span class="monitor-badge">
+                                                                <i class="pi pi-calendar"></i>
+                                                                #{incident.operationTimeLabel}
+                                                            </span>
+                                                            <span class="monitor-badge">
+                                                                <i class="pi pi-desktop"></i>
+                                                                #{incident.ipAddress}
+                                                            </span>
+                                                        </div>
+                                                    </p:column>
+
+                                                    <p:column headerText="#{msg['sessionLabel']}" style="width:170px;">
+                                                        <span class="monitor-snippet">#{incident.sessionId}</span>
+                                                    </p:column>
+                                                </p:dataTable>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{not errorLogMonitorBean.serverIncidentsAvailable}" layout="block">
+                                                <div class="monitor-empty">
+                                                    #{msg['noServerLogIncidentsTrackedLabel']}
                                                 </div>
-                                            </p:column>
+                                            </h:panelGroup>
+                                        </p:tab>
 
-                                            <p:column headerText="#{msg['logMessageLabel']}">
-                                                <div style="font-weight:700;color:#0f172a;">#{incident.logFileName}</div>
-                                                <div class="monitor-snippet">#{incident.message}</div>
-                                            </p:column>
+                                        <p:tab title="#{msg['applicationLogsLabel']} (#{errorLogMonitorBean.applicationIncidentCount})">
+                                            <h:panelGroup rendered="#{errorLogMonitorBean.applicationIncidentsAvailable}" layout="block">
+                                                <p:dataTable value="#{errorLogMonitorBean.applicationIncidents}"
+                                                             var="incident"
+                                                             paginator="true"
+                                                             rows="10"
+                                                             rowHover="true"
+                                                             styleClass="monitor-table">
+                                                    <p:column headerText="#{msg['typeLabel']}" style="width:160px;">
+                                                        <p:tag value="#{incident.severityLabel}"
+                                                               severity="#{errorLogMonitorBean.severityTone(incident)}"/>
+                                                        <p:tag value="#{incident.sourceLabel}"
+                                                               severity="#{errorLogMonitorBean.sourceTone(incident)}"
+                                                               style="margin-left:.45rem;"/>
+                                                    </p:column>
 
-                                            <p:column headerText="#{msg['userOperationLabel']}">
-                                                <div style="font-weight:700;color:#0f172a;">#{incident.impactedUserName}</div>
-                                                <div class="monitor-snippet">#{incident.operationSummary}</div>
-                                                <div class="monitor-meta" style="margin-top:.55rem;">
-                                                    <span class="monitor-badge">
-                                                        <i class="pi pi-calendar"></i>
-                                                        #{incident.operationTimeLabel}
-                                                    </span>
-                                                    <span class="monitor-badge">
-                                                        <i class="pi pi-desktop"></i>
-                                                        #{incident.ipAddress}
-                                                    </span>
+                                                    <p:column headerText="#{msg['whenLabel']}" style="width:180px;">
+                                                        <div class="monitor-meta">
+                                                            <span class="monitor-badge">
+                                                                <i class="pi pi-clock"></i>
+                                                                #{incident.detectedAtLabel}
+                                                            </span>
+                                                        </div>
+                                                    </p:column>
+
+                                                    <p:column headerText="#{msg['logMessageLabel']}">
+                                                        <div style="font-weight:700;color:#0f172a;">#{incident.logFileName}</div>
+                                                        <div class="monitor-snippet">#{incident.message}</div>
+                                                    </p:column>
+
+                                                    <p:column headerText="#{msg['userOperationLabel']}">
+                                                        <div style="font-weight:700;color:#0f172a;">#{incident.impactedUserName}</div>
+                                                        <div class="monitor-snippet">#{incident.operationSummary}</div>
+                                                        <div class="monitor-meta" style="margin-top:.55rem;">
+                                                            <span class="monitor-badge">
+                                                                <i class="pi pi-calendar"></i>
+                                                                #{incident.operationTimeLabel}
+                                                            </span>
+                                                            <span class="monitor-badge">
+                                                                <i class="pi pi-desktop"></i>
+                                                                #{incident.ipAddress}
+                                                            </span>
+                                                        </div>
+                                                    </p:column>
+
+                                                    <p:column headerText="#{msg['sessionLabel']}" style="width:170px;">
+                                                        <span class="monitor-snippet">#{incident.sessionId}</span>
+                                                    </p:column>
+                                                </p:dataTable>
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{not errorLogMonitorBean.applicationIncidentsAvailable}" layout="block">
+                                                <div class="monitor-empty">
+                                                    #{msg['noApplicationLogIncidentsTrackedLabel']}
                                                 </div>
-                                            </p:column>
-
-                                            <p:column headerText="#{msg['sessionLabel']}" style="width:170px;">
-                                                <span class="monitor-snippet">#{incident.sessionId}</span>
-                                            </p:column>
-                                        </p:dataTable>
-                                    </h:panelGroup>
-
-                                    <h:panelGroup rendered="#{not errorLogMonitorBean.incidentsAvailable}" layout="block">
-                                        <div class="monitor-empty">
-                                            #{msg['noWarningErrorExceptionTrackedLabel']}
-                                        </div>
-                                    </h:panelGroup>
+                                            </h:panelGroup>
+                                        </p:tab>
+                                    </p:tabView>
                                 </div>
                             </div>
                         </div>

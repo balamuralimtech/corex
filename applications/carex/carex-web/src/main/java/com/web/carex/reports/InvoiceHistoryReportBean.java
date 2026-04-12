@@ -55,19 +55,19 @@ public class InvoiceHistoryReportBean extends CarexManagedBean implements Serial
     private static final DateTimeFormatter DISPLAY_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy", Locale.ENGLISH);
 
     @Inject
-    private IOrganizationService organizationService;
+    private transient IOrganizationService organizationService;
 
     @Inject
-    private IPatientService patientService;
+    private transient IPatientService patientService;
 
     @Inject
-    private IConsultationService consultationService;
+    private transient IConsultationService consultationService;
 
     @Inject
-    private IClinicSettingsService clinicSettingsService;
+    private transient IClinicSettingsService clinicSettingsService;
 
     @Inject
-    private IInvoiceSettingsService invoiceSettingsService;
+    private transient IInvoiceSettingsService invoiceSettingsService;
 
     private boolean initialized;
     private Integer selectedOrganizationId;

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="content">
+        <f:event listener="#{admissionBean.initializePageAttributes}" type="preRenderView"/>
+
+        <h:outputStylesheet library="carex" name="css/clinic-command-theme.css"/>
+        <h:outputStylesheet>
+            .admission-shell { display:flex; flex-direction:column; gap:1.1rem; }
+            .admission-hero { position:relative; overflow:hidden; padding:1.7rem; border-radius:22px; background:linear-gradient(135deg,#0f766e 0%,#115e59 55%,#134e4a 100%); color:#ecfeff; box-shadow:0 22px 60px rgba(15,118,110,.24); }
+            .admission-hero:before { content:''; position:absolute; inset:auto -8% -48% auto; width:290px; height:290px; border-radius:50%; background:radial-gradient(circle,rgba(255,255,255,.18) 0%,rgba(255,255,255,0) 72%); }
+            .admission-title { margin:0; font-size:1.9rem; font-weight:700; letter-spacing:-.03em; }
+            .admission-copy { margin-top:.65rem; max-width:760px; color:rgba(204,251,241,.95); line-height:1.6; }
+            .admission-chip-row { display:flex; gap:.85rem; flex-wrap:wrap; margin-top:1rem; }
+            .admission-chip { min-width:168px; padding:.9rem 1rem; border-radius:18px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.16); backdrop-filter:blur(8px); }
+            .admission-chip-label { display:block; font-size:.78rem; text-transform:uppercase; letter-spacing:.09em; color:rgba(153,246,228,.92); }
+            .admission-chip-value { display:block; margin-top:.4rem; font-size:1.45rem; font-weight:700; color:#fff; }
+            .admission-card { padding:1rem; border-radius:20px; background:#fff; box-shadow:0 12px 42px rgba(15,23,42,.08); border:1px solid rgba(148,163,184,.18); }
+            .admission-card-title { margin:0; font-size:1.05rem; font-weight:700; color:#0f172a; }
+            .admission-card-copy { margin:.25rem 0 0; color:#64748b; font-size:.92rem; }
+            .admission-field label { display:block; margin-bottom:.35rem; font-weight:600; color:#0f172a; }
+            .admission-field .ui-selectonemenu, .admission-field .ui-inputfield, .admission-field .ui-inputtextarea { width:100%; }
+            .admission-mode { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.8rem; }
+            .admission-mode-card { padding:.95rem 1rem; border:1px solid #cbd5e1; border-radius:16px; background:#f8fafc; }
+            .admission-mode-card label { margin:0; display:flex; align-items:center; gap:.65rem; font-weight:600; color:#0f172a; cursor:pointer; }
+            .queue-token { display:inline-flex; align-items:center; justify-content:center; min-width:42px; height:42px; border-radius:14px; background:#ccfbf1; color:#115e59; font-weight:700; }
+            .queue-patient { display:flex; flex-direction:column; gap:.2rem; }
+            .queue-patient small { color:#64748b; }
+            @media (max-width: 768px) {
+                .admission-mode { grid-template-columns:1fr; }
+                .admission-chip { flex:1 1 100%; }
+            }
+        </h:outputStylesheet>
+
+        <h:form id="form" styleClass="carex-unified-theme">
+            <div class="admission-shell">
+                <p:messages id="messages" showDetail="true" closable="true"/>
+
+                <p:breadCrumb>
+                    <p:menuitem url="#{request.contextPath}/home" icon="pi pi-home"/>
+                    <p:menuitem value="CareX" url="#"/>
+                    <p:menuitem value="#{i18n.app('clinicManagementLabel')}" url="#"/>
+                    <p:menuitem value="Admission"/>
+                </p:breadCrumb>
+
+                <p:outputPanel id="heroPanel" layout="block">
+                    <div class="admission-hero">
+                        <h2 class="admission-title">Admission / Register for Consultation</h2>
+                        <div class="admission-copy">
+                            Register a patient with the assigned doctor, capture triage vitals, and push the case into the live consultation queue with the next daily token.
+                        </div>
+                        <div class="admission-chip-row">
+                            <div class="admission-chip">
+                                <span class="admission-chip-label">Organization</span>
+                                <span class="admission-chip-value">#{empty admissionBean.selectedOrganizationName ? 'Not Selected' : admissionBean.selectedOrganizationName}</span>
+                            </div>
+                            <div class="admission-chip">
+                                <span class="admission-chip-label">Waiting Queue</span>
+                                <span class="admission-chip-value">#{admissionBean.filteredConsultationEntries.size()}</span>
+                            </div>
+                            <div class="admission-chip">
+                                <span class="admission-chip-label">Selected Doctor</span>
+                                <span class="admission-chip-value">#{empty admissionBean.selectedDoctorName ? 'Not Selected' : admissionBean.selectedDoctorName}</span>
+                            </div>
+                        </div>
+                    </div>
+                </p:outputPanel>
+
+                <p:outputPanel id="pageShell">
+                    <p:outputPanel rendered="#{not admissionBean.receptionTokenWorkflowEnabled}">
+                        <div class="admission-card" style="margin-bottom:1rem;border:1px solid #fecaca;background:#fff7f7;">
+                            <h3 class="admission-card-title" style="color:#991b1b;">Reception token workflow is disabled</h3>
+                            <p class="admission-card-copy" style="color:#7f1d1d;">
+                                This clinic is currently configured for direct doctor consultation. Change the workflow in Clinic Settings if you want receptionist admission with daily token numbering.
+                            </p>
+                        </div>
+                    </p:outputPanel>
+                    <div class="grid">
+                        <p:outputPanel rendered="#{admissionBean.receptionTokenWorkflowEnabled}" styleClass="col-12 xl:col-5">
+                            <div class="admission-card">
+                                <h3 class="admission-card-title">Patient Registration</h3>
+                                <p class="admission-card-copy">Use an existing patient record or capture a quick new patient registration before sending the case to consultation.</p>
+
+                                <p:outputPanel id="admissionPanel" layout="block">
+                                <div class="grid" style="margin-top:1rem;">
+                                    <div class="col-12 admission-field">
+                                        <label for="organizationSelect">#{msg['organizationLabel']}</label>
+                                        <h:panelGroup rendered="#{admissionBean.applicationAdmin}" layout="block">
+                                            <p:selectOneMenu id="organizationSelect" value="#{admissionBean.selectedOrganizationId}">
+                                                <f:selectItem itemLabel="Select Organization" itemValue="#{null}" noSelectionOption="true"/>
+                                                <f:selectItems value="#{admissionBean.organizationList}" var="organization"
+                                                               itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
+                                                <p:ajax listener="#{admissionBean.onOrganizationChange}" process="@this" update="form:heroPanel form:pageShell form:messages"/>
+                                            </p:selectOneMenu>
+                                        </h:panelGroup>
+                                        <h:panelGroup rendered="#{not admissionBean.applicationAdmin}" layout="block">
+                                            <p:inputText value="#{admissionBean.currentOrganizationName}" readonly="true"/>
+                                        </h:panelGroup>
+                                    </div>
+                                    <div class="col-12 admission-field">
+                                        <label for="doctorSelect">Doctor</label>
+                                        <p:selectOneMenu id="doctorSelect" value="#{admissionBean.selectedDoctorId}" filter="true" filterMatchMode="contains"
+                                                         disabled="#{admissionBean.applicationAdmin and empty admissionBean.selectedOrganizationId}">
+                                            <f:selectItem itemLabel="Select Doctor" itemValue="#{null}" noSelectionOption="true"/>
+                                            <f:selectItems value="#{admissionBean.doctorList}" var="doctor"
+                                                           itemValue="#{doctor.id}" itemLabel="#{doctor.doctorName}"/>
+                                        </p:selectOneMenu>
+                                    </div>
+                                    <div class="col-12 admission-field">
+                                        <label for="patientMode">Patient Mode</label>
+                                        <p:selectOneRadio id="patientMode" value="#{admissionBean.existingPatientMode}" layout="responsive" columns="2">
+                                            <f:selectItem itemLabel="Existing Patient" itemValue="true"/>
+                                            <f:selectItem itemLabel="New Patient" itemValue="false"/>
+                                            <p:ajax listener="#{admissionBean.onPatientModeChange}" process="@this" update="form:pageShell"/>
+                                        </p:selectOneRadio>
+                                    </div>
+
+                                    <h:panelGroup rendered="#{admissionBean.existingPatientMode}" layout="block" styleClass="col-12">
+                                        <div class="admission-field">
+                                            <label for="existingPatientSelect">Patient</label>
+                                            <p:selectOneMenu id="existingPatientSelect" value="#{admissionBean.selectedExistingPatientId}" filter="true" filterMatchMode="contains">
+                                                <f:selectItem itemLabel="Select Patient" itemValue="#{null}" noSelectionOption="true"/>
+                                                <f:selectItems value="#{admissionBean.patientList}" var="patient"
+                                                               itemValue="#{patient.id}"
+                                                               itemLabel="#{patient.patientName} - #{patient.phoneNumber}"/>
+                                                <p:ajax listener="#{admissionBean.onExistingPatientChange}" process="@this" update="form:admissionPanel"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                        <p:outputPanel rendered="#{admissionBean.selectedExistingPatient != null}" layout="block" styleClass="grid" style="margin-top:.75rem;">
+                                            <div class="col-12 md:col-6 admission-field">
+                                                <label>Phone Number</label>
+                                                <p:inputText value="#{admissionBean.selectedExistingPatientPhoneNumber}" readonly="true"/>
+                                            </div>
+                                            <div class="col-12 md:col-6 admission-field">
+                                                <label>Gender</label>
+                                                <p:inputText value="#{admissionBean.selectedExistingPatientGender}" readonly="true"/>
+                                            </div>
+                                            <div class="col-12 md:col-6 admission-field">
+                                                <label>Age</label>
+                                                <p:inputText value="#{admissionBean.selectedExistingPatientAgeText}" readonly="true"/>
+                                            </div>
+                                            <div class="col-12 md:col-6 admission-field">
+                                                <label>Blood Group</label>
+                                                <p:inputText value="#{admissionBean.selectedExistingPatientBloodGroup}" readonly="true"/>
+                                            </div>
+                                        </p:outputPanel>
+                                    </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{not admissionBean.existingPatientMode}" layout="block" styleClass="col-12">
+                                        <div class="grid">
+                                            <div class="col-12 md:col-6 admission-field">
+                                                <label for="newPatientName">Patient Name</label>
+                                                <p:inputText id="newPatientName" value="#{admissionBean.newPatientName}"/>
+                                            </div>
+                                            <div class="col-12 md:col-6 admission-field">
+                                                <label for="newPatientPhone">Phone Number</label>
+                                                <p:inputText id="newPatientPhone" value="#{admissionBean.newPatientPhoneNumber}"/>
+                                            </div>
+                                            <div class="col-12 md:col-6 admission-field">
+                                                <label for="newPatientGender">Gender</label>
+                                                <p:selectOneMenu id="newPatientGender" value="#{admissionBean.newPatientGender}">
+                                                    <f:selectItem itemLabel="Select Gender" itemValue="#{null}" noSelectionOption="true"/>
+                                                    <f:selectItems value="#{admissionBean.availableGenders}"/>
+                                                </p:selectOneMenu>
+                                            </div>
+                                            <div class="col-12">
+                                                <small style="display:block;color:#64748b;">
+                                                    New patient registrations created here are also saved into the patient register for future admissions.
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </h:panelGroup>
+
+                                    <div class="col-12 md:col-6 admission-field">
+                                        <label for="patientAge">Age</label>
+                                        <p:spinner id="patientAge" value="#{admissionBean.patientAgeYears}" min="0" max="130"/>
+                                    </div>
+                                    <div class="col-12 md:col-6 admission-field">
+                                        <label for="temperature">Temperature (C)</label>
+                                        <p:inputText id="temperature" value="#{admissionBean.temperatureCelsius}"/>
+                                    </div>
+                                    <div class="col-12 md:col-6 admission-field">
+                                        <label for="weight">Weight (kg)</label>
+                                        <p:inputText id="weight" value="#{admissionBean.weightKg}"/>
+                                    </div>
+                                    <div class="col-12 md:col-6 admission-field">
+                                        <label for="bloodPressure">BP</label>
+                                        <p:inputText id="bloodPressure" value="#{admissionBean.bloodPressure}" placeholder="120/80"/>
+                                    </div>
+                                    <div class="col-12 admission-field">
+                                        <label for="admissionNotes">Notes / Presenting Complaint</label>
+                                        <p:inputTextarea id="admissionNotes" value="#{admissionBean.admissionNotes}" rows="4" autoResize="false"/>
+                                    </div>
+                                    <div class="col-12" style="display:flex;justify-content:flex-end;">
+                                        <p:commandButton value="Register Consultation" icon="pi pi-check"
+                                                         actionListener="#{admissionBean.registerAdmission}"
+                                                         process="@form" update="form:pageShell form:messages"
+                                                         styleClass="ui-button-success"/>
+                                    </div>
+                                </div>
+                                </p:outputPanel>
+                            </div>
+                        </p:outputPanel>
+
+                        <p:outputPanel rendered="#{admissionBean.receptionTokenWorkflowEnabled}" styleClass="col-12 xl:col-7">
+                            <div class="admission-card">
+                                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;">
+                                    <div>
+                                        <h3 class="admission-card-title">Consultation Listing</h3>
+                                        <p class="admission-card-copy">Review new, in-progress, and completed consultations in descending order, and narrow the stream by status when needed.</p>
+                                    </div>
+                                    <div style="display:flex;align-items:end;gap:.75rem;flex-wrap:wrap;">
+                                        <div class="admission-field" style="min-width:12rem;margin:0;">
+                                            <label for="statusFilter">Status</label>
+                                            <p:selectOneMenu id="statusFilter" value="#{admissionBean.selectedStatusFilter}">
+                                                <f:selectItems value="#{admissionBean.statusFilterOptions}"/>
+                                                <p:ajax process="@this" update="form:consultationListingPanel form:heroPanel"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                        <p:commandButton value="Refresh List" icon="pi pi-refresh" process="@this"
+                                                         actionListener="#{admissionBean.refreshQueue}"
+                                                         update="form:consultationListingPanel form:heroPanel form:messages" styleClass="ui-button-secondary ui-button-sm"/>
+                                    </div>
+                                </div>
+
+                                <p:outputPanel id="consultationListingPanel">
+                                <p:dataTable value="#{admissionBean.filteredConsultationEntries}" var="queueRow"
+                                             style="margin-top:1rem;" reflow="true" paginator="true" rows="10"
+                                             rowsPerPageTemplate="10,25,50" paginatorPosition="bottom"
+                                             emptyMessage="No consultations found for the selected status.">
+                                    <p:column headerText="Token" style="width:6rem;">
+                                        <span class="queue-token">#{empty queueRow.tokenNumber ? '-' : queueRow.tokenNumber}</span>
+                                    </p:column>
+                                    <p:column headerText="Patient">
+                                        <div class="queue-patient">
+                                            <strong>#{queueRow.patient.patientName}</strong>
+                                            <small>#{admissionBean.getQueueVitalsSummary(queueRow)}</small>
+                                        </div>
+                                    </p:column>
+                                    <p:column headerText="Doctor">
+                                        #{queueRow.doctor.doctorName}
+                                    </p:column>
+                                    <p:column headerText="Status" style="width:8rem;">
+                                        <p:tag value="#{queueRow.status}" severity="#{admissionBean.queueSeverity(queueRow.status)}"/>
+                                    </p:column>
+                                    <p:column headerText="Time" style="width:10rem;">
+                                        #{admissionBean.formatQueueTime(queueRow)}
+                                    </p:column>
+                                </p:dataTable>
+                                </p:outputPanel>
+                            </div>
+                        </p:outputPanel>
+                    </div>
+                </p:outputPanel>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

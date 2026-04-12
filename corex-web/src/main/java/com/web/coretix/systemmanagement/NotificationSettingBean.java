@@ -81,10 +81,10 @@ public class NotificationSettingBean extends GenericManagedBean implements Seria
     private boolean smtpPortError = false;
 
     @Inject
-    private INotificationSettingService notificationSettingService;
+    private transient INotificationSettingService notificationSettingService;
 
     @Inject
-    private IOrganizationService organizationService;
+    private transient IOrganizationService organizationService;
 
     public void initializePageAttributes() {
         logger.debug("entered into initializePageAttributes !!!");
@@ -632,7 +632,6 @@ public class NotificationSettingBean extends GenericManagedBean implements Seria
     }
 
 }
-
 
 
 

@@ -69,6 +69,9 @@ public class Organizations implements Serializable {
     @Column(name = "website", length = 255)
     private String website;
 
+    @Column(name = "referral_code", length = 150)
+    private String referralCode;
+
     @Lob
     @Basic(fetch = FetchType.LAZY)
     @Column(name = "image", columnDefinition = "MEDIUMBLOB")
@@ -194,6 +197,14 @@ public class Organizations implements Serializable {
         this.website = website;
     }
 
+    public String getReferralCode() {
+        return referralCode;
+    }
+
+    public void setReferralCode(String referralCode) {
+        this.referralCode = referralCode;
+    }
+
     public byte[] getImage() {
         return image;
     }
@@ -218,6 +229,5 @@ public class Organizations implements Serializable {
         this.updatedAt = updatedAt;
     }
 }
-
 
 

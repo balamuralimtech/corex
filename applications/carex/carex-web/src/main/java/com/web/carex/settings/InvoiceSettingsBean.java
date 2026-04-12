@@ -44,13 +44,13 @@ public class InvoiceSettingsBean extends CarexManagedBean implements Serializabl
     private static final Logger LOGGER = Logger.getLogger(InvoiceSettingsBean.class.getName());
 
     @Inject
-    private IInvoiceSettingsService invoiceSettingsService;
+    private transient IInvoiceSettingsService invoiceSettingsService;
 
     @Inject
-    private IOrganizationService organizationService;
+    private transient IOrganizationService organizationService;
 
     @Inject
-    private IClinicSettingsService clinicSettingsService;
+    private transient IClinicSettingsService clinicSettingsService;
 
     private InvoiceSettings invoiceSettings = new InvoiceSettings();
     private List<Organizations> organizationList = new ArrayList<>();

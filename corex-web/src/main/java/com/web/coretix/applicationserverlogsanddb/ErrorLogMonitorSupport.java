@@ -57,6 +57,8 @@ public final class ErrorLogMonitorSupport {
     private static final int MAX_INCIDENTS = 150;
     private static final int MAX_INCIDENTS_PER_FILE = 35;
     private static final int MAX_TRACKED_SIGNATURES = 2_000;
+    private static final String SOURCE_SERVER = "SERVER";
+    private static final String SOURCE_APPLICATION = "APPLICATION";
     private static final DateTimeFormatter DISPLAY_DATE_FORMAT =
             DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a", Locale.ENGLISH);
     private static final DateTimeFormatter LOG_DATE_FORMAT =
@@ -193,10 +195,26 @@ public final class ErrorLogMonitorSupport {
                 warningCount,
                 exceptionCount,
                 criticalCount,
+                countBySource(incidents, SOURCE_SERVER),
+                countBySource(incidents, SOURCE_APPLICATION),
                 impactedUsers.size(),
                 impactedFiles.size(),
                 scannedAt,
                 logFiles.size());
+    }
+
+    private static int countBySource(List<ErrorIncident> incidents, String sourceType) {
+        if (incidents == null || incidents.isEmpty()) {
+            return 0;
+        }
+
+        int count = 0;
+        for (ErrorIncident incident : incidents) {
+            if (incident != null && sourceType.equals(incident.getSourceType())) {
+                count++;
+            }
+        }
+        return count;
     }
 
     private static List<File> collectLogFiles(String logsLocation) {
@@ -327,12 +345,29 @@ public final class ErrorLogMonitorSupport {
                 severity,
                 detectedAt,
                 logFile.getName(),
+                resolveSourceType(logFile),
                 message,
                 relatedActivity == null ? "-" : safeValue(relatedActivity.getUserName()),
                 operation,
                 relatedActivity == null ? "-" : formatTimestamp(relatedActivity.getCreatedAt()),
                 relatedActivity == null ? "-" : safeValue(relatedActivity.getSessionId()),
                 relatedActivity == null ? "-" : safeValue(relatedActivity.getIpAddress()));
+    }
+
+    private static String resolveSourceType(File logFile) {
+        if (logFile == null) {
+            return SOURCE_SERVER;
+        }
+
+        String normalizedPath = logFile.getAbsolutePath().replace('\\', '/').toLowerCase(Locale.ENGLISH);
+        if (normalizedPath.contains("/logs/coretix/")
+                || normalizedPath.contains("/logs/carex/")
+                || normalizedPath.contains("/application/")
+                || normalizedPath.contains("coretix.log")
+                || normalizedPath.contains("persist.log")) {
+            return SOURCE_APPLICATION;
+        }
+        return SOURCE_SERVER;
     }
 
     private static String resolveSeverity(String line, String upperCaseLine) {
@@ -480,19 +515,24 @@ public final class ErrorLogMonitorSupport {
         private final int warningCount;
         private final int exceptionCount;
         private final int criticalCount;
+        private final int serverIncidentCount;
+        private final int applicationIncidentCount;
         private final int impactedUserCount;
         private final int impactedLogFileCount;
         private final long scannedAt;
         private final int scannedFileCount;
 
         ErrorLogSnapshot(List<ErrorIncident> incidents, int errorCount, int warningCount, int exceptionCount,
-                         int criticalCount, int impactedUserCount, int impactedLogFileCount,
+                         int criticalCount, int serverIncidentCount, int applicationIncidentCount,
+                         int impactedUserCount, int impactedLogFileCount,
                          long scannedAt, int scannedFileCount) {
             this.incidents = incidents;
             this.errorCount = errorCount;
             this.warningCount = warningCount;
             this.exceptionCount = exceptionCount;
             this.criticalCount = criticalCount;
+            this.serverIncidentCount = serverIncidentCount;
+            this.applicationIncidentCount = applicationIncidentCount;
             this.impactedUserCount = impactedUserCount;
             this.impactedLogFileCount = impactedLogFileCount;
             this.scannedAt = scannedAt;
@@ -500,7 +540,7 @@ public final class ErrorLogMonitorSupport {
         }
 
         public static ErrorLogSnapshot empty() {
-            return new ErrorLogSnapshot(Collections.emptyList(), 0, 0, 0, 0, 0, 0, 0L, 0);
+            return new ErrorLogSnapshot(Collections.emptyList(), 0, 0, 0, 0, 0, 0, 0, 0, 0L, 0);
         }
 
         public List<ErrorIncident> getIncidents() {
@@ -521,6 +561,14 @@ public final class ErrorLogMonitorSupport {
 
         public int getCriticalCount() {
             return criticalCount;
+        }
+
+        public int getServerIncidentCount() {
+            return serverIncidentCount;
+        }
+
+        public int getApplicationIncidentCount() {
+            return applicationIncidentCount;
         }
 
         public int getImpactedUserCount() {
@@ -545,6 +593,7 @@ public final class ErrorLogMonitorSupport {
         private final String severity;
         private final LocalDateTime detectedAt;
         private final String logFileName;
+        private final String sourceType;
         private final String message;
         private final String impactedUserName;
         private final String operationSummary;
@@ -552,13 +601,14 @@ public final class ErrorLogMonitorSupport {
         private final String sessionId;
         private final String ipAddress;
 
-        ErrorIncident(String signature, String severity, LocalDateTime detectedAt, String logFileName, String message,
+        ErrorIncident(String signature, String severity, LocalDateTime detectedAt, String logFileName, String sourceType, String message,
                       String impactedUserName, String operationSummary, String operationTimeLabel,
                       String sessionId, String ipAddress) {
             this.signature = signature;
             this.severity = severity;
             this.detectedAt = detectedAt;
             this.logFileName = logFileName;
+            this.sourceType = sourceType;
             this.message = message;
             this.impactedUserName = impactedUserName;
             this.operationSummary = operationSummary;
@@ -599,6 +649,14 @@ public final class ErrorLogMonitorSupport {
 
         public String getLogFileName() {
             return logFileName;
+        }
+
+        public String getSourceType() {
+            return sourceType;
+        }
+
+        public String getSourceLabel() {
+            return SOURCE_APPLICATION.equals(sourceType) ? "Application Log" : "Server Log";
         }
 
         public String getMessage() {

@@ -15,6 +15,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin"/>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
     <h:outputStylesheet library="landing" name="carex-landing.css"/>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </h:head>
 <h:body>
     <header class="site-header">
@@ -30,6 +31,7 @@
                 <a href="#overview">Overview</a>
                 <a href="#documents">Documents</a>
                 <a href="#analytics">Analytics</a>
+                <a href="#pricing">Pricing</a>
                 <a href="#contact">Contact</a>
             </nav>
             <h:outputLink styleClass="nav-cta" value="#{request.contextPath}/login">Login</h:outputLink>
@@ -49,7 +51,7 @@
                     CareX helps small and medium clinics run consultations, generate digital prescriptions, issue invoices and medical certificates, and understand performance through beautifully clear analytics.
                 </p>
                 <div class="hero-actions">
-                    <h:outputLink styleClass="button button-primary" value="#{request.contextPath}/login">Go to Login</h:outputLink>
+                    <a class="button button-primary" href="#register">Register Clinic</a>
                     <a class="button button-secondary" href="#overview">Learn More</a>
                 </div>
             </div>
@@ -193,6 +195,57 @@
             </div>
         </section>
 
+        <section class="section pricing-section" id="pricing">
+            <div class="section-copy reveal pricing-copy">
+                <p class="eyebrow">Pricing</p>
+                <h2>#{publicApplicationPricing.pricingHeadline}</h2>
+                <p>
+                    #{publicApplicationPricing.pricingDescription}
+                </p>
+            </div>
+
+            <div class="pricing-grid">
+                <article class="pricing-card reveal">
+                    <p class="pricing-duration">1 Month</p>
+                    <h3>#{publicApplicationPricing.oneMonthPriceLabel}</h3>
+                    <p class="pricing-summary">
+                        Start with a straightforward monthly subscription for clinics that want a flexible entry point.
+                    </p>
+                    <ul class="pricing-points">
+                        <li>1 month full CareX access</li>
+                        <li>Shared pricing managed from application management</li>
+                        <li>Ideal for clinics starting with digital operations</li>
+                    </ul>
+                </article>
+
+                <article class="pricing-card pricing-card-featured reveal reveal-delay">
+                    <p class="pricing-duration">6 Months</p>
+                    <h3>#{publicApplicationPricing.sixMonthPriceLabel}</h3>
+                    <p class="pricing-summary">
+                        A balanced plan for growing clinics that want a longer runway with predictable pricing.
+                    </p>
+                    <ul class="pricing-points">
+                        <li>6 month subscription term</li>
+                        <li>Recommended for stable clinic onboarding</li>
+                        <li>Configured centrally for India pricing</li>
+                    </ul>
+                </article>
+
+                <article class="pricing-card reveal">
+                    <p class="pricing-duration">1 Year</p>
+                    <h3>#{publicApplicationPricing.oneYearPriceLabel}</h3>
+                    <p class="pricing-summary">
+                        The long-term plan for clinics that want CareX as a steady operating system from day one.
+                    </p>
+                    <ul class="pricing-points">
+                        <li>1 year subscription term</li>
+                        <li>Best fit for committed long-term rollout</li>
+                        <li>Published directly from shared admin pricing</li>
+                    </ul>
+                </article>
+            </div>
+        </section>
+
         <section class="section value-strip">
             <div class="value-copy reveal">
                 <p class="eyebrow">Why CareX</p>
@@ -205,19 +258,73 @@
 
         <section class="section cta" id="contact">
             <div class="cta-panel reveal">
-                <p class="eyebrow">Get Started</p>
-                <h2>Bring digital prescription and clinic intelligence into one elegant system.</h2>
+                <p class="eyebrow" id="register">Clinic Registration</p>
+                <h2>Register the clinic once. CareX will create the organization, license, and clinic admin login.</h2>
                 <p>
-                    CareX is built for clinics ready to move faster, look more professional, and make better decisions.
+                    This flow connects directly to the backend organization and license records, so your clinic is provisioned using the same core administration logic.
                 </p>
-                <form class="contact-form" id="demo-request-form" method="post"
+                <form class="contact-form registration-form" id="clinic-registration-form" method="post"
+                      action="#{request.contextPath}/clinic-register"
+                      autocomplete="off"
+                      data-endpoint="#{request.contextPath}/clinic-register"
+                      data-razorpay-order-endpoint="#{request.contextPath}/payments/razorpay/order"
+                      data-razorpay-verify-endpoint="#{request.contextPath}/payments/razorpay/verify">
+                    <div class="form-grid">
+                        <input type="text" name="clinicName" placeholder="Clinic name" required="required" autocomplete="organization"/>
+                        <input type="text" name="adminUserName" placeholder="Admin login username" required="required" autocomplete="username"/>
+                        <input type="password" name="adminPassword" placeholder="Create password" required="required" autocomplete="new-password"/>
+                        <input type="email" name="adminEmail" placeholder="Admin work email" required="required" autocomplete="email"/>
+                        <input type="text" name="adminPhone" placeholder="Admin mobile number" autocomplete="tel"/>
+                        <input type="text" name="website" placeholder="Website (optional)" autocomplete="url"/>
+                        <input type="text" name="referralCode" placeholder="Referral code (optional)" autocomplete="off"/>
+                        <input type="text" name="countryName" value="India" placeholder="Country" required="required" autocomplete="country-name"/>
+                        <input type="text" name="stateName" placeholder="State" autocomplete="address-level1"/>
+                        <input type="text" name="cityName" placeholder="City" autocomplete="address-level2"/>
+                        <input type="text" name="postalCode" placeholder="Postal code" autocomplete="postal-code"/>
+                    </div>
+                    <input type="text" name="addressLine1" placeholder="Address line 1" autocomplete="address-line1"/>
+                    <input type="text" name="addressLine2" placeholder="Address line 2" autocomplete="address-line2"/>
+
+                    <div class="registration-meta">
+                        <label class="select-field" for="planCode">
+                            <span>Choose plan</span>
+                            <select id="planCode" name="planCode" required="required">
+                                <option value="monthly">1 Month: #{publicApplicationPricing.oneMonthPriceLabel}</option>
+                                <option value="six_months" selected="selected">6 Months: #{publicApplicationPricing.sixMonthPriceLabel}</option>
+                                <option value="yearly">1 Year: #{publicApplicationPricing.oneYearPriceLabel}</option>
+                            </select>
+                        </label>
+                        <label class="select-field" for="paymentGatewayCode">
+                            <span>Payment preference</span>
+                            <select id="paymentGatewayCode" name="paymentGatewayCode">
+                                <option value="razorpay" selected="selected">Razorpay test-ready</option>
+                                <option value="cashfree">Cashfree request later</option>
+                                <option value="manual">Manual activation</option>
+                            </select>
+                        </label>
+                    </div>
+
+                    <div class="gateway-note">
+                        <strong>India gateway recommendation:</strong>
+                        Razorpay is the best fit to start with because it supports test-mode cards, UPI, and mock bank flows without real money movement. The payable amount now comes from the shared India pricing configured in Application Management.
+                    </div>
+
+                    <button class="button button-primary" type="submit">Register Clinic</button>
+                    <p class="form-status" id="clinic-registration-status" aria-live="polite"></p>
+                </form>
+
+                <div class="contact-divider">
+                    <span>or request a guided walkthrough first</span>
+                </div>
+
+                <form class="contact-form demo-form" id="demo-request-form" method="post"
                       action="#{request.contextPath}/demo-request"
                       autocomplete="off"
                       data-endpoint="#{request.contextPath}/demo-request">
                     <input type="text" name="clinicName" placeholder="Clinic name" required="required" autocomplete="off"/>
                     <input type="email" name="workEmail" placeholder="Work email" required="required" autocomplete="off"/>
                     <textarea rows="4" name="notes" placeholder="Tell us what feature you are looking for" autocomplete="off"></textarea>
-                    <button class="button button-primary" type="submit">Request Demo</button>
+                    <button class="button button-secondary" type="submit">Request Demo</button>
                     <p class="form-status" id="demo-request-status" aria-live="polite"></p>
                 </form>
             </div>

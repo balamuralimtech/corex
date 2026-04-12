@@ -25,6 +25,7 @@ public class ConsultationService implements IConsultationService {
     private UserActivityDAO userActivityDAO;
 
     @Override
+    @Transactional(readOnly = false)
     public GeneralConstants addConsultation(UserActivityTO userActivityTO, Consultation consultation) {
         GeneralConstants result = consultationDAO.addConsultation(consultation);
         userActivityTO.setActivityDescription("Add consultation - (" + resolveConsultationLabel(consultation) + ") - " + result.getName());
@@ -33,6 +34,7 @@ public class ConsultationService implements IConsultationService {
     }
 
     @Override
+    @Transactional(readOnly = false)
     public GeneralConstants updateConsultation(UserActivityTO userActivityTO, Consultation consultation) {
         GeneralConstants result = consultationDAO.updateConsultation(consultation);
         userActivityTO.setActivityDescription("Update consultation - (" + resolveConsultationLabel(consultation) + ") - " + result.getName());
@@ -41,6 +43,7 @@ public class ConsultationService implements IConsultationService {
     }
 
     @Override
+    @Transactional(readOnly = false)
     public GeneralConstants deleteConsultation(UserActivityTO userActivityTO, Consultation consultation) {
         GeneralConstants result = consultationDAO.deleteConsultation(consultation);
         userActivityTO.setActivityDescription("Delete consultation - (" + resolveConsultationLabel(consultation) + ") - " + result.getName());
@@ -56,6 +59,16 @@ public class ConsultationService implements IConsultationService {
     @Override
     public List<Consultation> getConsultationsByOrganizationId(Integer organizationId) {
         return consultationDAO.getConsultationsByOrganizationId(organizationId);
+    }
+
+    @Override
+    public List<Consultation> getActiveQueueByOrganizationId(Integer organizationId) {
+        return consultationDAO.getActiveQueueByOrganizationId(organizationId);
+    }
+
+    @Override
+    public Integer getNextTokenNumber(Integer organizationId, Timestamp dayStart, Timestamp dayEnd) {
+        return consultationDAO.getNextTokenNumber(organizationId, dayStart, dayEnd);
     }
 
     private void addUserActivity(UserActivityTO userActivityTO) {

@@ -41,13 +41,13 @@ public class MedicalCertificateSettingsBean extends CarexManagedBean implements 
     private static final long serialVersionUID = 1L;
 
     @Inject
-    private IMedicalCertificateSettingsService medicalCertificateSettingsService;
+    private transient IMedicalCertificateSettingsService medicalCertificateSettingsService;
 
     @Inject
-    private IOrganizationService organizationService;
+    private transient IOrganizationService organizationService;
 
     @Inject
-    private IClinicSettingsService clinicSettingsService;
+    private transient IClinicSettingsService clinicSettingsService;
 
     private MedicalCertificateSettings medicalCertificateSettings = new MedicalCertificateSettings();
     private List<Organizations> organizationList = new ArrayList<>();

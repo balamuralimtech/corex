@@ -11,4 +11,6 @@ public interface IConsultationDAO {
     GeneralConstants deleteConsultation(Consultation consultation);
     Consultation getConsultationById(Integer consultationId);
     List<Consultation> getConsultationsByOrganizationId(Integer organizationId);
+    List<Consultation> getActiveQueueByOrganizationId(Integer organizationId);
+    Integer getNextTokenNumber(Integer organizationId, java.sql.Timestamp dayStart, java.sql.Timestamp dayEnd);
 }

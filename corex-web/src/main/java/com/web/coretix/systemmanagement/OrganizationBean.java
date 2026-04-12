@@ -80,6 +80,7 @@ public class OrganizationBean extends GenericManagedBean implements Serializable
     private String organizationCity;
     private String organizationPhoneNumber;
     private String organizationWebsite;
+    private String organizationReferralCode;
 
     private boolean isAddOperation;
     private boolean datatableRendered;
@@ -100,16 +101,16 @@ public class OrganizationBean extends GenericManagedBean implements Serializable
     private Organizations selectedOrganization = new Organizations();
 
     @Inject
-    private IOrganizationService organizationService;
+    private transient IOrganizationService organizationService;
 
     @Inject
-    private ICountryService countryService;
+    private transient ICountryService countryService;
 
     @Inject
-    private IStateService stateService;
+    private transient IStateService stateService;
 
     @Inject
-    private ICityService cityService;
+    private transient ICityService cityService;
 
     /**
      * @return the organizationList
@@ -196,6 +197,7 @@ public class OrganizationBean extends GenericManagedBean implements Serializable
         organizationCity = "";
         organizationPhoneNumber = "";
         organizationWebsite = "";
+        organizationReferralCode = "";
         organizationLogoImageFile = null;
         croppedImage = null;
 
@@ -240,6 +242,7 @@ public class OrganizationBean extends GenericManagedBean implements Serializable
         organizationCity = selectedOrganization.getCity();
         organizationPhoneNumber = selectedOrganization.getPhoneNumber();
         organizationWebsite = selectedOrganization.getWebsite();
+        organizationReferralCode = selectedOrganization.getReferralCode();
        // organizationLogoImageFile = selectedOrganization.getImage();
 
 //        if (selectedOrganization.getImage() != null) {
@@ -257,6 +260,7 @@ public class OrganizationBean extends GenericManagedBean implements Serializable
         logger.debug("organizationCity : " + organizationCity);
         logger.debug("organizationPhoneNumber : " + organizationPhoneNumber);
         logger.debug("organizationWebsite : " + organizationWebsite);
+        logger.debug("organizationReferralCode : " + organizationReferralCode);
     }
 
 
@@ -406,6 +410,7 @@ public class OrganizationBean extends GenericManagedBean implements Serializable
         org.setState(organizationState);
         org.setPhoneNumber(organizationPhoneNumber);
         org.setWebsite(organizationWebsite);
+        org.setReferralCode(normalizeReferralCode(organizationReferralCode));
 
         // Set the uploaded image (if available)
         if (organizationLogoImageFile != null && organizationLogoImageFile.getContent() != null) {
@@ -507,6 +512,7 @@ public class OrganizationBean extends GenericManagedBean implements Serializable
         organizationCity = selectedOrganization.getCity();
         organizationPhoneNumber = selectedOrganization.getPhoneNumber();
         organizationWebsite = selectedOrganization.getWebsite();
+        organizationReferralCode = selectedOrganization.getReferralCode();
 
         logger.debug("organizationName : " + organizationName);
         logger.debug("organizationCountry : " + organizationCountry);
@@ -572,6 +578,17 @@ public class OrganizationBean extends GenericManagedBean implements Serializable
     private States getStateEntityByStateName(String stateName)
     {
         return stateService.getStateEntityByStateName(stateName);
+    }
+
+    private String normalizeReferralCode(String referralCode) {
+        if (referralCode == null) {
+            return null;
+        }
+        String normalized = referralCode.trim().replace("\r", "").replace("\n", "");
+        if (normalized.isEmpty()) {
+            return null;
+        }
+        return normalized.length() > 150 ? normalized.substring(0, 150) : normalized;
     }
 
 
@@ -736,6 +753,14 @@ public class OrganizationBean extends GenericManagedBean implements Serializable
         this.organizationWebsite = organizationWebsite;
     }
 
+    public String getOrganizationReferralCode() {
+        return organizationReferralCode;
+    }
+
+    public void setOrganizationReferralCode(String organizationReferralCode) {
+        this.organizationReferralCode = organizationReferralCode;
+    }
+
     /**
      * @return the organizationCountry
      */
@@ -856,7 +881,5 @@ public class OrganizationBean extends GenericManagedBean implements Serializable
     }
 
 }
-
-
 
 

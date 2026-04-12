@@ -32,13 +32,13 @@ public class DoctorBean extends CarexManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Inject
-    private IDoctorService doctorService;
+    private transient IDoctorService doctorService;
 
     @Inject
-    private IOrganizationService organizationService;
+    private transient IOrganizationService organizationService;
 
     @Inject
-    private IUserAdministrationService userAdministrationService;
+    private transient IUserAdministrationService userAdministrationService;
 
     private List<Doctor> doctorList = new ArrayList<>();
     private List<Organizations> organizationList = new ArrayList<>();

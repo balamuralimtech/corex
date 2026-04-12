@@ -38,7 +38,7 @@ public class ApplicationNotificationBean implements Serializable {
     private boolean messageError;
 
     @Inject
-    private IApplicationNotificationService applicationNotificationService;
+    private transient IApplicationNotificationService applicationNotificationService;
 
     public void initializePageAttributes() {
         addOperation = true;

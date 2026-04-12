@@ -81,10 +81,10 @@ public class DesignationBean extends GenericManagedBean implements Serializable 
     private Designations selectedDesignation = new Designations();
 
     @Inject
-    private IOrganizationService organizationService;
+    private transient IOrganizationService organizationService;
     
     @Inject
-    private IDesignationService designationService;
+    private transient IDesignationService designationService;
     
 
     public void initializePageAttributes()
@@ -505,7 +505,6 @@ public class DesignationBean extends GenericManagedBean implements Serializable 
     }
 
 }
-
 
 
 

@@ -3,13 +3,13 @@ package com.web.carex.menu;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Named;
 
 import com.web.coretix.menu.AppMenuGroup;
 import com.web.coretix.menu.AppMenuItem;
 import com.web.coretix.menu.MenuContributor;
 
-@ApplicationScoped
+@Named
 public class CarexMenuContributor implements MenuContributor {
 
     @Override
@@ -28,39 +28,46 @@ public class CarexMenuContributor implements MenuContributor {
                         10,
                         "true"))
                 .addItem(new AppMenuItem(
+                        "carex_admission",
+                        "Admission",
+                        "pi pi-fw pi-ticket",
+                        "/pages/carex/clinic-management/admission.xhtml",
+                        20,
+                        "true"))
+                .addItem(new AppMenuItem(
                         "carex_consultation",
                         "#{i18n.app('consultationTitle')}",
                         "pi pi-fw pi-comments",
                         "/pages/carex/clinic-management/consultation.xhtml",
-                        20,
+                        30,
                         "true"))
                 .addItem(new AppMenuItem(
                         "carex_manage_doctor",
                         "#{i18n.app('manageDoctorTitle')}",
                         "pi pi-fw pi-user-edit",
                         "/pages/carex/clinic-management/manage-doctor.xhtml",
-                        30,
+                        40,
                         "true"))
                 .addItem(new AppMenuItem(
                         "carex_manage_patient",
                         "#{i18n.app('managePatientTitle')}",
                         "pi pi-fw pi-users",
                         "/pages/carex/clinic-management/manage-patient.xhtml",
-                        40,
+                        50,
                         "true"))
                 .addItem(new AppMenuItem(
                         "carex_manage_medicine",
                         "#{i18n.app('manageMedicineTitle')}",
                         "pi pi-fw pi-box",
                         "/pages/carex/clinic-management/manage-medicine.xhtml",
-                        50,
+                        60,
                         "true"))
                 .addItem(new AppMenuItem(
                         "carex_reports",
                         "#{i18n.app('reportsLabel')}",
                         "pi pi-fw pi-chart-bar",
                         null,
-                        60,
+                        70,
                         "true")
                         .addItem(new AppMenuItem(
                                 "carex_report_patient_history",
@@ -116,7 +123,7 @@ public class CarexMenuContributor implements MenuContributor {
                         "#{i18n.app('settingsLabel')}",
                         "pi pi-fw pi-cog",
                         null,
-                        70,
+                        80,
                         "true")
                         .addItem(new AppMenuItem(
                                 "carex_settings_clinic",

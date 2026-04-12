@@ -130,7 +130,8 @@ public class ConsultationDAO implements IConsultationDAO {
             return session.createQuery(
                     "SELECT DISTINCT c FROM Consultation c " +
                     "LEFT JOIN FETCH c.organization " +
-                    "LEFT JOIN FETCH c.doctor " +
+                    "LEFT JOIN FETCH c.doctor d " +
+                    "LEFT JOIN FETCH d.userDetail " +
                     "LEFT JOIN FETCH c.patient " +
                     "LEFT JOIN FETCH c.consultationMedicines " +
                     "WHERE c.id = :consultationId", Consultation.class)
@@ -154,7 +155,8 @@ public class ConsultationDAO implements IConsultationDAO {
             return session.createQuery(
                             "SELECT DISTINCT c FROM Consultation c " +
                                     "LEFT JOIN FETCH c.organization " +
-                                    "LEFT JOIN FETCH c.doctor " +
+                                    "LEFT JOIN FETCH c.doctor d " +
+                                    "LEFT JOIN FETCH d.userDetail " +
                                     "LEFT JOIN FETCH c.patient " +
                                     "LEFT JOIN FETCH c.consultationMedicines " +
                                     "WHERE c.organization.id = :organizationId " +
@@ -162,6 +164,60 @@ public class ConsultationDAO implements IConsultationDAO {
                             Consultation.class)
                     .setParameter("organizationId", organizationId)
                     .list();
+        } finally {
+            if (session != null) {
+                session.close();
+            }
+        }
+    }
+
+    @Override
+    public List<Consultation> getActiveQueueByOrganizationId(Integer organizationId) {
+        Session session = null;
+        try {
+            session = sessionFactory.openSession();
+            if (organizationId == null) {
+                return new ArrayList<>();
+            }
+            return session.createQuery(
+                            "SELECT DISTINCT c FROM Consultation c " +
+                                    "LEFT JOIN FETCH c.organization " +
+                                    "LEFT JOIN FETCH c.doctor d " +
+                                    "LEFT JOIN FETCH d.userDetail " +
+                                    "LEFT JOIN FETCH c.patient " +
+                                    "WHERE c.organization.id = :organizationId " +
+                                    "AND c.tokenNumber is not null " +
+                                    "AND lower(c.status) in ('waiting', 'in progress') " +
+                                    "ORDER BY c.tokenNumber asc, c.consultationDate asc, c.id asc",
+                            Consultation.class)
+                    .setParameter("organizationId", organizationId)
+                    .list();
+        } finally {
+            if (session != null) {
+                session.close();
+            }
+        }
+    }
+
+    @Override
+    public Integer getNextTokenNumber(Integer organizationId, Timestamp dayStart, Timestamp dayEnd) {
+        Session session = null;
+        try {
+            session = sessionFactory.openSession();
+            if (organizationId == null || dayStart == null || dayEnd == null) {
+                return 1;
+            }
+            Integer maxToken = session.createQuery(
+                            "select max(c.tokenNumber) from Consultation c " +
+                                    "where c.organization.id = :organizationId " +
+                                    "and c.consultationDate >= :dayStart " +
+                                    "and c.consultationDate < :dayEnd",
+                            Integer.class)
+                    .setParameter("organizationId", organizationId)
+                    .setParameter("dayStart", dayStart)
+                    .setParameter("dayEnd", dayEnd)
+                    .uniqueResult();
+            return maxToken == null ? 1 : maxToken + 1;
         } finally {
             if (session != null) {
                 session.close();
@@ -205,6 +261,11 @@ public class ConsultationDAO implements IConsultationDAO {
         target.setPatient(source.getPatient());
         target.setConsultationNumber(source.getConsultationNumber());
         target.setConsultationDate(source.getConsultationDate());
+        target.setTokenNumber(source.getTokenNumber());
+        target.setPatientAgeYears(source.getPatientAgeYears());
+        target.setTemperatureCelsius(source.getTemperatureCelsius());
+        target.setWeightKg(source.getWeightKg());
+        target.setBloodPressure(source.getBloodPressure());
         target.setSymptoms(source.getSymptoms());
         target.setFamilyHistory(source.getFamilyHistory());
         target.setVitals(source.getVitals());

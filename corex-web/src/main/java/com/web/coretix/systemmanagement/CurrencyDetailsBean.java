@@ -73,7 +73,7 @@ public class CurrencyDetailsBean implements Serializable {
     private CurrencyDetails selectedCurrencyDetails = new CurrencyDetails();
 
     @Inject
-    private ICurrencyDetailsService currencyDetailsService;
+    private transient ICurrencyDetailsService currencyDetailsService;
 
 
     public void initializePageAttributes() {
@@ -453,7 +453,6 @@ public class CurrencyDetailsBean implements Serializable {
     }
 
 }
-
 
 
 

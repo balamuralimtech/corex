@@ -10,6 +10,7 @@
         <f:event listener="#{medicineReportBean.initializePageAttributes}" type="preRenderView"/>
 
         <h:outputScript library="avalon-layout" name="highcharts/highcharts.js" target="head"/>
+        <h:outputScript library="carex" name="js/carex-highcharts-theme.js" target="head"/>
 
         <h:outputStylesheet>
             .report-shell { display:flex; flex-direction:column; gap:1.25rem; }
@@ -31,6 +32,12 @@
         <h:form id="form" styleClass="carex-unified-theme">
             <div class="report-shell">
                 <p:messages id="messages" showDetail="true" closable="true"/>
+                <p:breadCrumb>
+                    <p:menuitem url="#{request.contextPath}/home" icon="pi pi-home"/>
+                    <p:menuitem value="CareX" url="#"/>
+                    <p:menuitem value="#{i18n.app('reportsLabel')}" url="#"/>
+                    <p:menuitem value="#{i18n.app('medicineReportTitle')}"/>
+                </p:breadCrumb>
 
                 <div class="report-hero">
                     <div class="grid align-items-start">
@@ -215,11 +222,7 @@
                             return;
                         }
 
-                        Highcharts.setOptions({
-                            lang: { thousandsSep: ',' },
-                            credits: { enabled: false },
-                            colors: ['#1e3c72', '#2a5298', '#1d4ed8', '#2563eb', '#3b82f6', '#60a5fa']
-                        });
+                        configureCarexHighcharts();
 
                         Highcharts.chart('medicineMixChart', {
                             chart: { type: 'bar', backgroundColor: 'transparent' },

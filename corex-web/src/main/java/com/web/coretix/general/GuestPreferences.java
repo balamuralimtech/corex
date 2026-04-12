@@ -147,6 +147,9 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     private boolean bankDetailsRendered;
     private boolean notificationSettingRendered;
     private boolean demoRequestsRendered;
+    private boolean applicationPricingRendered;
+    private boolean referralManagementRendered;
+    private boolean referralDashboardRendered;
 
 
 
@@ -159,19 +162,19 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
 
     @Inject
-    private IUserAdministrationService userAdministrationService;
+    private transient IUserAdministrationService userAdministrationService;
 
     @Inject
-    private IUserActivityService userActivityService;
+    private transient IUserActivityService userActivityService;
 
     @Inject
-    private IRoleAdministrationService roleAdministrationService;
+    private transient IRoleAdministrationService roleAdministrationService;
 
     @Inject
-    private IApplicationThemeService applicationThemeService;
+    private transient IApplicationThemeService applicationThemeService;
 
     @Inject
-    private IApplicationNotificationService applicationNotificationService;
+    private transient IApplicationNotificationService applicationNotificationService;
 
     private String growlMessage;
     private List<String> topbarMessages = new ArrayList<>();
@@ -182,6 +185,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     private boolean applicationNotificationTrackerInitialized;
 
     public void initializePageAttributes() {
+        ensureInjectedServices();
 
         componentThemes.clear();
         layoutThemes.clear();
@@ -333,6 +337,9 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         licenseManagementRendered = false;
         dbAndServerLogRendered = false;
         demoRequestsRendered = false;
+        applicationPricingRendered = false;
+        referralManagementRendered = false;
+        referralDashboardRendered = false;
 
         List<CoreAppModule> modules = getRoleModuleList();
 
@@ -528,6 +535,10 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     }
 
     private UserDetails getUserDetailsByUsername(String username) {
+        ensureInjectedServices();
+        if (userAdministrationService == null) {
+            return null;
+        }
         return userAdministrationService.getUserDetailEntityByUserName(username);
     }
 
@@ -787,6 +798,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     }
 
     public void checkForGrowlMessage() {
+        ensureInjectedServices();
         HttpSession session = SessionUtils.getSession();
         if (session == null) {
             return;
@@ -842,11 +854,17 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     }
 
     public int getTopbarMessageCount() {
-        return applicationUnreadMessageCount;
+        if (isApplicationAdmin()) {
+            return applicationUnreadMessageCount;
+        }
+        return topbarUnreadMessageCount;
     }
 
     public List<String> getDisplayedApplicationMessages() {
-        return applicationMessages;
+        if (isApplicationAdmin()) {
+            return applicationMessages;
+        }
+        return topbarMessages == null ? Collections.emptyList() : topbarMessages;
     }
 
     public int getTopbarAlertCount() {
@@ -856,6 +874,12 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     public void markTopbarMessagesAsSeen() {
         HttpSession session = SessionUtils.getSession();
         if (session == null) {
+            return;
+        }
+
+        if (!isApplicationAdmin()) {
+            topbarUnreadMessageCount = 0;
+            session.setAttribute(SessionAttributes.APPLICATION_NOTIFICATION_UNREAD_COUNT.getName(), 0);
             return;
         }
 
@@ -1084,6 +1108,18 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
                     case DEMO_REQUESTS:
                         demoRequestsRendered = true;
                         logger.debug("Demo Requests available");
+                        break;
+                    case APPLICATION_PRICING:
+                        applicationPricingRendered = true;
+                        logger.debug("Application Pricing available");
+                        break;
+                    case REFERRAL_MANAGEMENT:
+                        referralManagementRendered = true;
+                        logger.debug("Referral Management available");
+                        break;
+                    case REFERRAL_DASHBOARD:
+                        referralDashboardRendered = true;
+                        logger.debug("Referral Dashboard available");
                         break;
                     default:
                         logger.error("Unsupported module: " + ApplicationManagementModule.getById(pageId));
@@ -1368,6 +1404,30 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         this.demoRequestsRendered = demoRequestsRendered;
     }
 
+    public boolean isApplicationPricingRendered() {
+        return applicationPricingRendered;
+    }
+
+    public void setApplicationPricingRendered(boolean applicationPricingRendered) {
+        this.applicationPricingRendered = applicationPricingRendered;
+    }
+
+    public boolean isReferralManagementRendered() {
+        return referralManagementRendered;
+    }
+
+    public void setReferralManagementRendered(boolean referralManagementRendered) {
+        this.referralManagementRendered = referralManagementRendered;
+    }
+
+    public boolean isReferralDashboardRendered() {
+        return referralDashboardRendered;
+    }
+
+    public void setReferralDashboardRendered(boolean referralDashboardRendered) {
+        this.referralDashboardRendered = referralDashboardRendered;
+    }
+
     public boolean isLicenseRendered() {
         return licenseRendered;
     }
@@ -1401,7 +1461,11 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     }
 
     public String getTopbarProfileImageSrc() {
+        ensureInjectedServices();
         if (userId <= 0) {
+            return null;
+        }
+        if (userAdministrationService == null) {
             return null;
         }
 
@@ -1435,7 +1499,16 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     }
 
     private List<ApplicationNotification> refreshPersistentNotifications(HttpSession session) {
+        ensureInjectedServices();
         if (session == null || userId <= 0) {
+            return Collections.emptyList();
+        }
+        if (!isApplicationAdmin()) {
+            applicationMessages = new ArrayList<>();
+            applicationUnreadMessageCount = 0;
+            return Collections.emptyList();
+        }
+        if (applicationNotificationService == null) {
             return Collections.emptyList();
         }
 
@@ -1469,7 +1542,11 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     }
 
     private void loadUserThemePreferences() {
+        ensureInjectedServices();
         if (userId <= 0) {
+            return;
+        }
+        if (applicationThemeService == null) {
             return;
         }
 
@@ -1503,8 +1580,13 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     }
 
     public void persistCurrentThemePreferences() {
+        ensureInjectedServices();
         if (userId <= 0) {
             logger.warn("Skipping theme persistence because no logged-in user is available.");
+            return;
+        }
+        if (applicationThemeService == null) {
+            logger.warn("Skipping theme persistence because the application theme service is unavailable.");
             return;
         }
 
@@ -1570,9 +1652,22 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
         return userActivityTO;
     }
+
+    private void ensureInjectedServices() {
+        if (userAdministrationService == null) {
+            userAdministrationService = resolveSpringBean(IUserAdministrationService.class);
+        }
+        if (userActivityService == null) {
+            userActivityService = resolveSpringBean(IUserActivityService.class);
+        }
+        if (roleAdministrationService == null) {
+            roleAdministrationService = resolveSpringBean(IRoleAdministrationService.class);
+        }
+        if (applicationThemeService == null) {
+            applicationThemeService = resolveSpringBean(IApplicationThemeService.class);
+        }
+        if (applicationNotificationService == null) {
+            applicationNotificationService = resolveSpringBean(IApplicationNotificationService.class);
+        }
+    }
 }
-
-
-
-
-

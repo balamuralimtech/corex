@@ -28,6 +28,7 @@ import javax.crypto.SecretKey;
 import javax.el.ELResolver;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 
 import com.web.coretix.constants.CoreAppModule;
@@ -43,6 +44,8 @@ import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 
 /**
@@ -64,7 +67,7 @@ public class GenericManagedBean
     private final String fileSeparator = System.getProperty("file.separator");
 
     @Inject
-    private IRoleAdministrationService roleAdministrationService;
+    private transient IRoleAdministrationService roleAdministrationService;
         
 
     // Method to generate a secret AES key
@@ -276,7 +279,12 @@ public class GenericManagedBean
             roleModuleList.addAll(Arrays.asList(CoreAppModule.values()));
             return roleModuleList;
         }
-        List<Integer> moduleList = roleAdministrationService.getModulesByRoleId(fetchCurrentUserRoleId());
+        IRoleAdministrationService service = getRoleAdministrationService();
+        if (service == null) {
+            logger.warn("Role administration service is unavailable while resolving role modules.");
+            return roleModuleList;
+        }
+        List<Integer> moduleList = service.getModulesByRoleId(fetchCurrentUserRoleId());
         logger.debug("moduleList : "+moduleList);
         if (CollectionUtils.isNotEmpty(moduleList)){
             for (Integer moduleId : moduleList) {
@@ -317,7 +325,12 @@ public class GenericManagedBean
             }
             return new ArrayList<>();
         }
-        List<Integer> subModuleDetailsList = roleAdministrationService.getSubmodulesByRoleandModuleId(fetchCurrentUserRoleId(), moduleId);
+        IRoleAdministrationService service = getRoleAdministrationService();
+        if (service == null) {
+            logger.warn("Role administration service is unavailable while resolving submodules.");
+            return new ArrayList<>();
+        }
+        List<Integer> subModuleDetailsList = service.getSubmodulesByRoleandModuleId(fetchCurrentUserRoleId(), moduleId);
 
         return subModuleDetailsList;
     }
@@ -335,7 +348,12 @@ public class GenericManagedBean
             modulePrivilegeList.addAll(Arrays.asList(RolePrivilegeConstants.values()));
             return modulePrivilegeList;
         }
-        List<RolePrivileges> rolePrivilegesList = roleAdministrationService.getRolePrivilegesByModuleAndSubModule(fetchCurrentUserRoleId(), moduleId, subModuleId);
+        IRoleAdministrationService service = getRoleAdministrationService();
+        if (service == null) {
+            logger.warn("Role administration service is unavailable while resolving privileges.");
+            return modulePrivilegeList;
+        }
+        List<RolePrivileges> rolePrivilegesList = service.getRolePrivilegesByModuleAndSubModule(fetchCurrentUserRoleId(), moduleId, subModuleId);
 
         if (CollectionUtils.isNotEmpty(rolePrivilegesList))
         {
@@ -421,7 +439,40 @@ public class GenericManagedBean
         if (requestedOrganizationId == null || !currentOrganizationId.equals(requestedOrganizationId)) {
             return currentOrganizationId;
         }
+
         return requestedOrganizationId;
+    }
+
+    protected <T> T resolveSpringBean(Class<T> beanType) {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null) {
+            return null;
+        }
+
+        Object context = facesContext.getExternalContext().getContext();
+        if (!(context instanceof ServletContext)) {
+            return null;
+        }
+
+        WebApplicationContext applicationContext =
+                WebApplicationContextUtils.getWebApplicationContext((ServletContext) context);
+        if (applicationContext == null) {
+            return null;
+        }
+
+        try {
+            return applicationContext.getBean(beanType);
+        } catch (Exception exception) {
+            logger.error("Unable to resolve Spring bean {}", beanType.getName(), exception);
+            return null;
+        }
+    }
+
+    protected IRoleAdministrationService getRoleAdministrationService() {
+        if (roleAdministrationService == null) {
+            roleAdministrationService = resolveSpringBean(IRoleAdministrationService.class);
+        }
+        return roleAdministrationService;
     }
 
     protected List<Organizations> getAccessibleOrganizations(IOrganizationService organizationService) {
@@ -459,8 +510,6 @@ public class GenericManagedBean
     }
 
 }
-
-
 
 
 

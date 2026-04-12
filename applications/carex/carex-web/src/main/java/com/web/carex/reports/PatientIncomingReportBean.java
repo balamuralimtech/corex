@@ -40,16 +40,16 @@ public class PatientIncomingReportBean extends CarexManagedBean implements Seria
     private static final DateTimeFormatter DAY_LABEL_FORMATTER = DateTimeFormatter.ofPattern("dd MMM", Locale.ENGLISH);
 
     @Inject
-    private IOrganizationService organizationService;
+    private transient IOrganizationService organizationService;
 
     @Inject
-    private IPatientService patientService;
+    private transient IPatientService patientService;
 
     @Inject
-    private IConsultationService consultationService;
+    private transient IConsultationService consultationService;
 
     @Inject
-    private IClinicSettingsService clinicSettingsService;
+    private transient IClinicSettingsService clinicSettingsService;
 
     private boolean initialized;
     private Integer selectedOrganizationId;

@@ -116,9 +116,9 @@
         <h:form id="form">
             <div class="col-12">
                 <p:breadCrumb>
-                    <p:menuitem url="#" icon="pi pi-home" />
+                    <p:menuitem url="#{request.contextPath}/home" icon="pi pi-home" />
                     <p:menuitem value="#{msg['systemManagementLabel']}" url="#" />
-                    <p:menuitem value="#{msg['notificationSettingsLabel']}" url="#" />
+                    <p:menuitem value="#{msg['notificationSettingsLabel']}" />
                 </p:breadCrumb>
             </div>
             <div class="grid crud-demo">
@@ -270,4 +270,3 @@
         </h:form>
     </ui:define>
 </ui:composition>
-

@@ -39,16 +39,16 @@ public class ClinicReportBean extends CarexManagedBean implements Serializable {
     private static final DateTimeFormatter DAY_SHORT_FORMATTER = DateTimeFormatter.ofPattern("dd MMM", Locale.ENGLISH);
 
     @Inject
-    private IOrganizationService organizationService;
+    private transient IOrganizationService organizationService;
 
     @Inject
-    private IPatientService patientService;
+    private transient IPatientService patientService;
 
     @Inject
-    private IConsultationService consultationService;
+    private transient IConsultationService consultationService;
 
     @Inject
-    private IClinicSettingsService clinicSettingsService;
+    private transient IClinicSettingsService clinicSettingsService;
 
     private boolean initialized;
     private Integer selectedOrganizationId;

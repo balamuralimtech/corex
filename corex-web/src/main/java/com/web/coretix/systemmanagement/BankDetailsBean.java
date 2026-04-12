@@ -82,10 +82,10 @@ public class BankDetailsBean extends GenericManagedBean implements Serializable 
     private boolean bankAccountDetailsError = false;
 
     @Inject
-    private IOrganizationService organizationService;
+    private transient IOrganizationService organizationService;
 
     @Inject
-    private IBankDetailsService bankDetailsService;
+    private transient IBankDetailsService bankDetailsService;
 
     public void initializePageAttributes()
     {
@@ -541,7 +541,6 @@ public class BankDetailsBean extends GenericManagedBean implements Serializable 
                 : "Unknown user";
     }
 }
-
 
 
 

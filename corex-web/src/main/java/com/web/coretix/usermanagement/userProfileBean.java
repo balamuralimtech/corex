@@ -45,10 +45,10 @@ public class userProfileBean implements Serializable {
     private static final Logger logger = LoggerFactory.getLogger(userProfileBean.class);
     
     @Inject
-    private IUserAdministrationService userAdministrationService;
+    private transient IUserAdministrationService userAdministrationService;
 
     @Inject
-    private IUserActivityService userActivityService;
+    private transient IUserActivityService userActivityService;
 
     private UserDetails userDetails;
     private String accessRight;
@@ -269,7 +269,6 @@ public class userProfileBean implements Serializable {
     }
 
 }
-
 
 
 

@@ -12,6 +12,12 @@
         <h:form id="form">
             <div class="card">
                 <p:messages id="messages" showDetail="true" closable="true"/>
+                <p:breadCrumb>
+                    <p:menuitem url="#{request.contextPath}/home" icon="pi pi-home"/>
+                    <p:menuitem value="CareX" url="#"/>
+                    <p:menuitem value="#{i18n.app('settingsLabel')}" url="#"/>
+                    <p:menuitem value="#{i18n.app('clinicSettingsPageTitle')}"/>
+                </p:breadCrumb>
 
                 <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-start gap-3 mb-4">
                     <div>
@@ -240,6 +246,16 @@
                         <div class="col-12 lg:col-6">
                             <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
                                 <h3 style="margin-top:0;">#{i18n.app('clinicSettingsOperationalControlsLabel')}</h3>
+                                <div class="mb-4">
+                                    <label style="display:block;font-weight:600;margin-bottom:.6rem;">Consultation Workflow</label>
+                                    <p:selectOneRadio value="#{clinicSettingsBean.clinicSettings.receptionTokenWorkflowEnabled}" layout="responsive" columns="1">
+                                        <f:selectItem itemLabel="Reception registers patient and sends to doctor with daily token queue" itemValue="true"/>
+                                        <f:selectItem itemLabel="Doctor registers and attends patient directly without token queue" itemValue="false"/>
+                                    </p:selectOneRadio>
+                                    <small style="display:block;margin-top:.5rem;color:#64748b;">
+                                        Choose whether the clinic uses a receptionist-driven queue or direct doctor registration.
+                                    </small>
+                                </div>
                                 <div class="field-checkbox mb-3">
                                     <p:selectBooleanCheckbox id="requireInvoice" value="#{clinicSettingsBean.clinicSettings.requireInvoice}"/>
                                     <p:outputLabel for="requireInvoice" value="#{i18n.app('clinicSettingsRequireInvoiceLabel')}"/>

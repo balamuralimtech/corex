@@ -41,6 +41,12 @@
 
             <div class="card">
                 <p:messages id="messages" showDetail="true" closable="true"/>
+                <p:breadCrumb>
+                    <p:menuitem url="#{request.contextPath}/home" icon="pi pi-home"/>
+                    <p:menuitem value="CareX" url="#"/>
+                    <p:menuitem value="#{i18n.app('settingsLabel')}" url="#"/>
+                    <p:menuitem value="#{i18n.app('invoiceSettingsPageTitle')}"/>
+                </p:breadCrumb>
                 <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-start gap-3 mb-4">
                     <div>
                         <h1 style="margin:0;">#{i18n.app('invoiceSettingsPageTitle')}</h1>

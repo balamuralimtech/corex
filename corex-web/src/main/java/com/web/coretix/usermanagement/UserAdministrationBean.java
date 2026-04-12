@@ -121,25 +121,25 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
     private int usersNeverLoggedinCount;
     
     @Inject
-    private IUserAdministrationService userAdministrationService;
+    private transient IUserAdministrationService userAdministrationService;
     
     @Inject
-    private IRoleAdministrationService roleAdministrationService;
+    private transient IRoleAdministrationService roleAdministrationService;
     
     @Inject
-    private IOrganizationService organizationService;
+    private transient IOrganizationService organizationService;
     
     @Inject
-    private IBranchService branchService;
+    private transient IBranchService branchService;
     
     @Inject
-    private ICountryService countryService;
+    private transient ICountryService countryService;
 
     @Inject
-    private IStateService stateService;
+    private transient IStateService stateService;
 
     @Inject
-    private ICityService cityService;
+    private transient ICityService cityService;
 
 
     public void initializePageAttributes() {
@@ -1210,7 +1210,6 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         }
     }
 }
-
 
 
 

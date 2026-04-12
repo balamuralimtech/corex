@@ -3,9 +3,9 @@ package com.web.coretix.menu;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Named;
 
-@ApplicationScoped
+@Named
 public class CommonMenuContributor implements MenuContributor {
 
     @Override
@@ -94,7 +94,13 @@ public class CommonMenuContributor implements MenuContributor {
                 25,
                 "#{guestPreferences.applicationManagementRendered}")
                 .addItem(new AppMenuItem("m_demorequests", "#{msg['demoRequestsLabel']}", "pi pi-fw pi-inbox",
-                        "/demo-requests", 10, "#{guestPreferences.demoRequestsRendered}"));
+                        "/demo-requests", 10, "#{guestPreferences.demoRequestsRendered}"))
+                .addItem(new AppMenuItem("m_applicationpricing", "#{msg['applicationPricingLabel']}", "pi pi-fw pi-tags",
+                        "/application-pricing", 20, "#{guestPreferences.applicationPricingRendered}"))
+                .addItem(new AppMenuItem("m_referralmanagement", "#{msg['referralManagementLabel']}", "pi pi-fw pi-share-alt",
+                        "/referral-management", 30, "#{guestPreferences.referralManagementRendered}"))
+                .addItem(new AppMenuItem("m_referraldashboard", "#{msg['referralDashboardLabel']}", "pi pi-fw pi-chart-line",
+                        "/referral-dashboard", 40, "#{guestPreferences.referralDashboardRendered}"));
 
         return Arrays.asList(userManagement, systemManagement, applicationManagement, license, serverLogs);
     }

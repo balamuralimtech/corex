@@ -41,13 +41,13 @@ public class PrescriptionSettingsBean extends CarexManagedBean implements Serial
     private static final long serialVersionUID = 1L;
 
     @Inject
-    private IPrescriptionSettingsService prescriptionSettingsService;
+    private transient IPrescriptionSettingsService prescriptionSettingsService;
 
     @Inject
-    private IOrganizationService organizationService;
+    private transient IOrganizationService organizationService;
 
     @Inject
-    private IClinicSettingsService clinicSettingsService;
+    private transient IClinicSettingsService clinicSettingsService;
 
     private PrescriptionSettings prescriptionSettings = new PrescriptionSettings();
     private List<Organizations> organizationList = new ArrayList<>();

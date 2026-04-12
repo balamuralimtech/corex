@@ -57,6 +57,9 @@ public class FriendlyUrlFilter implements Filter {
             "/login",
             "/setup",
             "/demo-request",
+            "/clinic-register",
+            "/payments/razorpay/order",
+            "/payments/razorpay/verify",
             "/customer-request-form",
             "/error",
             "/bad-request",
@@ -161,6 +164,9 @@ public class FriendlyUrlFilter implements Filter {
         paths.put("/notification-settings", "/pages/systemmanagement/notificationsettings.xhtml");
         paths.put("/application-notifications", "/pages/systemmanagement/applicationnotifications.xhtml");
         paths.put("/demo-requests", "/pages/applicationmanagement/demorequests.xhtml");
+        paths.put("/application-pricing", "/pages/applicationmanagement/applicationpricing.xhtml");
+        paths.put("/referral-management", "/pages/applicationmanagement/referralmanagement.xhtml");
+        paths.put("/referral-dashboard", "/pages/applicationmanagement/referraldashboard.xhtml");
 
         paths.put("/license", "/pages/license/license.xhtml");
         paths.put("/server-logs", "/pages/serverlogs/serverlogs.xhtml");
@@ -353,7 +359,3 @@ public class FriendlyUrlFilter implements Filter {
                 && !normalizedPath.contains("dashboardgateway");
     }
 }
-
-
-
-

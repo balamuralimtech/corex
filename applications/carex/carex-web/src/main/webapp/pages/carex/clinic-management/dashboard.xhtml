@@ -11,6 +11,7 @@
 
         <h:outputScript library="avalon-layout" name="highcharts/highcharts.js" target="head"/>
         <h:outputScript library="avalon-layout" name="highcharts/highcharts-more.js" target="head"/>
+        <h:outputScript library="carex" name="js/carex-highcharts-theme.js" target="head"/>
 
         <h:outputStylesheet>
             .clinic-dashboard-shell { display:flex; flex-direction:column; gap:1.25rem; }
@@ -64,9 +65,10 @@
             <div class="clinic-dashboard-shell">
                 <div class="col-12">
                     <p:breadCrumb>
-                        <p:menuitem url="#" icon="pi pi-home"/>
+                        <p:menuitem url="#{request.contextPath}/home" icon="pi pi-home"/>
+                        <p:menuitem value="CareX" url="#"/>
                         <p:menuitem value="#{i18n.app('clinicManagementLabel')}" url="#"/>
-                        <p:menuitem value="#{i18n.app('dashboardLabel')}" url="#"/>
+                        <p:menuitem value="#{i18n.app('dashboardLabel')}"/>
                     </p:breadCrumb>
                 </div>
 
@@ -432,11 +434,7 @@
                             return;
                         }
 
-                        Highcharts.setOptions({
-                            lang: { thousandsSep: ',' },
-                            credits: { enabled: false },
-                            colors: ['#1e3c72', '#2a5298', '#1d4ed8', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd', '#1e40af']
-                        });
+                        configureCarexHighcharts();
 
                         Highcharts.chart('clinicMixChart', {
                             chart: { type: 'column', backgroundColor: 'transparent' },

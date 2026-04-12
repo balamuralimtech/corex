@@ -1,0 +1,373 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+    <ui:define name="content">
+        <f:event listener="#{referralDashboardBean.initializePageAttributes}" type="preRenderView"/>
+
+        <h:outputStylesheet>
+            .refdash-shell { display:flex; flex-direction:column; gap:1.2rem; }
+            .refdash-hero { position:relative; overflow:hidden; border-radius:26px; padding:1.7rem; background:linear-gradient(135deg, #0f172a 0%, #134e4a 48%, #0f766e 100%); color:#f8fafc; box-shadow:0 24px 80px rgba(15,23,42,.22); }
+            .refdash-hero:before { content:''; position:absolute; width:360px; height:360px; border-radius:50%; right:-110px; top:-130px; background:radial-gradient(circle, rgba(255,255,255,.16) 0%, rgba(255,255,255,0) 70%); }
+            .refdash-hero:after { content:''; position:absolute; width:280px; height:280px; border-radius:28px; left:-70px; bottom:-160px; transform:rotate(24deg); background:linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,0)); }
+            .refdash-title { margin:0; font-size:2rem; font-weight:700; line-height:1.04; letter-spacing:-.04em; }
+            .refdash-copy { margin-top:.7rem; max-width:760px; color:rgba(226,232,240,.92); line-height:1.7; }
+            .refdash-hero-top { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap; position:relative; z-index:1; }
+            .refdash-code { display:inline-flex; align-items:center; padding:.55rem .9rem; border-radius:999px; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.16); color:#ecfeff; font-weight:700; letter-spacing:.08em; margin-top:1rem; }
+            .refdash-chip-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:.9rem; margin-top:1.35rem; position:relative; z-index:1; }
+            .refdash-chip { padding:1rem; border-radius:18px; background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.14); backdrop-filter:blur(10px); }
+            .refdash-chip-label { display:block; font-size:.78rem; color:rgba(204,251,241,.9); text-transform:uppercase; letter-spacing:.08em; }
+            .refdash-chip-value { display:block; margin-top:.45rem; font-size:1.45rem; font-weight:700; color:#fff; }
+            .refdash-control { min-width:260px; padding:1rem; border-radius:18px; background:rgba(255,255,255,.09); border:1px solid rgba(255,255,255,.14); backdrop-filter:blur(10px); position:relative; z-index:1; }
+            .refdash-control-label { display:block; font-size:.78rem; color:rgba(204,251,241,.9); text-transform:uppercase; letter-spacing:.08em; }
+            .refdash-grid { display:grid; grid-template-columns:repeat(12, minmax(0, 1fr)); gap:1rem; }
+            .refdash-span-3 { grid-column:span 3; }
+            .refdash-span-4 { grid-column:span 4; }
+            .refdash-span-5 { grid-column:span 5; }
+            .refdash-span-6 { grid-column:span 6; }
+            .refdash-span-7 { grid-column:span 7; }
+            .refdash-span-8 { grid-column:span 8; }
+            .refdash-span-12 { grid-column:span 12; }
+            .refdash-metric { height:100%; padding:1.15rem; border-radius:18px; background:#fff; border:1px solid rgba(148,163,184,.18); box-shadow:0 10px 36px rgba(15,23,42,.07); }
+            .refdash-metric-label { display:block; color:#64748b; font-size:.78rem; text-transform:uppercase; letter-spacing:.08em; }
+            .refdash-metric-value { display:block; margin-top:.55rem; font-size:1.9rem; font-weight:700; color:#0f172a; line-height:1; }
+            .refdash-metric-foot { display:block; margin-top:.75rem; color:#475569; line-height:1.55; font-size:.92rem; }
+            .refdash-panel { height:100%; padding:1.1rem; border-radius:22px; background:#fff; border:1px solid rgba(148,163,184,.18); box-shadow:0 10px 36px rgba(15,23,42,.07); }
+            .refdash-panel-head { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:.85rem; }
+            .refdash-panel-title { margin:0; font-size:1.02rem; font-weight:700; color:#0f172a; }
+            .refdash-panel-subtitle { margin:.25rem 0 0; color:#64748b; line-height:1.6; font-size:.9rem; }
+            .refdash-highlight { display:inline-flex; align-items:center; padding:.45rem .8rem; border-radius:999px; background:#ecfeff; color:#115e59; font-weight:700; font-size:.82rem; }
+            .refdash-list { display:grid; gap:.75rem; }
+            .refdash-row { padding:.95rem 1rem; border-radius:16px; background:#f8fafc; border:1px solid #e2e8f0; }
+            .refdash-row-top { display:flex; justify-content:space-between; align-items:center; gap:1rem; }
+            .refdash-row-label { font-weight:700; color:#0f172a; }
+            .refdash-row-meta { color:#64748b; font-size:.88rem; }
+            .refdash-row-value { text-align:right; font-weight:700; color:#0f172a; }
+            .refdash-progress { margin-top:.7rem; height:8px; border-radius:999px; background:#e2e8f0; overflow:hidden; }
+            .refdash-progress > span { display:block; height:100%; border-radius:999px; background:linear-gradient(90deg, #0f766e, #14b8a6); }
+            .refdash-badge { display:inline-flex; align-items:center; padding:.4rem .8rem; border-radius:999px; font-size:.8rem; font-weight:700; }
+            .refdash-badge.commission { background:#ecfeff; color:#0f766e; }
+            .refdash-badge.free { background:#eff6ff; color:#1d4ed8; }
+            .refdash-badge.pending { background:#fff7ed; color:#c2410c; }
+            .refdash-badge.approved { background:#ecfccb; color:#3f6212; }
+            .refdash-badge.paid { background:#ecfdf5; color:#166534; }
+            .refdash-badge.neutral { background:#f1f5f9; color:#334155; }
+            .refdash-table .ui-datatable-tablewrapper { border-radius:18px; overflow:hidden; }
+            .refdash-table .ui-datatable thead th { background:#f8fafc; color:#334155; border-color:#e2e8f0; }
+            .refdash-table .ui-datatable tbody td { border-color:#eef2f7; vertical-align:top; }
+            .refdash-empty { padding:2rem; border-radius:24px; background:linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); border:1px solid #e2e8f0; box-shadow:0 14px 40px rgba(15,23,42,.06); text-align:center; }
+            .refdash-empty-title { margin:0; font-size:1.45rem; color:#0f172a; }
+            .refdash-empty-copy { margin:1rem auto 0; max-width:640px; color:#64748b; line-height:1.75; }
+            @media (max-width: 1200px) {
+                .refdash-span-3, .refdash-span-4, .refdash-span-5, .refdash-span-6, .refdash-span-7, .refdash-span-8 { grid-column:span 12; }
+            }
+            @media (max-width: 768px) {
+                .refdash-hero { padding:1.2rem; }
+                .refdash-title { font-size:1.55rem; }
+                .refdash-chip-row { grid-template-columns:1fr; }
+            }
+        </h:outputStylesheet>
+
+        <h:form id="form">
+            <div class="refdash-shell">
+                <div class="col-12">
+                    <p:breadCrumb>
+                        <p:menuitem url="#{request.contextPath}/home" icon="pi pi-home"/>
+                        <p:menuitem value="#{msg['applicationManagementLabel']}" url="#"/>
+                        <p:menuitem value="#{msg['referralDashboardLabel']}"/>
+                    </p:breadCrumb>
+                </div>
+
+                <h:panelGroup rendered="#{referralDashboardBean.hasReferralData}" layout="block">
+                    <div class="refdash-hero">
+                        <div class="refdash-hero-top">
+                            <div>
+                                <h2 class="refdash-title">#{referralDashboardBean.referralOwnerName}</h2>
+                                <div class="refdash-copy">#{referralDashboardBean.headline}</div>
+                                <span class="refdash-code">#{referralDashboardBean.referralCode}</span>
+                            </div>
+                            <h:panelGroup rendered="#{referralDashboardBean.applicationAdmin}" layout="block" styleClass="refdash-control">
+                                <span class="refdash-control-label">#{msg['organizationScopeLabel']}</span>
+                                <p:selectOneMenu id="organizationSelect" value="#{referralDashboardBean.selectedOrganizationId}" style="display:block;width:100%;margin-top:.55rem;">
+                                    <f:selectItem itemLabel="All Organizations" itemValue="-1"/>
+                                    <f:selectItems value="#{referralDashboardBean.organizationList}" var="organization"
+                                                   itemValue="#{organization.id}" itemLabel="#{organization.organizationName}"/>
+                                    <p:ajax event="change" process="@this" listener="#{referralDashboardBean.refreshDashboard}"
+                                            update="@form"/>
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+                            <h:panelGroup rendered="#{not referralDashboardBean.applicationAdmin}" layout="block">
+                                <div class="refdash-highlight">#{referralDashboardBean.ownerType}</div>
+                            </h:panelGroup>
+                        </div>
+
+                        <div class="refdash-chip-row">
+                            <div class="refdash-chip">
+                                <span class="refdash-chip-label">Benefit Model</span>
+                                <span class="refdash-chip-value">#{referralDashboardBean.benefitType}</span>
+                            </div>
+                            <div class="refdash-chip">
+                                <span class="refdash-chip-label">Total Referrals</span>
+                                <span class="refdash-chip-value">#{referralDashboardBean.totalReferrals}</span>
+                            </div>
+                            <div class="refdash-chip">
+                                <span class="refdash-chip-label">Top Plan</span>
+                                <span class="refdash-chip-value">#{referralDashboardBean.topPlanLabel}</span>
+                            </div>
+                            <div class="refdash-chip">
+                                <span class="refdash-chip-label">Latest Conversion</span>
+                                <span class="refdash-chip-value" style="font-size:1.05rem;">#{referralDashboardBean.latestReferralLabel}</span>
+                            </div>
+                            <div class="refdash-chip">
+                                <span class="refdash-chip-label">Active Codes</span>
+                                <span class="refdash-chip-value">#{referralDashboardBean.activeCodeCount}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="refdash-grid">
+                        <div class="refdash-span-3">
+                            <div class="refdash-metric">
+                                <span class="refdash-metric-label">Subscription Value</span>
+                                <span class="refdash-metric-value">#{referralDashboardBean.formatCurrency(referralDashboardBean.totalSubscriptionAmount)}</span>
+                                <span class="refdash-metric-foot">Total referred subscription value captured under this code.</span>
+                            </div>
+                        </div>
+                        <div class="refdash-span-3">
+                            <div class="refdash-metric">
+                                <span class="refdash-metric-label">Average Deal Size</span>
+                                <span class="refdash-metric-value">#{referralDashboardBean.formatCurrency(referralDashboardBean.averageSubscriptionAmount)}</span>
+                                <span class="refdash-metric-foot">Average subscription amount per referred clinic.</span>
+                            </div>
+                        </div>
+                        <div class="refdash-span-3">
+                            <div class="refdash-metric">
+                                <span class="refdash-metric-label">Free Months Awarded</span>
+                                <span class="refdash-metric-value">#{referralDashboardBean.totalFreeMonthsAwarded}</span>
+                                <span class="refdash-metric-foot">Benefit granted to referred clinics through free-month campaigns.</span>
+                            </div>
+                        </div>
+                        <div class="refdash-span-3">
+                            <div class="refdash-metric">
+                                <span class="refdash-metric-label">Commission Earned</span>
+                                <span class="refdash-metric-value">#{referralDashboardBean.formatCurrency(referralDashboardBean.totalCommission)}</span>
+                                <span class="refdash-metric-foot">Combined earned commission across all tracked commission records.</span>
+                            </div>
+                        </div>
+                        <div class="refdash-span-3">
+                            <div class="refdash-metric">
+                                <span class="refdash-metric-label">Pending Commission</span>
+                                <span class="refdash-metric-value">#{referralDashboardBean.formatCurrency(referralDashboardBean.pendingCommission)}</span>
+                                <span class="refdash-metric-foot">#{referralDashboardBean.pendingCommissionCount} payout items currently waiting to be settled.</span>
+                            </div>
+                        </div>
+                        <div class="refdash-span-3">
+                            <div class="refdash-metric">
+                                <span class="refdash-metric-label">Paid Commission</span>
+                                <span class="refdash-metric-value">#{referralDashboardBean.formatCurrency(referralDashboardBean.paidCommission)}</span>
+                                <span class="refdash-metric-foot">#{referralDashboardBean.paidCommissionCount} payout items are already closed as paid.</span>
+                            </div>
+                        </div>
+                        <div class="refdash-span-3">
+                            <div class="refdash-metric">
+                                <span class="refdash-metric-label">Channel Coverage</span>
+                                <span class="refdash-metric-value">#{empty referralDashboardBean.gatewayBreakdown ? 0 : referralDashboardBean.gatewayBreakdown.size()}</span>
+                                <span class="refdash-metric-foot">Distinct payment gateway footprints captured in referred subscriptions.</span>
+                            </div>
+                        </div>
+                        <div class="refdash-span-3">
+                            <div class="refdash-metric">
+                                <span class="refdash-metric-label">Plan Coverage</span>
+                                <span class="refdash-metric-value">#{empty referralDashboardBean.planBreakdown ? 0 : referralDashboardBean.planBreakdown.size()}</span>
+                                <span class="refdash-metric-foot">Distinct subscription plans activated under this referral relationship.</span>
+                            </div>
+                        </div>
+
+                        <div class="refdash-span-5">
+                            <div class="refdash-panel">
+                                <div class="refdash-panel-head">
+                                    <div>
+                                        <h3 class="refdash-panel-title">Plan Performance</h3>
+                                        <div class="refdash-panel-subtitle">Which plans convert most often and how much value they contribute.</div>
+                                    </div>
+                                </div>
+                                <div class="refdash-list">
+                                    <ui:repeat value="#{referralDashboardBean.planBreakdown}" var="item">
+                                        <div class="refdash-row">
+                                            <div class="refdash-row-top">
+                                                <div>
+                                                    <div class="refdash-row-label">#{item.label}</div>
+                                                    <div class="refdash-row-meta">#{item.count} referrals</div>
+                                                </div>
+                                                <div class="refdash-row-value">#{referralDashboardBean.formatCurrency(item.amount)}</div>
+                                            </div>
+                                            <div class="refdash-progress"><span style="width:#{item.share}%"></span></div>
+                                        </div>
+                                    </ui:repeat>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="refdash-span-3">
+                            <div class="refdash-panel">
+                                <div class="refdash-panel-head">
+                                    <div>
+                                        <h3 class="refdash-panel-title">Benefit Snapshot</h3>
+                                        <div class="refdash-panel-subtitle">The operating mode and payout posture for this referral code.</div>
+                                    </div>
+                                </div>
+                                <div class="refdash-list">
+                                    <div class="refdash-row">
+                                        <div class="refdash-row-top">
+                                            <div class="refdash-row-label">Benefit Type</div>
+                                            <span class="refdash-badge #{referralDashboardBean.commissionMode ? 'commission' : 'free'}">#{referralDashboardBean.benefitType}</span>
+                                        </div>
+                                    </div>
+                                    <div class="refdash-row">
+                                        <div class="refdash-row-top">
+                                            <div>
+                                                <div class="refdash-row-label">Free Month Benefits</div>
+                                                <div class="refdash-row-meta">Awarded to referred clinics</div>
+                                            </div>
+                                            <div class="refdash-row-value">#{referralDashboardBean.totalFreeMonthsAwarded}</div>
+                                        </div>
+                                    </div>
+                                    <div class="refdash-row">
+                                        <div class="refdash-row-top">
+                                            <div>
+                                                <div class="refdash-row-label">Commission Queue</div>
+                                                <div class="refdash-row-meta">Pending plus paid entries</div>
+                                            </div>
+                                            <div class="refdash-row-value">#{referralDashboardBean.pendingCommissionCount + referralDashboardBean.paidCommissionCount}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="refdash-span-4">
+                            <div class="refdash-panel">
+                                <div class="refdash-panel-head">
+                                    <div>
+                                        <h3 class="refdash-panel-title">Channel Mix</h3>
+                                        <div class="refdash-panel-subtitle">The payment channels used by referred subscriptions.</div>
+                                    </div>
+                                </div>
+                                <div class="refdash-list">
+                                    <ui:repeat value="#{referralDashboardBean.gatewayBreakdown}" var="item">
+                                        <div class="refdash-row">
+                                            <div class="refdash-row-top">
+                                                <div>
+                                                    <div class="refdash-row-label">#{item.label}</div>
+                                                    <div class="refdash-row-meta">#{item.count} activations</div>
+                                                </div>
+                                                <div class="refdash-row-value">#{referralDashboardBean.formatCurrency(item.amount)}</div>
+                                            </div>
+                                            <div class="refdash-progress"><span style="width:#{item.share}%"></span></div>
+                                        </div>
+                                    </ui:repeat>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="refdash-span-4">
+                            <div class="refdash-panel">
+                                <div class="refdash-panel-head">
+                                    <div>
+                                        <h3 class="refdash-panel-title">Outcome Stream</h3>
+                                        <div class="refdash-panel-subtitle">Benefit mix across commission and free-month outcomes.</div>
+                                    </div>
+                                </div>
+                                <div class="refdash-list">
+                                    <ui:repeat value="#{referralDashboardBean.commissionStatusBreakdown}" var="item">
+                                        <div class="refdash-row">
+                                            <div class="refdash-row-top">
+                                                <div>
+                                                    <div class="refdash-row-label">#{item.label}</div>
+                                                    <div class="refdash-row-meta">#{item.count} records</div>
+                                                </div>
+                                                <div class="refdash-row-value">#{referralDashboardBean.formatCurrency(item.amount)}</div>
+                                            </div>
+                                            <div class="refdash-progress"><span style="width:#{item.share}%"></span></div>
+                                        </div>
+                                    </ui:repeat>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="refdash-span-8">
+                            <div class="refdash-panel">
+                                <div class="refdash-panel-head">
+                                    <div>
+                                        <h3 class="refdash-panel-title">Referral Conversion Stream</h3>
+                                        <div class="refdash-panel-subtitle">Every clinic that activated under this code, the plan taken, the value captured, and the benefit applied.</div>
+                                    </div>
+                                </div>
+                                <p:dataTable var="item" value="#{referralDashboardBean.referralAttributions}"
+                                             paginator="true" rows="8" reflow="true" styleClass="refdash-table">
+                                    <p:column headerText="Clinic">
+                                        <div class="refdash-row-label">#{item.referredOrganization.organizationName}</div>
+                                        <div class="refdash-row-meta">#{referralDashboardBean.formatTimestamp(item.createdAt)}</div>
+                                    </p:column>
+                                    <p:column headerText="Plan">
+                                        <div class="refdash-row-label">#{item.planCode}</div>
+                                        <div class="refdash-row-meta">#{item.paymentGatewayCode == null ? 'Gateway not captured' : item.paymentGatewayCode}</div>
+                                    </p:column>
+                                    <p:column headerText="Subscription">
+                                        <div class="refdash-row-label">#{referralDashboardBean.formatCurrency(item.subscriptionAmount)}</div>
+                                    </p:column>
+                                    <p:column headerText="Benefit">
+                                        <span class="refdash-badge #{referralDashboardBean.resolveAttributionStatusClass(item)}">#{referralDashboardBean.resolveAttributionStatus(item)}</span>
+                                    </p:column>
+                                    <p:column headerText="Tracking">
+                                        <div class="refdash-row-meta">Order: #{empty item.paymentOrderId ? '-' : item.paymentOrderId}</div>
+                                        <div class="refdash-row-meta">Payment: #{empty item.paymentId ? '-' : item.paymentId}</div>
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+                        </div>
+
+                        <h:panelGroup rendered="#{referralDashboardBean.commissionMode}" layout="block" styleClass="refdash-span-4">
+                            <div class="refdash-panel">
+                                <div class="refdash-panel-head">
+                                    <div>
+                                        <h3 class="refdash-panel-title">Commission Ledger</h3>
+                                        <div class="refdash-panel-subtitle">Live payout visibility for each commission-eligible referral.</div>
+                                    </div>
+                                </div>
+                                <p:dataTable var="item" value="#{referralDashboardBean.referralCommissions}"
+                                             paginator="true" rows="8" reflow="true" styleClass="refdash-table">
+                                    <p:column headerText="Clinic">
+                                        <div class="refdash-row-label">#{item.referralAttribution.referredOrganization.organizationName}</div>
+                                        <div class="refdash-row-meta">#{referralDashboardBean.formatTimestamp(item.createdAt)}</div>
+                                    </p:column>
+                                    <p:column headerText="Amount">
+                                        <div class="refdash-row-label">#{referralDashboardBean.formatCurrency(item.commissionAmount)}</div>
+                                    </p:column>
+                                    <p:column headerText="Status">
+                                        <span class="refdash-badge #{referralDashboardBean.resolveCommissionStatusClass(item.commissionStatus)}">#{item.commissionStatus}</span>
+                                    </p:column>
+                                    <p:column headerText="Paid At">
+                                        <div class="refdash-row-meta">#{referralDashboardBean.formatTimestamp(item.paidAt)}</div>
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+                        </h:panelGroup>
+                    </div>
+                </h:panelGroup>
+
+                <h:panelGroup rendered="#{not referralDashboardBean.hasReferralData}" layout="block">
+                    <div class="refdash-empty">
+                        <h3 class="refdash-empty-title">Referral Dashboard Is Ready</h3>
+                        <div class="refdash-empty-copy">
+                            Once a referral code is assigned to this user or organization, the dashboard will surface referral conversions,
+                            subscription value, free-month benefits, and commission tracking in one view.
+                        </div>
+                    </div>
+                </h:panelGroup>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

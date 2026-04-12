@@ -4,8 +4,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.enterprise.context.RequestScoped;
-import javax.enterprise.inject.Instance;
 import javax.el.ELContext;
 import javax.el.ExpressionFactory;
 import javax.el.ValueExpression;
@@ -18,15 +16,16 @@ import org.primefaces.model.menu.DefaultMenuItem;
 import org.primefaces.model.menu.DefaultMenuModel;
 import org.primefaces.model.menu.DefaultSubMenu;
 import org.primefaces.model.menu.MenuModel;
+import org.springframework.context.annotation.Scope;
 
 @Named("dynamicMenu")
-@RequestScoped
+@Scope("request")
 public class DynamicMenuBean {
 
     private static final Logger logger = LoggerFactory.getLogger(DynamicMenuBean.class);
 
     @Inject
-    private Instance<MenuContributor> contributors;
+    private List<MenuContributor> contributors;
 
     public MenuModel getModel() {
         List<AppMenuGroup> groups = new ArrayList<>();

@@ -83,9 +83,9 @@ public class StateBean implements Serializable {
     private String searchCountry;
 
     @Inject
-    private ICountryService countryService;
+    private transient ICountryService countryService;
     @Inject
-    private IStateService stateService;
+    private transient IStateService stateService;
 
     public void initializePageAttributes() {
         logger.debug("entered into initializePageAttributes !!!");
@@ -527,7 +527,6 @@ public class StateBean implements Serializable {
         return typeError;
     }
 }
-
 
 
 

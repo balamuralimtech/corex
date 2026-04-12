@@ -115,6 +115,9 @@ public class ClinicSettings implements Serializable {
     @Column(name = "require_medical_certificate", nullable = false)
     private boolean requireMedicalCertificate;
 
+    @Column(name = "reception_token_workflow_enabled", nullable = false)
+    private boolean receptionTokenWorkflowEnabled = true;
+
     @Column(name = "slot_duration_minutes", nullable = false)
     private Integer slotDurationMinutes = 15;
 
@@ -201,6 +204,8 @@ public class ClinicSettings implements Serializable {
     public void setRequireInvoice(boolean requireInvoice) { this.requireInvoice = requireInvoice; }
     public boolean isRequireMedicalCertificate() { return requireMedicalCertificate; }
     public void setRequireMedicalCertificate(boolean requireMedicalCertificate) { this.requireMedicalCertificate = requireMedicalCertificate; }
+    public boolean isReceptionTokenWorkflowEnabled() { return receptionTokenWorkflowEnabled; }
+    public void setReceptionTokenWorkflowEnabled(boolean receptionTokenWorkflowEnabled) { this.receptionTokenWorkflowEnabled = receptionTokenWorkflowEnabled; }
     public Integer getSlotDurationMinutes() { return slotDurationMinutes; }
     public void setSlotDurationMinutes(Integer slotDurationMinutes) { this.slotDurationMinutes = slotDurationMinutes; }
     public String getNotes() { return notes; }

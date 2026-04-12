@@ -84,11 +84,11 @@ public class CityBean implements Serializable {
     private boolean stateError = false;
 
     @Inject
-    private ICountryService countryService;
+    private transient ICountryService countryService;
         @Inject
-    private IStateService stateService;
+    private transient IStateService stateService;
         @Inject
-        private ICityService cityService;
+        private transient ICityService cityService;
 
     public void initializePageAttributes() {
         logger.debug("entered into initializePageAttributes !!!");
@@ -562,6 +562,5 @@ public class CityBean implements Serializable {
         return stateError;
     }
 }
-
 
 

@@ -86,13 +86,13 @@ public class UserActivityBean extends GenericManagedBean implements Serializable
     private Timestamp currentDateTime = new Timestamp(System.currentTimeMillis());
 
     @Inject
-    private IUserActivityService userActivityService;
+    private transient IUserActivityService userActivityService;
 
     @Inject
-    private IUserAdministrationService userAdministrationService;
+    private transient IUserAdministrationService userAdministrationService;
 
     @Inject
-    private IOrganizationService organizationService;
+    private transient IOrganizationService organizationService;
 
     /**
      * @return the userActivityList
@@ -633,7 +633,6 @@ public class UserActivityBean extends GenericManagedBean implements Serializable
     }
 
 }
-
 
 
 
