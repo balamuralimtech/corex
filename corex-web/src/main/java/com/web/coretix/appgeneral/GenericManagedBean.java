@@ -33,6 +33,7 @@ import javax.servlet.http.HttpSession;
 
 import com.web.coretix.constants.CoreAppModule;
 import com.web.coretix.constants.RolePrivilegeConstants;
+import com.web.coretix.constants.RoleModuleCatalog;
 import com.web.coretix.constants.SessionAttributes;
 import com.web.coretix.constants.UserManagementModule;
 import com.web.coretix.constants.UserTypeConstants;
@@ -308,20 +309,10 @@ public class GenericManagedBean
     public List<Integer> getSubModuleDetailsByRoleandModuleId(int moduleId)
     {
         if (isApplicationAdmin()) {
-            if (moduleId == CoreAppModule.USER_MANAGEMENT.getId()) {
-                return enumIds(UserManagementModule.values());
-            }
-            if (moduleId == CoreAppModule.SYSTEM_MANAGEMENT.getId()) {
-                return enumIds(SystemManagementModule.values());
-            }
-            if (moduleId == CoreAppModule.LICENCE.getId()) {
-                return enumIds(LicenseManagementModule.values());
-            }
-            if (moduleId == CoreAppModule.SERVER_AND_DB.getId()) {
-                return enumIds(ServerAndDBModule.values());
-            }
-            if (moduleId == CoreAppModule.APPLICATION_MANAGEMENT.getId()) {
-                return enumIds(ApplicationManagementModule.values());
+            for (CoreAppModule module : RoleModuleCatalog.getRoleModules()) {
+                if (module.getId() == moduleId) {
+                    return RoleModuleCatalog.getSubmoduleIds(module);
+                }
             }
             return new ArrayList<>();
         }
@@ -510,6 +501,4 @@ public class GenericManagedBean
     }
 
 }
-
-
 

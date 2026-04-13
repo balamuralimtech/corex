@@ -56,6 +56,12 @@
             .user-admin-table .ui-datatable tbody td { vertical-align:top; border-color:#eef2f7; }
             .user-admin-search { display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; }
             .user-admin-search-title { font-weight:700; color:#0f172a; }
+            .user-admin-search-left { display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; }
+            .user-admin-icon-actions { display:flex; align-items:center; gap:.45rem; flex-wrap:wrap; }
+            .user-admin-icon-actions .ui-button { margin:0; }
+            .user-admin-selection-meta { color:#64748b; font-size:.9rem; font-weight:600; }
+            .user-row-actions { display:flex; flex-wrap:wrap; gap:.45rem; }
+            .user-row-actions .ui-button { margin:0; }
             .user-dialog .ui-dialog-content { max-height: 76vh; overflow-y: auto; }
             .user-form-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:1rem 1.25rem; }
             .user-form-field { display:flex; flex-direction:column; gap:.45rem; }
@@ -288,11 +294,85 @@
 
                                     <p:dataTable id="usersDataTableId" widgetVar="countDataTable" var="user"
                                                  value="#{userAdministrationBean.usersList}"
+                                                 selection="#{userAdministrationBean.selectedUsers}"
                                                  reflow="true" rowHover="true" styleClass="user-admin-table"
                                                  rowKey="#{user.userId}" paginator="true" rows="10" paginatorPosition="bottom">
+                                        <p:ajax event="rowSelectCheckbox" update="bulkActionsPanel usersDataTableId"/>
+                                        <p:ajax event="rowUnselectCheckbox" update="bulkActionsPanel usersDataTableId"/>
+                                        <p:ajax event="toggleSelect" update="bulkActionsPanel usersDataTableId"/>
                                         <f:facet name="header">
                                             <div class="user-admin-search">
-                                                <span class="user-admin-search-title">#{msg['searchUsersLabel']}</span>
+                                                <div class="user-admin-search-left">
+                                                    <p:outputPanel id="bulkActionsPanel">
+                                                        <div class="user-admin-icon-actions">
+                                                            <p:commandButton icon="pi pi-check-square"
+                                                                             actionListener="#{userAdministrationBean.selectAllUsers}"
+                                                                             process="@this" update="@form" styleClass="ui-button-secondary rounded-button"
+                                                                             title="#{msg['selectAllLabel']}"/>
+                                                            <p:commandButton icon="pi pi-times-circle"
+                                                                             actionListener="#{userAdministrationBean.clearSelectedUsers}"
+                                                                             process="@this" update="@form" styleClass="ui-button-secondary rounded-button"
+                                                                             title="#{msg['clearSelectionLabel']}"/>
+                                                            <p:commandButton icon="pi pi-pencil"
+                                                                             action="#{userAdministrationBean.confirmEditSelectedUsersAction}"
+                                                                             process="@this" update="@form"
+                                                                             oncomplete="if (!args || !args.validationFailed) PF('ManageUserDialog').show()"
+                                                                             disabled="#{not userAdministrationBean.singleSelectionAvailable}"
+                                                                             styleClass="ui-button-success rounded-button"
+                                                                             title="#{msg['editLabel']}"/>
+                                                            <p:commandButton icon="pi pi-lock"
+                                                                             actionListener="#{userAdministrationBean.prepareDisableSelectedUsersAction}"
+                                                                             process="@this" update="@form"
+                                                                             oncomplete="PF('userAdminActionConfirmDialog').show()"
+                                                                             disabled="#{not userAdministrationBean.anyUserSelected}"
+                                                                             styleClass="ui-button-warning rounded-button"
+                                                                             title="#{msg['userAdminDisableUserTitleLabel']}"/>
+                                                            <p:commandButton icon="pi pi-lock-open"
+                                                                             actionListener="#{userAdministrationBean.prepareUnlockSelectedUsersAction}"
+                                                                             process="@this" update="@form"
+                                                                             oncomplete="PF('userAdminActionConfirmDialog').show()"
+                                                                             disabled="#{not userAdministrationBean.anyUserSelected}"
+                                                                             styleClass="ui-button-help rounded-button"
+                                                                             title="#{msg['userAdminUnlockUserTitleLabel']}"/>
+                                                            <p:commandButton icon="pi pi-key"
+                                                                             actionListener="#{userAdministrationBean.prepareResetPasswordForSelectedUsers}"
+                                                                             process="@this" update="@form"
+                                                                             oncomplete="PF('resetPasswordDialog').show()"
+                                                                             disabled="#{not userAdministrationBean.anyUserSelected}"
+                                                                             styleClass="ui-button-secondary rounded-button"
+                                                                             title="#{msg['userAdminResetPasswordTitleLabel']}"/>
+                                                            <p:commandButton icon="pi pi-sign-out"
+                                                                             actionListener="#{userAdministrationBean.prepareForceLogoutSelectedUsersAction}"
+                                                                             process="@this" update="@form"
+                                                                             oncomplete="PF('userAdminActionConfirmDialog').show()"
+                                                                             disabled="#{not userAdministrationBean.anyUserSelected}"
+                                                                             styleClass="ui-button-info rounded-button"
+                                                                             title="#{msg['userAdminForceLogoutTitleLabel']}"/>
+                                                            <p:commandButton icon="pi pi-send"
+                                                                             actionListener="#{userAdministrationBean.prepareCustomNotificationForSelectedUsers}"
+                                                                             process="@this" update="@form"
+                                                                             oncomplete="PF('customNotificationDialog').show()"
+                                                                             disabled="#{not userAdministrationBean.anyUserSelected}"
+                                                                             styleClass="ui-button-primary rounded-button"
+                                                                             title="#{msg['userAdminSendCustomNotificationTitleLabel']}"/>
+                                                            <p:commandButton icon="pi pi-megaphone"
+                                                                             actionListener="#{userAdministrationBean.prepareCustomPopupForSelectedUsers}"
+                                                                             process="@this" update="@form"
+                                                                             oncomplete="PF('customPopupDialog').show()"
+                                                                             disabled="#{not userAdministrationBean.anyUserSelected}"
+                                                                             styleClass="ui-button-primary rounded-button"
+                                                                             title="#{msg['userAdminSendPopupTitleLabel']}"/>
+                                                            <p:commandButton icon="pi pi-trash"
+                                                                             actionListener="#{userAdministrationBean.prepareDeleteSelectedUsersAction}"
+                                                                             process="@this" update="@form"
+                                                                             oncomplete="PF('userAdminActionConfirmDialog').show()"
+                                                                             disabled="#{not userAdministrationBean.anyUserSelected}"
+                                                                             styleClass="ui-button-danger rounded-button"
+                                                                             title="#{msg['deleteLabel']}"/>
+                                                        </div>
+                                                    </p:outputPanel>
+                                                    <span class="user-admin-selection-meta">#{msg['searchUsersLabel']} (#{userAdministrationBean.selectedUsersCount} #{msg['usersLabel']})</span>
+                                                </div>
                                                 <span class="filter-container ui-input-icon-left">
                                                     <i class="pi pi-search"></i>
                                                     <p:inputText id="globalFilter" onkeyup="PF('countDataTable').filter()"
@@ -300,6 +380,8 @@
                                                 </span>
                                             </div>
                                         </f:facet>
+
+                                        <p:column selectionMode="multiple" style="width:3rem"/>
 
                                         <p:column headerText="#{msg['userLabel']}" sortBy="#{user.userName}" filterBy="#{user.userName}">
                                             <div style="font-weight:700;color:#0f172a;">#{user.userName}</div>
@@ -323,6 +405,12 @@
                                                    rounded="true" severity="#{user.status == 1 ? 'success' : user.status == 6 ? 'danger' : user.status == 3 ? 'warning' : 'info'}"/>
                                         </p:column>
 
+                                        <p:column headerText="#{msg['userAdminAccessControlLabel']}">
+                                            <p:tag value="#{userAdministrationBean.getAccountAccessLabel(user)}"
+                                                   rounded="true"
+                                                   severity="#{userAdministrationBean.getAccountAccessSeverity(user)}"/>
+                                        </p:column>
+
                                         <p:column headerText="#{msg['roleLabel']}" sortBy="#{user.role.roleName}" filterBy="#{user.role.roleName}">
                                             <h:outputText value="#{empty user.role ? '-' : user.role.roleName}"/>
                                         </p:column>
@@ -338,27 +426,56 @@
                                             <h:outputText value="#{empty user.country ? '-' : user.country.name}"/>
                                         </p:column>
 
-                                        <p:column exportable="false" style="width:120px;">
-                                            <p:commandButton icon="pi pi-pencil" update="@([id$=usersMainPanelId])"
-                                                             oncomplete="PF('ManageUserDialog').show()"
-                                                             action="#{userAdministrationBean.confirmEditButtonAction}"
-                                                             styleClass="edit-button rounded-button ui-button-success"
-                                                             process="@this">
-                                                <f:setPropertyActionListener value="#{user}"
-                                                                             target="#{userAdministrationBean.selectedUserDetail}"/>
-                                            </p:commandButton>
-                                            <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-trash"
-                                                             process="@this" oncomplete="PF('deleteCountDialog').show()">
-                                                <f:setPropertyActionListener value="#{user}"
-                                                                             target="#{userAdministrationBean.selectedUserDetail}"/>
-                                            </p:commandButton>
+                                        <p:column exportable="false" style="width:280px;" headerText="#{msg['actionsLabel']}">
+                                            <div class="user-row-actions">
+                                                <p:commandButton icon="pi pi-pencil" update="@([id$=usersMainPanelId])"
+                                                                 oncomplete="PF('ManageUserDialog').show()"
+                                                                 action="#{userAdministrationBean.confirmEditButtonAction(user)}"
+                                                                 title="#{msg['userAdminEditUserTitleLabel']}"
+                                                                 styleClass="edit-button rounded-button ui-button-success"
+                                                                 process="@this"/>
+                                                <p:commandButton class="ui-button-warning rounded-button" icon="pi pi-lock"
+                                                                 process="@this" update="@form"
+                                                                 actionListener="#{userAdministrationBean.prepareDisableAction(user)}"
+                                                                 oncomplete="PF('userAdminActionConfirmDialog').show()"
+                                                                 title="#{msg['userAdminDisableUserTitleLabel']}"/>
+                                                <p:commandButton class="ui-button-help rounded-button" icon="pi pi-lock-open"
+                                                                 process="@this" update="@form"
+                                                                 actionListener="#{userAdministrationBean.prepareUnlockAction(user)}"
+                                                                 oncomplete="PF('userAdminActionConfirmDialog').show()"
+                                                                 title="#{msg['userAdminUnlockUserTitleLabel']}"/>
+                                                <p:commandButton class="ui-button-secondary rounded-button" icon="pi pi-key"
+                                                                 process="@this" update="@form"
+                                                                 actionListener="#{userAdministrationBean.prepareResetPasswordAction(user)}"
+                                                                 oncomplete="PF('resetPasswordDialog').show()"
+                                                                 title="#{msg['userAdminResetPasswordTitleLabel']}"/>
+                                                <p:commandButton class="ui-button-info rounded-button" icon="pi pi-sign-out"
+                                                                 process="@this" update="@form"
+                                                                 actionListener="#{userAdministrationBean.prepareForceLogoutAction(user)}"
+                                                                 oncomplete="PF('userAdminActionConfirmDialog').show()"
+                                                                 title="#{msg['userAdminForceLogoutTitleLabel']}"/>
+                                                <p:commandButton class="ui-button-primary rounded-button" icon="pi pi-send"
+                                                                 process="@this" update="@form"
+                                                                 actionListener="#{userAdministrationBean.prepareCustomNotificationAction(user)}"
+                                                                 oncomplete="PF('customNotificationDialog').show()"
+                                                                 title="#{msg['userAdminSendCustomNotificationTitleLabel']}"/>
+                                                <p:commandButton class="ui-button-primary rounded-button" icon="pi pi-megaphone"
+                                                                 process="@this" update="@form"
+                                                                 actionListener="#{userAdministrationBean.prepareCustomPopupAction(user)}"
+                                                                 oncomplete="PF('customPopupDialog').show()"
+                                                                 title="#{msg['userAdminSendPopupTitleLabel']}"/>
+                                                <p:commandButton class="ui-button-danger rounded-button" icon="pi pi-trash"
+                                                                 process="@this" oncomplete="PF('deleteCountDialog').show()"
+                                                                 actionListener="#{userAdministrationBean.confirmDeleteCountry(user)}"
+                                                                 title="#{msg['userAdminDeleteUserTitleLabel']}"/>
+                                            </div>
                                         </p:column>
                                     </p:dataTable>
                                 </div>
                             </p:outputPanel>
                         </div>
 
-                        <p:dialog header="User Details"
+                        <p:dialog header="#{msg['userAdminUserDetailsDialogHeaderLabel']}"
                                   showEffect="fade"
                                   modal="true"
                                   widgetVar="ManageUserDialog"
@@ -373,45 +490,45 @@
                                         <div class="user-admin-panel">
                                             <div class="user-admin-head">
                                                 <div>
-                                                    <h3 class="user-admin-head-title">Identity and Access</h3>
-                                                    <div class="user-admin-head-copy">Maintain the same add and edit behavior with a clearer layout for profile details, access scope, and location mapping.</div>
+                                                    <h3 class="user-admin-head-title">#{msg['userAdminIdentityAndAccessTitleLabel']}</h3>
+                                                    <div class="user-admin-head-copy">#{msg['userAdminIdentityAndAccessSummaryLabel']}</div>
                                                 </div>
-                                                <p:tag value="#{userAdministrationBean.applicationAdmin ? 'Application Admin View' : 'Organization Scoped View'}"
+                                                <p:tag value="#{userAdministrationBean.applicationAdmin ? msg['userAdminApplicationAdminViewLabel'] : msg['userAdminOrganizationScopedViewLabel']}"
                                                        severity="#{userAdministrationBean.applicationAdmin ? 'info' : 'success'}" rounded="true"/>
                                             </div>
 
                                             <div class="user-form-grid">
                                                 <div class="user-form-field">
-                                                    <label for="userName">User Name</label>
+                                                    <label for="userName">#{msg['usernameLabel']}</label>
                                                     <p:inputText id="userName" value="#{userAdministrationBean.userName}" maxlength="100" required="true"/>
                                                 </div>
                                                 <div class="user-form-field">
-                                                    <label for="password">Password</label>
+                                                    <label for="password">#{msg['passwordLabel']}</label>
                                                     <p:password id="password" value="#{userAdministrationBean.password}" feedback="true" toggleMask="true"
                                                                 redisplay="true" autocomplete="new-password"/>
                                                 </div>
                                                 <div class="user-form-field">
-                                                    <label for="emailId">Email</label>
+                                                    <label for="emailId">#{msg['emailLabel']}</label>
                                                     <p:inputText id="emailId" value="#{userAdministrationBean.emailId}" maxlength="150"/>
                                                 </div>
                                                 <div class="user-form-field">
-                                                    <label for="contact">Contact</label>
+                                                    <label for="contact">#{msg['contactLabel']}</label>
                                                     <p:inputText id="contact" value="#{userAdministrationBean.contact}" maxlength="25"/>
                                                 </div>
                                                 <div class="user-form-field">
-                                                    <label for="role">Role</label>
+                                                    <label for="role">#{msg['roleLabel']}</label>
                                                     <p:autoComplete id="role" value="#{userAdministrationBean.role}"
                                                                     completeMethod="#{userAdministrationBean.completeRole}"
                                                                     dropdown="true" forceSelection="true" scrollHeight="240"/>
                                                 </div>
                                                 <div class="user-form-field">
-                                                    <label for="accessRight">Access Right</label>
+                                                    <label for="accessRight">#{msg['accessRightLabel']}</label>
                                                     <p:autoComplete id="accessRight" value="#{userAdministrationBean.accessRight}"
                                                                     completeMethod="#{userAdministrationBean.completeAccessRight}"
                                                                     dropdown="true" forceSelection="true" scrollHeight="240"/>
                                                 </div>
                                                 <p:outputPanel styleClass="user-form-field" rendered="#{userAdministrationBean.applicationAdmin}">
-                                                    <label for="organization">Organization</label>
+                                                    <label for="organization">#{msg['organizationLabel']}</label>
                                                     <p:autoComplete id="organization" value="#{userAdministrationBean.organization}"
                                                                     completeMethod="#{userAdministrationBean.completeOrganization}"
                                                                     dropdown="true" forceSelection="true" scrollHeight="240">
@@ -419,26 +536,26 @@
                                                     </p:autoComplete>
                                                 </p:outputPanel>
                                                 <p:outputPanel styleClass="user-form-field" rendered="#{not userAdministrationBean.applicationAdmin}">
-                                                    <label>Organization</label>
+                                                    <label>#{msg['organizationLabel']}</label>
                                                     <div style="padding:.8rem 1rem;border:1px solid #dbe2ea;border-radius:14px;background:#f8fafc;font-weight:700;color:#0f172a;">
                                                         #{userAdministrationBean.currentOrganizationName}
                                                     </div>
                                                     <h:inputHidden id="organizationHidden" value="#{userAdministrationBean.organization}"/>
                                                 </p:outputPanel>
                                                 <div class="user-form-field">
-                                                    <label for="branch">Branch</label>
+                                                    <label for="branch">#{msg['branchLabel']}</label>
                                                     <p:autoComplete id="branch" value="#{userAdministrationBean.branch}"
                                                                     completeMethod="#{userAdministrationBean.completeBranch}"
                                                                     dropdown="true" forceSelection="true" scrollHeight="240"/>
                                                 </div>
                                                 <div class="user-form-field">
-                                                    <label for="country">Country</label>
+                                                    <label for="country">#{msg['countryLabel']}</label>
                                                     <p:autoComplete id="country" value="#{userAdministrationBean.country}"
                                                                     completeMethod="#{userAdministrationBean.completeCountry}"
                                                                     dropdown="true" forceSelection="true" scrollHeight="240"/>
                                                 </div>
                                                 <div class="user-form-field">
-                                                    <label for="state">State</label>
+                                                    <label for="state">#{msg['stateLabel']}</label>
                                                     <p:autoComplete id="state" value="#{userAdministrationBean.state}"
                                                                     completeMethod="#{userAdministrationBean.completeState}"
                                                                     dropdown="true" forceSelection="true" scrollHeight="240">
@@ -446,13 +563,13 @@
                                                     </p:autoComplete>
                                                 </div>
                                                 <div class="user-form-field">
-                                                    <label for="city">City</label>
+                                                    <label for="city">#{msg['cityLabel']}</label>
                                                     <p:autoComplete id="city" value="#{userAdministrationBean.city}"
                                                                     completeMethod="#{userAdministrationBean.completeCity}"
                                                                     dropdown="true" forceSelection="true" scrollHeight="240"/>
                                                 </div>
                                                 <div class="user-form-field" style="grid-column:1 / -1;">
-                                                    <label for="address">Address</label>
+                                                    <label for="address">#{msg['addressLabel']}</label>
                                                     <p:inputTextarea id="address" value="#{userAdministrationBean.address}" rows="3" autoResize="false"/>
                                                 </div>
                                             </div>
@@ -464,24 +581,24 @@
                                         <div class="user-admin-panel">
                                             <div class="user-admin-head">
                                                 <div>
-                                                    <h3 class="user-admin-head-title">Profile Image Studio</h3>
-                                                    <div class="user-admin-head-copy">Choose an image and review the preview. The system automatically crops it to a square avatar during save for consistent rendering.</div>
+                                                    <h3 class="user-admin-head-title">#{msg['userAdminProfileImageStudioTitleLabel']}</h3>
+                                                    <div class="user-admin-head-copy">#{msg['userAdminProfileImageStudioSummaryLabel']}</div>
                                                 </div>
                                             </div>
                                             <div class="user-avatar-layout">
                                                 <div class="user-avatar-zone">
                                                     <div class="user-avatar-steps">
                                                         <div class="user-avatar-step">
-                                                            <div class="user-avatar-step-title">Step 1. Select image</div>
-                                                            <div class="user-avatar-step-copy">Upload a JPG, JPEG, or PNG file up to 2 MB. The preview updates immediately after upload.</div>
+                                                            <div class="user-avatar-step-title">#{msg['userAdminProfileImageStep1TitleLabel']}</div>
+                                                            <div class="user-avatar-step-copy">#{msg['userAdminProfileImageStep1CopyLabel']}</div>
                                                         </div>
                                                         <div class="user-avatar-step">
-                                                            <div class="user-avatar-step-title">Step 2. Auto-crop avatar</div>
-                                                            <div class="user-avatar-step-copy">The system trims the uploaded image to a centered square avatar automatically when you save the user.</div>
+                                                            <div class="user-avatar-step-title">#{msg['userAdminProfileImageStep2TitleLabel']}</div>
+                                                            <div class="user-avatar-step-copy">#{msg['userAdminProfileImageStep2CopyLabel']}</div>
                                                         </div>
                                                         <div class="user-avatar-step">
-                                                            <div class="user-avatar-step-title">Step 3. Review preview</div>
-                                                            <div class="user-avatar-step-copy">Use remove only if you want to clear the current profile image before saving.</div>
+                                                            <div class="user-avatar-step-title">#{msg['userAdminProfileImageStep3TitleLabel']}</div>
+                                                            <div class="user-avatar-step-copy">#{msg['userAdminProfileImageStep3CopyLabel']}</div>
                                                         </div>
                                                     </div>
 
@@ -490,14 +607,14 @@
                                                                   listener="#{userAdministrationBean.handleProfileImageUpload}"
                                                                   sizeLimit="2097152" multiple="false"
                                                                   allowTypes="/(\.|\/)(png|jpe?g)$/"
-                                                                  label="Select Profile Image"
+                                                                  label="#{msg['userAdminSelectProfileImageLabel']}"
                                                                   chooseIcon="pi pi-image"
                                                                   uploadIcon="pi pi-upload"
                                                                   cancelIcon="pi pi-times"/>
 
                                                     <p:outputPanel id="cropperPanel">
                                                         <div class="user-avatar-help">
-                                                            Uploaded images are automatically center-cropped and resized to #{userAdministrationBean.avatarImageSize}px when you save.
+                                                            #{userAdministrationBean.profileImageResizeHelpText}
                                                         </div>
                                                     </p:outputPanel>
                                                 </div>
@@ -505,7 +622,7 @@
                                                 <div class="user-avatar-zone">
                                                     <p:outputPanel id="imagePreviewPanel">
                                                         <div class="user-avatar-preview-card">
-                                                            <div class="user-avatar-help" style="margin:0;">Final avatar preview</div>
+                                                            <div class="user-avatar-help" style="margin:0;">#{msg['userAdminFinalAvatarPreviewLabel']}</div>
                                                             <h:graphicImage value="#{userAdministrationBean.selectedProfileImageDataUrl}"
                                                                             rendered="#{not empty userAdministrationBean.selectedProfileImageDataUrl}"
                                                                             styleClass="user-avatar-preview"/>
@@ -513,7 +630,7 @@
                                                                 <i class="pi pi-user" style="font-size:1.5rem;"></i>
                                                             </p:outputPanel>
                                                             <p:selectBooleanCheckbox id="removeImage" value="#{userAdministrationBean.removeProfileImage}"
-                                                                                     itemLabel="Remove current profile image">
+                                                                                     itemLabel="#{msg['userAdminRemoveCurrentProfileImageLabel']}">
                                                                 <p:ajax update="imagePreviewPanel cropperPanel"/>
                                                             </p:selectBooleanCheckbox>
                                                         </div>
@@ -525,12 +642,12 @@
 
                                     <div class="col-12">
                                         <div class="user-dialog-footer">
-                                            <p:commandButton value="Save User" icon="pi pi-check"
+                                            <p:commandButton value="#{msg['userAdminSaveUserLabel']}" icon="pi pi-check"
                                                              actionListener="#{userAdministrationBean.saveUserDetails}"
                                                              update="@([id$=usersMainPanelId]) @([id$=addEditCountPanelId])"
                                                              process="@this userDetailsPanel imagePreviewPanel"
                                                              styleClass="ui-button-success"/>
-                                            <p:commandButton value="Cancel" type="button" icon="pi pi-times"
+                                            <p:commandButton value="#{msg['cancelLabel']}" type="button" icon="pi pi-times"
                                                              onclick="PF('ManageUserDialog').hide()" styleClass="ui-button-secondary"/>
                                         </div>
                                     </div>
@@ -538,16 +655,150 @@
                             </p:outputPanel>
                         </p:dialog>
 
+                        <p:dialog header="#{msg['userAdminResetUserPasswordHeaderLabel']}" modal="true" widgetVar="resetPasswordDialog" responsive="true" width="480">
+                            <div class="user-form-grid">
+                                <div class="user-form-field" style="grid-column:1 / -1;">
+                                    <label>#{msg['actionsLabel']}</label>
+                                    <div class="user-admin-filter-static">#{msg['userAdminResetPasswordTitleLabel']}</div>
+                                </div>
+                                <div class="user-form-field">
+                                    <label>#{msg['selectedCountLabel']}</label>
+                                    <div class="user-admin-filter-static">#{userAdministrationBean.actionTargetCount}</div>
+                                </div>
+                                <div class="user-form-field" style="grid-column:1 / -1;">
+                                    <label>#{msg['usersLabel']}</label>
+                                    <div class="user-admin-filter-static">#{userAdministrationBean.selectedUsersDisplayNames}</div>
+                                </div>
+                                <div class="user-form-field" style="grid-column:1 / -1;">
+                                    <label>#{msg['userLabel']}</label>
+                                    <div class="user-admin-filter-static">#{userAdministrationBean.selectedActionTargetLabel}</div>
+                                </div>
+                                <div class="user-form-field">
+                                    <label for="adminResetPassword">#{msg['userAdminNewPasswordLabel']}</label>
+                                    <p:password id="adminResetPassword" value="#{userAdministrationBean.adminResetPassword}"
+                                                feedback="true" toggleMask="true" redisplay="true"/>
+                                </div>
+                                <div class="user-form-field">
+                                    <label for="adminResetPasswordConfirm">#{msg['userAdminConfirmPasswordLabel']}</label>
+                                    <p:password id="adminResetPasswordConfirm" value="#{userAdministrationBean.adminResetPasswordConfirm}"
+                                                feedback="false" toggleMask="true" redisplay="true"/>
+                                </div>
+                            </div>
+                            <f:facet name="footer">
+                                <p:commandButton value="#{msg['userAdminResetPasswordButtonLabel']}" icon="pi pi-check"
+                                                 actionListener="#{userAdministrationBean.resetSelectedUserPassword}"
+                                                 process="@this adminResetPassword adminResetPasswordConfirm"
+                                                 update="@form" styleClass="ui-button-success"/>
+                                <p:commandButton value="#{msg['cancelLabel']}" type="button" icon="pi pi-times"
+                                                 onclick="PF('resetPasswordDialog').hide()" styleClass="ui-button-secondary"/>
+                            </f:facet>
+                        </p:dialog>
+
+                        <p:dialog header="#{msg['userAdminSendCustomNotificationHeaderLabel']}" modal="true" widgetVar="customNotificationDialog" responsive="true" width="520">
+                            <div class="user-form-grid">
+                                <div class="user-form-field" style="grid-column:1 / -1;">
+                                    <label>#{msg['actionsLabel']}</label>
+                                    <div class="user-admin-filter-static">#{msg['userAdminSendCustomNotificationTitleLabel']}</div>
+                                </div>
+                                <div class="user-form-field">
+                                    <label>#{msg['selectedCountLabel']}</label>
+                                    <div class="user-admin-filter-static">#{userAdministrationBean.actionTargetCount}</div>
+                                </div>
+                                <div class="user-form-field" style="grid-column:1 / -1;">
+                                    <label>#{msg['usersLabel']}</label>
+                                    <div class="user-admin-filter-static">#{userAdministrationBean.selectedUsersDisplayNames}</div>
+                                </div>
+                                <div class="user-form-field" style="grid-column:1 / -1;">
+                                    <label>#{msg['userLabel']}</label>
+                                    <div class="user-admin-filter-static">#{userAdministrationBean.selectedActionTargetLabel}</div>
+                                </div>
+                                <div class="user-form-field" style="grid-column:1 / -1;">
+                                    <label for="customNotificationMessage">#{msg['userAdminNotificationMessageLabel']}</label>
+                                    <p:inputTextarea id="customNotificationMessage" value="#{userAdministrationBean.customNotificationMessage}"
+                                                     rows="5" autoResize="false"/>
+                                </div>
+                            </div>
+                            <f:facet name="footer">
+                                <p:commandButton value="#{msg['userAdminSendNotificationButtonLabel']}" icon="pi pi-send"
+                                                 actionListener="#{userAdministrationBean.sendCustomNotificationToSelectedUser}"
+                                                 process="@this customNotificationMessage" update="@form"
+                                                 styleClass="ui-button-success"/>
+                                <p:commandButton value="#{msg['cancelLabel']}" type="button" icon="pi pi-times"
+                                                 onclick="PF('customNotificationDialog').hide()" styleClass="ui-button-secondary"/>
+                            </f:facet>
+                        </p:dialog>
+
+                        <p:dialog header="#{msg['userAdminSendPopupMessageHeaderLabel']}" modal="true" widgetVar="customPopupDialog" responsive="true" width="520">
+                            <div class="user-form-grid">
+                                <div class="user-form-field" style="grid-column:1 / -1;">
+                                    <label>#{msg['actionsLabel']}</label>
+                                    <div class="user-admin-filter-static">#{msg['userAdminSendPopupTitleLabel']}</div>
+                                </div>
+                                <div class="user-form-field">
+                                    <label>#{msg['selectedCountLabel']}</label>
+                                    <div class="user-admin-filter-static">#{userAdministrationBean.actionTargetCount}</div>
+                                </div>
+                                <div class="user-form-field" style="grid-column:1 / -1;">
+                                    <label>#{msg['usersLabel']}</label>
+                                    <div class="user-admin-filter-static">#{userAdministrationBean.selectedUsersDisplayNames}</div>
+                                </div>
+                                <div class="user-form-field" style="grid-column:1 / -1;">
+                                    <label>#{msg['userLabel']}</label>
+                                    <div class="user-admin-filter-static">#{userAdministrationBean.selectedActionTargetLabel}</div>
+                                </div>
+                                <div class="user-form-field" style="grid-column:1 / -1;">
+                                    <label for="customPopupMessage">#{msg['userAdminPopupMessageLabel']}</label>
+                                    <p:inputTextarea id="customPopupMessage" value="#{userAdministrationBean.customPopupMessage}"
+                                                     rows="5" autoResize="false"/>
+                                </div>
+                            </div>
+                            <f:facet name="footer">
+                                <p:commandButton value="#{msg['userAdminSendPopupButtonLabel']}" icon="pi pi-megaphone"
+                                                 actionListener="#{userAdministrationBean.sendCustomPopupToSelectedUser}"
+                                                 process="@this customPopupMessage" update="@form"
+                                                 styleClass="ui-button-success"/>
+                                <p:commandButton value="#{msg['cancelLabel']}" type="button" icon="pi pi-times"
+                                                 onclick="PF('customPopupDialog').hide()" styleClass="ui-button-secondary"/>
+                            </f:facet>
+                        </p:dialog>
+
                         <p:confirmDialog widgetVar="deleteCountDialog" showEffect="fade" width="420"
-                                         message="Remove the selected user record?" header="Confirm Delete"
+                                         message="#{msg['userAdminDeleteConfirmMessageLabel']}" header="#{msg['userAdminConfirmDeleteHeaderLabel']}"
                                          severity="warn">
-                            <p:commandButton value="Yes" icon="pi pi-check"
+                            <p:commandButton value="#{msg['yesLabel']}" icon="pi pi-check"
                                              actionListener="#{userAdministrationBean.confirmDeleteCountry}"
                                              update="@([id$=usersMainPanelId])"
                                              oncomplete="PF('deleteCountDialog').hide()"
                                              styleClass="ui-button-danger"/>
-                            <p:commandButton value="No" type="button" icon="pi pi-times"
+                            <p:commandButton value="#{msg['noLabel']}" type="button" icon="pi pi-times"
                                              onclick="PF('deleteCountDialog').hide()" styleClass="ui-button-secondary"/>
+                        </p:confirmDialog>
+
+                        <p:confirmDialog widgetVar="userAdminActionConfirmDialog" showEffect="fade" width="420"
+                                         message="#{userAdministrationBean.pendingAdminActionConfirmationMessage}"
+                                         header="#{msg['userAdminConfirmActionHeaderLabel']}"
+                                         severity="warn">
+                            <div class="user-form-grid" style="margin-bottom:1rem;">
+                                <div class="user-form-field" style="grid-column:1 / -1;">
+                                    <label>#{msg['actionsLabel']}</label>
+                                    <div class="user-admin-filter-static">#{userAdministrationBean.pendingAdminActionLabel}</div>
+                                </div>
+                                <div class="user-form-field">
+                                    <label>#{msg['selectedCountLabel']}</label>
+                                    <div class="user-admin-filter-static">#{userAdministrationBean.actionTargetCount}</div>
+                                </div>
+                                <div class="user-form-field" style="grid-column:1 / -1;">
+                                    <label>#{msg['usersLabel']}</label>
+                                    <div class="user-admin-filter-static">#{userAdministrationBean.selectedUsersDisplayNames}</div>
+                                </div>
+                            </div>
+                            <p:commandButton value="#{msg['yesLabel']}" icon="pi pi-check"
+                                             actionListener="#{userAdministrationBean.confirmPendingAdminAction}"
+                                             update="@form"
+                                             oncomplete="PF('userAdminActionConfirmDialog').hide()"
+                                             styleClass="ui-button-danger"/>
+                            <p:commandButton value="#{msg['noLabel']}" type="button" icon="pi pi-times"
+                                             onclick="PF('userAdminActionConfirmDialog').hide()" styleClass="ui-button-secondary"/>
                         </p:confirmDialog>
                     </p:outputPanel>
                 </div>

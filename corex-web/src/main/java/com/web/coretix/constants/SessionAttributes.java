@@ -38,6 +38,7 @@ public enum SessionAttributes {
     APPLICATION_NOTIFICATION_MESSAGES("notificationMessages"),
     APPLICATION_NOTIFICATION_UNREAD_COUNT("notificationUnreadCount"),
     ROLE_UPDATE_LOGOUT_NOTIFICATION("roleUpdateLogoutNotification"),
+    ADMIN_FORCE_LOGOUT_NOTIFICATION("adminForceLogoutNotification"),
     SESSION_AUDIT_COMPLETED("sessionAuditCompleted"),
     SESSION_TERMINATION_REASON("sessionTerminationReason"),
     LAST_ACTIVITY_AT("lastActivityAt");
@@ -52,7 +53,6 @@ public enum SessionAttributes {
         return this.name;
     }
 }
-
 
 
 

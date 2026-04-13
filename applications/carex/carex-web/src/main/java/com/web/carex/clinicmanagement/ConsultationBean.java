@@ -96,6 +96,7 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
     private List<Medicine> medicineList = new ArrayList<>();
     private List<Consultation> consultationList = new ArrayList<>();
     private List<Consultation> activeQueueList = new ArrayList<>();
+    private List<Consultation> previousVisitList = new ArrayList<>();
 
     private Consultation consultation = new Consultation();
     private Consultation selectedConsultation;
@@ -108,6 +109,7 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
     private List<ConsultationMedicineFormLine> medicineLines = new ArrayList<>();
     private ConsultationMedicineFormLine draftMedicineLine = new ConsultationMedicineFormLine();
     private ConsultationMedicineFormLine selectedMedicineLine;
+    private ConsultationMedicineFormLine editingMedicineLine;
     private boolean addOperation = true;
     private boolean initialized;
     private boolean searchMode = true;
@@ -124,11 +126,16 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
     private MedicalCertificateSettings medicalCertificateSettings = new MedicalCertificateSettings();
 
     private String prescriptionPreviewBodyHtml;
+    private String prescriptionPreviewHeaderHtml;
     private String prescriptionPreviewFooterHtml;
     private String invoicePreviewBodyHtml;
+    private String invoicePreviewHeaderHtml;
     private String invoicePreviewFooterHtml;
     private String medicalCertificatePreviewBodyHtml;
+    private String medicalCertificatePreviewHeaderHtml;
     private String medicalCertificatePreviewFooterHtml;
+    private String consultationPrintPdfBase64;
+    private String consultationPrintPdfTitle;
     private StreamedContent consultationPrescriptionPdf;
     private StreamedContent consultationInvoicePdf;
     private StreamedContent consultationMedicalCertificatePdf;
@@ -179,6 +186,7 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
         if (selectedPatient != null) {
             searchMode = false;
         }
+        refreshPreviousVisits();
     }
 
     public void onDraftMedicineChange() {
@@ -241,6 +249,8 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
         selectedPatientId = null;
         selectedDoctor = null;
         selectedPatient = null;
+        previousVisitList = new ArrayList<>();
+        editingMedicineLine = null;
         recalculateTotals();
     }
 
@@ -259,31 +269,60 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
             PrimeFaces.current().ajax().update("form:messages");
             return;
         }
-        ConsultationMedicineFormLine line = new ConsultationMedicineFormLine();
-        line.setMedicineId(draftMedicineLine.getMedicineId());
-        line.setMedicineName(draftMedicineLine.getMedicineName());
-        line.setDescriptionText(safeText(draftMedicineLine.getDescriptionText(), ""));
-        line.setDose(safeText(draftMedicineLine.getDose(), ""));
-        line.setFrequency(safeText(draftMedicineLine.getFrequency(), ""));
-        line.setDurationText(safeText(draftMedicineLine.getDurationText(), ""));
-        line.setRemarks(safeText(draftMedicineLine.getRemarks(), ""));
-        line.setQuantity(scaleAmount(draftMedicineLine.getQuantity()));
-        line.setUnitPrice(scaleAmount(draftMedicineLine.getUnitPrice()));
-        line.recalculateLineTotal();
-        medicineLines.add(line);
+        if (editingMedicineLine != null) {
+            copyDraftMedicineLineInto(editingMedicineLine);
+        } else {
+            ConsultationMedicineFormLine line = new ConsultationMedicineFormLine();
+            copyDraftMedicineLineInto(line);
+            medicineLines.add(line);
+        }
         draftMedicineLine = new ConsultationMedicineFormLine();
+        editingMedicineLine = null;
         recalculateTotals();
         PrimeFaces.current().ajax().update("form:medicineLinePanel", "form:previewTabsPanel");
     }
 
-    public void removeMedicineLine() {
-        if (selectedMedicineLine == null) {
+    public void editMedicineLine(ConsultationMedicineFormLine medicineLine) {
+        if (medicineLine == null) {
             return;
         }
-        medicineLines.remove(selectedMedicineLine);
-        selectedMedicineLine = null;
+        selectedMedicineLine = medicineLine;
+        editingMedicineLine = medicineLine;
+        draftMedicineLine = new ConsultationMedicineFormLine();
+        draftMedicineLine.setMedicineId(medicineLine.getMedicineId());
+        draftMedicineLine.setMedicineName(medicineLine.getMedicineName());
+        draftMedicineLine.setDescriptionText(medicineLine.getDescriptionText());
+        draftMedicineLine.setDose(medicineLine.getDose());
+        draftMedicineLine.setFrequency(medicineLine.getFrequency());
+        draftMedicineLine.setDurationText(medicineLine.getDurationText());
+        draftMedicineLine.setRemarks(medicineLine.getRemarks());
+        draftMedicineLine.setQuantity(scaleAmount(medicineLine.getQuantity()));
+        draftMedicineLine.setUnitPrice(scaleAmount(medicineLine.getUnitPrice()));
+        draftMedicineLine.recalculateLineTotal();
+        PrimeFaces.current().ajax().update("form:medicineLinePanel", "form:messages");
+    }
+
+    public void removeMedicineLine(ConsultationMedicineFormLine medicineLine) {
+        if (medicineLine == null) {
+            return;
+        }
+        medicineLines.remove(medicineLine);
+        if (editingMedicineLine == medicineLine) {
+            draftMedicineLine = new ConsultationMedicineFormLine();
+            editingMedicineLine = null;
+        }
+        if (selectedMedicineLine == medicineLine) {
+            selectedMedicineLine = null;
+        }
         recalculateTotals();
         PrimeFaces.current().ajax().update("form:medicineLinePanel", "form:previewTabsPanel");
+    }
+
+    public void cancelMedicineLineEdit() {
+        draftMedicineLine = new ConsultationMedicineFormLine();
+        editingMedicineLine = null;
+        selectedMedicineLine = null;
+        PrimeFaces.current().ajax().update("form:medicineLinePanel", "form:messages");
     }
 
     public void confirmEditButtonAction() {
@@ -325,6 +364,7 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
         }
         draftMedicineLine = new ConsultationMedicineFormLine();
         recalculateTotals();
+        refreshPreviousVisits();
     }
 
     public void viewSelectedConsultation() {
@@ -511,11 +551,25 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
     }
 
     public void preparePrescriptionDownload() {
-        consultationPrescriptionPdf = prepareDocumentDownload("consultation-prescription.pdf", "Prescription", prescriptionPreviewBodyHtml, prescriptionPreviewFooterHtml, "prescription-preview");
+        consultationPrescriptionPdf = prepareDocumentDownload("consultation-prescription.pdf", "Prescription",
+                prescriptionPreviewHeaderHtml, prescriptionPreviewBodyHtml, prescriptionPreviewFooterHtml, "prescription-preview");
+    }
+
+    public void preparePrescriptionPrint() {
+        consultationPrintPdfTitle = "consultation-prescription.pdf";
+        consultationPrintPdfBase64 = prepareDocumentPrintPayload("Prescription",
+                prescriptionPreviewHeaderHtml, prescriptionPreviewBodyHtml, prescriptionPreviewFooterHtml, "prescription-preview");
     }
 
     public void prepareInvoiceDownload() {
-        consultationInvoicePdf = prepareDocumentDownload("consultation-invoice.pdf", "Invoice", invoicePreviewBodyHtml, invoicePreviewFooterHtml, "invoice-preview");
+        consultationInvoicePdf = prepareDocumentDownload("consultation-invoice.pdf", "Invoice",
+                invoicePreviewHeaderHtml, invoicePreviewBodyHtml, invoicePreviewFooterHtml, "invoice-preview");
+    }
+
+    public void prepareInvoicePrint() {
+        consultationPrintPdfTitle = "consultation-invoice.pdf";
+        consultationPrintPdfBase64 = prepareDocumentPrintPayload("Invoice",
+                invoicePreviewHeaderHtml, invoicePreviewBodyHtml, invoicePreviewFooterHtml, "invoice-preview");
     }
 
     public void prepareMedicalCertificateDownload() {
@@ -525,7 +579,19 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
             return;
         }
         consultationMedicalCertificatePdf = prepareDocumentDownload("consultation-medical-certificate.pdf", "Medical Certificate",
-                medicalCertificatePreviewBodyHtml, medicalCertificatePreviewFooterHtml, "medical-certificate-preview");
+                medicalCertificatePreviewHeaderHtml, medicalCertificatePreviewBodyHtml, medicalCertificatePreviewFooterHtml, "medical-certificate-preview");
+    }
+
+    public void prepareMedicalCertificatePrint() {
+        if (!consultation.isIssueMedicalCertificate()) {
+            consultationPrintPdfBase64 = null;
+            consultationPrintPdfTitle = null;
+            addMessage(FacesMessage.SEVERITY_WARN, "Medical certificate disabled", "Enable medical certificate to print it.");
+            return;
+        }
+        consultationPrintPdfTitle = "consultation-medical-certificate.pdf";
+        consultationPrintPdfBase64 = prepareDocumentPrintPayload("Medical Certificate",
+                medicalCertificatePreviewHeaderHtml, medicalCertificatePreviewBodyHtml, medicalCertificatePreviewFooterHtml, "medical-certificate-preview");
     }
 
     public List<String> getAvailablePaidByOptions() {
@@ -625,6 +691,78 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
             return name;
         }
         return name + " - " + number;
+    }
+
+    public List<Consultation> getPreviousVisitList() {
+        return previousVisitList;
+    }
+
+    public boolean isPreviousVisitHistoryAvailable() {
+        return previousVisitList != null && !previousVisitList.isEmpty();
+    }
+
+    public String getPreviousVisitDateLabel(Consultation visit) {
+        if (visit == null || visit.getConsultationDate() == null) {
+            return "-";
+        }
+        return DATE_TIME_FORMATTER.format(visit.getConsultationDate().toLocalDateTime());
+    }
+
+    public String getPreviousVisitDoctorLabel(Consultation visit) {
+        if (visit == null || visit.getDoctor() == null) {
+            return "-";
+        }
+        return safeText(visit.getDoctor().getDoctorName(), "-");
+    }
+
+    public String getPreviousVisitQuickSummary(Consultation visit) {
+        if (visit == null) {
+            return "-";
+        }
+        List<String> parts = new ArrayList<>();
+        if (!isBlank(visit.getSymptoms())) {
+            parts.add("Symptoms: " + trimSummary(visit.getSymptoms(), 120));
+        }
+        if (!isBlank(visit.getDiagnosis())) {
+            parts.add("Diagnosis: " + trimSummary(visit.getDiagnosis(), 120));
+        }
+        if (!isBlank(visit.getFollowUpNote())) {
+            parts.add("Follow Up: " + trimSummary(visit.getFollowUpNote(), 110));
+        }
+        if (parts.isEmpty() && !isBlank(visit.getDoctorNotes())) {
+            parts.add("Notes: " + trimSummary(visit.getDoctorNotes(), 140));
+        }
+        return parts.isEmpty() ? "Consultation details not captured." : String.join(" | ", parts);
+    }
+
+    public String getPreviousVisitMedicineSummary(Consultation visit) {
+        if (visit == null || visit.getConsultationMedicines() == null || visit.getConsultationMedicines().isEmpty()) {
+            return "No prescription lines";
+        }
+        List<String> medicineNames = new ArrayList<>();
+        for (ConsultationMedicine line : visit.getConsultationMedicines()) {
+            if (line == null) {
+                continue;
+            }
+            String label = line.getMedicine() != null
+                    ? safeText(line.getMedicine().getMedicineName(), "")
+                    : safeText(line.getDescriptionText(), "");
+            if (!label.isEmpty()) {
+                medicineNames.add(label);
+            }
+            if (medicineNames.size() == 3) {
+                break;
+            }
+        }
+        if (medicineNames.isEmpty()) {
+            return "Prescription saved";
+        }
+        String summary = String.join(", ", medicineNames);
+        int remaining = visit.getConsultationMedicines().size() - medicineNames.size();
+        if (remaining > 0) {
+            summary += " +" + remaining + " more";
+        }
+        return summary;
     }
 
     public String getPreviewPatientCode() {
@@ -764,6 +902,9 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
     public void setDraftMedicineLine(ConsultationMedicineFormLine draftMedicineLine) { this.draftMedicineLine = draftMedicineLine; }
     public ConsultationMedicineFormLine getSelectedMedicineLine() { return selectedMedicineLine; }
     public void setSelectedMedicineLine(ConsultationMedicineFormLine selectedMedicineLine) { this.selectedMedicineLine = selectedMedicineLine; }
+    public ConsultationMedicineFormLine getEditingMedicineLine() { return editingMedicineLine; }
+    public boolean isMedicineLineEditMode() { return editingMedicineLine != null; }
+    public String getMedicineLineActionLabel() { return editingMedicineLine == null ? "Add Prescription Line" : "Update Prescription Line"; }
     public boolean isAddOperation() { return addOperation; }
     public PrescriptionSettings getPrescriptionSettings() { return prescriptionSettings; }
     public InvoiceSettings getInvoiceSettings() { return invoiceSettings; }
@@ -771,16 +912,26 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
     public ClinicSettings getClinicSettings() { return clinicSettings; }
     public String getPrescriptionPreviewBodyHtml() { return prescriptionPreviewBodyHtml; }
     public void setPrescriptionPreviewBodyHtml(String prescriptionPreviewBodyHtml) { this.prescriptionPreviewBodyHtml = prescriptionPreviewBodyHtml; }
+    public String getPrescriptionPreviewHeaderHtml() { return prescriptionPreviewHeaderHtml; }
+    public void setPrescriptionPreviewHeaderHtml(String prescriptionPreviewHeaderHtml) { this.prescriptionPreviewHeaderHtml = prescriptionPreviewHeaderHtml; }
     public String getPrescriptionPreviewFooterHtml() { return prescriptionPreviewFooterHtml; }
     public void setPrescriptionPreviewFooterHtml(String prescriptionPreviewFooterHtml) { this.prescriptionPreviewFooterHtml = prescriptionPreviewFooterHtml; }
     public String getInvoicePreviewBodyHtml() { return invoicePreviewBodyHtml; }
     public void setInvoicePreviewBodyHtml(String invoicePreviewBodyHtml) { this.invoicePreviewBodyHtml = invoicePreviewBodyHtml; }
+    public String getInvoicePreviewHeaderHtml() { return invoicePreviewHeaderHtml; }
+    public void setInvoicePreviewHeaderHtml(String invoicePreviewHeaderHtml) { this.invoicePreviewHeaderHtml = invoicePreviewHeaderHtml; }
     public String getInvoicePreviewFooterHtml() { return invoicePreviewFooterHtml; }
     public void setInvoicePreviewFooterHtml(String invoicePreviewFooterHtml) { this.invoicePreviewFooterHtml = invoicePreviewFooterHtml; }
     public String getMedicalCertificatePreviewBodyHtml() { return medicalCertificatePreviewBodyHtml; }
     public void setMedicalCertificatePreviewBodyHtml(String medicalCertificatePreviewBodyHtml) { this.medicalCertificatePreviewBodyHtml = medicalCertificatePreviewBodyHtml; }
+    public String getMedicalCertificatePreviewHeaderHtml() { return medicalCertificatePreviewHeaderHtml; }
+    public void setMedicalCertificatePreviewHeaderHtml(String medicalCertificatePreviewHeaderHtml) { this.medicalCertificatePreviewHeaderHtml = medicalCertificatePreviewHeaderHtml; }
     public String getMedicalCertificatePreviewFooterHtml() { return medicalCertificatePreviewFooterHtml; }
     public void setMedicalCertificatePreviewFooterHtml(String medicalCertificatePreviewFooterHtml) { this.medicalCertificatePreviewFooterHtml = medicalCertificatePreviewFooterHtml; }
+    public String getConsultationPrintPdfBase64() { return consultationPrintPdfBase64; }
+    public void setConsultationPrintPdfBase64(String consultationPrintPdfBase64) { this.consultationPrintPdfBase64 = consultationPrintPdfBase64; }
+    public String getConsultationPrintPdfTitle() { return consultationPrintPdfTitle; }
+    public void setConsultationPrintPdfTitle(String consultationPrintPdfTitle) { this.consultationPrintPdfTitle = consultationPrintPdfTitle; }
     public StreamedContent getConsultationPrescriptionPdf() { return consultationPrescriptionPdf; }
     public StreamedContent getConsultationInvoicePdf() { return consultationInvoicePdf; }
     public StreamedContent getConsultationMedicalCertificatePdf() { return consultationMedicalCertificatePdf; }
@@ -850,8 +1001,19 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
         medicineList = selectedOrganizationId == null ? new ArrayList<>() : new ArrayList<>(medicineService.getMedicinesByOrganizationId(selectedOrganizationId));
         selectedDoctor = findDoctorInList(selectedDoctorId);
         selectedPatient = findPatientInList(selectedPatientId);
+        refreshPreviousVisits();
         loadSettings();
         refreshQueue();
+    }
+
+    private void refreshPreviousVisits() {
+        if (selectedPatientId == null) {
+            previousVisitList = new ArrayList<>();
+            return;
+        }
+        previousVisitList = new ArrayList<>(consultationService.getConsultationsByPatientId(selectedPatientId));
+        Integer currentConsultationId = consultation == null ? null : consultation.getId();
+        previousVisitList.removeIf(visit -> visit == null || (currentConsultationId != null && currentConsultationId.equals(visit.getId())));
     }
 
     private void loadSettings() {
@@ -913,6 +1075,19 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
         return true;
     }
 
+    private void copyDraftMedicineLineInto(ConsultationMedicineFormLine targetLine) {
+        targetLine.setMedicineId(draftMedicineLine.getMedicineId());
+        targetLine.setMedicineName(draftMedicineLine.getMedicineName());
+        targetLine.setDescriptionText(safeText(draftMedicineLine.getDescriptionText(), ""));
+        targetLine.setDose(safeText(draftMedicineLine.getDose(), ""));
+        targetLine.setFrequency(safeText(draftMedicineLine.getFrequency(), ""));
+        targetLine.setDurationText(safeText(draftMedicineLine.getDurationText(), ""));
+        targetLine.setRemarks(safeText(draftMedicineLine.getRemarks(), ""));
+        targetLine.setQuantity(scaleAmount(draftMedicineLine.getQuantity()));
+        targetLine.setUnitPrice(scaleAmount(draftMedicineLine.getUnitPrice()));
+        targetLine.recalculateLineTotal();
+    }
+
     private void recalculateTotals() {
         consultation.setMedicineTotal(getComputedMedicineTotal());
         if (!consultation.isIssueMedicalCertificate()) {
@@ -942,12 +1117,9 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
         PrimeFaces.current().ajax().update("form:consultationMainPanel", "form:consultationEditorPanel", "form:previewTabsPanel", "form:messages");
     }
 
-    private StreamedContent prepareDocumentDownload(String fileName, String title, String bodyHtml, String footerHtml, String previewClass) {
+    private StreamedContent prepareDocumentDownload(String fileName, String title, String headerHtml, String bodyHtml, String footerHtml, String previewClass) {
         try {
-            if (isBlank(bodyHtml)) {
-                throw new IllegalStateException("Preview content was not captured for download.");
-            }
-            byte[] pdfBytes = buildBrowserRenderedPdf(title, bodyHtml, footerHtml, previewClass);
+            byte[] pdfBytes = buildDocumentPdfBytes(title, headerHtml, bodyHtml, footerHtml, previewClass);
             return DefaultStreamedContent.builder()
                     .name(fileName)
                     .contentType("application/pdf")
@@ -959,12 +1131,29 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
         }
     }
 
-    private byte[] buildBrowserRenderedPdf(String title, String bodyHtml, String footerHtml, String previewClass) throws Exception {
+    private String prepareDocumentPrintPayload(String title, String headerHtml, String bodyHtml, String footerHtml, String previewClass) {
+        try {
+            byte[] pdfBytes = buildDocumentPdfBytes(title, headerHtml, bodyHtml, footerHtml, previewClass);
+            return Base64.getEncoder().encodeToString(pdfBytes);
+        } catch (Exception exception) {
+            addMessage(FacesMessage.SEVERITY_ERROR, "Print failed", safeText(exception.getMessage(), "Unable to generate PDF for printing."));
+            return null;
+        }
+    }
+
+    private byte[] buildDocumentPdfBytes(String title, String headerHtml, String bodyHtml, String footerHtml, String previewClass) throws Exception {
+        if (isBlank(bodyHtml)) {
+            throw new IllegalStateException("Preview content was not captured for PDF generation.");
+        }
+        return buildBrowserRenderedPdf(title, headerHtml, bodyHtml, footerHtml, previewClass);
+    }
+
+    private byte[] buildBrowserRenderedPdf(String title, String headerHtml, String bodyHtml, String footerHtml, String previewClass) throws Exception {
         Path tempDirectory = Files.createTempDirectory("carex-consultation-preview-");
         try {
             Path htmlPath = tempDirectory.resolve("preview.html");
             Path pdfPath = tempDirectory.resolve("preview.pdf");
-            Files.writeString(htmlPath, buildBrowserRenderHtml(title, bodyHtml, footerHtml, previewClass), StandardCharsets.UTF_8,
+            Files.writeString(htmlPath, buildBrowserRenderHtml(title, headerHtml, bodyHtml, footerHtml, previewClass), StandardCharsets.UTF_8,
                     StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             ProcessBuilder processBuilder = new ProcessBuilder(
                     resolveBrowserExecutable(),
@@ -998,18 +1187,30 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
         }
     }
 
-    private String buildBrowserRenderHtml(String title, String bodyHtml, String footerHtml, String previewClass) {
+    private String buildBrowserRenderHtml(String title, String headerHtml, String bodyHtml, String footerHtml, String previewClass) {
+        String safeHeaderHtml = safeHtmlFragment(headerHtml);
+        String safeBodyHtml = safeHtmlFragment(bodyHtml);
+        String safeFooterHtml = safeHtmlFragment(footerHtml);
         return "<!DOCTYPE html><html><head><meta charset=\"UTF-8\"/><title>" + escapeHtml(title) + "</title><style>"
-                + "html,body{font-family:" + safeCssFontFamily() + ";margin:0;padding:0;background:#fff;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;overflow:hidden !important;}"
-                + "body{background:#fff;overflow:hidden !important;}.preview-shell{position:relative;box-sizing:border-box;width:186mm;height:272mm;max-height:272mm;margin:0 auto;padding:0;overflow:hidden !important;border:none !important;outline:none !important;box-shadow:none !important;}"
-                + ".preview-shell *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;box-sizing:border-box;}"
-                + ".print-body{padding-bottom:42mm;overflow:hidden !important;max-height:230mm;}"
-                + ".print-body ." + previewClass + ",.print-body .card{border:none !important;outline:none !important;box-shadow:none !important;background:#fff !important;}"
-                + ".print-footer{position:absolute;left:24px;right:24px;bottom:18px;}"
-                + "@page{size:A4 portrait;margin:12mm;}@media print{html,body{background:#fff !important;overflow:hidden !important;}body{padding:0;margin:0;overflow:hidden !important;}}"
-                + "</style></head><body><div class=\"preview-shell\"><div class=\"print-body\">"
-                + safeHtmlFragment(bodyHtml)
-                + "</div>" + (isBlank(footerHtml) ? "" : "<div class=\"print-footer\">" + safeHtmlFragment(footerHtml) + "</div>")
+                + "html,body{font-family:" + safeCssFontFamily() + ";margin:0;padding:0;background:#fff;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;}"
+                + "body{background:#fff;color:#111827;}"
+                + "*,*:before,*:after{box-sizing:border-box;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;}"
+                + "@page{size:A4 portrait;margin:12mm;}"
+                + ".print-document{position:relative;background:#fff;}"
+                + ".print-header,.print-footer{left:0;right:0;background:#fff;z-index:5;}"
+                + ".print-header{position:fixed;top:0;padding-bottom:4mm;}"
+                + ".print-footer{position:fixed;bottom:0;padding-top:4mm;}"
+                + ".print-body{padding-top:48mm;padding-bottom:40mm;}"
+                + ".print-body ." + previewClass + "{border:none !important;outline:none !important;box-shadow:none !important;background:#fff !important;min-height:auto !important;padding:0 !important;margin:0 !important;display:block !important;border-radius:0 !important;}"
+                + ".print-body .card{border:none !important;outline:none !important;box-shadow:none !important;background:#fff !important;}"
+                + ".print-header ." + previewClass + "-header,.print-footer ." + previewClass + "-footer{border:none !important;outline:none !important;box-shadow:none !important;background:#fff !important;margin:0 !important;}"
+                + ".print-body > *{break-inside:auto;page-break-inside:auto;}"
+                + ".print-body table,.print-body tr,.print-body img{break-inside:avoid;page-break-inside:avoid;}"
+                + "@media print{html,body{background:#fff !important;} .print-document{width:auto;}}"
+                + "</style></head><body><div class=\"print-document\">"
+                + (isBlank(safeHeaderHtml) ? "" : "<div class=\"print-header\">" + safeHeaderHtml + "</div>")
+                + "<div class=\"print-body\">" + safeBodyHtml + "</div>"
+                + (isBlank(safeFooterHtml) ? "" : "<div class=\"print-footer\">" + safeFooterHtml + "</div>")
                 + "</div></body></html>";
     }
 
@@ -1032,6 +1233,11 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
 
     private String resolveBrowserExecutable() {
         String[] candidates = {
+                "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+                "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+                "/Applications/Chromium.app/Contents/MacOS/Chromium",
+                "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
+                "/Applications/Opera.app/Contents/MacOS/Opera",
                 "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
                 "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
                 "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
@@ -1137,6 +1343,14 @@ public class ConsultationBean extends CarexManagedBean implements Serializable {
             builder.append(" (").append(medicine.getUnit().trim()).append(")");
         }
         return builder.toString().trim();
+    }
+
+    private String trimSummary(String value, int maxLength) {
+        String normalized = safeText(value, "").replaceAll("\\s+", " ").trim();
+        if (normalized.length() <= maxLength) {
+            return normalized;
+        }
+        return normalized.substring(0, Math.max(0, maxLength - 3)).trim() + "...";
     }
 
     private String generateConsultationNumber() {

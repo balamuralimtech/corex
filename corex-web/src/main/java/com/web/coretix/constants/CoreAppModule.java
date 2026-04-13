@@ -28,7 +28,8 @@ public enum CoreAppModule {
     SYSTEM_MANAGEMENT(2, "System Management"),
     LICENCE(3, "License"),
     SERVER_AND_DB(4, "Server and DB"),
-    APPLICATION_MANAGEMENT(5, "Application Management");
+    APPLICATION_MANAGEMENT(5, "Application Management"),
+    CAREX(6, "CareX");
 
 
     private final int id;
@@ -88,6 +89,5 @@ public enum CoreAppModule {
         return modules;
     }
 }
-
 
 

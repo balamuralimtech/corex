@@ -16,6 +16,8 @@ CREATE TABLE UserDetails (
     address TEXT,
     access_right_id INT NOT NULL,
     status_id INT NOT NULL,
+    account_disabled BOOLEAN NOT NULL DEFAULT FALSE,
+    account_locked BOOLEAN NOT NULL DEFAULT FALSE,
     last_password_change TIMESTAMP DEFAULT NULL,
     last_successful_login TIMESTAMP DEFAULT NULL,
     last_seen_at TIMESTAMP DEFAULT NULL,
@@ -67,6 +69,12 @@ ALTER TABLE UserDetails ADD COLUMN profile_image_content_type VARCHAR(100) NULL;
 
 ALTER TABLE UserDetails
     ADD COLUMN user_type VARCHAR(32) NOT NULL DEFAULT 'GENERAL_USER' AFTER email_id;
+
+ALTER TABLE UserDetails
+    ADD COLUMN account_disabled BOOLEAN NOT NULL DEFAULT FALSE AFTER status_id;
+
+ALTER TABLE UserDetails
+    ADD COLUMN account_locked BOOLEAN NOT NULL DEFAULT FALSE AFTER account_disabled;
 
 UPDATE UserDetails
 SET user_type = 'GENERAL_USER'

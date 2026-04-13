@@ -258,6 +258,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         layoutThemes.add(new LayoutTheme("Light Blue", "lightblue", "#14569D"));
         layoutThemes.add(new LayoutTheme("Light Green", "lightgreen", "#2E8942"));
         layoutThemes.add(new LayoutTheme("Dark Grey", "darkgrey", "#343A40"));
+        layoutThemes.add(new LayoutTheme("CareX", "carex", "#136E52"));
 
         layoutSpecialThemes.add(new LayoutSpecialTheme("Influenza", "influenza", "#a83279", "#f38e00"));
         layoutSpecialThemes.add(new LayoutSpecialTheme("Calm", "calm", "#5f2c82", "#0DA9A4"));
@@ -824,9 +825,22 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
             );
             session.removeAttribute(SessionAttributes.ROLE_UPDATE_LOGOUT_NOTIFICATION.getName());
         }
+
+        String adminForceLogoutMessage =
+                (String) session.getAttribute(SessionAttributes.ADMIN_FORCE_LOGOUT_NOTIFICATION.getName());
+        if (adminForceLogoutMessage != null) {
+            PrimeFaces.current().executeScript(
+                    "showAdminForceLogoutDialog('" + escapeForJavascript(adminForceLogoutMessage) + "', 3);"
+            );
+            session.removeAttribute(SessionAttributes.ADMIN_FORCE_LOGOUT_NOTIFICATION.getName());
+        }
     }
 
     public void handleForcedRoleUpdateLogout() {
+        logoutAction();
+    }
+
+    public void handleAdminForceLogout() {
         logoutAction();
     }
 
@@ -869,6 +883,71 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
     public int getTopbarAlertCount() {
         return topbarUnreadMessageCount;
+    }
+
+    public String getTopbarEntryTitle(String message) {
+        if (message == null) {
+            return "";
+        }
+
+        String normalized = message.trim();
+        if (normalized.isEmpty()) {
+            return "";
+        }
+
+        int colonIndex = normalized.indexOf(':');
+        if (colonIndex > 0 && colonIndex < 70) {
+            return normalized.substring(0, colonIndex).trim();
+        }
+
+        int sentenceIndex = normalized.indexOf(". ");
+        if (sentenceIndex > 0 && sentenceIndex < 90) {
+            return normalized.substring(0, sentenceIndex + 1).trim();
+        }
+
+        return normalized.length() > 90 ? normalized.substring(0, 87).trim() + "..." : normalized;
+    }
+
+    public String getTopbarEntryBody(String message) {
+        if (message == null) {
+            return "";
+        }
+
+        String normalized = message.trim();
+        if (normalized.isEmpty()) {
+            return "";
+        }
+
+        int colonIndex = normalized.indexOf(':');
+        if (colonIndex > 0 && colonIndex + 1 < normalized.length() && colonIndex < 70) {
+            return normalized.substring(colonIndex + 1).trim();
+        }
+
+        int sentenceIndex = normalized.indexOf(". ");
+        if (sentenceIndex > 0 && sentenceIndex + 2 < normalized.length() && sentenceIndex < 90) {
+            return normalized.substring(sentenceIndex + 2).trim();
+        }
+
+        return normalized.length() > 90 ? normalized : "";
+    }
+
+    public String getTopbarEntrySeverity(String message) {
+        if (message == null) {
+            return "info";
+        }
+
+        String normalized = message.toLowerCase(Locale.ENGLISH);
+        if (normalized.contains("error") || normalized.contains("failed") || normalized.contains("expired")) {
+            return "danger";
+        }
+        if (normalized.contains("warning") || normalized.contains("locked") || normalized.contains("disabled")) {
+            return "warning";
+        }
+        if (normalized.contains("success") || normalized.contains("restored") || normalized.contains("added")
+                || normalized.contains("updated") || normalized.contains("approved")) {
+            return "success";
+        }
+        return "info";
     }
 
     public void markTopbarMessagesAsSeen() {

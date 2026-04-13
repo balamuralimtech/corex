@@ -25,6 +25,7 @@ public class PatientService implements IPatientService {
     private UserActivityDAO userActivityDAO;
 
     @Override
+    @Transactional(readOnly = false)
     public GeneralConstants addPatient(UserActivityTO userActivityTO, Patient patient) {
         GeneralConstants result = patientDAO.addPatient(patient);
         userActivityTO.setActivityDescription("Add patient - (" + resolvePatientLabel(patient) + ") - " + result.getName());
@@ -33,6 +34,7 @@ public class PatientService implements IPatientService {
     }
 
     @Override
+    @Transactional(readOnly = false)
     public GeneralConstants updatePatient(UserActivityTO userActivityTO, Patient patient) {
         GeneralConstants result = patientDAO.updatePatient(patient);
         userActivityTO.setActivityDescription("Update patient - (" + resolvePatientLabel(patient) + ") - " + result.getName());
@@ -41,6 +43,7 @@ public class PatientService implements IPatientService {
     }
 
     @Override
+    @Transactional(readOnly = false)
     public GeneralConstants deletePatient(UserActivityTO userActivityTO, Patient patient) {
         GeneralConstants result = patientDAO.deletePatient(patient);
         userActivityTO.setActivityDescription("Delete patient - (" + resolvePatientLabel(patient) + ") - " + result.getName());

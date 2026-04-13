@@ -36,6 +36,7 @@ import com.persist.coretix.modal.license.Licenses;
 import com.persist.coretix.modal.usermanagement.UserDetails;
 import com.persist.coretix.modal.usermanagement.UserActivities;
 import com.web.coretix.appgeneral.GenericManagedBean;
+import com.web.coretix.general.SessionListeners;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
@@ -43,12 +44,20 @@ import org.springframework.context.annotation.Scope;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.io.File;
 import java.io.Serializable;
+import java.lang.management.ClassLoadingMXBean;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
+import java.lang.management.RuntimeMXBean;
+import java.lang.management.ThreadMXBean;
+import java.net.InetAddress;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -503,6 +512,119 @@ public class HomePageBean extends GenericManagedBean implements Serializable {
                 getExpiringSoonLicenseCount());
     }
 
+    public boolean isServerMetricsVisible() {
+        return isApplicationAdmin();
+    }
+
+    public String getServerHostName() {
+        try {
+            return InetAddress.getLocalHost().getHostName();
+        } catch (Exception exception) {
+            return "Unavailable";
+        }
+    }
+
+    public String getServerOsName() {
+        return System.getProperty("os.name", "Unknown OS") + " " + System.getProperty("os.version", "");
+    }
+
+    public String getServerJavaVersion() {
+        return System.getProperty("java.version", "Unknown");
+    }
+
+    public String getServerUptime() {
+        RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+        long uptimeMs = runtimeMXBean.getUptime();
+        long days = TimeUnit.MILLISECONDS.toDays(uptimeMs);
+        long hours = TimeUnit.MILLISECONDS.toHours(uptimeMs) % 24;
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(uptimeMs) % 60;
+        if (days > 0) {
+            return String.format(Locale.US, "%dd %dh %dm", days, hours, minutes);
+        }
+        return String.format(Locale.US, "%dh %dm", hours, minutes);
+    }
+
+    public double getCpuUsagePercent() {
+        com.sun.management.OperatingSystemMXBean osBean = getOperatingSystemMXBean();
+        if (osBean == null) {
+            return 0;
+        }
+        double load = osBean.getCpuLoad();
+        if (load < 0) {
+            return 0;
+        }
+        return round(load * 100.0);
+    }
+
+    public double getPhysicalMemoryUsagePercent() {
+        com.sun.management.OperatingSystemMXBean osBean = getOperatingSystemMXBean();
+        if (osBean == null || osBean.getTotalMemorySize() <= 0) {
+            return 0;
+        }
+        long usedBytes = osBean.getTotalMemorySize() - osBean.getFreeMemorySize();
+        return round((usedBytes * 100.0) / osBean.getTotalMemorySize());
+    }
+
+    public double getJvmHeapUsagePercent() {
+        MemoryUsage heapUsage = getHeapMemoryUsage();
+        if (heapUsage == null || heapUsage.getMax() <= 0) {
+            return 0;
+        }
+        return round((heapUsage.getUsed() * 100.0) / heapUsage.getMax());
+    }
+
+    public double getDiskUsagePercent() {
+        File root = getServerRoot();
+        long totalSpace = root.getTotalSpace();
+        if (totalSpace <= 0) {
+            return 0;
+        }
+        long usedSpace = totalSpace - root.getUsableSpace();
+        return round((usedSpace * 100.0) / totalSpace);
+    }
+
+    public String getCpuUsageLabel() {
+        return formatPercent(getCpuUsagePercent());
+    }
+
+    public String getPhysicalMemoryUsageLabel() {
+        return formatBytes(getUsedPhysicalMemoryBytes()) + " / " + formatBytes(getTotalPhysicalMemoryBytes());
+    }
+
+    public String getJvmHeapUsageLabel() {
+        MemoryUsage heapUsage = getHeapMemoryUsage();
+        if (heapUsage == null) {
+            return "Unavailable";
+        }
+        return formatBytes(heapUsage.getUsed()) + " / " + formatBytes(heapUsage.getMax());
+    }
+
+    public String getDiskUsageLabel() {
+        File root = getServerRoot();
+        return formatBytes(root.getTotalSpace() - root.getUsableSpace()) + " / " + formatBytes(root.getTotalSpace());
+    }
+
+    public String getServerThreadCountLabel() {
+        ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+        return String.valueOf(threadMXBean.getThreadCount());
+    }
+
+    public String getServerLoadedClassCountLabel() {
+        ClassLoadingMXBean classLoadingMXBean = ManagementFactory.getClassLoadingMXBean();
+        return String.valueOf(classLoadingMXBean.getLoadedClassCount());
+    }
+
+    public String getActiveSessionCountLabel() {
+        return String.valueOf(SessionListeners.getNoActiveSessions());
+    }
+
+    public String getServerMemoryFootprintSummary() {
+        return "CPU " + formatPercent(getCpuUsagePercent())
+                + " | Physical Memory " + formatPercent(getPhysicalMemoryUsagePercent())
+                + " | JVM Heap " + formatPercent(getJvmHeapUsagePercent())
+                + " | Disk " + formatPercent(getDiskUsagePercent());
+    }
+
     private java.util.List<Licenses> getAllLicenses() {
         List<Licenses> licenses = licenseService.getLicenseList();
         if (isAllOrganizationsSelected()) {
@@ -649,12 +771,62 @@ public class HomePageBean extends GenericManagedBean implements Serializable {
         return bundle.containsKey(key) ? bundle.getString(key) : key;
     }
 
+    private com.sun.management.OperatingSystemMXBean getOperatingSystemMXBean() {
+        try {
+            return (com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+        } catch (Exception exception) {
+            return null;
+        }
+    }
+
+    private MemoryUsage getHeapMemoryUsage() {
+        try {
+            MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
+            return memoryMXBean.getHeapMemoryUsage();
+        } catch (Exception exception) {
+            return null;
+        }
+    }
+
+    private long getTotalPhysicalMemoryBytes() {
+        com.sun.management.OperatingSystemMXBean osBean = getOperatingSystemMXBean();
+        return osBean == null ? 0 : osBean.getTotalMemorySize();
+    }
+
+    private long getUsedPhysicalMemoryBytes() {
+        com.sun.management.OperatingSystemMXBean osBean = getOperatingSystemMXBean();
+        if (osBean == null) {
+            return 0;
+        }
+        return Math.max(0, osBean.getTotalMemorySize() - osBean.getFreeMemorySize());
+    }
+
+    private File getServerRoot() {
+        File[] roots = File.listRoots();
+        return roots != null && roots.length > 0 ? roots[0] : new File("/");
+    }
+
+    private String formatBytes(long bytes) {
+        if (bytes <= 0) {
+            return "0 B";
+        }
+        String[] units = {"B", "KB", "MB", "GB", "TB"};
+        double value = bytes;
+        int unitIndex = 0;
+        while (value >= 1024 && unitIndex < units.length - 1) {
+            value /= 1024.0;
+            unitIndex++;
+        }
+        return String.format(Locale.US, "%.1f %s", value, units[unitIndex]);
+    }
+
+    private String formatPercent(double value) {
+        return String.format(Locale.US, "%.1f%%", value);
+    }
+
     // Getter for the memory data as JSON
 //    public String getMemoryJson() {
 //        return memoryJson;
 //    }
 }
-
-
-
 

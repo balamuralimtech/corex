@@ -69,31 +69,10 @@ a {
 }
 
 .mark {
-  position: relative;
   width: 2rem;
   height: 2rem;
   flex: 0 0 auto;
-}
-
-.mark:before,
-.mark:after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  border-radius: 999px;
-  background: #ff6b6b;
-}
-
-.mark:before {
-  width: 2rem;
-  height: 0.56rem;
-}
-
-.mark:after {
-  width: 0.56rem;
-  height: 2rem;
+  display: block;
 }
 
 .bcopy {

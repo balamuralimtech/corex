@@ -127,6 +127,45 @@ public final class PrivilegeMatrix {
         pagePrivileges.put(ApplicationManagementModule.REFERRAL_DASHBOARD.getValue(),
                 EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.EXPORT));
 
+        //CareX entries
+        pagePrivileges.put(CarexRolePageModule.DASHBOARD.getValue(),
+                EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.EXPORT));
+        pagePrivileges.put(CarexRolePageModule.ADMISSION.getValue(),
+                EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.ADD, RolePrivilegeConstants.EDIT));
+        pagePrivileges.put(CarexRolePageModule.CONSULTATION.getValue(),
+                EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.ADD, RolePrivilegeConstants.EDIT));
+        pagePrivileges.put(CarexRolePageModule.MANAGE_DOCTOR.getValue(),
+                EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.ADD, RolePrivilegeConstants.EDIT,
+                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT));
+        pagePrivileges.put(CarexRolePageModule.MANAGE_PATIENT.getValue(),
+                EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.ADD, RolePrivilegeConstants.EDIT,
+                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT));
+        pagePrivileges.put(CarexRolePageModule.MANAGE_MEDICINE.getValue(),
+                EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.ADD, RolePrivilegeConstants.EDIT,
+                        RolePrivilegeConstants.DELETE, RolePrivilegeConstants.EXPORT));
+        pagePrivileges.put(CarexRolePageModule.PATIENT_HISTORY_REPORT.getValue(),
+                EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.EXPORT));
+        pagePrivileges.put(CarexRolePageModule.PRESCRIPTION_HISTORY_REPORT.getValue(),
+                EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.EXPORT));
+        pagePrivileges.put(CarexRolePageModule.REVENUE_REPORT.getValue(),
+                EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.EXPORT));
+        pagePrivileges.put(CarexRolePageModule.PATIENT_INCOMING_REPORT.getValue(),
+                EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.EXPORT));
+        pagePrivileges.put(CarexRolePageModule.CLINIC_REPORT.getValue(),
+                EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.EXPORT));
+        pagePrivileges.put(CarexRolePageModule.INVOICE_HISTORY_REPORT.getValue(),
+                EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.EXPORT));
+        pagePrivileges.put(CarexRolePageModule.MEDICINE_REPORT.getValue(),
+                EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.EXPORT));
+        pagePrivileges.put(CarexRolePageModule.CLINIC_SETTINGS.getValue(),
+                EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.EDIT));
+        pagePrivileges.put(CarexRolePageModule.PRESCRIPTION_SETTINGS.getValue(),
+                EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.EDIT));
+        pagePrivileges.put(CarexRolePageModule.INVOICE_SETTINGS.getValue(),
+                EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.EDIT));
+        pagePrivileges.put(CarexRolePageModule.MEDICAL_CERTIFICATE_SETTINGS.getValue(),
+                EnumSet.of(RolePrivilegeConstants.VIEW, RolePrivilegeConstants.EDIT));
+
         return pagePrivileges;
     }
 
@@ -137,5 +176,4 @@ public final class PrivilegeMatrix {
         }
     }
 }
-
 

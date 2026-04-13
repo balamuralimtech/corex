@@ -63,11 +63,13 @@ public class AdmissionBean extends CarexManagedBean implements Serializable {
     private List<Patient> patientList = new ArrayList<>();
     private List<Consultation> consultationEntries = new ArrayList<>();
 
+    private Consultation selectedConsultation;
     private Integer selectedOrganizationId;
     private Integer selectedDoctorId;
     private Integer selectedExistingPatientId;
     private Patient selectedExistingPatient;
     private boolean existingPatientMode = true;
+    private boolean editMode;
     private boolean initialized;
 
     private String newPatientName;
@@ -103,9 +105,9 @@ public class AdmissionBean extends CarexManagedBean implements Serializable {
 
     public void onPatientModeChange() {
         if (existingPatientMode) {
-            newPatientName = null;
-            newPatientPhoneNumber = null;
-            newPatientGender = null;
+            if (selectedExistingPatient != null) {
+                populatePatientFormFromEntity(selectedExistingPatient);
+            }
         } else {
             selectedExistingPatientId = null;
             selectedExistingPatient = null;
@@ -115,9 +117,7 @@ public class AdmissionBean extends CarexManagedBean implements Serializable {
 
     public void onExistingPatientChange() {
         selectedExistingPatient = selectedExistingPatientId == null ? null : patientService.getPatientById(selectedExistingPatientId);
-        if (selectedExistingPatient != null && selectedExistingPatient.getDateOfBirth() != null) {
-            patientAgeYears = Period.between(selectedExistingPatient.getDateOfBirth().toLocalDate(), LocalDate.now()).getYears();
-        }
+        populatePatientFormFromEntity(selectedExistingPatient);
         PrimeFaces.current().ajax().update("form:admissionPanel");
     }
 
@@ -125,7 +125,7 @@ public class AdmissionBean extends CarexManagedBean implements Serializable {
         if (!isReceptionTokenWorkflowEnabled()) {
             addMessage(FacesMessage.SEVERITY_WARN, "Admission disabled",
                     "This clinic is configured for direct doctor consultation without receptionist token registration.");
-            PrimeFaces.current().ajax().update("form:messages", "form:pageShell");
+            PrimeFaces.current().ajax().update("form:messages", "form:pageShell", "form:heroPanel");
             return;
         }
 
@@ -142,31 +142,111 @@ public class AdmissionBean extends CarexManagedBean implements Serializable {
             return;
         }
 
-        Patient patient = existingPatientMode ? patientService.getPatientById(selectedExistingPatientId) : createNewPatient(organization);
+        Patient patient = resolvePatientForAdmission(organization);
         if (patient == null) {
             PrimeFaces.current().ajax().update("form:messages");
             return;
         }
-
-        Consultation consultation = buildQueuedConsultation(organization, doctor, patient);
         UserActivityTO userActivityTO = populateUserActivityTO();
-        userActivityTO.setActivityType("Add");
-        GeneralConstants result = consultationService.addConsultation(userActivityTO, consultation);
+        GeneralConstants result;
+        Consultation consultation;
+        if (editMode && selectedConsultation != null) {
+            consultation = consultationService.getConsultationById(selectedConsultation.getId());
+            if (consultation == null || !canModifyAdmission(consultation)) {
+                addMessage(FacesMessage.SEVERITY_WARN, "Admission unavailable", "This admission can no longer be edited.");
+                refreshQueue();
+                resetForm();
+                PrimeFaces.current().ajax().update("form:pageShell", "form:messages", "form:heroPanel");
+                return;
+            }
+            consultation.setOrganization(organization);
+            consultation.setDoctor(doctor);
+            consultation.setPatient(patient);
+            consultation.setPatientAgeYears(patientAgeYears);
+            consultation.setTemperatureCelsius(safeText(temperatureCelsius));
+            consultation.setWeightKg(safeText(weightKg));
+            consultation.setBloodPressure(safeText(bloodPressure));
+            consultation.setSymptoms(safeText(admissionNotes));
+            consultation.setVitals(buildVitalsSummary());
+            userActivityTO.setActivityType("Update");
+            result = consultationService.updateConsultation(userActivityTO, consultation);
+        } else {
+            consultation = buildQueuedConsultation(organization, doctor, patient);
+            userActivityTO.setActivityType("Add");
+            result = consultationService.addConsultation(userActivityTO, consultation);
+        }
         if (result != GeneralConstants.SUCCESSFUL) {
-            addMessage(FacesMessage.SEVERITY_ERROR, "Registration failed", "Unable to register the consultation admission.");
+            addMessage(FacesMessage.SEVERITY_ERROR, editMode ? "Update failed" : "Registration failed",
+                    editMode ? "Unable to update the consultation admission." : "Unable to register the consultation admission.");
             PrimeFaces.current().ajax().update("form:messages");
             return;
         }
 
-        boolean notificationSent = sendDoctorAndAdminNotifications(doctor, consultation, patient);
-        String detail = "Token " + consultation.getTokenNumber() + " has been assigned for " + patient.getPatientName() + ".";
-        if (!notificationSent) {
-            detail += " The selected doctor is not linked to an application user, so no direct message was delivered.";
+        String detail;
+        if (editMode) {
+            detail = "Token " + consultation.getTokenNumber() + " was updated successfully before doctor assignment.";
+        } else {
+            boolean notificationSent = sendDoctorAndAdminNotifications(doctor, consultation, patient);
+            detail = "Token " + consultation.getTokenNumber() + " has been assigned for " + patient.getPatientName() + ".";
+            if (!notificationSent) {
+                detail += " The selected doctor is not linked to an application user, so no direct message was delivered.";
+            }
         }
-        addMessage(FacesMessage.SEVERITY_INFO, "Admission registered", detail);
+        addMessage(FacesMessage.SEVERITY_INFO, editMode ? "Admission updated" : "Admission registered", detail);
         resetForm();
         refreshQueue();
-        PrimeFaces.current().ajax().update("form:pageShell", "form:messages");
+        PrimeFaces.current().ajax().update("form:pageShell", "form:messages", "form:heroPanel");
+    }
+
+    public void editAdmission(Integer consultationId) {
+        Consultation consultation = consultationService.getConsultationById(consultationId);
+        if (consultation == null || !canModifyAdmission(consultation)) {
+            addMessage(FacesMessage.SEVERITY_WARN, "Admission unavailable", "Only waiting admissions can be edited.");
+            PrimeFaces.current().ajax().update("form:messages", "form:consultationListingPanel");
+            return;
+        }
+
+        selectedConsultation = consultation;
+        editMode = true;
+        existingPatientMode = true;
+        selectedDoctorId = consultation.getDoctor() == null ? null : consultation.getDoctor().getId();
+        selectedExistingPatientId = consultation.getPatient() == null ? null : consultation.getPatient().getId();
+        selectedExistingPatient = selectedExistingPatientId == null ? null : patientService.getPatientById(selectedExistingPatientId);
+        populatePatientFormFromEntity(selectedExistingPatient);
+        patientAgeYears = consultation.getPatientAgeYears();
+        temperatureCelsius = consultation.getTemperatureCelsius();
+        weightKg = consultation.getWeightKg();
+        bloodPressure = consultation.getBloodPressure();
+        admissionNotes = consultation.getSymptoms();
+        PrimeFaces.current().ajax().update("form:heroPanel", "form:admissionPanel", "form:messages");
+    }
+
+    public void deleteAdmission(Integer consultationId) {
+        Consultation consultation = consultationService.getConsultationById(consultationId);
+        if (consultation == null || !canModifyAdmission(consultation)) {
+            addMessage(FacesMessage.SEVERITY_WARN, "Admission unavailable", "Only waiting admissions can be deleted.");
+            PrimeFaces.current().ajax().update("form:messages", "form:consultationListingPanel");
+            return;
+        }
+
+        UserActivityTO userActivityTO = populateUserActivityTO();
+        userActivityTO.setActivityType("Delete");
+        GeneralConstants result = consultationService.deleteConsultation(userActivityTO, consultation);
+        if (result == GeneralConstants.SUCCESSFUL) {
+            addMessage(FacesMessage.SEVERITY_INFO, "Admission deleted", "Waiting consultation token " + consultation.getTokenNumber() + " was removed.");
+            if (selectedConsultation != null && consultation.getId().equals(selectedConsultation.getId())) {
+                resetForm();
+            }
+            refreshQueue();
+        } else {
+            addMessage(FacesMessage.SEVERITY_ERROR, "Delete failed", "Unable to delete the selected admission.");
+        }
+        PrimeFaces.current().ajax().update("form:pageShell", "form:messages", "form:heroPanel");
+    }
+
+    public void cancelEdit() {
+        resetForm();
+        PrimeFaces.current().ajax().update("form:heroPanel", "form:admissionPanel", "form:messages");
     }
 
     public void refreshQueue() {
@@ -280,6 +360,14 @@ public class AdmissionBean extends CarexManagedBean implements Serializable {
         return "success";
     }
 
+    public boolean canModifyAdmission(Consultation consultation) {
+        return consultation != null && "Waiting".equalsIgnoreCase(safeText(consultation.getStatus()));
+    }
+
+    public String getAdmissionActionLabel() {
+        return editMode ? "Update Consultation" : "Register Consultation";
+    }
+
     public List<Organizations> getOrganizationList() { return organizationList; }
     public List<Doctor> getDoctorList() { return doctorList; }
     public List<Patient> getPatientList() { return patientList; }
@@ -294,6 +382,7 @@ public class AdmissionBean extends CarexManagedBean implements Serializable {
     public Patient getSelectedExistingPatient() { return selectedExistingPatient; }
     public boolean isExistingPatientMode() { return existingPatientMode; }
     public void setExistingPatientMode(boolean existingPatientMode) { this.existingPatientMode = existingPatientMode; }
+    public boolean isEditMode() { return editMode; }
     public String getNewPatientName() { return newPatientName; }
     public void setNewPatientName(String newPatientName) { this.newPatientName = newPatientName; }
     public String getNewPatientPhoneNumber() { return newPatientPhoneNumber; }
@@ -323,6 +412,8 @@ public class AdmissionBean extends CarexManagedBean implements Serializable {
     }
 
     private void resetForm() {
+        selectedConsultation = null;
+        editMode = false;
         existingPatientMode = true;
         selectedDoctorId = doctorList.isEmpty() ? null : doctorList.get(0).getId();
         selectedExistingPatientId = null;
@@ -368,8 +459,38 @@ public class AdmissionBean extends CarexManagedBean implements Serializable {
                 addMessage(FacesMessage.SEVERITY_ERROR, "Phone number required", "Enter the patient phone number.");
                 return false;
             }
+        } else {
+            if (isBlank(newPatientName)) {
+                addMessage(FacesMessage.SEVERITY_ERROR, "Patient name required", "Loaded patient details are incomplete. Enter the patient name.");
+                return false;
+            }
         }
         return true;
+    }
+
+    private Patient resolvePatientForAdmission(Organizations organization) {
+        if (existingPatientMode) {
+            Patient patient = patientService.getPatientById(selectedExistingPatientId);
+            if (patient == null) {
+                addMessage(FacesMessage.SEVERITY_ERROR, "Patient missing", "Selected patient record could not be found.");
+                return null;
+            }
+            patient.setPatientName(newPatientName == null ? patient.getPatientName() : newPatientName.trim());
+            patient.setPhoneNumber(newPatientPhoneNumber == null ? patient.getPhoneNumber() : newPatientPhoneNumber.trim());
+            patient.setGender(safeText(newPatientGender));
+            patient.setDateOfBirth(resolveDateOfBirthFromAge(patientAgeYears));
+            UserActivityTO userActivityTO = populateUserActivityTO();
+            userActivityTO.setActivityType("Update");
+            GeneralConstants result = patientService.updatePatient(userActivityTO, patient);
+            if (result != GeneralConstants.SUCCESSFUL) {
+                addMessage(FacesMessage.SEVERITY_ERROR, "Patient update failed", "Unable to update the selected patient details.");
+                return null;
+            }
+            patientList = new ArrayList<>(patientService.getPatientsByOrganizationId(selectedOrganizationId));
+            selectedExistingPatient = patientService.getPatientById(patient.getId());
+            return selectedExistingPatient == null ? patient : selectedExistingPatient;
+        }
+        return createNewPatient(organization);
     }
 
     private Patient createNewPatient(Organizations organization) {
@@ -514,6 +635,21 @@ public class AdmissionBean extends CarexManagedBean implements Serializable {
 
     private void addMessage(FacesMessage.Severity severity, String summary, String detail) {
         FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, summary, detail));
+    }
+
+    private void populatePatientFormFromEntity(Patient patient) {
+        if (patient == null) {
+            newPatientName = null;
+            newPatientPhoneNumber = null;
+            newPatientGender = null;
+            return;
+        }
+        newPatientName = patient.getPatientName();
+        newPatientPhoneNumber = patient.getPhoneNumber();
+        newPatientGender = patient.getGender();
+        if (patient.getDateOfBirth() != null) {
+            patientAgeYears = Period.between(patient.getDateOfBirth().toLocalDate(), LocalDate.now()).getYears();
+        }
     }
 
     private boolean isBlank(String value) {

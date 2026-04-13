@@ -92,6 +92,12 @@ public class UserDetails implements Serializable {
     // Status relationship
     @Column(name = "status_id", nullable = false)
     private int status;
+
+    @Column(name = "account_disabled", nullable = false)
+    private boolean accountDisabled;
+
+    @Column(name = "account_locked", nullable = false)
+    private boolean accountLocked;
     
     @Column(name = "last_password_change")
     private Timestamp lastPasswordChange;
@@ -246,6 +252,22 @@ public class UserDetails implements Serializable {
         this.status = status;
     }
 
+    public boolean isAccountDisabled() {
+        return accountDisabled;
+    }
+
+    public void setAccountDisabled(boolean accountDisabled) {
+        this.accountDisabled = accountDisabled;
+    }
+
+    public boolean isAccountLocked() {
+        return accountLocked;
+    }
+
+    public void setAccountLocked(boolean accountLocked) {
+        this.accountLocked = accountLocked;
+    }
+
     public Timestamp getCreatedAt() {
         return createdAt;
     }
@@ -346,7 +368,6 @@ public class UserDetails implements Serializable {
         updatedAt = new Timestamp(System.currentTimeMillis());
     }
 }
-
 
 
 

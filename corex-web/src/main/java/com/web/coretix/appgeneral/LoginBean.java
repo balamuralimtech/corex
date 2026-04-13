@@ -121,6 +121,30 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
             userActivities.setCreatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
 
             if (isUserValid && userDetails != null) {
+                if (userDetails.isAccountDisabled()) {
+                    userActivities.setUserId(userDetails.getUserId());
+                    userActivities.setUserName(userDetails.getUserName());
+                    userActivities.setActivityDescription("Login blocked - account disabled");
+                    userActivityService.addUserActivity(userActivities);
+                    FacesContext.getCurrentInstance().addMessage(null,
+                            new FacesMessage(FacesMessage.SEVERITY_ERROR, "Access Denied",
+                                    "This account is disabled. Please contact an administrator."));
+                    PrimeFaces.current().ajax().update("form:messages","form:username","form:password");
+                    return null;
+                }
+
+                if (userDetails.isAccountLocked()) {
+                    userActivities.setUserId(userDetails.getUserId());
+                    userActivities.setUserName(userDetails.getUserName());
+                    userActivities.setActivityDescription("Login blocked - account locked");
+                    userActivityService.addUserActivity(userActivities);
+                    FacesContext.getCurrentInstance().addMessage(null,
+                            new FacesMessage(FacesMessage.SEVERITY_ERROR, "Access Denied",
+                                    "This account is locked. Please contact an administrator."));
+                    PrimeFaces.current().ajax().update("form:messages","form:username","form:password");
+                    return null;
+                }
+
                 String licenseValidationMessage = getLicenseValidationMessage(userDetails);
                 if (licenseValidationMessage != null) {
                     userActivities.setUserId(userDetails.getUserId());
@@ -426,7 +450,6 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
     }
 
 }
-
 
 
 

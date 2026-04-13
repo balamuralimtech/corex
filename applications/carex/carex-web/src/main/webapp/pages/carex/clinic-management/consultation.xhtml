@@ -6,10 +6,155 @@
                 xmlns:p="http://primefaces.org/ui"
                 template="/WEB-INF/template.xhtml">
 
+    <ui:define name="head">
+        <h:outputStylesheet library="carex" name="css/clinic-command-theme.css"/>
+        <h:outputScript>
+            //<![CDATA[
+            var consultationPreviewTimer = null;
+            var pendingConsultationPdfPrintWindow = null;
+
+            function findConsultationElementByIdOrSuffix(elementId) {
+                var element = document.getElementById(elementId);
+                if (element) {
+                    return element;
+                }
+                var suffix = elementId.indexOf(':') >= 0 ? elementId.substring(elementId.lastIndexOf(':') + 1) : elementId;
+                return document.querySelector("[id$='" + suffix + "']");
+            }
+
+            function bindConsultationPreview() {
+                var editor = document.querySelector("[id='form:consultationEditorPanel']");
+                if (!editor || editor.dataset.previewBound === 'true') {
+                    return;
+                }
+                editor.dataset.previewBound = 'true';
+
+                function schedulePreview(event) {
+                    if (event && event.target && event.target.closest('.ui-button')) {
+                        return;
+                    }
+                    if (consultationPreviewTimer) {
+                        clearTimeout(consultationPreviewTimer);
+                    }
+                    consultationPreviewTimer = setTimeout(function() {
+                        if (typeof refreshConsultationPreview === 'function') {
+                            refreshConsultationPreview();
+                        }
+                    }, 180);
+                }
+
+                editor.addEventListener('input', schedulePreview);
+                editor.addEventListener('change', schedulePreview);
+            }
+
+            function captureConsultationPreviewState(previewPanelId, headerFieldId, bodyFieldId, footerFieldId, headerClass, footerClass) {
+                var preview = findConsultationElementByIdOrSuffix(previewPanelId);
+                var headerField = findConsultationElementByIdOrSuffix(headerFieldId);
+                var bodyField = findConsultationElementByIdOrSuffix(bodyFieldId);
+                var footerField = findConsultationElementByIdOrSuffix(footerFieldId);
+                if (!preview || !headerField || !bodyField || !footerField) {
+                    return false;
+                }
+                var previewClone = preview.cloneNode(true);
+                var header = previewClone.querySelector('.' + headerClass);
+                var footer = previewClone.querySelector('.' + footerClass);
+                headerField.value = header ? header.outerHTML : '';
+                if (header && header.parentNode) {
+                    header.parentNode.removeChild(header);
+                }
+                footerField.value = footer ? footer.outerHTML : '';
+                if (footer && footer.parentNode) {
+                    footer.parentNode.removeChild(footer);
+                }
+                bodyField.value = previewClone.innerHTML;
+                return true;
+            }
+
+            function beginConsultationPdfPrint(previewPanelId, headerFieldId, bodyFieldId, footerFieldId, headerClass, footerClass, prepareCommandName) {
+                if (!captureConsultationPreviewState(previewPanelId, headerFieldId, bodyFieldId, footerFieldId, headerClass, footerClass)) {
+                    return false;
+                }
+                if (pendingConsultationPdfPrintWindow && !pendingConsultationPdfPrintWindow.closed) {
+                    pendingConsultationPdfPrintWindow.close();
+                }
+                pendingConsultationPdfPrintWindow = window.open('', '_blank');
+                if (pendingConsultationPdfPrintWindow) {
+                    pendingConsultationPdfPrintWindow.document.write('<html><head><title>Preparing document</title></head><body style="font-family:Helvetica,Arial,sans-serif;padding:24px;color:#334155;">Preparing PDF for print...</body></html>');
+                    pendingConsultationPdfPrintWindow.document.close();
+                }
+                if (typeof window[prepareCommandName] === 'function') {
+                    window[prepareCommandName]();
+                }
+                return false;
+            }
+
+            function openPreparedConsultationPdf() {
+                var payloadField = document.getElementById('form:consultationPrintPdfBase64');
+                var titleField = document.getElementById('form:consultationPrintPdfTitle');
+                var payload = payloadField ? payloadField.value : '';
+                if (!payload) {
+                    if (pendingConsultationPdfPrintWindow && !pendingConsultationPdfPrintWindow.closed) {
+                        pendingConsultationPdfPrintWindow.close();
+                    }
+                    pendingConsultationPdfPrintWindow = null;
+                    return;
+                }
+
+                var binary = window.atob(payload);
+                var bytes = new Uint8Array(binary.length);
+                for (var index = 0; index < binary.length; index++) {
+                    bytes[index] = binary.charCodeAt(index);
+                }
+
+                var blob = new Blob([bytes], {type: 'application/pdf'});
+                var objectUrl = window.URL.createObjectURL(blob);
+                var printWindow = pendingConsultationPdfPrintWindow && !pendingConsultationPdfPrintWindow.closed
+                        ? pendingConsultationPdfPrintWindow
+                        : window.open('', '_blank');
+
+                if (!printWindow) {
+                    window.location.href = objectUrl;
+                } else {
+                    printWindow.location.href = objectUrl;
+                    printWindow.onload = function() {
+                        window.setTimeout(function() {
+                            try {
+                                printWindow.document.title = titleField && titleField.value ? titleField.value : 'consultation-document.pdf';
+                                printWindow.focus();
+                                printWindow.print();
+                            } catch (ignored) {
+                            }
+                        }, 450);
+                    };
+                }
+
+                window.setTimeout(function() {
+                    window.URL.revokeObjectURL(objectUrl);
+                }, 60000);
+
+                if (payloadField) {
+                    payloadField.value = '';
+                }
+                pendingConsultationPdfPrintWindow = null;
+            }
+
+            window.bindConsultationPreview = bindConsultationPreview;
+            window.captureConsultationPreviewState = captureConsultationPreviewState;
+            window.beginConsultationPdfPrint = beginConsultationPdfPrint;
+            window.openPreparedConsultationPdf = openPreparedConsultationPdf;
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', bindConsultationPreview);
+            } else {
+                bindConsultationPreview();
+            }
+            document.addEventListener('pfAjaxComplete', bindConsultationPreview);
+            //]]>
+        </h:outputScript>
+    </ui:define>
+
     <ui:define name="content">
         <f:event listener="#{consultationBean.initializePageAttributes}" type="preRenderView"/>
-
-        <h:outputStylesheet library="carex" name="css/clinic-command-theme.css"/>
 
         <h:form id="form" styleClass="carex-unified-theme">
             <p:remoteCommand name="refreshConsultationPreview" process="consultationEditorPanel medicineLinePanel" update="form:previewTabsPanel"/>
@@ -19,97 +164,32 @@
                     update="form:queuePanel"
                     global="false"/>
 
-            <h:outputScript target="body">
-                var consultationPreviewTimer = null;
-
-                function bindConsultationPreview() {
-                    var editor = document.querySelector("[id='form:consultationEditorPanel']");
-                    if (!editor || editor.dataset.previewBound === 'true') {
-                        return;
-                    }
-                    editor.dataset.previewBound = 'true';
-
-                    function schedulePreview(event) {
-                        if (event &amp;&amp; event.target &amp;&amp; event.target.closest('.ui-button')) {
-                            return;
-                        }
-                        if (consultationPreviewTimer) {
-                            clearTimeout(consultationPreviewTimer);
-                        }
-                        consultationPreviewTimer = setTimeout(function() {
-                            if (typeof refreshConsultationPreview === 'function') {
-                                refreshConsultationPreview();
-                            }
-                        }, 180);
-                    }
-
-                    editor.addEventListener('input', schedulePreview);
-                    editor.addEventListener('change', schedulePreview);
-                }
-
-                function captureConsultationPreviewState(previewPanelId, bodyFieldId, footerFieldId, footerClass) {
-                    var preview = document.querySelector("[id='" + previewPanelId + "']");
-                    var bodyField = document.getElementById(bodyFieldId);
-                    var footerField = document.getElementById(footerFieldId);
-                    if (!preview || !bodyField || !footerField) {
-                        return false;
-                    }
-                    var previewClone = preview.cloneNode(true);
-                    var footer = previewClone.querySelector('.' + footerClass);
-                    footerField.value = footer ? footer.outerHTML : '';
-                    if (footer &amp;&amp; footer.parentNode) {
-                        footer.parentNode.removeChild(footer);
-                    }
-                    bodyField.value = previewClone.innerHTML;
-                    return true;
-                }
-
-                function executeConsultationPrint(previewPanelId, bodyFieldId, footerFieldId, footerClass, title, previewClass) {
-                    if (!captureConsultationPreviewState(previewPanelId, bodyFieldId, footerFieldId, footerClass)) {
-                        return false;
-                    }
-                    var bodyField = document.getElementById(bodyFieldId);
-                    var footerField = document.getElementById(footerFieldId);
-                    var iframe = document.createElement('iframe');
-                    iframe.style.position = 'fixed';
-                    iframe.style.right = '0';
-                    iframe.style.bottom = '0';
-                    iframe.style.width = '0';
-                    iframe.style.height = '0';
-                    iframe.style.border = '0';
-                    document.body.appendChild(iframe);
-                    var printDocument = iframe.contentWindow.document;
-                    printDocument.open();
-                    printDocument.write('<html><head><title>' + title + '</title><style>html,body{font-family:Helvetica,Arial,sans-serif;margin:0;padding:0;background:#fff;-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;overflow:hidden !important;}body{background:#fff;overflow:hidden !important;}.preview-shell{position:relative;box-sizing:border-box;width:186mm;height:272mm;max-height:272mm;margin:0 auto;padding:0;overflow:hidden !important;border:none !important;outline:none !important;box-shadow:none !important;}.preview-shell *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important;box-sizing:border-box;}.print-body{padding-bottom:42mm;overflow:hidden !important;max-height:230mm;}.print-body .' + previewClass + ',.print-body .card{border:none !important;outline:none !important;box-shadow:none !important;background:#fff !important;}.print-footer{position:absolute;left:24px;right:24px;bottom:18px;}@page{size:A4 portrait;margin:12mm;}@media print{html,body{background:#fff !important;overflow:hidden !important;}body{padding:0;margin:0;overflow:hidden !important;}}</style></head><body><div class="preview-shell"><div class="print-body">' + bodyField.value + '</div>' + (footerField.value ? '<div class="print-footer">' + footerField.value + '</div>' : '') + '</div></body></html>');
-                    printDocument.close();
-                    setTimeout(function() {
-                        iframe.contentWindow.focus();
-                        iframe.contentWindow.print();
-                        setTimeout(function() {
-                            document.body.removeChild(iframe);
-                        }, 1000);
-                    }, 250);
-                    return false;
-                }
-
-                window.bindConsultationPreview = bindConsultationPreview;
-                window.captureConsultationPreviewState = captureConsultationPreviewState;
-                window.executeConsultationPrint = executeConsultationPrint;
-
-                if (document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', bindConsultationPreview);
-                } else {
-                    bindConsultationPreview();
-                }
-                document.addEventListener('pfAjaxComplete', bindConsultationPreview);
-            </h:outputScript>
-
+            <h:inputHidden id="prescriptionPreviewHeaderHtml" value="#{consultationBean.prescriptionPreviewHeaderHtml}"/>
             <h:inputHidden id="prescriptionPreviewBodyHtml" value="#{consultationBean.prescriptionPreviewBodyHtml}"/>
             <h:inputHidden id="prescriptionPreviewFooterHtml" value="#{consultationBean.prescriptionPreviewFooterHtml}"/>
+            <h:inputHidden id="invoicePreviewHeaderHtml" value="#{consultationBean.invoicePreviewHeaderHtml}"/>
             <h:inputHidden id="invoicePreviewBodyHtml" value="#{consultationBean.invoicePreviewBodyHtml}"/>
             <h:inputHidden id="invoicePreviewFooterHtml" value="#{consultationBean.invoicePreviewFooterHtml}"/>
+            <h:inputHidden id="medicalCertificatePreviewHeaderHtml" value="#{consultationBean.medicalCertificatePreviewHeaderHtml}"/>
             <h:inputHidden id="medicalCertificatePreviewBodyHtml" value="#{consultationBean.medicalCertificatePreviewBodyHtml}"/>
             <h:inputHidden id="medicalCertificatePreviewFooterHtml" value="#{consultationBean.medicalCertificatePreviewFooterHtml}"/>
+            <h:inputHidden id="consultationPrintPdfBase64" value="#{consultationBean.consultationPrintPdfBase64}"/>
+            <h:inputHidden id="consultationPrintPdfTitle" value="#{consultationBean.consultationPrintPdfTitle}"/>
+            <p:remoteCommand name="preparePrescriptionPrintPdf"
+                             process="@form"
+                             actionListener="#{consultationBean.preparePrescriptionPrint}"
+                             update="form:consultationPrintPdfBase64 form:consultationPrintPdfTitle form:messages"
+                             oncomplete="openPreparedConsultationPdf();"/>
+            <p:remoteCommand name="prepareInvoicePrintPdf"
+                             process="@form"
+                             actionListener="#{consultationBean.prepareInvoicePrint}"
+                             update="form:consultationPrintPdfBase64 form:consultationPrintPdfTitle form:messages"
+                             oncomplete="openPreparedConsultationPdf();"/>
+            <p:remoteCommand name="prepareMedicalCertificatePrintPdf"
+                             process="@form"
+                             actionListener="#{consultationBean.prepareMedicalCertificatePrint}"
+                             update="form:consultationPrintPdfBase64 form:consultationPrintPdfTitle form:messages"
+                             oncomplete="openPreparedConsultationPdf();"/>
 
             <div class="card">
                 <p:messages id="messages" showDetail="true" closable="true"/>
@@ -122,12 +202,12 @@
                 </div>
 
                 <p:outputPanel id="contentModePanel" layout="block">
-                <p:outputPanel id="searchPanel" layout="block" rendered="#{consultationBean.searchMode}">
+            <p:outputPanel id="searchPanel" layout="block" rendered="#{consultationBean.searchMode}">
                     <div class="card" style="margin:0;border:1px solid #e2e8f0;box-shadow:none;">
                         <div class="flex flex-column lg:flex-row lg:justify-content-between lg:align-items-end gap-3">
                             <div class="flex flex-column md:flex-row gap-3" style="flex:1;">
                                 <div style="min-width:18rem;">
-                        <label for="organizationFilter"><strong>#{msg['organizationLabel']}:</strong></label>
+                        <p:outputLabel for="organizationFilter" value="#{msg['organizationLabel']}" style="font-weight:700;"/>
                                     <h:panelGroup rendered="#{consultationBean.applicationAdmin}" layout="block">
                                         <p:selectOneMenu id="organizationFilter" value="#{consultationBean.selectedOrganizationId}" style="display:block;width:100%;margin-top:.35rem;">
                                             <f:selectItem itemLabel="#{i18n.app('selectOrganizationLabel')}" itemValue="#{null}" noSelectionOption="true"/>
@@ -545,10 +625,17 @@
                                             <p:inputText value="#{consultationBean.draftMedicineLine.remarks}" style="width:100%;"/>
                                         </div>
                                         <div class="col-12">
-                                            <p:commandButton value="#{i18n.app('addMedicineLineLabel')}" icon="pi pi-plus" process="medicineLinePanel"
+                                            <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+                                            <p:commandButton value="#{consultationBean.medicineLineActionLabel}" icon="#{consultationBean.medicineLineEditMode ? 'pi pi-check' : 'pi pi-plus'}" process="medicineLinePanel"
                                                              actionListener="#{consultationBean.addMedicineLine}"
                                                              update="form:medicineLinePanel form:previewTabsPanel form:messages"
                                                              styleClass="ui-button-success ui-button-sm"/>
+                                            <p:commandButton value="Cancel Edit" icon="pi pi-times" process="@this"
+                                                             rendered="#{consultationBean.medicineLineEditMode}"
+                                                             actionListener="#{consultationBean.cancelMedicineLineEdit}"
+                                                             update="form:medicineLinePanel form:messages"
+                                                             styleClass="ui-button-secondary ui-button-sm"/>
+                                            </div>
                                         </div>
                                     </div>
                                     </p:outputPanel>
@@ -566,12 +653,15 @@
                                         <p:column headerText="#{i18n.app('quantityLabel')}">#{line.quantity}</p:column>
                                         <p:column headerText="#{i18n.app('priceLabel')}">#{consultationBean.previewCurrencySymbol} #{line.unitPrice}</p:column>
                                         <p:column headerText="#{i18n.app('totalLabel')}">#{consultationBean.previewCurrencySymbol} #{line.lineTotal}</p:column>
-                                        <p:column headerText="#{i18n.app('actionsLabel')}" style="width:4rem;" rendered="#{not consultationBean.readOnlyMode}">
+                                        <p:column headerText="#{i18n.app('actionsLabel')}" style="width:7rem;" rendered="#{not consultationBean.readOnlyMode}">
+                                            <div style="display:flex;gap:.4rem;">
+                                            <p:commandButton icon="pi pi-pencil" process="@this" styleClass="rounded-button ui-button-success ui-button-sm"
+                                                             actionListener="#{consultationBean.editMedicineLine(line)}"
+                                                             update="form:medicineLinePanel form:messages"/>
                                             <p:commandButton icon="pi pi-trash" process="@this" styleClass="rounded-button ui-button-warning ui-button-sm"
-                                                             actionListener="#{consultationBean.removeMedicineLine}"
-                                                             update="form:medicineLinePanel form:previewTabsPanel form:messages">
-                                                <f:setPropertyActionListener value="#{line}" target="#{consultationBean.selectedMedicineLine}"/>
-                                            </p:commandButton>
+                                                             actionListener="#{consultationBean.removeMedicineLine(line)}"
+                                                             update="form:medicineLinePanel form:previewTabsPanel form:messages"/>
+                                            </div>
                                         </p:column>
                                     </p:dataTable>
                                 </div>
@@ -620,6 +710,63 @@
                                         <ui:include src="/WEB-INF/consultation/medical-certificate-preview.xhtml"/>
                                     </p:tab>
                                 </p:tabView>
+                            </p:outputPanel>
+                            <p:outputPanel id="previousVisitsPanel" layout="block" rendered="#{not empty consultationBean.selectedPatientId}">
+                                <div class="card" style="margin-top:1rem;border:1px solid #e2e8f0;box-shadow:none;background:#fff;">
+                                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center gap-2">
+                                        <div>
+                                            <h3 style="margin:0;">Previous Visit Summary</h3>
+                                            <div style="margin-top:.35rem;color:#64748b;font-size:.9rem;">
+                                                Date-wise quick history to help the doctor understand earlier visits before completing this consultation.
+                                            </div>
+                                        </div>
+                                        <div style="padding:.45rem .8rem;border-radius:999px;background:#ecfeff;color:#155e75;font-size:.85rem;font-weight:700;">
+                                            #{consultationBean.previousVisitList.size()} Previous Visit(s)
+                                        </div>
+                                    </div>
+
+                                    <p:outputPanel rendered="#{consultationBean.previousVisitHistoryAvailable}">
+                                        <div class="grid" style="margin-top:1rem;">
+                                            <ui:repeat value="#{consultationBean.previousVisitList}" var="visit">
+                                                <div class="col-12">
+                                                    <div style="padding:1rem;border-radius:16px;border:1px solid #e2e8f0;background:linear-gradient(180deg,#ffffff 0%,#f8fafc 100%);">
+                                                        <div class="flex flex-column lg:flex-row lg:justify-content-between lg:align-items-start gap-3">
+                                                            <div style="flex:1;">
+                                                                <div class="flex flex-wrap gap-2 align-items-center">
+                                                                    <span style="display:inline-flex;align-items:center;padding:.4rem .8rem;border-radius:999px;background:#dbeafe;color:#1d4ed8;font-weight:700;font-size:.85rem;">
+                                                                        #{consultationBean.getPreviousVisitDateLabel(visit)}
+                                                                    </span>
+                                                                    <span style="display:inline-flex;align-items:center;padding:.4rem .8rem;border-radius:999px;background:#f1f5f9;color:#334155;font-weight:600;font-size:.85rem;">
+                                                                        Dr. #{consultationBean.getPreviousVisitDoctorLabel(visit)}
+                                                                    </span>
+                                                                    <p:tag value="#{empty visit.status ? 'Completed' : visit.status}"
+                                                                           severity="#{consultationBean.queueSeverity(visit.status)}"/>
+                                                                </div>
+                                                                <div style="margin-top:.85rem;color:#0f172a;line-height:1.65;">
+                                                                    #{consultationBean.getPreviousVisitQuickSummary(visit)}
+                                                                </div>
+                                                            </div>
+                                                            <div style="min-width:18rem;padding:.85rem 1rem;border-radius:14px;background:#f8fafc;border:1px dashed #cbd5e1;">
+                                                                <div style="font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:#64748b;font-weight:700;">
+                                                                    Prescription Snapshot
+                                                                </div>
+                                                                <div style="margin-top:.45rem;color:#1e293b;line-height:1.6;">
+                                                                    #{consultationBean.getPreviousVisitMedicineSummary(visit)}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </ui:repeat>
+                                        </div>
+                                    </p:outputPanel>
+
+                                    <p:outputPanel rendered="#{not consultationBean.previousVisitHistoryAvailable}" style="margin-top:1rem;">
+                                        <div style="padding:1rem;border-radius:14px;border:1px dashed #cbd5e1;background:#f8fafc;color:#64748b;">
+                                            No previous visits are available for this patient yet.
+                                        </div>
+                                    </p:outputPanel>
+                                </div>
                             </p:outputPanel>
                         </div>
                     </div>

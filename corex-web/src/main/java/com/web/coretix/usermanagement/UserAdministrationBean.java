@@ -44,6 +44,8 @@ import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
 import com.web.coretix.appgeneral.GenericManagedBean;
 import com.web.coretix.general.NotificationService;
+import com.web.coretix.general.SessionAuditSupport;
+import com.web.coretix.general.SessionListeners;
 import org.springframework.context.annotation.Scope;
 
 import javax.faces.application.FacesMessage;
@@ -63,7 +65,12 @@ import javax.imageio.ImageIO;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.security.SecureRandom;
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 import com.web.coretix.constants.AccessRightConstants;
 import com.web.coretix.constants.UserTypeConstants;
@@ -81,11 +88,14 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
     private static final Logger logger = LoggerFactory.getLogger(UserAdministrationBean.class);
     private static final DateTimeFormatter NOTIFICATION_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd-MMM-yyyy hh:mm:ss a");
     private static final int AVATAR_IMAGE_SIZE = 320;
+    private static final String TEMP_PASSWORD_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789@#";
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
     private static final byte[] EMPTY_CROPPER_IMAGE = Base64.getDecoder().decode(
             "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4////fwAJ+wP9KobjigAAAABJRU5ErkJggg==");
     private static final String ALL_ORGANIZATIONS = "__ALL_ORGANIZATIONS__";
     private static final String ALL_USERS = "__ALL_USERS__";
     private List<UserDetails> usersList = new ArrayList<>();
+    private List<UserDetails> selectedUsers = new ArrayList<>();
     
     private boolean isAddOperation;
     private boolean datatableRendered;
@@ -93,6 +103,11 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
     private int recordsCount;
     
     private UserDetails selectedUserDetail;
+    private String adminResetPassword;
+    private String adminResetPasswordConfirm;
+    private String customNotificationMessage;
+    private String customPopupMessage;
+    private String pendingAdminAction;
 
 
     private String userName;
@@ -174,6 +189,10 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         setAccessRight("");
         selectedOrganizationFilter = resolveDefaultOrganizationFilter();
         selectedUserFilter = ALL_USERS;
+        adminResetPassword = "";
+        adminResetPasswordConfirm = "";
+        customNotificationMessage = "";
+        customPopupMessage = "";
         profileImageFile = null;
         uploadedProfileImageBytes = null;
         uploadedProfileImageContentType = null;
@@ -184,6 +203,7 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
             logger.debug("inside  usersList clear");
             usersList.clear();
         }
+        selectedUsers.clear();
 
         PrimeFaces.current().ajax().update("userform:usersMainPanelId");
         logger.debug("end of initializePageAttributes !!!");
@@ -205,11 +225,16 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         setCity("");
         setAddress("");
         setAccessRight("");
+        adminResetPassword = "";
+        adminResetPasswordConfirm = "";
+        customNotificationMessage = "";
+        customPopupMessage = "";
         profileImageFile = null;
         uploadedProfileImageBytes = null;
         uploadedProfileImageContentType = null;
         croppedProfileImage = null;
         removeProfileImage = false;
+        selectedUsers.clear();
     }
 
     public void addButtonAction() {
@@ -247,6 +272,20 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
 
     public void confirmEditButtonAction() {
         editCountry();
+    }
+
+    public void confirmEditButtonAction(UserDetails user) {
+        selectedUserDetail = user;
+        confirmEditButtonAction();
+    }
+
+    public void confirmEditSelectedUsersAction() {
+        if (!isSingleSelectionAvailable()) {
+            addAdminActionError(getMessage("userAdminSelectSingleUserLabel"));
+            return;
+        }
+        selectedUserDetail = selectedUsers.get(0);
+        confirmEditButtonAction();
     }
 
     private void editCountry() {
@@ -459,8 +498,7 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
             saveUserDetailsInternal();
         } catch (IllegalArgumentException | IllegalStateException ex) {
             logger.warn("Unable to save user details", ex);
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", ex.getMessage()));
+            addFacesMessage(FacesMessage.SEVERITY_ERROR, "errorLabel", ex.getMessage());
             PrimeFaces.current().ajax().update("userform:messages", "userform:addEditCountPanelId");
         }
     }
@@ -474,8 +512,7 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         removeProfileImage = false;
 
         if (uploadedFile == null || uploadedFile.getContent() == null || uploadedFile.getContent().length == 0) {
-            FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Validation Error", "Selected profile image is empty."));
+            addFacesMessage(FacesMessage.SEVERITY_ERROR, "errorLabel", getMessage("userAdminSelectedProfileImageEmptyDetailLabel"));
             PrimeFaces.current().ajax().update("userform:messages", "userform:cropperPanel", "userform:imagePreviewPanel");
             return;
         }
@@ -485,8 +522,8 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         uploadedProfileImageBytes = uploadedFile.getContent();
         uploadedProfileImageContentType = uploadedFile.getContentType();
 
-        FacesContext.getCurrentInstance().addMessage(null,
-                new FacesMessage(FacesMessage.SEVERITY_INFO, "Profile Image", uploadedFile.getFileName() + " uploaded."));
+        addFacesMessage(FacesMessage.SEVERITY_INFO, "userAdminProfileImageSummaryLabel",
+                getMessage("userAdminProfileImageUploadedDetailLabel", uploadedFile.getFileName()));
         PrimeFaces.current().ajax().update("userform:messages", "userform:cropperPanel", "userform:imagePreviewPanel");
     }
 
@@ -557,11 +594,13 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
 
         if (isAddOperation) {
             userDetails.setStatus(LoginConstants.NEVER_LOGIN_BEFORE.getId());
+            userDetails.setAccountDisabled(false);
+            userDetails.setAccountLocked(false);
             logger.debug("if (isAddOperation) {");
             userAdministrationService.addUserDetail(userDetails);
             notifyActiveOrganizationUsers(organizationId,
                     buildUserChangeNotification(userDetails.getUserName(), "added"));
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("User Added"));
+            addFacesMessage(FacesMessage.SEVERITY_INFO, "successLabel", getMessage("userAdminUserAddedLabel"));
         } else {
             logger.debug("else  edit operation !!");
             logger.debug("selectedUserDetail.getUserId() : " + getSelectedUserDetail().getUserId());
@@ -571,7 +610,7 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
             userAdministrationService.updateUserDetail(userDetails);
             notifyActiveOrganizationUsers(organizationId,
                     buildUserChangeNotification(userDetails.getUserName(), "edited"));
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("User Updated"));
+            addFacesMessage(FacesMessage.SEVERITY_INFO, "successLabel", getMessage("userAdminUserUpdatedLabel"));
         }
 
         fetchUserDetailsList();
@@ -596,17 +635,30 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         deleteCountry();
     }
 
+    public void confirmDeleteCountry(UserDetails user) {
+        selectedUserDetail = user;
+    }
+
+    public void prepareDeleteSelectedUsersAction() {
+        if (!isAnyUserSelected()) {
+            addAdminActionError(getMessage("userAdminSelectUserFirstLabel"));
+            return;
+        }
+        selectedUserDetail = null;
+        pendingAdminAction = "delete";
+    }
+
     private void deleteCountry() {
         logger.debug("inside delete user ");
         logger.debug("selectedUserDetail.getId() : " + getSelectedUserDetail().getUserId());
 
-        String deletedUserName = selectedUserDetail != null ? selectedUserDetail.getUserName() : "Unknown user";
+        String deletedUserName = selectedUserDetail != null ? selectedUserDetail.getUserName() : getMessage("userAdminUnknownUserLabel");
         Integer organizationId = resolveCurrentOrganizationId();
         userAdministrationService.deleteUserDetail(selectedUserDetail);
         notifyActiveOrganizationUsers(organizationId,
                 buildUserChangeNotification(deletedUserName, "deleted"));
         fetchUserDetailsList();
-        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("User Removed"));
+        addFacesMessage(FacesMessage.SEVERITY_INFO, "successLabel", getMessage("userAdminUserRemovedLabel"));
         PrimeFaces.current().executeScript(
                 "var filterInput=document.getElementById('userform:globalFilter');"
                         + "if(filterInput){filterInput.value='';}"
@@ -617,6 +669,7 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
     private void fetchUserDetailsList() {
         datatableRendered = false;
         logger.debug("inside fetchUserDetailsList ");
+        selectedUsers.clear();
         if (CollectionUtils.isNotEmpty(usersList)) {
             logger.debug("inside fetchUserDetailsList clear");
             usersList.clear();
@@ -741,14 +794,14 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         }
         if (selectedOrganizationFilter == null || selectedOrganizationFilter.trim().isEmpty()
                 || ALL_ORGANIZATIONS.equals(selectedOrganizationFilter)) {
-            return "All Organizations";
+            return getMessage("allOrganizationsLabel");
         }
         return selectedOrganizationFilter;
     }
 
     public String getSelectedUserFilterLabel() {
         if (selectedUserFilter == null || selectedUserFilter.trim().isEmpty() || ALL_USERS.equals(selectedUserFilter)) {
-            return "All Users";
+            return getMessage("allUsersLabel");
         }
         return selectedUserFilter;
     }
@@ -765,6 +818,26 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
      */
     public void setSelectedUserDetail(UserDetails selectedUserDetail) {
         this.selectedUserDetail = selectedUserDetail;
+    }
+
+    public List<UserDetails> getSelectedUsers() {
+        return selectedUsers;
+    }
+
+    public void setSelectedUsers(List<UserDetails> selectedUsers) {
+        this.selectedUsers = selectedUsers == null ? new ArrayList<>() : selectedUsers;
+    }
+
+    public int getSelectedUsersCount() {
+        return selectedUsers == null ? 0 : selectedUsers.size();
+    }
+
+    public boolean isAnyUserSelected() {
+        return getSelectedUsersCount() > 0;
+    }
+
+    public boolean isSingleSelectionAvailable() {
+        return getSelectedUsersCount() == 1;
     }
 
     /**
@@ -981,24 +1054,449 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
     private String buildUserChangeNotification(String changedUserName, String action) {
         String actorUserName = resolveCurrentUserName();
         String formattedDateTime = LocalDateTime.now().format(NOTIFICATION_DATE_TIME_FORMATTER);
-        return "User '" + changedUserName + "' was " + action + " by " + actorUserName + " on " + formattedDateTime + ".";
+        return getMessage("userAdminUserChangeNotificationPatternLabel", changedUserName,
+                resolveUserChangeActionLabel(action), actorUserName, formattedDateTime);
     }
 
     private String resolveCurrentUserName() {
         FacesContext facesContext = FacesContext.getCurrentInstance();
         if (facesContext == null) {
-            return "Unknown user";
+            return getMessage("userAdminUnknownUserLabel");
         }
 
         Object session = facesContext.getExternalContext().getSession(false);
         if (!(session instanceof HttpSession)) {
-            return "Unknown user";
+            return getMessage("userAdminUnknownUserLabel");
         }
 
         Object username = ((HttpSession) session).getAttribute(SessionAttributes.USERNAME.getName());
         return username instanceof String && !((String) username).trim().isEmpty()
                 ? ((String) username).trim()
-                : "Unknown user";
+                : getMessage("userAdminUnknownUserLabel");
+    }
+
+    public void prepareResetPasswordAction() {
+        adminResetPassword = generateTemporaryPassword(12);
+        adminResetPasswordConfirm = adminResetPassword;
+    }
+
+    public void prepareResetPasswordAction(UserDetails user) {
+        selectedUserDetail = user;
+        prepareResetPasswordAction();
+    }
+
+    public void prepareResetPasswordForSelectedUsers() {
+        if (!isAnyUserSelected()) {
+            addAdminActionError(getMessage("userAdminSelectUserFirstLabel"));
+            return;
+        }
+        selectedUserDetail = isSingleSelectionAvailable() ? selectedUsers.get(0) : null;
+        prepareResetPasswordAction();
+    }
+
+    public void prepareCustomNotificationAction() {
+        customNotificationMessage = "";
+    }
+
+    public void prepareCustomNotificationAction(UserDetails user) {
+        selectedUserDetail = user;
+        prepareCustomNotificationAction();
+    }
+
+    public void prepareCustomNotificationForSelectedUsers() {
+        if (!isAnyUserSelected()) {
+            addAdminActionError(getMessage("userAdminSelectUserFirstLabel"));
+            return;
+        }
+        selectedUserDetail = isSingleSelectionAvailable() ? selectedUsers.get(0) : null;
+        prepareCustomNotificationAction();
+    }
+
+    public void prepareCustomPopupAction() {
+        customPopupMessage = "";
+    }
+
+    public void prepareCustomPopupAction(UserDetails user) {
+        selectedUserDetail = user;
+        prepareCustomPopupAction();
+    }
+
+    public void prepareCustomPopupForSelectedUsers() {
+        if (!isAnyUserSelected()) {
+            addAdminActionError(getMessage("userAdminSelectUserFirstLabel"));
+            return;
+        }
+        selectedUserDetail = isSingleSelectionAvailable() ? selectedUsers.get(0) : null;
+        prepareCustomPopupAction();
+    }
+
+    public void prepareDisableAction(UserDetails user) {
+        selectedUserDetail = user;
+        selectedUsers.clear();
+        pendingAdminAction = "disable";
+    }
+
+    public void prepareUnlockAction(UserDetails user) {
+        selectedUserDetail = user;
+        selectedUsers.clear();
+        pendingAdminAction = "unlock";
+    }
+
+    public void prepareForceLogoutAction(UserDetails user) {
+        selectedUserDetail = user;
+        selectedUsers.clear();
+        pendingAdminAction = "force-logout";
+    }
+
+    public void prepareDisableSelectedUsersAction() {
+        if (!isAnyUserSelected()) {
+            addAdminActionError(getMessage("userAdminSelectUserFirstLabel"));
+            return;
+        }
+        selectedUserDetail = null;
+        pendingAdminAction = "disable";
+    }
+
+    public void prepareUnlockSelectedUsersAction() {
+        if (!isAnyUserSelected()) {
+            addAdminActionError(getMessage("userAdminSelectUserFirstLabel"));
+            return;
+        }
+        selectedUserDetail = null;
+        pendingAdminAction = "unlock";
+    }
+
+    public void prepareForceLogoutSelectedUsersAction() {
+        if (!isAnyUserSelected()) {
+            addAdminActionError(getMessage("userAdminSelectUserFirstLabel"));
+            return;
+        }
+        selectedUserDetail = null;
+        pendingAdminAction = "force-logout";
+    }
+
+    public void disableSelectedUser() {
+        UserDetails user = reloadSelectedUser();
+        if (user == null) {
+            return;
+        }
+
+        userAdministrationService.updateUserAccountControls(user.getUserId(), true, user.isAccountLocked());
+        userAdministrationService.markLogout(user.getUserId(), LoginConstants.LOGOUT_SUCCESSFUL.getId(), null);
+        forceLogoutForUser(user, "ACCOUNT_DISABLED_BY_ADMIN");
+        notifyActiveOrganizationUsers(resolveOrganizationId(user), buildUserChangeNotification(user.getUserName(), "disabled"));
+        refreshAfterAdminAction(getMessage("userAdminDisabledSuccessLabel"));
+    }
+
+    public void disableSelectedUser(UserDetails user) {
+        selectedUserDetail = user;
+        disableSelectedUser();
+    }
+
+    public void unlockSelectedUser() {
+        UserDetails user = reloadSelectedUser();
+        if (user == null) {
+            return;
+        }
+
+        userAdministrationService.updateUserAccountControls(user.getUserId(), false, false);
+        NotificationService.sendGrowlMessageToUserAccount(user.getUserId(),
+                getMessage("userAdminAccessRestoredNotificationLabel", resolveCurrentUserName()));
+        notifyActiveOrganizationUsers(resolveOrganizationId(user), buildUserChangeNotification(user.getUserName(), "unlocked"));
+        refreshAfterAdminAction(getMessage("userAdminUnlockedSuccessLabel"));
+    }
+
+    public void unlockSelectedUser(UserDetails user) {
+        selectedUserDetail = user;
+        unlockSelectedUser();
+    }
+
+    public void resetSelectedUserPassword() {
+        List<UserDetails> actionUsers = resolveActionUsers();
+        if (actionUsers.isEmpty()) {
+            return;
+        }
+
+        if (adminResetPassword == null || adminResetPassword.trim().isEmpty()) {
+            addAdminActionError(getMessage("userAdminResetPasswordRequiredLabel"));
+            return;
+        }
+
+        if (!adminResetPassword.equals(adminResetPasswordConfirm)) {
+            addAdminActionError(getMessage("userAdminResetPasswordMismatchLabel"));
+            return;
+        }
+
+        String hashedPassword = hashPassword(adminResetPassword.trim());
+        for (UserDetails user : actionUsers) {
+            userAdministrationService.updateUserPassword(user.getUserId(), hashedPassword);
+            userAdministrationService.updateUserAccountControls(user.getUserId(), user.isAccountDisabled(), false);
+            NotificationService.sendGrowlMessageToUserAccount(user.getUserId(),
+                    getMessage("userAdminPasswordResetNoticeLabel", resolveCurrentUserName()));
+            notifyActiveOrganizationUsers(resolveOrganizationId(user), buildUserChangeNotification(user.getUserName(), "password-reset"));
+        }
+        adminResetPassword = "";
+        adminResetPasswordConfirm = "";
+        PrimeFaces.current().executeScript("PF('resetPasswordDialog').hide()");
+        refreshAfterAdminAction(getMessage("userAdminPasswordResetSuccessLabel"));
+    }
+
+    public void forceLogoutSelectedUser() {
+        UserDetails user = reloadSelectedUser();
+        if (user == null) {
+            return;
+        }
+
+        if (scheduleForcedLogoutForUser(user)) {
+            userAdministrationService.markLogout(user.getUserId(), LoginConstants.LOGOUT_SUCCESSFUL.getId(), null);
+            notifyActiveOrganizationUsers(resolveOrganizationId(user), buildUserChangeNotification(user.getUserName(), "force-logout-requested"));
+            refreshAfterAdminAction(getMessage("userAdminForceLogoutRequestedSuccessLabel"));
+            return;
+        }
+
+        forceLogoutForUser(user, "FORCED_LOGOUT_BY_ADMIN");
+        notifyActiveOrganizationUsers(resolveOrganizationId(user), buildUserChangeNotification(user.getUserName(), "force-logged-out"));
+        refreshAfterAdminAction(getMessage("userAdminForcedLogoutSuccessLabel"));
+    }
+
+    public void forceLogoutSelectedUser(UserDetails user) {
+        selectedUserDetail = user;
+        forceLogoutSelectedUser();
+    }
+
+    public void confirmPendingAdminAction() {
+        if ("disable".equals(pendingAdminAction)) {
+            for (UserDetails user : resolveActionUsers()) {
+                selectedUserDetail = user;
+                disableSelectedUser();
+            }
+        } else if ("unlock".equals(pendingAdminAction)) {
+            for (UserDetails user : resolveActionUsers()) {
+                selectedUserDetail = user;
+                unlockSelectedUser();
+            }
+        } else if ("force-logout".equals(pendingAdminAction)) {
+            for (UserDetails user : resolveActionUsers()) {
+                selectedUserDetail = user;
+                forceLogoutSelectedUser();
+            }
+        } else if ("delete".equals(pendingAdminAction)) {
+            for (UserDetails user : resolveActionUsers()) {
+                selectedUserDetail = user;
+                deleteCountry();
+            }
+        }
+        pendingAdminAction = null;
+    }
+
+    public void sendCustomNotificationToSelectedUser() {
+        List<UserDetails> actionUsers = resolveActionUsers();
+        if (actionUsers.isEmpty()) {
+            return;
+        }
+
+        String trimmedMessage = customNotificationMessage == null ? "" : customNotificationMessage.trim();
+        if (trimmedMessage.isEmpty()) {
+            addAdminActionError(getMessage("userAdminNotificationMessageRequiredLabel"));
+            return;
+        }
+
+        for (UserDetails user : actionUsers) {
+            NotificationService.sendGrowlMessageToUserAccount(user.getUserId(), trimmedMessage);
+        }
+        customNotificationMessage = "";
+        PrimeFaces.current().executeScript("PF('customNotificationDialog').hide()");
+        refreshAfterAdminAction(getMessage("userAdminCustomNotificationSuccessLabel"));
+    }
+
+    public void sendCustomPopupToSelectedUser() {
+        List<UserDetails> actionUsers = resolveActionUsers();
+        if (actionUsers.isEmpty()) {
+            return;
+        }
+
+        String trimmedMessage = customPopupMessage == null ? "" : customPopupMessage.trim();
+        if (trimmedMessage.isEmpty()) {
+            addAdminActionError(getMessage("userAdminPopupMessageRequiredLabel"));
+            return;
+        }
+
+        for (UserDetails user : actionUsers) {
+            NotificationService.sendGrowlMessageToUserAccount(user.getUserId(), "[Popup] " + trimmedMessage);
+        }
+        customPopupMessage = "";
+        PrimeFaces.current().executeScript("PF('customPopupDialog').hide()");
+        refreshAfterAdminAction(getMessage("userAdminCustomPopupSuccessLabel"));
+    }
+
+    public String getAccountAccessLabel(UserDetails user) {
+        if (user == null) {
+            return getMessage("unknownLabel");
+        }
+        if (user.isAccountDisabled()) {
+            return getMessage("userAdminAccessDisabledLabel");
+        }
+        if (user.isAccountLocked()) {
+            return getMessage("userAdminAccessLockedLabel");
+        }
+        return getMessage("userAdminAccessEnabledLabel");
+    }
+
+    public String getAccountAccessSeverity(UserDetails user) {
+        if (user == null) {
+            return "info";
+        }
+        if (user.isAccountDisabled()) {
+            return "danger";
+        }
+        if (user.isAccountLocked()) {
+            return "warning";
+        }
+        return "success";
+    }
+
+    private void forceLogoutForUser(UserDetails user, String terminationReason) {
+        if (user == null) {
+            return;
+        }
+
+        String lastSessionId = user.getLastSessionId();
+        HttpSession targetSession = lastSessionId == null || lastSessionId.trim().isEmpty()
+                ? null
+                : SessionListeners.getAssociatedSession(lastSessionId);
+
+        if (targetSession != null) {
+            SessionAuditSupport.auditSessionTermination(targetSession, LoginConstants.LOGOUT_SUCCESSFUL,
+                    terminationReason, true);
+            return;
+        }
+
+        userAdministrationService.markLogout(user.getUserId(), LoginConstants.LOGOUT_SUCCESSFUL.getId(), null);
+    }
+
+    private boolean scheduleForcedLogoutForUser(UserDetails user) {
+        if (user == null) {
+            return false;
+        }
+
+        String lastSessionId = user.getLastSessionId();
+        HttpSession targetSession = lastSessionId == null || lastSessionId.trim().isEmpty()
+                ? null
+                : SessionListeners.getAssociatedSession(lastSessionId);
+
+        if (targetSession == null) {
+            return false;
+        }
+
+        targetSession.setAttribute(SessionAttributes.ADMIN_FORCE_LOGOUT_NOTIFICATION.getName(),
+                getMessage("userAdminForcedLogoutDialogMessageLabel"));
+        return true;
+    }
+
+    private void refreshAfterAdminAction(String successMessage) {
+        fetchUserDetailsList();
+        selectedUsers.clear();
+        addFacesMessage(FacesMessage.SEVERITY_INFO, "successLabel", successMessage);
+        PrimeFaces.current().ajax().update("userform:messages", "userform:usersMainPanelId");
+    }
+
+    private void addAdminActionError(String message) {
+        addFacesMessage(FacesMessage.SEVERITY_ERROR, "errorLabel", message);
+        PrimeFaces.current().ajax().update("userform:messages");
+    }
+
+    private UserDetails reloadSelectedUser() {
+        if (selectedUserDetail == null) {
+            addAdminActionError(getMessage("userAdminSelectUserFirstLabel"));
+            return null;
+        }
+
+        UserDetails persistentUser = userAdministrationService.getUserDetailById(selectedUserDetail.getUserId());
+        if (persistentUser == null) {
+            addAdminActionError(getMessage("userAdminSelectedUserNotFoundLabel"));
+            return null;
+        }
+
+        selectedUserDetail = persistentUser;
+        return persistentUser;
+    }
+
+    private List<UserDetails> resolveActionUsers() {
+        List<UserDetails> sourceUsers = isAnyUserSelected()
+                ? selectedUsers
+                : (selectedUserDetail == null ? Collections.emptyList() : Collections.singletonList(selectedUserDetail));
+
+        List<UserDetails> persistentUsers = new ArrayList<>();
+        for (UserDetails sourceUser : sourceUsers) {
+            if (sourceUser == null) {
+                continue;
+            }
+
+            UserDetails persistentUser = userAdministrationService.getUserDetailById(sourceUser.getUserId());
+            if (persistentUser != null) {
+                persistentUsers.add(persistentUser);
+            }
+        }
+
+        if (persistentUsers.isEmpty()) {
+            addAdminActionError(getMessage("userAdminSelectedUserNotFoundLabel"));
+        }
+
+        return persistentUsers;
+    }
+
+    public void selectAllUsers() {
+        selectedUsers = usersList == null ? new ArrayList<>() : new ArrayList<>(usersList);
+    }
+
+    public void clearSelectedUsers() {
+        selectedUsers.clear();
+    }
+
+    private Integer resolveOrganizationId(UserDetails user) {
+        return user != null && user.getOrganization() != null ? user.getOrganization().getId() : null;
+    }
+
+    private String generateTemporaryPassword(int length) {
+        StringBuilder passwordBuilder = new StringBuilder(length);
+        for (int index = 0; index < length; index++) {
+            passwordBuilder.append(TEMP_PASSWORD_ALPHABET.charAt(SECURE_RANDOM.nextInt(TEMP_PASSWORD_ALPHABET.length())));
+        }
+        return passwordBuilder.toString();
+    }
+
+    private String resolveUserChangeActionLabel(String action) {
+        if (action == null || action.trim().isEmpty()) {
+            return getMessage("unknownLabel");
+        }
+
+        switch (action) {
+            case "disable":
+                return getMessage("userAdminActionDisabledLabel");
+            case "added":
+                return getMessage("userAdminActionAddedLabel");
+            case "edited":
+                return getMessage("userAdminActionEditedLabel");
+            case "delete":
+            case "deleted":
+                return getMessage("userAdminActionDeletedLabel");
+            case "disabled":
+                return getMessage("userAdminActionDisabledLabel");
+            case "unlock":
+                return getMessage("userAdminActionUnlockedLabel");
+            case "unlocked":
+                return getMessage("userAdminActionUnlockedLabel");
+            case "password-reset":
+                return getMessage("userAdminActionPasswordResetLabel");
+            case "force-logout":
+                return getMessage("userAdminActionForceLoggedOutLabel");
+            case "force-logout-requested":
+                return getMessage("userAdminActionForceLogoutRequestedLabel");
+            case "force-logged-out":
+                return getMessage("userAdminActionForceLoggedOutLabel");
+            default:
+                return action;
+        }
     }
 
     private void applyProfileImage(UserDetails userDetails) {
@@ -1031,18 +1529,18 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
     private void validateProfileImage(UploadedFile uploadedFile) {
         String contentType = uploadedFile.getContentType();
         if (contentType == null || !contentType.startsWith("image/")) {
-            throw new IllegalArgumentException("Profile image must be an image file.");
+            throw new IllegalArgumentException(getMessage("userAdminProfileImageInvalidFileLabel"));
         }
 
         if (uploadedFile.getSize() > (2L * 1024L * 1024L)) {
-            throw new IllegalArgumentException("Profile image must be 2 MB or smaller.");
+            throw new IllegalArgumentException(getMessage("userAdminProfileImageSizeLimitLabel"));
         }
     }
 
     private String resolvePasswordForSave() {
         if (isAddOperation) {
             if (getPassword() == null || getPassword().trim().isEmpty()) {
-                throw new IllegalArgumentException("Password is required.");
+                throw new IllegalArgumentException(getMessage("userAdminPasswordRequiredLabel"));
             }
             return hashPassword(getPassword());
         }
@@ -1050,7 +1548,7 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         if (getPassword() == null || getPassword().trim().isEmpty()) {
             if (selectedUserDetail == null || selectedUserDetail.getPassword() == null
                     || selectedUserDetail.getPassword().trim().isEmpty()) {
-                throw new IllegalArgumentException("Existing password could not be resolved for the selected user.");
+                throw new IllegalArgumentException(getMessage("userAdminExistingPasswordResolveFailedLabel"));
             }
             return selectedUserDetail.getPassword();
         }
@@ -1064,6 +1562,8 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         }
 
         targetUserDetails.setStatus(sourceUserDetails.getStatus());
+        targetUserDetails.setAccountDisabled(sourceUserDetails.isAccountDisabled());
+        targetUserDetails.setAccountLocked(sourceUserDetails.isAccountLocked());
         targetUserDetails.setUserType(sourceUserDetails.getUserType());
         targetUserDetails.setLastPasswordChange(sourceUserDetails.getLastPasswordChange());
         targetUserDetails.setLastSuccessfulLogin(sourceUserDetails.getLastSuccessfulLogin());
@@ -1111,6 +1611,38 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
 
     public void setProfileImageFile(UploadedFile profileImageFile) {
         this.profileImageFile = profileImageFile;
+    }
+
+    public String getAdminResetPassword() {
+        return adminResetPassword;
+    }
+
+    public void setAdminResetPassword(String adminResetPassword) {
+        this.adminResetPassword = adminResetPassword;
+    }
+
+    public String getAdminResetPasswordConfirm() {
+        return adminResetPasswordConfirm;
+    }
+
+    public void setAdminResetPasswordConfirm(String adminResetPasswordConfirm) {
+        this.adminResetPasswordConfirm = adminResetPasswordConfirm;
+    }
+
+    public String getCustomNotificationMessage() {
+        return customNotificationMessage;
+    }
+
+    public void setCustomNotificationMessage(String customNotificationMessage) {
+        this.customNotificationMessage = customNotificationMessage;
+    }
+
+    public String getCustomPopupMessage() {
+        return customPopupMessage;
+    }
+
+    public void setCustomPopupMessage(String customPopupMessage) {
+        this.customPopupMessage = customPopupMessage;
     }
 
     public CroppedImage getCroppedProfileImage() {
@@ -1162,7 +1694,7 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
             BufferedImage originalImage = ImageIO.read(inputStream);
             if (originalImage == null) {
-                throw new IllegalArgumentException("Selected profile image could not be read.");
+                throw new IllegalArgumentException(getMessage("userAdminSelectedProfileImageReadFailedLabel"));
             }
 
             int cropSize = Math.min(originalImage.getWidth(), originalImage.getHeight());
@@ -1184,12 +1716,78 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
             ImageIO.write(resizedImage, "png", outputStream);
             return new AvatarImage(outputStream.toByteArray(), "image/png");
         } catch (IOException ex) {
-            throw new IllegalStateException("Unable to resize the selected profile image.", ex);
+            throw new IllegalStateException(getMessage("userAdminProfileImageResizeFailedLabel"), ex);
         }
+    }
+
+    private void addFacesMessage(javax.faces.application.FacesMessage.Severity severity, String summaryKey, String detail) {
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(severity, getMessage(summaryKey), detail));
+    }
+
+    private String getMessage(String key, Object... arguments) {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null) {
+            return key;
+        }
+
+        ResourceBundle resourceBundle = facesContext.getApplication().getResourceBundle(facesContext, "msg");
+        String pattern = resourceBundle != null && resourceBundle.containsKey(key) ? resourceBundle.getString(key) : key;
+        return arguments == null || arguments.length == 0 ? pattern : MessageFormat.format(pattern, arguments);
     }
 
     public int getAvatarImageSize() {
         return AVATAR_IMAGE_SIZE;
+    }
+
+    public String getProfileImageResizeHelpText() {
+        return getMessage("userAdminAvatarResizeHelpLabel", AVATAR_IMAGE_SIZE);
+    }
+
+    public String getPendingAdminActionConfirmationMessage() {
+        if ((selectedUserDetail == null && !isAnyUserSelected()) || pendingAdminAction == null || pendingAdminAction.trim().isEmpty()) {
+            return getMessage("userAdminSelectUserFirstLabel");
+        }
+
+        String actionLabel = resolveUserChangeActionLabel(pendingAdminAction);
+        if (isAnyUserSelected()) {
+            return getMessage("userAdminConfirmBulkActionMessageLabel", actionLabel, selectedUsers.size());
+        }
+        return getMessage("userAdminConfirmActionMessageLabel", actionLabel, selectedUserDetail.getUserName());
+    }
+
+    public String getSelectedActionTargetLabel() {
+        if (isAnyUserSelected()) {
+            if (isSingleSelectionAvailable()) {
+                return selectedUsers.get(0).getUserName();
+            }
+            return getMessage("userAdminSelectedUsersLabel", selectedUsers.size());
+        }
+
+        return selectedUserDetail == null ? "-" : selectedUserDetail.getUserName();
+    }
+
+    public String getSelectedUsersDisplayNames() {
+        List<UserDetails> users = isAnyUserSelected()
+                ? selectedUsers
+                : (selectedUserDetail == null ? Collections.emptyList() : Collections.singletonList(selectedUserDetail));
+
+        return users.stream()
+                .filter(Objects::nonNull)
+                .map(UserDetails::getUserName)
+                .filter(Objects::nonNull)
+                .filter(name -> !name.trim().isEmpty())
+                .collect(Collectors.joining(", "));
+    }
+
+    public int getActionTargetCount() {
+        if (isAnyUserSelected()) {
+            return selectedUsers.size();
+        }
+        return selectedUserDetail == null ? 0 : 1;
+    }
+
+    public String getPendingAdminActionLabel() {
+        return resolveUserChangeActionLabel(pendingAdminAction);
     }
 
     private static final class AvatarImage {
@@ -1210,6 +1808,3 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
         }
     }
 }
-
-
-

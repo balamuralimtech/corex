@@ -29,7 +29,7 @@
 
         <h:outputStylesheet>
             .dashboard-shell { display:flex; flex-direction:column; gap:1.25rem; }
-            .dashboard-hero { position:relative; overflow:hidden; padding:1.8rem; border-radius:22px; background:linear-gradient(135deg,var(--dashboard-hero-primary, #1e3c72) 0%, var(--dashboard-hero-primary, #1e3c72) 42%, var(--dashboard-hero-secondary, #2a5298) 100%); color:#f8fafc; box-shadow:0 24px 80px rgba(15,23,42,.22); }
+            .dashboard-hero { position:relative; overflow:hidden; padding:1.8rem; border-radius:22px; background:linear-gradient(135deg,var(--dashboard-hero-primary, #{guestPreferences.activeLayoutColor}) 0%, var(--dashboard-hero-primary, #{guestPreferences.activeLayoutColor}) 42%, var(--dashboard-hero-secondary, #{guestPreferences.activeLayoutColor}) 100%); color:#f8fafc; box-shadow:0 24px 80px rgba(15,23,42,.22); }
             .dashboard-hero:before { content:''; position:absolute; inset:auto -8% -35% auto; width:320px; height:320px; border-radius:50%; background:radial-gradient(circle,rgba(255,255,255,.18) 0%,rgba(255,255,255,0) 70%); }
             .dashboard-hero-title { margin:0; font-size:2rem; font-weight:700; letter-spacing:-.03em; }
             .dashboard-hero-copy { margin-top:.75rem; max-width:780px; color:rgba(241,245,249,.88); line-height:1.6; }
@@ -57,6 +57,13 @@
             .dashboard-stat-value { color:#0f172a; font-weight:700; text-align:right; }
             .dashboard-chart { min-height:360px; }
             .dashboard-chart-sm { min-height:320px; }
+            .server-meter-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:.9rem; }
+            .server-meter-card { padding:1rem; border-radius:16px; border:1px solid #e2e8f0; background:#f8fafc; }
+            .server-meter-label { color:#64748b; font-size:.82rem; text-transform:uppercase; letter-spacing:.08em; }
+            .server-meter-value { margin-top:.45rem; color:#0f172a; font-size:1.55rem; font-weight:700; }
+            .server-meter-foot { margin-top:.35rem; color:#475569; font-size:.88rem; }
+            .server-progress { margin-top:.75rem; height:10px; border-radius:999px; background:#e2e8f0; overflow:hidden; }
+            .server-progress-bar { height:100%; border-radius:999px; background:linear-gradient(90deg,#0f766e 0%,#14b8a6 100%); }
         </h:outputStylesheet>
 
         <h:form id="dashboardFormId">
@@ -260,37 +267,56 @@
                             </div>
                         </div>
                     </div>
+                    <h:panelGroup rendered="#{homePageBean.serverMetricsVisible}" layout="block" styleClass="col-12">
+                        <div class="dashboard-panel">
+                            <div class="dashboard-panel-header">
+                                <div>
+                                    <h3 class="dashboard-panel-title">Server Pulse</h3>
+                                    <div class="dashboard-panel-subtitle">Live JVM and host metrics for the current application server.</div>
+                                </div>
+                            </div>
+                            <div class="server-meter-grid">
+                                <div class="server-meter-card">
+                                    <div class="server-meter-label">CPU Usage</div>
+                                    <div class="server-meter-value">#{homePageBean.cpuUsageLabel}</div>
+                                    <div class="server-meter-foot">Host processor load right now</div>
+                                    <div class="server-progress"><div class="server-progress-bar" style="width:#{homePageBean.cpuUsagePercent}%;"></div></div>
+                                </div>
+                                <div class="server-meter-card">
+                                    <div class="server-meter-label">Physical Memory</div>
+                                    <div class="server-meter-value">#{homePageBean.physicalMemoryUsagePercent}%</div>
+                                    <div class="server-meter-foot">#{homePageBean.physicalMemoryUsageLabel}</div>
+                                    <div class="server-progress"><div class="server-progress-bar" style="width:#{homePageBean.physicalMemoryUsagePercent}%;"></div></div>
+                                </div>
+                                <div class="server-meter-card">
+                                    <div class="server-meter-label">JVM Heap</div>
+                                    <div class="server-meter-value">#{homePageBean.jvmHeapUsagePercent}%</div>
+                                    <div class="server-meter-foot">#{homePageBean.jvmHeapUsageLabel}</div>
+                                    <div class="server-progress"><div class="server-progress-bar" style="width:#{homePageBean.jvmHeapUsagePercent}%;"></div></div>
+                                </div>
+                                <div class="server-meter-card">
+                                    <div class="server-meter-label">Disk Usage</div>
+                                    <div class="server-meter-value">#{homePageBean.diskUsagePercent}%</div>
+                                    <div class="server-meter-foot">#{homePageBean.diskUsageLabel}</div>
+                                    <div class="server-progress"><div class="server-progress-bar" style="width:#{homePageBean.diskUsagePercent}%;"></div></div>
+                                </div>
+                            </div>
+                            <div class="dashboard-stat-list" style="margin-top:1rem;">
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Server Host</span><span class="dashboard-stat-value">#{homePageBean.serverHostName}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Operating System</span><span class="dashboard-stat-value">#{homePageBean.serverOsName}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Java Runtime</span><span class="dashboard-stat-value">#{homePageBean.serverJavaVersion}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Application Uptime</span><span class="dashboard-stat-value">#{homePageBean.serverUptime}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Active Sessions</span><span class="dashboard-stat-value">#{homePageBean.activeSessionCountLabel}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Live Threads</span><span class="dashboard-stat-value">#{homePageBean.serverThreadCountLabel}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Loaded Classes</span><span class="dashboard-stat-value">#{homePageBean.serverLoadedClassCountLabel}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Health Snapshot</span><span class="dashboard-stat-value">#{homePageBean.serverMemoryFootprintSummary}</span></div>
+                            </div>
+                        </div>
+                    </h:panelGroup>
                 </div>
 
                 <h:outputScript>
                     //<![CDATA[
-                    var dashboardLayoutThemeColors = {
-                        amber: ['#7A5E06', '#B28708'],
-                        blue: ['#146fd7', '#1d4ed8'],
-                        brown: ['#593E22', '#8B5E34'],
-                        cyan: ['#0A616F', '#17A2B8'],
-                        darkgrey: ['#343A40', '#495057'],
-                        deeppurple: ['#341A64', '#612FBE'],
-                        green: ['#1F8E38', '#28A745'],
-                        indigo: ['#470EA2', '#6610F2'],
-                        lightblue: ['#14569D', '#4DA3FF'],
-                        lightgreen: ['#2E8942', '#61CC79'],
-                        lime: ['#407916', '#74CD32'],
-                        orange: ['#904100', '#FD7E14'],
-                        pink: ['#771340', '#E83E8C'],
-                        purple: ['#391F68', '#883cae'],
-                        teal: ['#136E52', '#20C997'],
-                        calm: ['#5f2c82', '#0DA9A4'],
-                        crimson: ['#521c52', '#c6426e'],
-                        firewatch: ['#cb2d3e', '#ef473a'],
-                        influenza: ['#a83279', '#f38e00'],
-                        joomla: ['#1e3c72', '#2a5298'],
-                        littleleaf: ['#4DB865', '#80D293'],
-                        night: ['#2c0747', '#6441a5'],
-                        skyline: ['#2b32b2', '#1488cc'],
-                        sunkist: ['#ee8a21', '#f2c94c'],
-                        suzy: ['#834d9b', '#d04ed6']
-                    };
                     var DASHBOARD_REFRESH_SECONDS = 60;
                     var DASHBOARD_TIMER_STORAGE_KEY = 'corex.dashboard.nextRefreshAt';
                     var dashboardCountdownInterval;
@@ -298,10 +324,48 @@
                     var dashboardRefreshInFlight = false;
                     var dashboardAutoRefreshEnabled = #{homePageBean.timerEnabled};
 
-                    function applyDashboardHeroColors(layoutTheme) {
-                        var colors = dashboardLayoutThemeColors[layoutTheme] || dashboardLayoutThemeColors['joomla'];
-                        document.documentElement.style.setProperty('--dashboard-hero-primary', colors[0]);
-                        document.documentElement.style.setProperty('--dashboard-hero-secondary', colors[1]);
+                    function normalizeDashboardColor(value) {
+                        if (!value) {
+                            return '#{guestPreferences.activeLayoutColor}';
+                        }
+
+                        var color = value.trim();
+                        if (color.indexOf('rgb') === 0) {
+                            var matches = color.match(/\d+/g);
+                            if (!matches || matches.length < 3) {
+                                return '#{guestPreferences.activeLayoutColor}';
+                            }
+
+                            return '#' + matches.slice(0, 3).map(function(component) {
+                                var hex = parseInt(component, 10).toString(16);
+                                return hex.length === 1 ? '0' + hex : hex;
+                            }).join('');
+                        }
+
+                        return color;
+                    }
+
+                    function adjustDashboardColor(hexColor, adjustment) {
+                        var normalized = normalizeDashboardColor(hexColor).replace('#', '');
+                        if (normalized.length !== 6) {
+                            return '#{guestPreferences.activeLayoutColor}';
+                        }
+
+                        var adjusted = '#';
+                        for (var index = 0; index < 3; index++) {
+                            var component = parseInt(normalized.substr(index * 2, 2), 16);
+                            var nextValue = Math.max(0, Math.min(255, component + adjustment));
+                            var hex = nextValue.toString(16);
+                            adjusted += hex.length === 1 ? '0' + hex : hex;
+                        }
+
+                        return adjusted;
+                    }
+
+                    function applyDashboardHeroColors() {
+                        var baseColor = normalizeDashboardColor('#{guestPreferences.activeLayoutColor}');
+                        document.documentElement.style.setProperty('--dashboard-hero-primary', adjustDashboardColor(baseColor, -24));
+                        document.documentElement.style.setProperty('--dashboard-hero-secondary', adjustDashboardColor(baseColor, 20));
                     }
 
                     function wireDashboardThemeSync() {
@@ -312,7 +376,9 @@
                         var originalChangeLayout = PrimeFaces.AvalonConfigurator.changeLayout;
                         PrimeFaces.AvalonConfigurator.changeLayout = function(layoutTheme) {
                             originalChangeLayout.call(this, layoutTheme);
-                            applyDashboardHeroColors(layoutTheme);
+                            window.setTimeout(function() {
+                                applyDashboardHeroColors();
+                            }, 50);
                         };
                         PrimeFaces.AvalonConfigurator._dashboardThemeHooked = true;
                     }
@@ -501,7 +567,7 @@
                         if (sessionStorage.getItem('showingLoader') === 'true') {
                             sessionStorage.removeItem('showingLoader');
                         }
-                        applyDashboardHeroColors('#{guestPreferences.layout}');
+                        applyDashboardHeroColors();
                         wireDashboardThemeSync();
                         renderDashboardCharts();
                         applyDashboardAutoRefreshState(#{homePageBean.timerEnabled});

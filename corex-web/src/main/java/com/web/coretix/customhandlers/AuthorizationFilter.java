@@ -40,6 +40,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
+import com.persist.coretix.modal.usermanagement.UserDetails;
+import com.web.coretix.constants.LoginConstants;
+
 public class AuthorizationFilter implements Filter {
 
     private static final String DEFAULT_LOGIN_VIDEO = "/resources/avalon-layout/videos/home.mp4";
@@ -97,6 +100,11 @@ public class AuthorizationFilter implements Filter {
 
         if (loggedIn || loginRequest || login2Request || loginInternalRequest || login2InternalRequest
                 || setupRequest || setupInternalRequest || videoRequest || publicFriendlyRequest || publicInternalRequest || resourceRequest) {
+            if (loggedIn && !resourceRequest && !isSessionStateValid(session)) {
+                invalidateSession(session);
+                res.sendRedirect(login2URI);
+                return;
+            }
             if (loggedIn && isProtectedPage(requestPath) && !hasPageAccess(session, requestPath)) {
                 res.sendRedirect(req.getContextPath() + "/forbidden");
                 return;
@@ -109,6 +117,41 @@ public class AuthorizationFilter implements Filter {
 
     @Override
     public void destroy() {
+    }
+
+    private boolean isSessionStateValid(HttpSession session) {
+        if (session == null || userAdministrationService == null) {
+            return false;
+        }
+
+        Object userIdObject = session.getAttribute(SessionAttributes.USER_ACCOUNT_ID.getName());
+        if (!(userIdObject instanceof Integer)) {
+            return false;
+        }
+
+        UserDetails userDetails = userAdministrationService.getUserDetailById((Integer) userIdObject);
+        if (userDetails == null) {
+            return false;
+        }
+
+        if (userDetails.isAccountDisabled() || userDetails.isAccountLocked()) {
+            return false;
+        }
+
+        if (userDetails.getStatus() != LoginConstants.SUCCESSFUL_LOGIN.getId()) {
+            return false;
+        }
+
+        String persistedSessionId = userDetails.getLastSessionId();
+        return persistedSessionId != null && persistedSessionId.equals(session.getId());
+    }
+
+    private void invalidateSession(HttpSession session) {
+        try {
+            session.invalidate();
+        } catch (IllegalStateException ignored) {
+            // Session was already invalidated by another request.
+        }
     }
 
     private boolean isProtectedPage(String requestPath) {
@@ -174,4 +217,3 @@ public class AuthorizationFilter implements Filter {
         return java.util.Collections.unmodifiableMap(rules);
     }
 }
-

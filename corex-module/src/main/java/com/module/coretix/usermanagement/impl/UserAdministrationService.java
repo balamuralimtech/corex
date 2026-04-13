@@ -78,6 +78,11 @@ public class UserAdministrationService implements IUserAdministrationService {
         getUserDetailDAO().updateUserPassword(userId, newPassword);
     }
 
+    @Transactional(readOnly = false)
+    public void updateUserAccountControls(int userId, boolean accountDisabled, boolean accountLocked) {
+        getUserDetailDAO().updateUserAccountControls(userId, accountDisabled, accountLocked);
+    }
+
     public boolean isUserValid(String username, String password){
         return getUserDetailDAO().isUserValid(username, password);
     }
@@ -131,7 +136,6 @@ public class UserAdministrationService implements IUserAdministrationService {
     }
 
 }
-
 
 
 

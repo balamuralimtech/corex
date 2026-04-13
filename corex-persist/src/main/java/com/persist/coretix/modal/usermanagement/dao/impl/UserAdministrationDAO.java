@@ -123,9 +123,24 @@ private static final Logger logger = LoggerFactory.getLogger(UserAdministrationD
     public void updateUserPassword(int userId, String newPassword) {
         Session session = getSessionFactory().getCurrentSession();
 
-        String hql = "update UserDetails set password = :newPassword where userId = :userId";
+        String hql = "update UserDetails set password = :newPassword, "
+                + "lastPasswordChange = current_timestamp(), updatedAt = current_timestamp() "
+                + "where userId = :userId";
         session.createQuery(hql)
                 .setParameter("newPassword", newPassword)
+                .setParameter("userId", userId)
+                .executeUpdate();
+    }
+
+    public void updateUserAccountControls(int userId, boolean accountDisabled, boolean accountLocked) {
+        Session session = getSessionFactory().getCurrentSession();
+
+        String hql = "update UserDetails set accountDisabled = :accountDisabled, "
+                + "accountLocked = :accountLocked, updatedAt = current_timestamp() "
+                + "where userId = :userId";
+        session.createQuery(hql)
+                .setParameter("accountDisabled", accountDisabled)
+                .setParameter("accountLocked", accountLocked)
                 .setParameter("userId", userId)
                 .executeUpdate();
     }
@@ -229,7 +244,6 @@ private static final Logger logger = LoggerFactory.getLogger(UserAdministrationD
     }
 
 }
-
 
 
 

@@ -22,6 +22,7 @@ import javax.inject.Named;
 public class AppInfoBean {
 
     private static final String DEFAULT_APP_NAME = "CoreX";
+    private static final String DEFAULT_BRAND_ICON_RESOURCE = "demo:images/coretix/app-brand.svg";
     private static final String DEFAULT_LOGIN_HEADLINE = "Simplifying Healthcare";
     private static final String DEFAULT_LOGIN_DESCRIPTION =
             "CareX is a unified healthcare management platform designed to support both clinics and hospitals in managing their daily operations efficiently.";
@@ -31,6 +32,13 @@ public class AppInfoBean {
     public String getAppName() {
         String appName = System.getProperty("app.name");
         return appName == null || appName.trim().isEmpty() ? DEFAULT_APP_NAME : appName;
+    }
+
+    public String getBrandIconResource() {
+        String brandIconResource = System.getProperty("app.brand.icon");
+        return brandIconResource == null || brandIconResource.trim().isEmpty()
+                ? DEFAULT_BRAND_ICON_RESOURCE
+                : brandIconResource;
     }
 
     public String getLoginHeadline() {
@@ -61,6 +69,5 @@ public class AppInfoBean {
                 : loginVideo;
     }
 }
-
 
 

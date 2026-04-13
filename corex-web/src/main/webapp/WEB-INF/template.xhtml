@@ -32,7 +32,8 @@
             <meta name="apple-mobile-web-app-capable" content="yes" />
             <meta name="mobile-web-app-capable" content="yes" />
             <meta name="theme-color" content="#{guestPreferences.themeColors[guestPreferences.theme]}" />
-            <link rel="shortcut icon" href="#{request.contextPath}/resources/demo/images/coretix/coretixfavicon.png" type="image/x-icon" />
+            <link rel="icon" href="#{resource[appInfo.brandIconResource]}" type="image/svg+xml" />
+            <link rel="shortcut icon" href="#{resource[appInfo.brandIconResource]}" type="image/svg+xml" />
         </f:facet>
         <title>#{appInfo.appName}</title>
         <h:outputScript name="js/prism.js" library="avalon-layout"/>
@@ -202,9 +203,10 @@
                 margin:0 0 1rem 0;
                 padding:.85rem 1rem;
                 border-radius:18px;
-                border:1px solid rgba(148,163,184,.18);
-                background:linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-                box-shadow:0 10px 34px rgba(15,23,42,.06);
+                border:1px solid color-mix(in srgb, #{guestPreferences.activeLayoutColor} 18%, white);
+                background:
+                    linear-gradient(180deg, #ffffff 0%, color-mix(in srgb, #{guestPreferences.activeLayoutColor} 7%, #f8fafc) 100%);
+                box-shadow:0 10px 34px color-mix(in srgb, #{guestPreferences.activeLayoutColor} 10%, rgba(15,23,42,.06));
             }
             .layout-wrapper .ui-breadcrumb ul {
                 display:flex;
@@ -233,7 +235,7 @@
                 transition:background-color .18s ease, color .18s ease, box-shadow .18s ease;
             }
             .layout-wrapper .ui-breadcrumb ul li .ui-menuitem-link .ui-menuitem-icon {
-                color:#0f766e;
+                color:#{guestPreferences.activeLayoutColor};
                 font-size:.95rem;
             }
             .layout-wrapper .ui-breadcrumb ul li .ui-menuitem-link .ui-menuitem-text {
@@ -241,18 +243,18 @@
             }
             .layout-wrapper .ui-breadcrumb ul li .ui-menuitem-link:hover,
             .layout-wrapper .ui-breadcrumb ul li .ui-menuitem-link:focus {
-                background:#ecfeff;
-                color:#115e59;
-                box-shadow:inset 0 0 0 1px rgba(15,118,110,.12);
+                background:color-mix(in srgb, #{guestPreferences.activeLayoutColor} 10%, white);
+                color:color-mix(in srgb, #{guestPreferences.activeLayoutColor} 82%, #0f172a);
+                box-shadow:inset 0 0 0 1px color-mix(in srgb, #{guestPreferences.activeLayoutColor} 22%, white);
             }
             .layout-wrapper .ui-breadcrumb ul li.ui-breadcrumb-chevron {
-                color:#94a3b8;
+                color:color-mix(in srgb, #{guestPreferences.activeLayoutColor} 38%, #94a3b8);
                 font-size:.8rem;
                 margin:0 .1rem;
             }
             .layout-wrapper .ui-breadcrumb ul li:last-child .ui-menuitem-link {
-                background:#f1f5f9;
-                color:#0f172a;
+                background:color-mix(in srgb, #{guestPreferences.activeLayoutColor} 12%, #f1f5f9);
+                color:color-mix(in srgb, #{guestPreferences.activeLayoutColor} 78%, #0f172a);
             }
             @media (max-width: 768px) {
                 .layout-wrapper .ui-breadcrumb {
@@ -381,11 +383,15 @@
         <h:body styleClass="#{guestPreferences.inputStyleClass}">
         <h:form>
             <p:growl id="growl" widgetVar="growlWidget" life="10000" />
-            <p:poll interval="5" listener="#{guestPreferences.checkForGrowlMessage}" update="growl :topbar-items-form" global="false"
-                    oncomplete="PrimeFaces.AvalonConfigurator.refreshTopbarState();"
+            <p:poll interval="1" listener="#{guestPreferences.checkForGrowlMessage}"
+                    update="growl :topbar-items-form:messageUnreadCount :topbar-items-form:alertUnreadCount"
+                    global="false"
                     onerror="handleGlobalPollError();"/>
             <p:remoteCommand name="roleUpdateForceLogout"
                              actionListener="#{guestPreferences.handleForcedRoleUpdateLogout}"
+                             oncomplete="window.location='#{request.contextPath}/landing';" />
+            <p:remoteCommand name="adminForceLogout"
+                             actionListener="#{guestPreferences.handleAdminForceLogout}"
                              oncomplete="window.location='#{request.contextPath}/landing';" />
         </h:form>
 
@@ -398,6 +404,47 @@
                 </div>
             </div>
         </p:dialog>
+
+        <p:dialog header="Logout Notice" widgetVar="adminForceLogoutDialog" modal="true"
+                  closable="false" draggable="false" resizable="false" responsive="true" width="420">
+            <div style="line-height: 1.7;">
+                <div id="admin-force-logout-message">Your session has been ended by an administrator.</div>
+                <div style="margin-top: 1rem;">
+                    Redirecting to login page in <span id="admin-force-logout-countdown">3</span> seconds.
+                </div>
+            </div>
+        </p:dialog>
+
+        <h:outputScript target="body">
+            //<![CDATA[
+            function showAdminForceLogoutDialog(message, seconds) {
+                var messageElement = document.getElementById('admin-force-logout-message');
+                var countdownElement = document.getElementById('admin-force-logout-countdown');
+                var remaining = seconds || 3;
+
+                if (messageElement) {
+                    messageElement.textContent = message || 'Your session has been ended by an administrator.';
+                }
+                if (countdownElement) {
+                    countdownElement.textContent = remaining;
+                }
+
+                PF('adminForceLogoutDialog').show();
+
+                var intervalId = window.setInterval(function() {
+                    remaining -= 1;
+                    if (countdownElement) {
+                        countdownElement.textContent = Math.max(remaining, 0);
+                    }
+
+                    if (remaining <= 0) {
+                        window.clearInterval(intervalId);
+                        adminForceLogout();
+                    }
+                }, 1000);
+            }
+            //]]>
+        </h:outputScript>
 
         <!-- Preloader - style you can find in spinners.css -->
         <div class="preloader" id="progressBarId" style="display: none;background:none;">

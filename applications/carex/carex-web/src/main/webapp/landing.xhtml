@@ -10,7 +10,9 @@
         name="description"
         content="CareX helps clinics manage consultations, digital prescriptions, invoices, medical certificates, and analytics in one refined clinic platform."
     />
-    <title>CareX | Clinic Management, Reimagined</title>
+    <link rel="icon" href="#{resource[appInfo.brandIconResource]}" type="image/svg+xml"/>
+    <link rel="shortcut icon" href="#{resource[appInfo.brandIconResource]}" type="image/svg+xml"/>
+    <title>#{appInfo.appName}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin"/>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
@@ -21,9 +23,9 @@
     <header class="site-header">
         <div class="nav-wrap">
             <a class="brand" href="#top" aria-label="CareX home">
-                <span class="mark"></span>
+                <img src="#{resource[appInfo.brandIconResource]}" class="mark" alt="#{appInfo.appName}"/>
                 <span class="bcopy">
-                    <span class="bname">CareX</span>
+                    <span class="bname">#{appInfo.appName}</span>
                     <span class="bsub">Clinic and hospital operations platform</span>
                 </span>
             </a>

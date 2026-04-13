@@ -22,6 +22,200 @@
         xmlns:p="http://primefaces.org/ui"
         xmlns:pu="http://primefaces.org/avalon">
     <h:outputStylesheet name="css/flags/flags.css" library="demo"/>
+    <style type="text/css">
+        .topbar {
+            --topbar-accent: #{guestPreferences.activeLayoutColor};
+            --topbar-accent-strong: color-mix(in srgb, #{guestPreferences.activeLayoutColor} 82%, #07111f);
+            --topbar-accent-soft: color-mix(in srgb, #{guestPreferences.activeLayoutColor} 16%, white);
+            --topbar-accent-border: color-mix(in srgb, #{guestPreferences.activeLayoutColor} 36%, white);
+            --topbar-surface: rgba(255,255,255,.98);
+            --topbar-surface-soft: rgba(248,250,252,.96);
+            --topbar-ink: #0f172a;
+            --topbar-muted: #64748b;
+        }
+        .topbar-notification-menu {
+            width: min(92vw, 430px);
+            height: min(70vh, 520px);
+            overflow: hidden !important;
+            padding: 0;
+            border: 1px solid rgba(148,163,184,.22);
+            border-radius: 22px;
+            background: linear-gradient(180deg, var(--topbar-surface) 0%, var(--topbar-surface-soft) 100%);
+            box-shadow: 0 30px 80px rgba(15,23,42,.2);
+            backdrop-filter: blur(18px);
+        }
+        .topbar-notification-shell {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .topbar-notification-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem 1.1rem .95rem;
+            border-bottom: 1px solid rgba(226,232,240,.9);
+            background:
+                radial-gradient(circle at top right, color-mix(in srgb, white 16%, transparent), transparent 32%),
+                linear-gradient(135deg, var(--topbar-accent) 0%, var(--topbar-accent-strong) 100%);
+            color: #f8fafc;
+        }
+        .topbar-notification-title {
+            display: block;
+            font-size: 1rem;
+            font-weight: 800;
+            letter-spacing: -.02em;
+        }
+        .topbar-notification-copy {
+            display: block;
+            margin-top: .28rem;
+            color: rgba(226,232,240,.78);
+            font-size: .82rem;
+            line-height: 1.55;
+        }
+        .topbar-notification-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2rem;
+            min-height: 2rem;
+            padding: 0 .7rem;
+            border-radius: 999px;
+            background: color-mix(in srgb, white 16%, var(--topbar-accent));
+            border: 1px solid color-mix(in srgb, white 32%, var(--topbar-accent));
+            font-weight: 800;
+            color: #eff6ff;
+        }
+        .topbar-notification-list {
+            display: grid;
+            flex: 1 1 auto;
+            min-height: 0;
+            gap: .75rem;
+            padding: .95rem;
+            overflow-y: auto;
+            background:
+                radial-gradient(circle at top right, color-mix(in srgb, var(--topbar-accent) 12%, transparent), transparent 28%),
+                linear-gradient(180deg, rgba(255,255,255,.82) 0%, rgba(248,250,252,.92) 100%);
+            scrollbar-width: thin;
+            scrollbar-color: color-mix(in srgb, var(--topbar-accent) 55%, #94a3b8) rgba(226,232,240,.9);
+        }
+        .topbar-notification-list::-webkit-scrollbar {
+            width: 10px;
+        }
+        .topbar-notification-list::-webkit-scrollbar-track {
+            background: rgba(226,232,240,.75);
+            border-radius: 999px;
+        }
+        .topbar-notification-list::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, color-mix(in srgb, var(--topbar-accent) 72%, white), color-mix(in srgb, var(--topbar-accent) 48%, #334155));
+            border-radius: 999px;
+            border: 2px solid rgba(226,232,240,.75);
+        }
+        .topbar-notification-card {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: .85rem;
+            align-items: flex-start;
+            padding: .95rem 1rem;
+            border-radius: 18px;
+            border: 1px solid rgba(226,232,240,.95);
+            background: rgba(255,255,255,.95);
+            box-shadow: 0 14px 34px rgba(15,23,42,.08);
+            transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+        }
+        .topbar-notification-card:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 18px 38px rgba(15,23,42,.12);
+            border-color: var(--topbar-accent-border);
+        }
+        .topbar-notification-icon {
+            width: 2.45rem;
+            height: 2.45rem;
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex: 0 0 auto;
+        }
+        .topbar-notification-card.info .topbar-notification-icon {
+            background: linear-gradient(135deg, color-mix(in srgb, var(--topbar-accent) 18%, white) 0%, color-mix(in srgb, var(--topbar-accent) 32%, white) 100%);
+            color: color-mix(in srgb, var(--topbar-accent) 78%, #0f172a);
+        }
+        .topbar-notification-card.success .topbar-notification-icon {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            color: #15803d;
+        }
+        .topbar-notification-card.warning .topbar-notification-icon {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #b45309;
+        }
+        .topbar-notification-card.danger .topbar-notification-icon {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #b91c1c;
+        }
+        .topbar-notification-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            font-size: .72rem;
+            font-weight: 800;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: #64748b;
+        }
+        .topbar-notification-card-title {
+            display: block;
+            margin-top: .18rem;
+            font-size: .95rem;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.38;
+            word-break: break-word;
+        }
+        .topbar-notification-card-body {
+            display: block;
+            margin-top: .32rem;
+            color: #475569;
+            font-size: .84rem;
+            line-height: 1.58;
+            word-break: break-word;
+        }
+        .topbar-notification-card-body:empty {
+            display: none;
+        }
+        .topbar-notification-empty {
+            display: grid;
+            place-items: center;
+            gap: .5rem;
+            min-height: 220px;
+            padding: 1.25rem;
+            text-align: center;
+            border: 1px dashed rgba(148,163,184,.45);
+            border-radius: 20px;
+            background: rgba(255,255,255,.8);
+            color: #64748b;
+        }
+        .topbar-notification-empty i {
+            font-size: 2rem;
+            color: #94a3b8;
+        }
+        .topbar-notification-empty-title {
+            font-size: .98rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .topbar-notification-empty-copy {
+            max-width: 280px;
+            font-size: .84rem;
+            line-height: 1.55;
+        }
+        .topbar-notification-menu > li[role="presentation"] {
+            display: block;
+            height: 100%;
+        }
+    </style>
     <div class="topbar clearfix">
         <div class="topbar-left">
             <h:form>
@@ -102,97 +296,158 @@
                             </ui:repeat>
                         </ul>
                     </li>
-                    <script type="text/javascript">
-                        jQuery(document).ready(function() {
-                            // Dropdown protection handler
-                            function setupDropdownProtection(itemClass, dropdownClass, isMouseOverVar) {
-                                var item = jQuery('.' + itemClass);
-                                var dropdown = item.find('.' + dropdownClass);
-                                var isMouseOver = false;
+                    <h:outputScript target="body">
+                        //<![CDATA[
+                        window.corexTopbarOverlayState = window.corexTopbarOverlayState || null;
 
-                                // Track mouse over the dropdown menu
-                                dropdown.on('mouseenter', function() {
-                                    isMouseOver = true;
-                                }).on('mouseleave', function() {
-                                    isMouseOver = false;
-                                });
-
-                                // Click on dropdown items - prevent propagation to allow selection
-                                dropdown.on('click', 'a', function(e) {
-                                    e.stopPropagation();
-                                });
-
-                                // Intercept body click before layout.js handler
-                                jQuery(document.body).on('click.dropdownProtection' + itemClass, function(e) {
-                                    if (isMouseOver) {
-                                        var avalonWidget = PF('avalonMenuWidget');
-                                        if (avalonWidget) {
-                                            avalonWidget.topbarLinkClick = true;
-                                        }
-                                    }
-                                });
+                        function captureTopbarOverlayState() {
+                            var topbarItems = document.querySelector('#topbar-items-form .topbar-items');
+                            if (!topbarItems) {
+                                window.corexTopbarOverlayState = null;
+                                return;
                             }
 
-                            // Setup protection for all dropdowns
-                            setupDropdownProtection('language-selector-item', 'language-dropdown');
-                            setupDropdownProtection('profile-dropdown-item', 'profile-dropdown');
-                            setupDropdownProtection('settings-dropdown-item', 'settings-dropdown');
-                            setupDropdownProtection('messages-dropdown-item', 'messages-dropdown');
-                            setupDropdownProtection('alerts-dropdown-item', 'alerts-dropdown');
-                        });
-                    </script>
-                    <li class="messages-dropdown-item">
-                        <a href="#" onclick="markTopbarNotificationsAsSeen();" style="display:flex;align-items:center;gap:.55rem;">
+                            var activeItem = topbarItems.querySelector('li.active-top-menu[data-topbar-key]');
+                            var activeMenu = activeItem ? activeItem.querySelector('ul') : null;
+                            var activeScrollRegion = activeMenu ? activeMenu.querySelector('.topbar-notification-list') : null;
+
+                            window.corexTopbarOverlayState = {
+                                activeKey: activeItem ? activeItem.getAttribute('data-topbar-key') : null,
+                                mobileVisible: topbarItems.classList.contains('topbar-items-visible'),
+                                scrollTop: activeScrollRegion ? activeScrollRegion.scrollTop : (activeMenu ? activeMenu.scrollTop : 0)
+                            };
+                        }
+
+                        function restoreTopbarOverlayState() {
+                            var state = window.corexTopbarOverlayState;
+                            if (!state) {
+                                return;
+                            }
+
+                            var topbarItems = document.querySelector('#topbar-items-form .topbar-items');
+                            if (!topbarItems) {
+                                return;
+                            }
+
+                            if (state.mobileVisible) {
+                                topbarItems.classList.add('topbar-items-visible');
+                            }
+
+                            if (!state.activeKey) {
+                                return;
+                            }
+
+                            var activeItem = topbarItems.querySelector('li[data-topbar-key="' + state.activeKey + '"]');
+                            if (!activeItem) {
+                                return;
+                            }
+
+                            activeItem.classList.add('active-top-menu');
+                            var activeMenu = activeItem.querySelector('ul');
+                            if (activeMenu) {
+                                activeMenu.classList.remove('fadeOutUp');
+                                var activeScrollRegion = activeMenu.querySelector('.topbar-notification-list');
+                                if (activeScrollRegion) {
+                                    activeScrollRegion.scrollTop = state.scrollTop || 0;
+                                } else {
+                                    activeMenu.scrollTop = state.scrollTop || 0;
+                                }
+                            }
+
+                            var avalonWidget = PF('avalonMenuWidget');
+                            if (avalonWidget) {
+                                avalonWidget.topbarLinkClick = true;
+                                avalonWidget.topbarMenuClick = true;
+                            }
+                        }
+                        //]]>
+                    </h:outputScript>
+                    <li class="messages-dropdown-item" data-topbar-key="messages">
+                        <a href="#" onclick="markTopbarNotificationsAsSeen();" style="display:flex;align-items:center;gap:.55rem;" title="#{msg['messagesLabel']}">
                             <i class="topbar-icon animated swing pi pi-fw pi-envelope"/>
                             <p:outputPanel id="messageUnreadCount" layout="inline">
                                 <span class="topbar-badge animated rubberBand">#{guestPreferences.topbarMessageCount}</span>
                             </p:outputPanel>
                             <span class="topbar-item-name">#{msg['messagesLabel']}</span>
                         </a>
-                        <ul class="layout-menu animated messages-dropdown" style="max-height:300px;overflow-y:auto;">
-                            <ui:repeat value="#{guestPreferences.displayedApplicationMessages}" var="topbarMessage">
-                                <li role="menuitem">
-                                    <a href="#" class="topbar-message">
-                                        <i class="pi pi-fw pi-envelope"/>
-                                        <span>#{topbarMessage}</span>
-                                    </a>
-                                </li>
-                            </ui:repeat>
-                            <ui:fragment rendered="#{empty guestPreferences.displayedApplicationMessages}">
-                                <li role="menuitem">
-                                    <a href="#" class="topbar-message">
-                                        <i class="pi pi-fw pi-envelope"/>
-                                        <span>#{msg['noMessagesLabel']}</span>
-                                    </a>
-                                </li>
-                            </ui:fragment>
+                        <ul class="layout-menu animated messages-dropdown topbar-notification-menu">
+                            <li role="presentation">
+                                <div class="topbar-notification-shell">
+                                    <div class="topbar-notification-head">
+                                        <div>
+                                            <span class="topbar-notification-title">#{msg['messagesLabel']}</span>
+                                            <span class="topbar-notification-copy">Operational updates, workflow notes, and targeted communication.</span>
+                                        </div>
+                                        <span class="topbar-notification-count">#{guestPreferences.topbarMessageCount}</span>
+                                    </div>
+                                    <div class="topbar-notification-list">
+                                        <ui:repeat value="#{guestPreferences.displayedApplicationMessages}" var="topbarMessage">
+                                            <div class="topbar-notification-card #{guestPreferences.getTopbarEntrySeverity(topbarMessage)}"
+                                                 title="#{topbarMessage}">
+                                                <span class="topbar-notification-icon">
+                                                    <i class="pi pi-envelope"/>
+                                                </span>
+                                                <div>
+                                                    <span class="topbar-notification-kicker">Message</span>
+                                                    <span class="topbar-notification-card-title">#{guestPreferences.getTopbarEntryTitle(topbarMessage)}</span>
+                                                    <span class="topbar-notification-card-body">#{guestPreferences.getTopbarEntryBody(topbarMessage)}</span>
+                                                </div>
+                                            </div>
+                                        </ui:repeat>
+                                        <ui:fragment rendered="#{empty guestPreferences.displayedApplicationMessages}">
+                                            <div class="topbar-notification-empty">
+                                                <i class="pi pi-inbox"/>
+                                                <span class="topbar-notification-empty-title">#{msg['noMessagesLabel']}</span>
+                                                <span class="topbar-notification-empty-copy">New operational messages will appear here as soon as they are delivered.</span>
+                                            </div>
+                                        </ui:fragment>
+                                    </div>
+                                </div>
+                            </li>
                         </ul>
                     </li>
-                    <li class="alerts-dropdown-item">
-                        <a href="#" onclick="markTopbarAlertsAsSeen();" style="display:flex;align-items:center;gap:.55rem;">
+                    <li class="alerts-dropdown-item" data-topbar-key="alerts">
+                        <a href="#" onclick="markTopbarAlertsAsSeen();" style="display:flex;align-items:center;gap:.55rem;" title="#{msg['alertsLabel']}">
                             <i class="topbar-icon pi pi-fw pi-bell"/>
                             <p:outputPanel id="alertUnreadCount" layout="inline">
                                 <span class="topbar-badge animated rubberBand">#{guestPreferences.topbarAlertCount}</span>
                             </p:outputPanel>
                             <span class="topbar-item-name">#{msg['alertsLabel']}</span>
                         </a>
-                        <ul class="layout-menu animated alerts-dropdown" style="max-height:300px;overflow-y:auto;">
-                            <ui:repeat value="#{guestPreferences.displayedTopbarMessages}" var="topbarAlert">
-                                <li role="menuitem">
-                                    <a href="#" class="topbar-message">
-                                        <i class="pi pi-fw pi-bell"/>
-                                        <span>#{topbarAlert}</span>
-                                    </a>
-                                </li>
-                            </ui:repeat>
-                            <ui:fragment rendered="#{empty guestPreferences.displayedTopbarMessages}">
-                                <li role="menuitem">
-                                    <a href="#" class="topbar-message">
-                                        <i class="pi pi-fw pi-bell"/>
-                                        <span>#{msg['noAlertsLabel']}</span>
-                                    </a>
-                                </li>
-                            </ui:fragment>
+                        <ul class="layout-menu animated alerts-dropdown topbar-notification-menu">
+                            <li role="presentation">
+                                <div class="topbar-notification-shell">
+                                    <div class="topbar-notification-head">
+                                        <div>
+                                            <span class="topbar-notification-title">#{msg['alertsLabel']}</span>
+                                            <span class="topbar-notification-copy">Critical warnings, security events, and activity signals that need attention.</span>
+                                        </div>
+                                        <span class="topbar-notification-count">#{guestPreferences.topbarAlertCount}</span>
+                                    </div>
+                                    <div class="topbar-notification-list">
+                                        <ui:repeat value="#{guestPreferences.displayedTopbarMessages}" var="topbarAlert">
+                                            <div class="topbar-notification-card #{guestPreferences.getTopbarEntrySeverity(topbarAlert)}"
+                                                 title="#{topbarAlert}">
+                                                <span class="topbar-notification-icon">
+                                                    <i class="pi pi-bell"/>
+                                                </span>
+                                                <div>
+                                                    <span class="topbar-notification-kicker">Alert</span>
+                                                    <span class="topbar-notification-card-title">#{guestPreferences.getTopbarEntryTitle(topbarAlert)}</span>
+                                                    <span class="topbar-notification-card-body">#{guestPreferences.getTopbarEntryBody(topbarAlert)}</span>
+                                                </div>
+                                            </div>
+                                        </ui:repeat>
+                                        <ui:fragment rendered="#{empty guestPreferences.displayedTopbarMessages}">
+                                            <div class="topbar-notification-empty">
+                                                <i class="pi pi-shield"/>
+                                                <span class="topbar-notification-empty-title">#{msg['noAlertsLabel']}</span>
+                                                <span class="topbar-notification-empty-copy">When the system detects warnings or notable events, they will surface here.</span>
+                                            </div>
+                                        </ui:fragment>
+                                    </div>
+                                </div>
+                            </li>
                         </ul>
                     </li>
                 </ul>

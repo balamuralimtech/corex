@@ -40,6 +40,8 @@ public interface IUserAdministrationDAO {
 
     public void updateUserPassword(int userId, String newPassword);
 
+    public void updateUserAccountControls(int userId, boolean accountDisabled, boolean accountLocked);
+
     public boolean isUserValid(String username, String password);
 
     /**
@@ -62,7 +64,6 @@ public interface IUserAdministrationDAO {
 
     public void touchUserSession(int userId, String sessionId);
 }
-
 
 
 

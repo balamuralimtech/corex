@@ -133,12 +133,19 @@
                                         </div>
                                         <p:outputPanel rendered="#{admissionBean.selectedExistingPatient != null}" layout="block" styleClass="grid" style="margin-top:.75rem;">
                                             <div class="col-12 md:col-6 admission-field">
+                                                <label>Patient Name</label>
+                                                <p:inputText value="#{admissionBean.newPatientName}"/>
+                                            </div>
+                                            <div class="col-12 md:col-6 admission-field">
                                                 <label>Phone Number</label>
-                                                <p:inputText value="#{admissionBean.selectedExistingPatientPhoneNumber}" readonly="true"/>
+                                                <p:inputText value="#{admissionBean.newPatientPhoneNumber}"/>
                                             </div>
                                             <div class="col-12 md:col-6 admission-field">
                                                 <label>Gender</label>
-                                                <p:inputText value="#{admissionBean.selectedExistingPatientGender}" readonly="true"/>
+                                                <p:selectOneMenu value="#{admissionBean.newPatientGender}">
+                                                    <f:selectItem itemLabel="Select Gender" itemValue="#{null}" noSelectionOption="true"/>
+                                                    <f:selectItems value="#{admissionBean.availableGenders}"/>
+                                                </p:selectOneMenu>
                                             </div>
                                             <div class="col-12 md:col-6 admission-field">
                                                 <label>Age</label>
@@ -197,10 +204,17 @@
                                         <p:inputTextarea id="admissionNotes" value="#{admissionBean.admissionNotes}" rows="4" autoResize="false"/>
                                     </div>
                                     <div class="col-12" style="display:flex;justify-content:flex-end;">
-                                        <p:commandButton value="Register Consultation" icon="pi pi-check"
+                                        <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+                                        <p:commandButton value="#{admissionBean.admissionActionLabel}" icon="pi pi-check"
                                                          actionListener="#{admissionBean.registerAdmission}"
                                                          process="@form" update="form:pageShell form:messages"
                                                          styleClass="ui-button-success"/>
+                                        <p:commandButton value="Cancel Edit" icon="pi pi-times" process="@this"
+                                                         rendered="#{admissionBean.editMode}"
+                                                         actionListener="#{admissionBean.cancelEdit}"
+                                                         update="form:pageShell form:heroPanel form:messages"
+                                                         styleClass="ui-button-secondary"/>
+                                        </div>
                                     </div>
                                 </div>
                                 </p:outputPanel>
@@ -250,6 +264,20 @@
                                     </p:column>
                                     <p:column headerText="Time" style="width:10rem;">
                                         #{admissionBean.formatQueueTime(queueRow)}
+                                    </p:column>
+                                    <p:column headerText="Actions" style="width:8rem;">
+                                        <div style="display:flex;gap:.5rem;justify-content:center;">
+                                            <p:commandButton icon="pi pi-pencil" process="@this"
+                                                             rendered="#{admissionBean.canModifyAdmission(queueRow)}"
+                                                             actionListener="#{admissionBean.editAdmission(queueRow.id)}"
+                                                             update="form:heroPanel form:admissionPanel form:messages"
+                                                             styleClass="rounded-button ui-button-success ui-button-sm"/>
+                                            <p:commandButton icon="pi pi-trash" process="@this"
+                                                             rendered="#{admissionBean.canModifyAdmission(queueRow)}"
+                                                             actionListener="#{admissionBean.deleteAdmission(queueRow.id)}"
+                                                             update="form:pageShell form:heroPanel form:messages"
+                                                             styleClass="rounded-button ui-button-danger ui-button-sm"/>
+                                        </div>
                                     </p:column>
                                 </p:dataTable>
                                 </p:outputPanel>

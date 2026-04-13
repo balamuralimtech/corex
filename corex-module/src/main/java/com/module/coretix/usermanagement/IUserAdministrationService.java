@@ -43,6 +43,8 @@ public interface IUserAdministrationService {
 
     public void updateUserPassword(int userId, String newPassword);
 
+    public void updateUserAccountControls(int userId, boolean accountDisabled, boolean accountLocked);
+
     public boolean isUserValid(String username, String password);
 
     public void updateUserStatus(int userId, int newStatus);
@@ -55,6 +57,5 @@ public interface IUserAdministrationService {
 
     public UsersStatusCountTO populateUsersStatusCount();
 }
-
 
 

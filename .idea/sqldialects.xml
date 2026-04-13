@@ -28,11 +28,14 @@
     <file url="file://$PROJECT_DIR$/corex-db/systemmanagement/notificationsettings.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/corex-db/systemmanagement/organization.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/corex-db/systemmanagement/organization_add_referral_code.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/corex-db/systemmanagement/seed_test_clinics_india.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/corex-db/systemmanagement/world.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/corex-db/usermanagement/UserDetails.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/corex-db/usermanagement/moduleprivileges.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/corex-db/usermanagement/performance_indexes.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/corex-db/usermanagement/roleadministration.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/corex-db/usermanagement/seed_test_users_for_all_organizations.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/corex-db/usermanagement/useractivities.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/corex-db/usermanagement/userdetails_add_account_controls.sql" dialect="MySQL" />
   </component>
 </project>
