@@ -360,10 +360,41 @@
                                 avalonWidget.topbarMenuClick = true;
                             }
                         }
+
+                        function toggleTopbarOverlay(key, markSeenCommandName) {
+                            var topbarItems = document.querySelector('#topbar-items-form .topbar-items');
+                            if (!topbarItems) {
+                                return false;
+                            }
+
+                            var activeItem = topbarItems.querySelector('li.active-top-menu[data-topbar-key]');
+                            var targetItem = topbarItems.querySelector('li[data-topbar-key="' + key + '"]');
+                            if (!targetItem) {
+                                return false;
+                            }
+
+                            if (activeItem && activeItem !== targetItem) {
+                                activeItem.classList.remove('active-top-menu');
+                            }
+
+                            targetItem.classList.toggle('active-top-menu');
+
+                            var avalonWidget = PF('avalonMenuWidget');
+                            if (avalonWidget) {
+                                avalonWidget.topbarLinkClick = true;
+                                avalonWidget.topbarMenuClick = true;
+                            }
+
+                            if (markSeenCommandName && typeof window[markSeenCommandName] === 'function') {
+                                window[markSeenCommandName]();
+                            }
+
+                            return false;
+                        }
                         //]]>
                     </h:outputScript>
                     <li class="messages-dropdown-item" data-topbar-key="messages">
-                        <a href="#" onclick="markTopbarNotificationsAsSeen();" style="display:flex;align-items:center;gap:.55rem;" title="#{msg['messagesLabel']}">
+                        <a href="#" onclick="return toggleTopbarOverlay('messages', 'markTopbarNotificationsAsSeen');" style="display:flex;align-items:center;gap:.55rem;" title="#{msg['messagesLabel']}">
                             <i class="topbar-icon animated swing pi pi-fw pi-envelope"/>
                             <p:outputPanel id="messageUnreadCount" layout="inline">
                                 <span class="topbar-badge animated rubberBand">#{guestPreferences.topbarMessageCount}</span>
@@ -372,7 +403,7 @@
                         </a>
                         <ul class="layout-menu animated messages-dropdown topbar-notification-menu">
                             <li role="presentation">
-                                <div class="topbar-notification-shell">
+                                <p:outputPanel id="messagesPanel" layout="block" styleClass="topbar-notification-shell">
                                     <div class="topbar-notification-head">
                                         <div>
                                             <span class="topbar-notification-title">#{msg['messagesLabel']}</span>
@@ -402,12 +433,12 @@
                                             </div>
                                         </ui:fragment>
                                     </div>
-                                </div>
+                                </p:outputPanel>
                             </li>
                         </ul>
                     </li>
                     <li class="alerts-dropdown-item" data-topbar-key="alerts">
-                        <a href="#" onclick="markTopbarAlertsAsSeen();" style="display:flex;align-items:center;gap:.55rem;" title="#{msg['alertsLabel']}">
+                        <a href="#" onclick="return toggleTopbarOverlay('alerts', 'markTopbarAlertsAsSeen');" style="display:flex;align-items:center;gap:.55rem;" title="#{msg['alertsLabel']}">
                             <i class="topbar-icon pi pi-fw pi-bell"/>
                             <p:outputPanel id="alertUnreadCount" layout="inline">
                                 <span class="topbar-badge animated rubberBand">#{guestPreferences.topbarAlertCount}</span>
@@ -416,7 +447,7 @@
                         </a>
                         <ul class="layout-menu animated alerts-dropdown topbar-notification-menu">
                             <li role="presentation">
-                                <div class="topbar-notification-shell">
+                                <p:outputPanel id="alertsPanel" layout="block" styleClass="topbar-notification-shell">
                                     <div class="topbar-notification-head">
                                         <div>
                                             <span class="topbar-notification-title">#{msg['alertsLabel']}</span>
@@ -446,7 +477,7 @@
                                             </div>
                                         </ui:fragment>
                                     </div>
-                                </div>
+                                </p:outputPanel>
                             </li>
                         </ul>
                     </li>

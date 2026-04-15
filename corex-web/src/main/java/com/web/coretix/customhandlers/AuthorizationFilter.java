@@ -69,7 +69,7 @@ public class AuthorizationFilter implements Filter {
         HttpServletResponse res = (HttpServletResponse) response;
 
         HttpSession session = req.getSession(false);
-        String login2URI = req.getContextPath() + "/landing";
+        String landingURI = req.getContextPath() + "/landing";
         String loginURI = req.getContextPath() + "/login";
         String setupURI = req.getContextPath() + "/setup";
         String login2InternalURI = req.getContextPath() + "/login2.xhtml";
@@ -82,7 +82,7 @@ public class AuthorizationFilter implements Filter {
         boolean loggedIn = (session != null && session.getAttribute(SessionAttributes.USERNAME.getName()) != null);
         boolean loginRequest = req.getRequestURI().equals(loginURI);
         boolean setupRequest = req.getRequestURI().equals(setupURI);
-        boolean login2Request = req.getRequestURI().equals(login2URI);
+        boolean login2Request = req.getRequestURI().equals(landingURI);
         boolean loginInternalRequest = req.getRequestURI().equals(loginInternalURI);
         boolean login2InternalRequest = req.getRequestURI().equals(login2InternalURI);
         boolean setupInternalRequest = req.getRequestURI().equals(setupInternalURI);
@@ -102,7 +102,7 @@ public class AuthorizationFilter implements Filter {
                 || setupRequest || setupInternalRequest || videoRequest || publicFriendlyRequest || publicInternalRequest || resourceRequest) {
             if (loggedIn && !resourceRequest && !isSessionStateValid(session)) {
                 invalidateSession(session);
-                res.sendRedirect(login2URI);
+                res.sendRedirect(loginURI);
                 return;
             }
             if (loggedIn && isProtectedPage(requestPath) && !hasPageAccess(session, requestPath)) {
@@ -111,7 +111,7 @@ public class AuthorizationFilter implements Filter {
             }
             chain.doFilter(request, response); // User is logged in, so continue with the request.
         } else {
-            res.sendRedirect(login2URI); // Not logged in, redirect to login page.
+            res.sendRedirect(loginURI); // Not logged in, redirect to login page.
         }
     }
 

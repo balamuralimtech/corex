@@ -28,7 +28,10 @@ public class CommonMenuContributor implements MenuContributor {
                         "/change-password", 40, "#{guestPreferences.changePasswordRendered}"))
                 .addItem(new AppMenuItem("m_useradministration", "#{msg['userAdministrationLabel']}",
                         "pi pi-fw pi-id-card", "/manage-user", 50,
-                        "#{guestPreferences.userAdministrationRendered}"));
+                        "#{guestPreferences.userAdministrationRendered}"))
+                .addItem(new AppMenuItem("m_userchat", "Chat",
+                        "pi pi-fw pi-comments", "/chat", 60,
+                        "#{guestPreferences.chatRendered}"));
 
         AppMenuGroup systemManagement = new AppMenuGroup(
                 "m_systemmanagement",

@@ -19,7 +19,7 @@ public class ApplicationExceptionFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(ApplicationExceptionFilter.class);
     private static final String INTERNAL_SERVER_ERROR_VIEW = "/pages/errorandwarningpages/500internalservererror.xhtml";
-    private static final String SESSION_TIMEOUT_VIEW = "/pages/errorandwarningpages/408sessiontimeout.xhtml";
+    private static final String SESSION_TIMEOUT_REDIRECT = "/login";
 
     @Override
     public void init(FilterConfig filterConfig) {
@@ -41,7 +41,8 @@ public class ApplicationExceptionFilter implements Filter {
 
             logger.error("Unhandled web exception for request {}", httpRequest.getRequestURI(), throwable);
             Throwable rootCause = resolveRootCause(throwable);
-            String targetView = rootCause instanceof ViewExpiredException ? SESSION_TIMEOUT_VIEW : INTERNAL_SERVER_ERROR_VIEW;
+            boolean sessionExpired = rootCause instanceof ViewExpiredException;
+            String targetView = sessionExpired ? null : INTERNAL_SERVER_ERROR_VIEW;
 
             if (httpResponse.isCommitted()) {
                 rethrow(throwable);
@@ -56,12 +57,17 @@ public class ApplicationExceptionFilter implements Filter {
 
             if ("partial/ajax".equals(httpRequest.getHeader("Faces-Request"))) {
                 String redirectTarget = httpRequest.getContextPath()
-                        + (SESSION_TIMEOUT_VIEW.equals(targetView) ? "/session-timeout" : "/internal-server-error");
+                        + (sessionExpired ? SESSION_TIMEOUT_REDIRECT : "/internal-server-error");
                 httpResponse.setContentType("text/xml");
                 httpResponse.setCharacterEncoding("UTF-8");
                 httpResponse.getWriter().write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
                 httpResponse.getWriter().write("<partial-response><redirect url=\"" + redirectTarget + "\"/></partial-response>");
                 httpResponse.getWriter().flush();
+                return;
+            }
+
+            if (sessionExpired) {
+                httpResponse.sendRedirect(httpRequest.getContextPath() + SESSION_TIMEOUT_REDIRECT);
                 return;
             }
 

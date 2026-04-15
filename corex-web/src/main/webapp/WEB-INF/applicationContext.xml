@@ -77,6 +77,9 @@
                 <value>com.persist.coretix.modal.coretix.ApplicationTheme</value>
                 <value>com.persist.coretix.modal.coretix.ApplicationNotification</value>
                 <value>com.persist.coretix.modal.coretix.UserNotificationReceipt</value>
+                <value>com.persist.coretix.modal.coretix.ChatConversation</value>
+                <value>com.persist.coretix.modal.coretix.ChatConversationParticipant</value>
+                <value>com.persist.coretix.modal.coretix.ChatMessage</value>
                 <value>com.persist.coretix.modal.coretix.DemoRequest</value>
                 <value>com.persist.coretix.modal.coretix.ApplicationPricing</value>
                 <value>com.persist.coretix.modal.coretix.ReferrerProfile</value>

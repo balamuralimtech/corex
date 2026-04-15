@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 public class CustomExceptionHandler extends ExceptionHandlerWrapper {
 
     private static final Logger logger = LoggerFactory.getLogger(CustomExceptionHandler.class);
-    private static final String SESSION_TIMEOUT_PAGE = "/session-timeout";
+    private static final String SESSION_TIMEOUT_PAGE = "/login";
     private static final String INTERNAL_SERVER_ERROR_PAGE = "/internal-server-error";
     private ExceptionHandler wrapped;
 
@@ -157,7 +157,6 @@ public class CustomExceptionHandler extends ExceptionHandlerWrapper {
         return wrapped;
     }
 }
-
 
 
 

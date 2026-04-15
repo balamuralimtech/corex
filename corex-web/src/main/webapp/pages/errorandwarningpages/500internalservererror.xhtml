@@ -31,6 +31,8 @@
         <link rel="icon" href="#{resource[appInfo.brandIconResource]}" type="image/svg+xml" />
         <link rel="shortcut icon" href="#{resource[appInfo.brandIconResource]}" type="image/svg+xml" />
         <title>#{appInfo.appName}</title>
+        <h:outputStylesheet name="css/layout-#{guestPreferences.theme}.css" library="avalon-layout" />
+        <h:outputStylesheet name="css/errorPageStyles.css" library="demo" />
     </h:head>
 
     <h:body styleClass="exception-body access">
@@ -52,9 +54,6 @@
                 <p:button value="Go To Home" href="#{request.contextPath}/home" />
             </div>
         </div>
-
-        <h:outputStylesheet name="css/errorPageStyles.css" library="demo" />
-
     </h:body>
 
 </html>

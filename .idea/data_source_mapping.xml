@@ -5,6 +5,8 @@
     <file url="file://$PROJECT_DIR$/applications/carex/carex-db/consultation/consultation_queue_fields.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
     <file url="file://$PROJECT_DIR$/corex-db/applicationmanagement/application_pricing.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
     <file url="file://$PROJECT_DIR$/corex-db/applicationmanagement/referral_management.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
+    <file url="file://$PROJECT_DIR$/corex-db/applicationnotification/userchat.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
+    <file url="file://$PROJECT_DIR$/corex-db/applicationnotification/userchat_performance_indexes.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
     <file url="file://$PROJECT_DIR$/corex-db/systemmanagement/organization_add_referral_code.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
     <file url="file://$PROJECT_DIR$/corex-db/systemmanagement/seed_test_clinics_india.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
     <file url="file://$PROJECT_DIR$/corex-db/usermanagement/seed_test_users_for_all_organizations.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />

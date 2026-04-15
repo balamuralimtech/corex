@@ -18,6 +18,8 @@
     <file url="file://$PROJECT_DIR$/corex-db/applicationmanagement/demo_request_add_status_columns.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/corex-db/applicationmanagement/referral_management.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/corex-db/applicationnotification/applicationnotification.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/corex-db/applicationnotification/userchat.sql" dialect="MySQL" />
+    <file url="file://$PROJECT_DIR$/corex-db/applicationnotification/userchat_performance_indexes.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/corex-db/applicationtheme/applicationtheme.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/corex-db/licensemanagement/license.sql" dialect="MySQL" />
     <file url="file://$PROJECT_DIR$/corex-db/systemmanagement/Currency Details.sql" dialect="MySQL" />

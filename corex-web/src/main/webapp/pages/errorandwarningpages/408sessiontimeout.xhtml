@@ -27,8 +27,18 @@
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
             <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
             <meta name="apple-mobile-web-app-capable" content="yes" />
+            <meta http-equiv="refresh" content="0;url=#{request.contextPath}/login" />
         </f:facet>
         <title>#{appInfo.appName}</title>
+        <link rel="icon" href="#{resource[appInfo.brandIconResource]}" type="image/svg+xml" />
+        <link rel="shortcut icon" href="#{resource[appInfo.brandIconResource]}" type="image/svg+xml" />
+        <h:outputStylesheet name="css/layout-#{guestPreferences.theme}.css" library="avalon-layout" />
+        <h:outputStylesheet name="css/errorPageStyles.css" library="demo" />
+        <script type="text/javascript">
+            //<![CDATA[
+            window.location.replace('#{request.contextPath}/login');
+            //]]>
+        </script>
     </h:head>
 
     <h:body styleClass="exception-body access">
@@ -45,17 +55,11 @@
             <div class="exception-panel-content">
                 <div class="information-text">
                     <h3>Your Session has Timed Out.</h3>
-                    <span>For your security, your session has automatically timed out due to inactivity.</span>
+                    <span>For your security, your session has automatically timed out due to inactivity. Redirecting to login.</span>
                 </div>
-                <p:button value="Go To Home" href="#{request.contextPath}/home" />
+                <p:button value="Go To Login" href="#{request.contextPath}/login" />
             </div>
         </div>
-
-        <h:outputStylesheet name="css/layout-#{guestPreferences.theme}.css" library="avalon-layout" />
-                <h:outputStylesheet name="css/errorPageStyles.css" library="demo" />
-
     </h:body>
 
 </html>
-
-

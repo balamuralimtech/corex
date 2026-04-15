@@ -149,6 +149,7 @@ public class FriendlyUrlFilter implements Filter {
         paths.put("/manage-role", "/pages/usermanagement/roleAdministration.xhtml");
         paths.put("/change-password", "/pages/usermanagement/changePassword.xhtml");
         paths.put("/manage-user", "/pages/usermanagement/useradministration.xhtml");
+        paths.put("/chat", "/pages/usermanagement/chat.xhtml");
 
         paths.put("/organization", "/pages/systemmanagement/organization.xhtml");
         paths.put("/branch", "/pages/systemmanagement/branch.xhtml");

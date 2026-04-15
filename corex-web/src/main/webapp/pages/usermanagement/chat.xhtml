@@ -1,0 +1,677 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="head">
+        <style type="text/css">
+            .chat-shell {
+                display: grid;
+                grid-template-columns: 360px minmax(0, 1fr);
+                gap: 1rem;
+                min-height: 76vh;
+            }
+            .chat-panel {
+                background: rgba(255,255,255,.96);
+                border: 1px solid rgba(226,232,240,.9);
+                border-radius: 24px;
+                box-shadow: 0 18px 45px rgba(15,23,42,.08);
+                overflow: hidden;
+            }
+            .chat-sidebar {
+                display: flex;
+                flex-direction: column;
+                min-height: 76vh;
+                background:
+                    linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,250,252,.98));
+            }
+            .chat-sidebar-head {
+                padding: 1.25rem 1.2rem .9rem;
+                border-bottom: 1px solid rgba(226,232,240,.9);
+            }
+            .chat-sidebar-title,
+            .chat-thread-title {
+                display: block;
+                font-size: 1.15rem;
+                font-weight: 800;
+                color: #0f172a;
+                letter-spacing: -.02em;
+            }
+            .chat-sidebar-copy,
+            .chat-thread-copy {
+                display: block;
+                margin-top: .25rem;
+                color: #64748b;
+                font-size: .84rem;
+                line-height: 1.5;
+            }
+            .chat-contact-strip {
+                display: flex;
+                gap: .75rem;
+                padding: 1rem 1rem .75rem;
+                overflow-x: auto;
+                border-bottom: 1px solid rgba(226,232,240,.9);
+                scrollbar-width: thin;
+            }
+            .chat-search-wrap {
+                padding: .85rem 1rem 0;
+            }
+            .chat-contact-pill {
+                min-width: 86px;
+                max-width: 86px;
+                padding: .65rem .55rem;
+                border-radius: 20px;
+                border: 1px solid rgba(226,232,240,.95);
+                background: #fff;
+                color: #0f172a;
+                text-align: center;
+                transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+            }
+            .chat-contact-pill:hover,
+            .chat-contact-pill.active {
+                border-color: #{guestPreferences.activeLayoutColor};
+                box-shadow: 0 12px 26px rgba(15,23,42,.1);
+                transform: translateY(-1px);
+            }
+            .chat-contact-avatar {
+                width: 2.8rem;
+                height: 2.8rem;
+                margin: 0 auto .45rem;
+                border-radius: 50%;
+                display: grid;
+                place-items: center;
+                background: color-mix(in srgb, #{guestPreferences.activeLayoutColor} 16%, white);
+                color: color-mix(in srgb, #{guestPreferences.activeLayoutColor} 80%, #0f172a);
+                font-size: 1rem;
+                font-weight: 800;
+                overflow: hidden;
+            }
+            .chat-contact-name {
+                display: block;
+                font-size: .78rem;
+                font-weight: 700;
+                line-height: 1.35;
+                word-break: break-word;
+            }
+            .chat-contact-role {
+                display: block;
+                margin-top: .15rem;
+                font-size: .7rem;
+                color: #64748b;
+            }
+            .chat-section-label {
+                padding: .95rem 1rem .55rem;
+                font-size: .72rem;
+                font-weight: 800;
+                letter-spacing: .08em;
+                text-transform: uppercase;
+                color: #64748b;
+            }
+            .chat-conversation-list {
+                flex: 1 1 auto;
+                min-height: 0;
+                overflow-y: auto;
+                padding: 0 .75rem 1rem;
+                display: grid;
+                gap: .55rem;
+            }
+            .chat-conversation-row {
+                display: grid;
+                grid-template-columns: auto 1fr auto;
+                gap: .8rem;
+                align-items: center;
+                padding: .9rem .9rem;
+                border-radius: 18px;
+                border: 1px solid rgba(226,232,240,.9);
+                background: #fff;
+                transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+            }
+            .chat-conversation-row:hover,
+            .chat-conversation-row.active {
+                border-color: color-mix(in srgb, #{guestPreferences.activeLayoutColor} 50%, white);
+                box-shadow: 0 14px 28px rgba(15,23,42,.08);
+                transform: translateY(-1px);
+            }
+            .chat-conversation-avatar {
+                width: 2.9rem;
+                height: 2.9rem;
+                border-radius: 50%;
+                display: grid;
+                place-items: center;
+                background: #e2e8f0;
+                color: #0f172a;
+                font-weight: 800;
+                overflow: hidden;
+            }
+            .chat-conversation-main {
+                min-width: 0;
+            }
+            .chat-conversation-top {
+                display: flex;
+                justify-content: space-between;
+                gap: .5rem;
+                align-items: baseline;
+            }
+            .chat-conversation-user {
+                font-size: .92rem;
+                font-weight: 800;
+                color: #0f172a;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .chat-conversation-time {
+                font-size: .72rem;
+                color: #94a3b8;
+                white-space: nowrap;
+            }
+            .chat-conversation-subtitle,
+            .chat-conversation-preview {
+                display: block;
+                margin-top: .18rem;
+                color: #64748b;
+                font-size: .78rem;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .chat-unread-badge {
+                min-width: 1.45rem;
+                height: 1.45rem;
+                border-radius: 999px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0 .38rem;
+                background: #{guestPreferences.activeLayoutColor};
+                color: #fff;
+                font-size: .72rem;
+                font-weight: 800;
+            }
+            .chat-thread {
+                display: grid;
+                grid-template-rows: auto 1fr auto;
+                min-height: 76vh;
+                height: 76vh;
+                background:
+                    radial-gradient(circle at top right, color-mix(in srgb, #{guestPreferences.activeLayoutColor} 10%, transparent), transparent 28%),
+                    linear-gradient(180deg, rgba(248,250,252,.98), rgba(255,255,255,.98));
+            }
+            .chat-thread-head {
+                display: grid;
+                grid-template-columns: auto 1fr;
+                gap: .85rem;
+                align-items: center;
+                padding: 1rem 1.2rem;
+                border-bottom: 1px solid rgba(226,232,240,.9);
+                background: rgba(255,255,255,.88);
+                backdrop-filter: blur(10px);
+            }
+            .chat-thread-avatar {
+                width: 3rem;
+                height: 3rem;
+                border-radius: 50%;
+                display: grid;
+                place-items: center;
+                font-weight: 800;
+                background: color-mix(in srgb, #{guestPreferences.activeLayoutColor} 18%, white);
+                color: color-mix(in srgb, #{guestPreferences.activeLayoutColor} 82%, #0f172a);
+                overflow: hidden;
+            }
+            .chat-avatar-image {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                display: block;
+            }
+            .chat-message-label-wrap {
+                display: inline-flex;
+                align-items: center;
+                gap: .45rem;
+            }
+            .chat-message-mini-avatar {
+                width: 1.45rem;
+                height: 1.45rem;
+                border-radius: 50%;
+                display: grid;
+                place-items: center;
+                overflow: hidden;
+                background: rgba(226,232,240,.85);
+                color: #0f172a;
+                font-size: .62rem;
+                font-weight: 800;
+            }
+            .chat-thread-body {
+                height: 100%;
+                overflow-y: auto;
+                padding: 1.2rem 1.25rem;
+                display: grid;
+                gap: .75rem;
+                align-content: start;
+                min-height: 0;
+                scrollbar-width: thin;
+                scrollbar-color: color-mix(in srgb, #{guestPreferences.activeLayoutColor} 55%, #94a3b8) rgba(226,232,240,.65);
+            }
+            .chat-thread-body-panel {
+                min-height: 0;
+                height: 100%;
+            }
+            .chat-thread-body::-webkit-scrollbar,
+            .chat-conversation-list::-webkit-scrollbar,
+            .chat-contact-strip::-webkit-scrollbar {
+                width: 10px;
+                height: 10px;
+            }
+            .chat-thread-body::-webkit-scrollbar-track,
+            .chat-conversation-list::-webkit-scrollbar-track,
+            .chat-contact-strip::-webkit-scrollbar-track {
+                background: rgba(226,232,240,.7);
+                border-radius: 999px;
+            }
+            .chat-thread-body::-webkit-scrollbar-thumb,
+            .chat-conversation-list::-webkit-scrollbar-thumb,
+            .chat-contact-strip::-webkit-scrollbar-thumb {
+                background: color-mix(in srgb, #{guestPreferences.activeLayoutColor} 55%, #94a3b8);
+                border-radius: 999px;
+                border: 2px solid rgba(226,232,240,.7);
+            }
+            .chat-message-row {
+                display: flex;
+                justify-content: flex-start;
+            }
+            .chat-message-row.mine {
+                justify-content: flex-end;
+            }
+            .chat-message-stack {
+                max-width: min(72%, 680px);
+                display: grid;
+                gap: .28rem;
+            }
+            .chat-message-row.mine .chat-message-stack {
+                justify-items: end;
+            }
+            .chat-message-row:not(.mine) .chat-message-stack {
+                justify-items: start;
+            }
+            .chat-message-label {
+                font-size: .7rem;
+                font-weight: 800;
+                letter-spacing: .06em;
+                text-transform: uppercase;
+                color: #64748b;
+                padding: 0 .25rem;
+            }
+            .chat-message-row.mine .chat-message-label,
+            .chat-message-row.mine .chat-message-time {
+                text-align: right;
+            }
+            .chat-message-bubble {
+                padding: .88rem 1rem;
+                border-radius: 20px;
+                background: #fff;
+                border: 1px solid rgba(226,232,240,.95);
+                box-shadow: 0 12px 30px rgba(15,23,42,.08);
+                color: #0f172a;
+                line-height: 1.6;
+                white-space: pre-wrap;
+                word-break: break-word;
+            }
+            .chat-message-row.mine .chat-message-bubble {
+                background: linear-gradient(180deg,
+                    color-mix(in srgb, #{guestPreferences.activeLayoutColor} 18%, white),
+                    color-mix(in srgb, #{guestPreferences.activeLayoutColor} 11%, white));
+                border-color: color-mix(in srgb, #{guestPreferences.activeLayoutColor} 36%, white);
+            }
+            .chat-message-row:not(.mine) .chat-message-bubble {
+                background: #ffffff;
+                border-color: rgba(203,213,225,.95);
+            }
+            .chat-message-time {
+                font-size: .72rem;
+                color: #94a3b8;
+                padding: 0 .25rem;
+            }
+            .chat-empty {
+                display: grid;
+                place-items: center;
+                text-align: center;
+                color: #64748b;
+                min-height: 100%;
+                padding: 2rem;
+            }
+            .chat-empty strong {
+                display: block;
+                margin-bottom: .35rem;
+                color: #0f172a;
+                font-size: 1rem;
+            }
+            .chat-composer {
+                padding: 1rem 1.1rem 1.15rem;
+                border-top: 1px solid rgba(226,232,240,.9);
+                background: rgba(255,255,255,.92);
+            }
+            .chat-composer-shell {
+                display: grid;
+                grid-template-columns: 1fr auto;
+                gap: .85rem;
+                align-items: end;
+                padding: .6rem;
+                border-radius: 24px;
+                border: 1px solid rgba(226,232,240,.95);
+                background: #fff;
+                box-shadow: 0 16px 35px rgba(15,23,42,.08);
+            }
+            .chat-send-button.ui-button {
+                border-radius: 18px !important;
+                min-width: 120px;
+            }
+            .chat-link-reset {
+                text-decoration: none;
+                color: inherit;
+            }
+            @media (max-width: 1024px) {
+                .chat-shell {
+                    grid-template-columns: 1fr;
+                }
+                .chat-sidebar,
+                .chat-thread {
+                    min-height: auto;
+                }
+                .chat-thread {
+                    min-height: 70vh;
+                    height: 70vh;
+                }
+            }
+            @media (max-width: 640px) {
+                .chat-contact-strip {
+                    padding: .85rem .8rem .65rem;
+                }
+                .chat-conversation-list {
+                    padding: 0 .55rem .85rem;
+                }
+                .chat-thread-head,
+                .chat-composer {
+                    padding-left: .85rem;
+                    padding-right: .85rem;
+                }
+                .chat-thread-body {
+                    padding: .95rem .85rem;
+                }
+                .chat-message-stack {
+                    max-width: 88%;
+                }
+            }
+        </style>
+        <h:outputScript target="body">
+            //<![CDATA[
+            var chatThreadStickToBottom = true;
+            var loadingOlderChatMessages = false;
+            var canLoadOlderChatMessages = true;
+            var previousChatThreadScrollHeight = 0;
+            var previousChatThreadScrollTop = 0;
+            var suppressTopLoadUntil = 0;
+
+            function getChatThreadElement() {
+                return document.getElementById('form:messageThreadBody');
+            }
+
+            function captureChatThreadPosition() {
+                var thread = getChatThreadElement();
+                if (!thread) {
+                    chatThreadStickToBottom = true;
+                    return;
+                }
+                var distanceFromBottom = thread.scrollHeight - thread.scrollTop - thread.clientHeight;
+                chatThreadStickToBottom = distanceFromBottom <= 48;
+            }
+
+            function restoreChatThreadPosition() {
+                if (chatThreadStickToBottom) {
+                    scrollChatThreadToBottom();
+                }
+                bindChatThreadScrollHandler();
+            }
+
+            function scrollChatThreadToBottom() {
+                window.setTimeout(function() {
+                    var thread = getChatThreadElement();
+                    if (thread) {
+                        thread.scrollTop = thread.scrollHeight;
+                    }
+                }, 80);
+            }
+
+            function bindChatThreadScrollHandler() {
+                var thread = getChatThreadElement();
+                if (!thread || thread.dataset.chatScrollBound === 'true') {
+                    return;
+                }
+
+                thread.addEventListener('scroll', function() {
+                    if (Date.now() < suppressTopLoadUntil) {
+                        return;
+                    }
+                    if (thread.scrollTop <= 24 && !loadingOlderChatMessages && canLoadOlderChatMessages) {
+                        loadingOlderChatMessages = true;
+                        previousChatThreadScrollTop = thread.scrollTop;
+                        previousChatThreadScrollHeight = thread.scrollHeight;
+                        loadOlderChatMessages();
+                    }
+                });
+                thread.dataset.chatScrollBound = 'true';
+            }
+
+            function handleOlderMessagesLoaded(xhr, status, args) {
+                var thread = getChatThreadElement();
+                canLoadOlderChatMessages = !!(args && args.hasOlderMessages);
+                if (thread && args && args.loadedOlderMessages) {
+                    thread.scrollTop = (thread.scrollHeight - previousChatThreadScrollHeight) + previousChatThreadScrollTop;
+                    suppressTopLoadUntil = Date.now() + 800;
+                }
+                loadingOlderChatMessages = false;
+                bindChatThreadScrollHandler();
+            }
+
+            window.setTimeout(function() {
+                bindChatThreadScrollHandler();
+                scrollChatThreadToBottom();
+            }, 150);
+            //]]>
+        </h:outputScript>
+    </ui:define>
+
+    <ui:define name="content">
+        <f:event listener="#{userChatBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:form id="form">
+            <p:growl id="messages" showDetail="true"/>
+            <p:remoteCommand name="loadOlderChatMessages"
+                             actionListener="#{userChatBean.loadOlderMessages}"
+                             process="@this"
+                             update=":form:threadBodyPanel"
+                             global="false"
+                             oncomplete="handleOlderMessagesLoaded(xhr, status, args);" />
+            <p:poll interval="2"
+                    process="@this"
+                    listener="#{userChatBean.autoRefreshChatState}"
+                    global="false"
+                    onstart="captureChatThreadPosition();"
+                    oncomplete="restoreChatThreadPosition();" />
+
+            <div class="col-12">
+                <p:breadCrumb>
+                    <p:menuitem url="#{request.contextPath}/home" icon="pi pi-home" />
+                    <p:menuitem value="User Management" url="#" />
+                    <p:menuitem value="Chat" />
+                </p:breadCrumb>
+            </div>
+
+            <div class="chat-shell">
+                <p:outputPanel id="sidebarPanel" layout="block" styleClass="chat-panel chat-sidebar">
+                    <div class="chat-sidebar-head">
+                        <span class="chat-sidebar-title">Messages</span>
+                        <span class="chat-sidebar-copy">A clean, direct message flow inspired by familiar messenger layouts.</span>
+                    </div>
+
+                    <div class="chat-section-label">Start Chat</div>
+                    <div class="chat-search-wrap">
+                            <p:inputText id="contactSearch"
+                                     value="#{userChatBean.contactSearchTerm}"
+                                     placeholder="Search users, role, organization"
+                                     style="width:100%">
+                            <p:ajax event="keyup" process="@this" update="contactStrip" />
+                        </p:inputText>
+                        <p:commandButton icon="pi pi-refresh"
+                                         title="Refresh Chats"
+                                         actionListener="#{userChatBean.refreshChatState}"
+                                         update=":form:sidebarPanel :form:threadHeaderPanel :form:threadBodyPanel :form:messages"
+                                         process="@this"
+                                         styleClass="ui-button-flat ui-button-secondary"
+                                         style="margin-top:.6rem;" />
+                    </div>
+                    <p:outputPanel id="contactStrip" layout="block" styleClass="chat-contact-strip">
+                        <ui:repeat value="#{userChatBean.filteredAvailableContacts}" var="contact">
+                            <p:commandLink styleClass="chat-link-reset"
+                                           actionListener="#{userChatBean.openConversationWithUser(contact.userId)}"
+                                           update=":form:sidebarPanel :form:threadHeaderPanel :form:threadBodyPanel :form:messages"
+                                           process="@this"
+                                           oncomplete="scrollChatThreadToBottom();">
+                                <div class="chat-contact-pill #{userChatBean.selectedContact(contact) ? 'active' : ''}">
+                                    <div class="chat-contact-avatar">
+                                        <h:graphicImage value="#{userChatBean.profileImageSrc(contact.userId)}"
+                                                        rendered="#{not empty userChatBean.profileImageSrc(contact.userId)}"
+                                                        styleClass="chat-avatar-image" />
+                                        <h:outputText value="#{contact.userName.substring(0,1).toUpperCase()}"
+                                                      rendered="#{empty userChatBean.profileImageSrc(contact.userId)}" />
+                                    </div>
+                                    <span class="chat-contact-name">#{contact.userName}</span>
+                                    <span class="chat-contact-role">#{contact.userType}</span>
+                                </div>
+                            </p:commandLink>
+                        </ui:repeat>
+                    </p:outputPanel>
+
+                    <div class="chat-section-label">Recent</div>
+                    <p:outputPanel id="conversationListPanel" layout="block" styleClass="chat-conversation-list">
+                        <ui:repeat value="#{userChatBean.conversationSummaries}" var="summary">
+                            <p:commandLink styleClass="chat-link-reset"
+                                           actionListener="#{userChatBean.selectConversation(summary.conversationId)}"
+                                           update=":form:sidebarPanel :form:threadHeaderPanel :form:threadBodyPanel :form:messages"
+                                           process="@this"
+                                           oncomplete="scrollChatThreadToBottom();">
+                                <div class="chat-conversation-row #{userChatBean.activeConversation(summary) ? 'active' : ''}">
+                                    <div class="chat-conversation-avatar">
+                                        <h:graphicImage value="#{userChatBean.profileImageSrc(summary.otherUserId)}"
+                                                        rendered="#{not empty userChatBean.profileImageSrc(summary.otherUserId)}"
+                                                        styleClass="chat-avatar-image" />
+                                        <h:outputText value="#{summary.otherUserName.substring(0,1).toUpperCase()}"
+                                                      rendered="#{empty userChatBean.profileImageSrc(summary.otherUserId)}" />
+                                    </div>
+                                    <div class="chat-conversation-main">
+                                        <div class="chat-conversation-top">
+                                            <span class="chat-conversation-user">#{summary.otherUserName}</span>
+                                            <span class="chat-conversation-time">
+                                                <h:outputText value="#{summary.lastMessageAt}" rendered="#{not empty summary.lastMessageAt}">
+                                                    <f:convertDateTime pattern="dd-MMM hh:mm a"/>
+                                                </h:outputText>
+                                            </span>
+                                        </div>
+                                        <span class="chat-conversation-subtitle">#{summary.otherUserType}#{empty summary.organizationName ? '' : ' • '.concat(summary.organizationName)}</span>
+                                        <span class="chat-conversation-preview">#{empty summary.lastMessage ? 'No messages yet' : summary.lastMessage}</span>
+                                    </div>
+                                    <h:panelGroup rendered="#{summary.unreadCount gt 0}">
+                                        <span class="chat-unread-badge">#{summary.unreadCount}</span>
+                                    </h:panelGroup>
+                                </div>
+                            </p:commandLink>
+                        </ui:repeat>
+                        <h:panelGroup rendered="#{empty userChatBean.conversationSummaries}" layout="block" styleClass="chat-empty">
+                            <div>
+                                <strong>No conversations yet</strong>
+                                Start with any person in the strip above.
+                            </div>
+                        </h:panelGroup>
+                    </p:outputPanel>
+                </p:outputPanel>
+
+                <div class="chat-panel chat-thread">
+                    <p:outputPanel id="threadHeaderPanel" layout="block">
+                        <div class="chat-thread-head">
+                            <div class="chat-thread-avatar">
+                                <h:graphicImage value="#{userChatBean.profileImageSrc(userChatBean.selectedChatPeerUserId)}"
+                                                rendered="#{not empty userChatBean.profileImageSrc(userChatBean.selectedChatPeerUserId)}"
+                                                styleClass="chat-avatar-image" />
+                                <h:outputText value="#{empty userChatBean.selectedConversationTitle ? 'C' : userChatBean.selectedConversationTitle.substring(0,1).toUpperCase()}"
+                                              rendered="#{empty userChatBean.profileImageSrc(userChatBean.selectedChatPeerUserId)}" />
+                            </div>
+                            <div>
+                                <span class="chat-thread-title">#{userChatBean.selectedConversationTitle}</span>
+                                <span class="chat-thread-copy">#{userChatBean.selectedConversationSubtitle}</span>
+                            </div>
+                        </div>
+                    </p:outputPanel>
+
+                    <p:outputPanel id="threadBodyPanel" layout="block" styleClass="chat-thread-body-panel">
+                        <div id="form:messageThreadBody" class="chat-thread-body">
+                            <h:panelGroup rendered="#{userChatBean.hasOlderMessages}" layout="block" style="text-align:center;">
+                                <span style="display:inline-block;padding:.35rem .75rem;border-radius:999px;background:rgba(226,232,240,.75);color:#64748b;font-size:.76rem;font-weight:700;">
+                                    Scroll up to load the previous week
+                                </span>
+                            </h:panelGroup>
+                            <ui:repeat value="#{userChatBean.conversationMessages}" var="messageView">
+                                <div class="chat-message-row #{userChatBean.ownMessage(messageView) ? 'mine' : ''}">
+                                    <div class="chat-message-stack">
+                                        <span class="chat-message-label">
+                                            <span class="chat-message-label-wrap">
+                                                <span class="chat-message-mini-avatar">
+                                                    <h:graphicImage value="#{userChatBean.profileImageSrc(messageView.senderUserId)}"
+                                                                    rendered="#{not empty userChatBean.profileImageSrc(messageView.senderUserId)}"
+                                                                    styleClass="chat-avatar-image" />
+                                                    <h:outputText value="#{messageView.senderUserName.substring(0,1).toUpperCase()}"
+                                                                  rendered="#{empty userChatBean.profileImageSrc(messageView.senderUserId)}" />
+                                                </span>
+                                                <span>#{messageView.senderUserName}</span>
+                                            </span>
+                                        </span>
+                                        <div class="chat-message-bubble">#{messageView.message}</div>
+                                        <span class="chat-message-time">
+                                            <h:outputText value="#{messageView.createdAt}">
+                                                <f:convertDateTime pattern="dd-MMM-yyyy hh:mm a"/>
+                                            </h:outputText>
+                                        </span>
+                                    </div>
+                                </div>
+                            </ui:repeat>
+                            <h:panelGroup rendered="#{empty userChatBean.conversationMessages}" layout="block" styleClass="chat-empty">
+                                <div>
+                                    <strong>No messages yet</strong>
+                                    #{userChatBean.emptyThreadMessage}
+                                </div>
+                            </h:panelGroup>
+                        </div>
+                    </p:outputPanel>
+
+                    <div class="chat-composer">
+                        <div class="chat-composer-shell">
+                            <p:inputTextarea id="chatComposer"
+                                             value="#{userChatBean.draftMessage}"
+                                             rows="3"
+                                             maxlength="2000"
+                                             autoResize="false"
+                                             placeholder="Write a message..."
+                                             style="border:none;box-shadow:none;width:100%;padding:.45rem .55rem;" />
+                            <p:commandButton value="Send"
+                                             icon="pi pi-send"
+                                             styleClass="chat-send-button"
+                                             actionListener="#{userChatBean.sendMessage}"
+                                             process=":form:chatComposer @this"
+                                             update=":form:sidebarPanel :form:threadHeaderPanel :form:threadBodyPanel :form:messages :form:chatComposer"
+                                             oncomplete="scrollChatThreadToBottom();"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

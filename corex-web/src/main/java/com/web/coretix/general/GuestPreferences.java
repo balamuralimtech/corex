@@ -1375,6 +1375,10 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         return userAdministrationRendered;
     }
 
+    public boolean isChatRendered() {
+        return userName != null && !userName.trim().isEmpty();
+    }
+
     public void setUserAdministrationRendered(boolean userAdministrationRendered) {
         this.userAdministrationRendered = userAdministrationRendered;
     }
