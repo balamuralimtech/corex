@@ -19,6 +19,7 @@ package com.web.coretix.applicationstartup;
 import com.web.coretix.utils.PropertyUtils;
 import java.io.File;
 import java.io.IOException;
+import java.io.FilenameFilter;
 import java.util.Properties;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -76,6 +77,12 @@ public class ApplicationStartupServlet extends HttpServlet
         File basePropertiesFile = new File(confDirectory, APPLICATION_FILE_PATH);
         String contextName = resolveContextName();
         File overridePropertiesFile = new File(confDirectory, APPLICATION_OVERRIDE_PREFIX + contextName + ".properties");
+        if (!overridePropertiesFile.exists()) {
+            File fallbackOverrideFile = resolveFallbackOverrideFile(confDirectory, contextName);
+            if (fallbackOverrideFile != null) {
+                overridePropertiesFile = fallbackOverrideFile;
+            }
+        }
 
         PropertyUtils propertyUtils = new PropertyUtils(basePropertiesFile);
         Properties appProperties = propertyUtils.getProperties();
@@ -115,6 +122,24 @@ public class ApplicationStartupServlet extends HttpServlet
             normalized = normalized.substring(1);
         }
         return normalized.replace('/', '-');
+    }
+
+    private File resolveFallbackOverrideFile(File confDirectory, String contextName) {
+        File[] overrideCandidates = confDirectory.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name != null
+                        && name.startsWith(APPLICATION_OVERRIDE_PREFIX)
+                        && name.endsWith(".properties")
+                        && !name.equals(APPLICATION_OVERRIDE_PREFIX + contextName + ".properties");
+            }
+        });
+
+        if (overrideCandidates != null && overrideCandidates.length == 1) {
+            logger.info("[PL] - Using fallback application property override {}", overrideCandidates[0].getAbsolutePath());
+            return overrideCandidates[0];
+        }
+        return null;
     }
 
     /**
@@ -170,7 +195,6 @@ public class ApplicationStartupServlet extends HttpServlet
     }
 
 }
-
 
 
 

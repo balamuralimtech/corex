@@ -220,7 +220,14 @@
         <div class="topbar-left">
             <h:form>
                 <h:outputLink value="#{request.contextPath}/home" styleClass="topbar-logo app-brand app-brand-topbar">
-                    <h:outputText value="#{appInfo.appName}" />
+                    <h:graphicImage value="#{resource[appInfo.brandIconResource]}" alt="#{appInfo.appName}" styleClass="app-brand-icon" />
+                    <span class="app-brand-label app-brand-cxa-word" aria-label="#{appInfo.appName}">
+                        <span class="app-brand-letter app-brand-letter-c">C</span>
+                        <span class="app-brand-letter app-brand-letter-x">X</span>
+                        <span class="app-brand-letter app-brand-letter-a">A</span>
+                        <span class="app-brand-expand app-brand-expand-c">Care</span>
+                        <span class="app-brand-expand app-brand-expand-rest">XApp</span>
+                    </span>
                 </h:outputLink>
             </h:form>
         </div>
@@ -237,10 +244,12 @@
             <h:form id="topbar-items-form">
                 <p:remoteCommand name="markTopbarNotificationsAsSeen"
                                  actionListener="#{guestPreferences.markTopbarMessagesAsSeen}"
-                                 update="messageUnreadCount"/>
+                                 update="messageUnreadCount messagesPanel"
+                                 oncomplete="openPendingTopbarOverlay();"/>
                 <p:remoteCommand name="markTopbarAlertsAsSeen"
                                  actionListener="#{guestPreferences.markTopbarAlertsAsSeen}"
-                                 update="alertUnreadCount"/>
+                                 update="alertUnreadCount alertsPanel"
+                                 oncomplete="openPendingTopbarOverlay();"/>
                 <ul class="topbar-items fadeInDown animated">
                     <ui:fragment
                             rendered="#{guestPreferences.profileMode == 'overlay' or guestPreferences.horizontalMenuLayout}">
@@ -298,29 +307,11 @@
                     </li>
                     <h:outputScript target="body">
                         //<![CDATA[
-                        window.corexTopbarOverlayState = window.corexTopbarOverlayState || null;
+                        window.corexTopbarPendingOverlayKey = null;
 
-                        function captureTopbarOverlayState() {
-                            var topbarItems = document.querySelector('#topbar-items-form .topbar-items');
-                            if (!topbarItems) {
-                                window.corexTopbarOverlayState = null;
-                                return;
-                            }
-
-                            var activeItem = topbarItems.querySelector('li.active-top-menu[data-topbar-key]');
-                            var activeMenu = activeItem ? activeItem.querySelector('ul') : null;
-                            var activeScrollRegion = activeMenu ? activeMenu.querySelector('.topbar-notification-list') : null;
-
-                            window.corexTopbarOverlayState = {
-                                activeKey: activeItem ? activeItem.getAttribute('data-topbar-key') : null,
-                                mobileVisible: topbarItems.classList.contains('topbar-items-visible'),
-                                scrollTop: activeScrollRegion ? activeScrollRegion.scrollTop : (activeMenu ? activeMenu.scrollTop : 0)
-                            };
-                        }
-
-                        function restoreTopbarOverlayState() {
-                            var state = window.corexTopbarOverlayState;
-                            if (!state) {
+                        function openPendingTopbarOverlay() {
+                            var pendingKey = window.corexTopbarPendingOverlayKey;
+                            if (!pendingKey) {
                                 return;
                             }
 
@@ -329,29 +320,20 @@
                                 return;
                             }
 
-                            if (state.mobileVisible) {
-                                topbarItems.classList.add('topbar-items-visible');
-                            }
-
-                            if (!state.activeKey) {
-                                return;
-                            }
-
-                            var activeItem = topbarItems.querySelector('li[data-topbar-key="' + state.activeKey + '"]');
+                            var activeItem = topbarItems.querySelector('li[data-topbar-key="' + pendingKey + '"]');
                             if (!activeItem) {
                                 return;
+                            }
+
+                            var currentlyActive = topbarItems.querySelector('li.active-top-menu[data-topbar-key]');
+                            if (currentlyActive && currentlyActive !== activeItem) {
+                                currentlyActive.classList.remove('active-top-menu');
                             }
 
                             activeItem.classList.add('active-top-menu');
                             var activeMenu = activeItem.querySelector('ul');
                             if (activeMenu) {
                                 activeMenu.classList.remove('fadeOutUp');
-                                var activeScrollRegion = activeMenu.querySelector('.topbar-notification-list');
-                                if (activeScrollRegion) {
-                                    activeScrollRegion.scrollTop = state.scrollTop || 0;
-                                } else {
-                                    activeMenu.scrollTop = state.scrollTop || 0;
-                                }
                             }
 
                             var avalonWidget = PF('avalonMenuWidget');
@@ -359,9 +341,35 @@
                                 avalonWidget.topbarLinkClick = true;
                                 avalonWidget.topbarMenuClick = true;
                             }
+                            window.corexTopbarPendingOverlayKey = null;
                         }
 
-                        function toggleTopbarOverlay(key, markSeenCommandName) {
+                        function closeTopbarOverlay(targetItem) {
+                            if (!targetItem) {
+                                return false;
+                            }
+
+                            targetItem.classList.remove('active-top-menu');
+                            window.corexTopbarPendingOverlayKey = null;
+
+                            var avalonWidget = PF('avalonMenuWidget');
+                            if (avalonWidget) {
+                                avalonWidget.topbarLinkClick = true;
+                                avalonWidget.topbarMenuClick = true;
+                            }
+                            return false;
+                        }
+
+                        function toggleTopbarOverlay(key, markSeenCommandName, event) {
+                            if (event) {
+                                if (typeof event.preventDefault === 'function') {
+                                    event.preventDefault();
+                                }
+                                if (typeof event.stopPropagation === 'function') {
+                                    event.stopPropagation();
+                                }
+                            }
+
                             var topbarItems = document.querySelector('#topbar-items-form .topbar-items');
                             if (!topbarItems) {
                                 return false;
@@ -377,7 +385,9 @@
                                 activeItem.classList.remove('active-top-menu');
                             }
 
-                            targetItem.classList.toggle('active-top-menu');
+                            if (targetItem.classList.contains('active-top-menu')) {
+                                return closeTopbarOverlay(targetItem);
+                            }
 
                             var avalonWidget = PF('avalonMenuWidget');
                             if (avalonWidget) {
@@ -386,7 +396,11 @@
                             }
 
                             if (markSeenCommandName && typeof window[markSeenCommandName] === 'function') {
+                                window.corexTopbarPendingOverlayKey = key;
                                 window[markSeenCommandName]();
+                            } else {
+                                window.corexTopbarPendingOverlayKey = key;
+                                openPendingTopbarOverlay();
                             }
 
                             return false;
@@ -394,7 +408,7 @@
                         //]]>
                     </h:outputScript>
                     <li class="messages-dropdown-item" data-topbar-key="messages">
-                        <a href="#" onclick="return toggleTopbarOverlay('messages', 'markTopbarNotificationsAsSeen');" style="display:flex;align-items:center;gap:.55rem;" title="#{msg['messagesLabel']}">
+                        <a href="#" onclick="return toggleTopbarOverlay('messages', 'markTopbarNotificationsAsSeen', event);" style="display:flex;align-items:center;gap:.55rem;" title="#{msg['messagesLabel']}">
                             <i class="topbar-icon animated swing pi pi-fw pi-envelope"/>
                             <p:outputPanel id="messageUnreadCount" layout="inline">
                                 <span class="topbar-badge animated rubberBand">#{guestPreferences.topbarMessageCount}</span>
@@ -438,7 +452,7 @@
                         </ul>
                     </li>
                     <li class="alerts-dropdown-item" data-topbar-key="alerts">
-                        <a href="#" onclick="return toggleTopbarOverlay('alerts', 'markTopbarAlertsAsSeen');" style="display:flex;align-items:center;gap:.55rem;" title="#{msg['alertsLabel']}">
+                        <a href="#" onclick="return toggleTopbarOverlay('alerts', 'markTopbarAlertsAsSeen', event);" style="display:flex;align-items:center;gap:.55rem;" title="#{msg['alertsLabel']}">
                             <i class="topbar-icon pi pi-fw pi-bell"/>
                             <p:outputPanel id="alertUnreadCount" layout="inline">
                                 <span class="topbar-badge animated rubberBand">#{guestPreferences.topbarAlertCount}</span>

@@ -368,6 +368,18 @@
                 text-transform: none;
                 display: inline-flex;
                 align-items: center;
+                gap: .6rem;
+            }
+            .app-brand-icon {
+                width: 28px;
+                height: 28px;
+                flex: 0 0 auto;
+                display: block;
+            }
+            .app-brand-label {
+                display: inline-block;
+                position: relative;
+                white-space: nowrap;
             }
             .app-brand-topbar {
                 color: #ffffff;
@@ -376,6 +388,115 @@
             }
             .app-brand-footer {
                 color: #2d3436;
+            }
+            .app-brand-cxa-word {
+                display: inline-flex;
+                align-items: center;
+                overflow: hidden;
+                min-width: 0;
+            }
+            .app-brand-letter,
+            .app-brand-expand {
+                display: inline-block;
+                font-weight: 800;
+            }
+            .app-brand-letter {
+                transform-origin: 50% 60%;
+                animation: appBrandLetterCycle 5.8s ease-in-out infinite;
+            }
+            .app-brand-letter-c {
+                animation-delay: 0s;
+            }
+            .app-brand-letter-x {
+                animation-delay: .16s;
+            }
+            .app-brand-letter-a {
+                animation-delay: .32s;
+            }
+            .app-brand-expand {
+                max-width: 0;
+                opacity: 0;
+                transform: translateX(-.22em);
+                animation: appBrandExpandReveal 5.8s ease-in-out infinite;
+            }
+            .app-brand-expand-c {
+                animation-delay: .08s;
+            }
+            .app-brand-expand-rest {
+                animation-delay: .36s;
+            }
+            .app-brand-topbar .app-brand-letter,
+            .app-brand-topbar .app-brand-expand {
+                color: #ffffff;
+                text-shadow: 0 1px 10px rgba(15,23,42,.12);
+            }
+            .app-brand-footer .app-brand-letter,
+            .app-brand-footer .app-brand-expand {
+                color: color-mix(in srgb, #{guestPreferences.activeLayoutColor} 72%, #0f172a);
+            }
+            @keyframes appBrandLetterCycle {
+                0% {
+                    transform: rotate(0deg) scale(1);
+                    max-width: 1.2em;
+                    opacity: 1;
+                }
+                16% {
+                    transform: rotate(0deg) scale(1);
+                    max-width: 1.2em;
+                    opacity: 1;
+                }
+                26% {
+                    transform: rotate(1turn) scale(1.08);
+                    max-width: 1.2em;
+                    opacity: 1;
+                }
+                36% {
+                    transform: rotate(1turn) scale(1);
+                    max-width: 0;
+                    opacity: 0;
+                }
+                82% {
+                    transform: rotate(1turn) scale(1);
+                    max-width: 0;
+                    opacity: 0;
+                }
+                100% {
+                    transform: rotate(1turn) scale(1);
+                    max-width: 1.2em;
+                    opacity: 1;
+                }
+            }
+            @keyframes appBrandExpandReveal {
+                0% {
+                    max-width: 0;
+                    opacity: 0;
+                    transform: translateX(-.22em);
+                }
+                18% {
+                    max-width: 0;
+                    opacity: 0;
+                    transform: translateX(-.22em);
+                }
+                34% {
+                    max-width: 5.4em;
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+                68% {
+                    max-width: 5.4em;
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+                84% {
+                    max-width: 0;
+                    opacity: 0;
+                    transform: translateX(-.22em);
+                }
+                100% {
+                    max-width: 0;
+                    opacity: 0;
+                    transform: translateX(-.22em);
+                }
             }
         </style>
     </h:head>

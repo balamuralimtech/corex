@@ -128,7 +128,7 @@
                         <span class="bcopy"><span class="bname">#{appInfo.appName}</span><span class="bsub">Outpatient, pharmacy, billing, and patient care</span></span>
                     </h:outputLink>
                     <h2>Welcome Back</h2>
-                    <p>Sign in to continue to your CareX operations workspace.</p>
+                    <p>Sign in to continue to your #{appInfo.appName} operations workspace.</p>
                 </div>
                 <h:form id="form" autocomplete="off">
                     <p:growl id="messages" showDetail="true" styleClass="growl"/>
@@ -192,7 +192,7 @@
                     </div>
                     <div class="foothelp">Password is encrypted in the browser before submit.</div>
                 </h:form>
-                <div class="footer">&#169; CoreX Logic #{loginBean.year}</div>
+                <div class="footer">&#169; #{appInfo.companyName} #{loginBean.year}</div>
             </section>
         </div>
     </div>

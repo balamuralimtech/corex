@@ -23,6 +23,7 @@ public class AppInfoBean {
 
     private static final String DEFAULT_APP_NAME = "CoreX";
     private static final String DEFAULT_BRAND_ICON_RESOURCE = "demo:images/coretix/app-brand.svg";
+    private static final String DEFAULT_COMPANY_NAME = DEFAULT_APP_NAME;
     private static final String DEFAULT_LOGIN_HEADLINE = "Simplifying Healthcare";
     private static final String DEFAULT_LOGIN_DESCRIPTION =
             "CareX is a unified healthcare management platform designed to support both clinics and hospitals in managing their daily operations efficiently.";
@@ -39,6 +40,13 @@ public class AppInfoBean {
         return brandIconResource == null || brandIconResource.trim().isEmpty()
                 ? DEFAULT_BRAND_ICON_RESOURCE
                 : brandIconResource;
+    }
+
+    public String getCompanyName() {
+        String companyName = System.getProperty("company.name");
+        return companyName == null || companyName.trim().isEmpty()
+                ? DEFAULT_COMPANY_NAME
+                : companyName;
     }
 
     public String getLoginHeadline() {
@@ -69,5 +77,4 @@ public class AppInfoBean {
                 : loginVideo;
     }
 }
-
 
