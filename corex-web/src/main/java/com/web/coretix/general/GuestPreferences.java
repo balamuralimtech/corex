@@ -183,13 +183,14 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     private int applicationUnreadMessageCount;
     private int latestApplicationNotificationId;
     private boolean applicationNotificationTrackerInitialized;
+    private boolean pageAttributesInitialized;
+    private int initializedPageAttributesUserId;
+    private String initializedPageAttributesLanguage;
+    private String cachedTopbarProfileImageSrc;
+    private int cachedTopbarProfileImageUserId;
 
     public void initializePageAttributes() {
         ensureInjectedServices();
-
-        componentThemes.clear();
-        layoutThemes.clear();
-        layoutSpecialThemes.clear();
 
         FacesContext facesContext = FacesContext.getCurrentInstance();
         HttpSession httpSession = facesContext == null
@@ -224,58 +225,94 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         userId = sessionUserId != null ? sessionUserId : 0;
         logger.debug("User Id retrieved from session: " + userId);
 
-        themeColors = new HashMap<>();
-        themeColors.put("indigo", "#6610F2");
+        initializeThemeCatalogs();
 
-        componentThemes.add(new ComponentTheme("Amber", "amber", "#F8BD0C"));
-        componentThemes.add(new ComponentTheme("Blue", "blue", "#007bff"));
-        componentThemes.add(new ComponentTheme("Cyan", "cyan", "#17A2B8"));
-        componentThemes.add(new ComponentTheme("Indigo", "indigo", "#6610F2"));
-        componentThemes.add(new ComponentTheme("Purple", "purple", "#883cae"));
-        componentThemes.add(new ComponentTheme("Teal", "teal", "#20C997"));
-        componentThemes.add(new ComponentTheme("Orange", "orange", "#FD7E14"));
-        componentThemes.add(new ComponentTheme("Deep Purple", "deeppurple", "#612FBE"));
-        componentThemes.add(new ComponentTheme("Light Blue", "lightblue", "#4DA3FF"));
-        componentThemes.add(new ComponentTheme("Green", "green", "#28A745"));
-        componentThemes.add(new ComponentTheme("Light Green", "lightgreen", "#61CC79"));
-        componentThemes.add(new ComponentTheme("Brown", "brown", "#986839"));
-        componentThemes.add(new ComponentTheme("Dark Grey", "darkgrey", "#6C757D"));
-        componentThemes.add(new ComponentTheme("Pink", "pink", "#E83E8C"));
-        componentThemes.add(new ComponentTheme("Lime", "lime", "#74CD32"));
-
-        layoutThemes.add(new LayoutTheme("Blue", "blue", "#146fd7"));
-        layoutThemes.add(new LayoutTheme("Cyan", "cyan", "#0A616F"));
-        layoutThemes.add(new LayoutTheme("Indigo", "indigo", "#470EA2"));
-        layoutThemes.add(new LayoutTheme("Purple", "purple", "#391F68"));
-        layoutThemes.add(new LayoutTheme("Teal", "teal", "#136E52"));
-        layoutThemes.add(new LayoutTheme("Pink", "pink", "#771340"));
-        layoutThemes.add(new LayoutTheme("Lime", "lime", "#407916"));
-        layoutThemes.add(new LayoutTheme("Green", "green", "#1F8E38"));
-        layoutThemes.add(new LayoutTheme("Amber", "amber", "#7A5E06"));
-        layoutThemes.add(new LayoutTheme("Brown", "brown", "#593E22"));
-        layoutThemes.add(new LayoutTheme("Orange", "orange", "#904100"));
-        layoutThemes.add(new LayoutTheme("Deep Purple", "deeppurple", "#341A64"));
-        layoutThemes.add(new LayoutTheme("Light Blue", "lightblue", "#14569D"));
-        layoutThemes.add(new LayoutTheme("Light Green", "lightgreen", "#2E8942"));
-        layoutThemes.add(new LayoutTheme("Dark Grey", "darkgrey", "#343A40"));
-        layoutThemes.add(new LayoutTheme("CareX", "carex", "#136E52"));
-
-        layoutSpecialThemes.add(new LayoutSpecialTheme("Influenza", "influenza", "#a83279", "#f38e00"));
-        layoutSpecialThemes.add(new LayoutSpecialTheme("Calm", "calm", "#5f2c82", "#0DA9A4"));
-        layoutSpecialThemes.add(new LayoutSpecialTheme("Crimson", "crimson", "#521c52", "#c6426e"));
-        layoutSpecialThemes.add(new LayoutSpecialTheme("Night", "night", "#2c0747", "#6441a5"));
-        layoutSpecialThemes.add(new LayoutSpecialTheme("Skyline", "skyline", "#2b32b2", "#1488cc"));
-        layoutSpecialThemes.add(new LayoutSpecialTheme("Sunkist", "sunkist", "#ee8a21", "#f2c94c"));
-        layoutSpecialThemes.add(new LayoutSpecialTheme("Little Leaf", "littleleaf", "#4DB865", "#80D293"));
-        layoutSpecialThemes.add(new LayoutSpecialTheme("Joomla", "joomla", "#1e3c72", "#2a5298"));
-        layoutSpecialThemes.add(new LayoutSpecialTheme("Firewatch", "firewatch", "#cb2d3e", "#ef473a"));
-        layoutSpecialThemes.add(new LayoutSpecialTheme("Suzy", "suzy", "#834d9b", "#d04ed6"));
+        if (isPageAttributesCacheValid()) {
+            syncTopbarMessagesFromSession(httpSession);
+            return;
+        }
 
         loadUserThemePreferences();
         fetchModuleRenderList();
         List<ApplicationNotification> notifications = refreshPersistentNotifications(httpSession);
         updateApplicationNotificationTracker(notifications, false);
         syncTopbarMessagesFromSession(httpSession);
+        rememberPageAttributesState();
+    }
+
+    private void initializeThemeCatalogs() {
+        if (themeColors == null) {
+            themeColors = new HashMap<>();
+        } else {
+            themeColors.clear();
+        }
+        themeColors.put("indigo", "#6610F2");
+
+        if (componentThemes.isEmpty()) {
+            componentThemes.add(new ComponentTheme("Amber", "amber", "#F8BD0C"));
+            componentThemes.add(new ComponentTheme("Blue", "blue", "#007bff"));
+            componentThemes.add(new ComponentTheme("Cyan", "cyan", "#17A2B8"));
+            componentThemes.add(new ComponentTheme("Indigo", "indigo", "#6610F2"));
+            componentThemes.add(new ComponentTheme("Purple", "purple", "#883cae"));
+            componentThemes.add(new ComponentTheme("Teal", "teal", "#20C997"));
+            componentThemes.add(new ComponentTheme("Orange", "orange", "#FD7E14"));
+            componentThemes.add(new ComponentTheme("Deep Purple", "deeppurple", "#612FBE"));
+            componentThemes.add(new ComponentTheme("Light Blue", "lightblue", "#4DA3FF"));
+            componentThemes.add(new ComponentTheme("Green", "green", "#28A745"));
+            componentThemes.add(new ComponentTheme("Light Green", "lightgreen", "#61CC79"));
+            componentThemes.add(new ComponentTheme("Brown", "brown", "#986839"));
+            componentThemes.add(new ComponentTheme("Dark Grey", "darkgrey", "#6C757D"));
+            componentThemes.add(new ComponentTheme("Pink", "pink", "#E83E8C"));
+            componentThemes.add(new ComponentTheme("Lime", "lime", "#74CD32"));
+        }
+
+        if (layoutThemes.isEmpty()) {
+            layoutThemes.add(new LayoutTheme("Blue", "blue", "#146fd7"));
+            layoutThemes.add(new LayoutTheme("Cyan", "cyan", "#0A616F"));
+            layoutThemes.add(new LayoutTheme("Indigo", "indigo", "#470EA2"));
+            layoutThemes.add(new LayoutTheme("Purple", "purple", "#391F68"));
+            layoutThemes.add(new LayoutTheme("Teal", "teal", "#136E52"));
+            layoutThemes.add(new LayoutTheme("Pink", "pink", "#771340"));
+            layoutThemes.add(new LayoutTheme("Lime", "lime", "#407916"));
+            layoutThemes.add(new LayoutTheme("Green", "green", "#1F8E38"));
+            layoutThemes.add(new LayoutTheme("Amber", "amber", "#7A5E06"));
+            layoutThemes.add(new LayoutTheme("Brown", "brown", "#593E22"));
+            layoutThemes.add(new LayoutTheme("Orange", "orange", "#904100"));
+            layoutThemes.add(new LayoutTheme("Deep Purple", "deeppurple", "#341A64"));
+            layoutThemes.add(new LayoutTheme("Light Blue", "lightblue", "#14569D"));
+            layoutThemes.add(new LayoutTheme("Light Green", "lightgreen", "#2E8942"));
+            layoutThemes.add(new LayoutTheme("Dark Grey", "darkgrey", "#343A40"));
+            layoutThemes.add(new LayoutTheme("CareX", "carex", "#136E52"));
+        }
+
+        if (layoutSpecialThemes.isEmpty()) {
+            layoutSpecialThemes.add(new LayoutSpecialTheme("Influenza", "influenza", "#a83279", "#f38e00"));
+            layoutSpecialThemes.add(new LayoutSpecialTheme("Calm", "calm", "#5f2c82", "#0DA9A4"));
+            layoutSpecialThemes.add(new LayoutSpecialTheme("Crimson", "crimson", "#521c52", "#c6426e"));
+            layoutSpecialThemes.add(new LayoutSpecialTheme("Night", "night", "#2c0747", "#6441a5"));
+            layoutSpecialThemes.add(new LayoutSpecialTheme("Skyline", "skyline", "#2b32b2", "#1488cc"));
+            layoutSpecialThemes.add(new LayoutSpecialTheme("Sunkist", "sunkist", "#ee8a21", "#f2c94c"));
+            layoutSpecialThemes.add(new LayoutSpecialTheme("Little Leaf", "littleleaf", "#4DB865", "#80D293"));
+            layoutSpecialThemes.add(new LayoutSpecialTheme("Joomla", "joomla", "#1e3c72", "#2a5298"));
+            layoutSpecialThemes.add(new LayoutSpecialTheme("Firewatch", "firewatch", "#cb2d3e", "#ef473a"));
+            layoutSpecialThemes.add(new LayoutSpecialTheme("Suzy", "suzy", "#834d9b", "#d04ed6"));
+        }
+    }
+
+    private boolean isPageAttributesCacheValid() {
+        return pageAttributesInitialized
+                && initializedPageAttributesUserId == userId
+                && Objects.equals(initializedPageAttributesLanguage, selectedLanguage);
+    }
+
+    private void rememberPageAttributesState() {
+        pageAttributesInitialized = true;
+        initializedPageAttributesUserId = userId;
+        initializedPageAttributesLanguage = selectedLanguage;
+        if (cachedTopbarProfileImageUserId != userId) {
+            cachedTopbarProfileImageUserId = 0;
+            cachedTopbarProfileImageSrc = null;
+        }
     }
 
     public void changeLocale(){
@@ -1548,6 +1585,9 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         if (userId <= 0) {
             return null;
         }
+        if (cachedTopbarProfileImageUserId == userId) {
+            return cachedTopbarProfileImageSrc;
+        }
         if (userAdministrationService == null) {
             return null;
         }
@@ -1557,11 +1597,15 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
             if (currentUserDetails == null || currentUserDetails.getProfileImage() == null
                     || currentUserDetails.getProfileImage().length == 0
                     || currentUserDetails.getProfileImageContentType() == null) {
+                cachedTopbarProfileImageUserId = userId;
+                cachedTopbarProfileImageSrc = null;
                 return null;
             }
 
-            return "data:" + currentUserDetails.getProfileImageContentType() + ";base64,"
+            cachedTopbarProfileImageUserId = userId;
+            cachedTopbarProfileImageSrc = "data:" + currentUserDetails.getProfileImageContentType() + ";base64,"
                     + Base64.getEncoder().encodeToString(currentUserDetails.getProfileImage());
+            return cachedTopbarProfileImageSrc;
         } catch (Exception ex) {
             logger.error("Unable to load topbar profile image for user {}", userId, ex);
             return null;

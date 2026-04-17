@@ -115,6 +115,14 @@
                                                      process="@this">
                                         <f:setPropertyActionListener value="#{notification}" target="#{applicationNotificationBean.selectedNotification}" />
                                     </p:commandButton>
+                                    <p:commandButton icon="pi pi-refresh"
+                                                     action="#{applicationNotificationBean.resendSelectedNotification}"
+                                                     styleClass="rounded-button ui-button-info"
+                                                     process="@this"
+                                                     update=":form:messages :form:notificationDataTableId :topbar-items-form"
+                                                     title="Resend notification">
+                                        <f:setPropertyActionListener value="#{notification}" target="#{applicationNotificationBean.selectedNotification}" />
+                                    </p:commandButton>
                                     <p:commandButton class="ui-button-warning rounded-button"
                                                      icon="pi pi-trash"
                                                      process="@this"

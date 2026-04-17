@@ -2,7 +2,9 @@ package com.web.coretix.menu;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import java.io.Serializable;
 
 import javax.el.ELContext;
 import javax.el.ExpressionFactory;
@@ -10,6 +12,7 @@ import javax.el.ValueExpression;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
+import com.web.coretix.constants.SessionAttributes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.primefaces.model.menu.DefaultMenuItem;
@@ -19,15 +22,25 @@ import org.primefaces.model.menu.MenuModel;
 import org.springframework.context.annotation.Scope;
 
 @Named("dynamicMenu")
-@Scope("request")
-public class DynamicMenuBean {
+@Scope("session")
+public class DynamicMenuBean implements Serializable {
 
     private static final Logger logger = LoggerFactory.getLogger(DynamicMenuBean.class);
+    private static final long serialVersionUID = 1L;
 
     @Inject
     private List<MenuContributor> contributors;
+    private transient MenuModel cachedModel;
+    private int cachedUserId;
+    private String cachedLanguage;
+    private String cachedContextPath;
 
     public MenuModel getModel() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext != null && isCacheValid(facesContext)) {
+            return cachedModel;
+        }
+
         List<AppMenuGroup> groups = new ArrayList<>();
         int contributorCount = 0;
 
@@ -75,7 +88,42 @@ public class DynamicMenuBean {
         }
 
         logger.debug("Dynamic menu built {} rendered groups from {} contributors", renderedGroups, contributorCount);
-        return model;
+        cachedModel = model;
+        if (facesContext != null) {
+            rememberCacheState(facesContext);
+        }
+        return cachedModel;
+    }
+
+    private boolean isCacheValid(FacesContext facesContext) {
+        if (cachedModel == null) {
+            return false;
+        }
+
+        Map<String, Object> sessionMap = facesContext.getExternalContext().getSessionMap();
+        Object userIdValue = sessionMap.get(SessionAttributes.USER_ACCOUNT_ID.getName());
+        Object languageValue = sessionMap.get(SessionAttributes.LANGUAGE.getName());
+        String currentContextPath = facesContext.getExternalContext().getRequestContextPath();
+        String currentLanguage = languageValue instanceof String
+                ? (String) languageValue
+                : facesContext.getViewRoot() == null ? "" : facesContext.getViewRoot().getLocale().toLanguageTag();
+        int currentUserId = userIdValue instanceof Integer ? (Integer) userIdValue : 0;
+
+        return cachedUserId == currentUserId
+                && String.valueOf(currentLanguage).equals(cachedLanguage)
+                && String.valueOf(currentContextPath).equals(cachedContextPath);
+    }
+
+    private void rememberCacheState(FacesContext facesContext) {
+        Map<String, Object> sessionMap = facesContext.getExternalContext().getSessionMap();
+        Object userIdValue = sessionMap.get(SessionAttributes.USER_ACCOUNT_ID.getName());
+        Object languageValue = sessionMap.get(SessionAttributes.LANGUAGE.getName());
+
+        cachedUserId = userIdValue instanceof Integer ? (Integer) userIdValue : 0;
+        cachedLanguage = languageValue instanceof String
+                ? (String) languageValue
+                : facesContext.getViewRoot() == null ? "" : facesContext.getViewRoot().getLocale().toLanguageTag();
+        cachedContextPath = facesContext.getExternalContext().getRequestContextPath();
     }
 
     private ResolvedMenuGroup resolveGroup(AppMenuGroup group) {

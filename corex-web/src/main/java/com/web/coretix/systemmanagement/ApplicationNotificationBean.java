@@ -146,6 +146,60 @@ public class ApplicationNotificationBean implements Serializable {
         }
     }
 
+    public void resendSelectedNotification() {
+        if (selectedNotification == null || selectedNotification.getId() <= 0) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_WARN, "Warning", "Select a notification first"));
+            return;
+        }
+
+        ApplicationNotification persistentNotification =
+                applicationNotificationService.getApplicationNotificationById(selectedNotification.getId());
+        if (persistentNotification == null) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Notification not found"));
+            return;
+        }
+
+        String notificationMessage = persistentNotification.getMessage() == null
+                ? ""
+                : persistentNotification.getMessage().trim();
+        if (notificationMessage.isEmpty()) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Notification message is empty"));
+            return;
+        }
+
+        UserActivityTO userActivityTO = populateUserActivityTO();
+        userActivityTO.setActivityType(UserActivityConstants.ADD.getValue());
+        userActivityTO.setActivityDescription("Application notification resent");
+        userActivityTO.setCreatedAt(new Date());
+
+        ApplicationNotification notification = new ApplicationNotification();
+        notification.setMessage(notificationMessage);
+        notification.setCreatedByUserId(userActivityTO.getUserId());
+        notification.setCreatedByUserName(userActivityTO.getUserName());
+
+        GeneralConstants result = applicationNotificationService.addApplicationNotification(userActivityTO, notification);
+        switch (result) {
+            case SUCCESSFUL:
+                fetchNotificationList();
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_INFO, "Success", "Notification resent successfully"));
+                PrimeFaces.current().ajax().update("form:messages", "form:notificationDataTableId", ":topbar-items-form");
+                break;
+            case ENTRY_NOT_EXISTS:
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_WARN, "Warning", "Notification does not exist"));
+                break;
+            default:
+                logger.error("Unable to resend application notification {}", selectedNotification.getId());
+                FacesContext.getCurrentInstance().addMessage(null,
+                        new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Unable to resend notification"));
+                break;
+        }
+    }
+
     private void handleSaveResult(GeneralConstants result, String actionLabel) {
         switch (result) {
             case SUCCESSFUL:
