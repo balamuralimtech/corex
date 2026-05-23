@@ -12,4 +12,5 @@ public interface IPatientService {
     GeneralConstants deletePatient(UserActivityTO userActivityTO, Patient patient);
     Patient getPatientById(Integer patientId);
     List<Patient> getPatientsByOrganizationId(Integer organizationId);
+    List<Patient> getPatientsByOrganizationIds(List<Integer> organizationIds);
 }

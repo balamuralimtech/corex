@@ -130,19 +130,17 @@
                     <h2>Welcome Back</h2>
                     <p>Sign in to continue to your #{appInfo.appName} operations workspace.</p>
                 </div>
-                <h:form id="form" autocomplete="off">
+                <h:form id="form" autocomplete="on">
                     <p:growl id="messages" showDetail="true" styleClass="growl"/>
-                    <input type="text" name="fake_username" autocomplete="username" style="display:none;" aria-hidden="true"/>
-                    <input type="password" name="fake_password" autocomplete="current-password" style="display:none;" aria-hidden="true"/>
                     <div class="fg">
                         <div class="lr"><label class="lbl" for="form:username">Username</label></div>
                         <p:inputText id="username" value="#{loginBean.username}" styleClass="in"
-                                     placeholder="Enter your username" autocomplete="off"/>
+                                     placeholder="Enter your username" autocomplete="username"/>
                     </div>
                     <div class="fg">
                         <div class="lr"><label class="lbl" for="form:password">Password</label><h:outputLink value="#{request.contextPath}/login" styleClass="help">Need help?</h:outputLink></div>
                         <p:password id="password" value="#{loginBean.password}" styleClass="pw"
-                                    placeholder="Enter your password" feedback="false" autocomplete="new-password"/>
+                                    placeholder="Enter your password" feedback="false" autocomplete="current-password"/>
                     </div>
                     <h:inputHidden id="encryptedPassword" value="#{loginBean.encryptedPassword}"/>
                     <div class="actions">
@@ -199,13 +197,15 @@
     <script type="text/javascript">
         //<![CDATA[
         const loginEncryptionPublicKey = "#{loginBean.loginEncryptionPublicKey}";
+        let loginEncryptionCryptoKeyPromise;
         function showLoader(){document.getElementById('loadingOverlay').classList.add('active');sessionStorage.setItem('showingLoader','true');}
         function hideLoader(){sessionStorage.removeItem('showingLoader');document.getElementById('loadingOverlay').classList.remove('active');}
         function decodeBase64ToUint8Array(v){const b=window.atob(v),bytes=new Uint8Array(b.length);for(let i=0;i<b.length;i++){bytes[i]=b.charCodeAt(i);}return bytes;}
         function canEncryptPasswordInBrowser(){return Boolean(loginEncryptionPublicKey&&window.crypto&&window.crypto.subtle&&window.isSecureContext);}
-        async function encryptPasswordForSubmit(p){const key=await window.crypto.subtle.importKey('spki',decodeBase64ToUint8Array(loginEncryptionPublicKey).buffer,{name:'RSA-OAEP',hash:'SHA-256'},false,['encrypt']);const encrypted=await window.crypto.subtle.encrypt({name:'RSA-OAEP'},key,new TextEncoder().encode(p));let bin='';new Uint8Array(encrypted).forEach(function(x){bin+=String.fromCharCode(x);});return window.btoa(bin);}
-        async function encryptAndSubmitLogin(){const p=document.getElementById('form:password'),e=document.getElementById('form:encryptedPassword'),s=document.getElementById('form:encryptedSubmit');if(!p||!e||!s){window.alert('Login controls are not available. Refresh the page and try again.');return false;}if(!p.value){s.click();return false;}if(!canEncryptPasswordInBrowser()){e.value='';s.click();return false;}try{showLoader();e.value=await encryptPasswordForSubmit(p.value);s.click();}catch(error){hideLoader();e.value='';s.click();}return false;}
-        window.addEventListener('load',function(){if(sessionStorage.getItem('showingLoader')==='true'&&window.location.pathname.includes('login')){hideLoader();}});
+        function getLoginEncryptionCryptoKey(){if(!loginEncryptionCryptoKeyPromise){loginEncryptionCryptoKeyPromise=window.crypto.subtle.importKey('spki',decodeBase64ToUint8Array(loginEncryptionPublicKey).buffer,{name:'RSA-OAEP',hash:'SHA-256'},false,['encrypt']);}return loginEncryptionCryptoKeyPromise;}
+        async function encryptPasswordForSubmit(p){const key=await getLoginEncryptionCryptoKey();const encrypted=await window.crypto.subtle.encrypt({name:'RSA-OAEP'},key,new TextEncoder().encode(p));let bin='';new Uint8Array(encrypted).forEach(function(x){bin+=String.fromCharCode(x);});return window.btoa(bin);}
+        async function encryptAndSubmitLogin(){const p=document.getElementById('form:password'),e=document.getElementById('form:encryptedPassword'),s=document.getElementById('form:encryptedSubmit');if(!p||!e||!s){window.alert('Login controls are not available. Refresh the page and try again.');return false;}showLoader();if(!p.value){s.click();return false;}if(!canEncryptPasswordInBrowser()){e.value='';s.click();return false;}try{e.value=await encryptPasswordForSubmit(p.value);s.click();}catch(error){e.value='';s.click();}return false;}
+        window.addEventListener('load',function(){if(sessionStorage.getItem('showingLoader')==='true'&&window.location.pathname.includes('login')){hideLoader();}if(canEncryptPasswordInBrowser()){getLoginEncryptionCryptoKey().catch(function(){loginEncryptionCryptoKeyPromise=null;});}});
         //]]>
     </script>
 </h:body>

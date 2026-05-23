@@ -305,6 +305,30 @@
                             </ui:repeat>
                         </ul>
                     </li>
+                    <ui:fragment rendered="#{guestPreferences.chatRendered}">
+                        <li class="chat-topbar-item">
+                            <h:outputLink value="#{request.contextPath}/chat"
+                                          style="display:flex;align-items:center;gap:.55rem;"
+                                          title="Chat"
+                                          onclick="markSessionNavigationIntent();">
+                                <i class="topbar-icon pi pi-fw pi-comments"/>
+                                <p:outputPanel id="chatUnreadCount" layout="inline">
+                                    <span class="topbar-badge animated rubberBand"
+                                          rendered="#{guestPreferences.topbarChatCount gt 0}">#{guestPreferences.topbarChatCount}</span>
+                                </p:outputPanel>
+                                <span class="topbar-item-name">Chat</span>
+                            </h:outputLink>
+                        </li>
+                    </ui:fragment>
+                    <li class="feedback-topbar-item">
+                        <h:outputLink value="#{request.contextPath}/feedback"
+                                      style="display:flex;align-items:center;gap:.55rem;"
+                                      title="Feedback"
+                                      onclick="markSessionNavigationIntent();">
+                            <i class="topbar-icon pi pi-fw pi-comment"/>
+                            <span class="topbar-item-name">Feedback</span>
+                        </h:outputLink>
+                    </li>
                     <h:outputScript target="body">
                         //<![CDATA[
                         window.corexTopbarPendingOverlayKey = null;
@@ -338,8 +362,8 @@
 
                             var avalonWidget = PF('avalonMenuWidget');
                             if (avalonWidget) {
-                                avalonWidget.topbarLinkClick = true;
-                                avalonWidget.topbarMenuClick = true;
+                                avalonWidget.topbarLinkClick = false;
+                                avalonWidget.topbarMenuClick = false;
                             }
                             window.corexTopbarPendingOverlayKey = null;
                         }
@@ -354,8 +378,8 @@
 
                             var avalonWidget = PF('avalonMenuWidget');
                             if (avalonWidget) {
-                                avalonWidget.topbarLinkClick = true;
-                                avalonWidget.topbarMenuClick = true;
+                                avalonWidget.topbarLinkClick = false;
+                                avalonWidget.topbarMenuClick = false;
                             }
                             return false;
                         }
@@ -391,8 +415,8 @@
 
                             var avalonWidget = PF('avalonMenuWidget');
                             if (avalonWidget) {
-                                avalonWidget.topbarLinkClick = true;
-                                avalonWidget.topbarMenuClick = true;
+                                avalonWidget.topbarLinkClick = false;
+                                avalonWidget.topbarMenuClick = false;
                             }
 
                             if (markSeenCommandName && typeof window[markSeenCommandName] === 'function') {

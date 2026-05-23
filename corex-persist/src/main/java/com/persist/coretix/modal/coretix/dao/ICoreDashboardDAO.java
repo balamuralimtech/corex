@@ -16,7 +16,14 @@
  */
 package com.persist.coretix.modal.coretix.dao;
 
+import java.util.Map;
+import java.math.BigDecimal;
+
 public interface ICoreDashboardDAO {
+
+    public Map<String, Long> fetchDashboardEntityCounts();
+
+    public Map<String, BigDecimal> fetchDashboardOperationalMetrics();
 
     public long fetchOrganizationCount();
 
@@ -41,8 +48,6 @@ public interface ICoreDashboardDAO {
     public long fetchUserActivityCount();
 
 }
-
-
 
 
 

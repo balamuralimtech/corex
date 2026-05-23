@@ -124,6 +124,11 @@ public class AuthorizationFilter implements Filter {
             return false;
         }
 
+        Object forcedLogoutPending = session.getAttribute(SessionAttributes.ADMIN_FORCE_LOGOUT_PENDING.getName());
+        if (forcedLogoutPending instanceof Boolean && (Boolean) forcedLogoutPending) {
+            return true;
+        }
+
         Object userIdObject = session.getAttribute(SessionAttributes.USER_ACCOUNT_ID.getName());
         if (!(userIdObject instanceof Integer)) {
             return false;

@@ -58,6 +58,11 @@ public class MedicineService implements IMedicineService {
         return medicineDAO.getMedicinesByOrganizationId(organizationId);
     }
 
+    @Override
+    public List<Medicine> getMedicinesByOrganizationIds(List<Integer> organizationIds) {
+        return medicineDAO.getMedicinesByOrganizationIds(organizationIds);
+    }
+
     private void addUserActivity(UserActivityTO userActivityTO) {
         UserActivities userActivity = new UserActivities();
         userActivity.setUserId(userActivityTO.getUserId());

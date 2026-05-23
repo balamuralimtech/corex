@@ -297,9 +297,9 @@
                                                  selection="#{userAdministrationBean.selectedUsers}"
                                                  reflow="true" rowHover="true" styleClass="user-admin-table"
                                                  rowKey="#{user.userId}" paginator="true" rows="10" paginatorPosition="bottom">
-                                        <p:ajax event="rowSelectCheckbox" update="bulkActionsPanel usersDataTableId"/>
-                                        <p:ajax event="rowUnselectCheckbox" update="bulkActionsPanel usersDataTableId"/>
-                                        <p:ajax event="toggleSelect" update="bulkActionsPanel usersDataTableId"/>
+                                        <p:ajax event="rowSelectCheckbox" update="@([id$=bulkActionsPanel]) @([id$=usersDataTableId])"/>
+                                        <p:ajax event="rowUnselectCheckbox" update="@([id$=bulkActionsPanel]) @([id$=usersDataTableId])"/>
+                                        <p:ajax event="toggleSelect" update="@([id$=bulkActionsPanel]) @([id$=usersDataTableId])"/>
                                         <f:facet name="header">
                                             <div class="user-admin-search">
                                                 <div class="user-admin-search-left">
@@ -688,7 +688,8 @@
                                 <p:commandButton value="#{msg['userAdminResetPasswordButtonLabel']}" icon="pi pi-check"
                                                  actionListener="#{userAdministrationBean.resetSelectedUserPassword}"
                                                  process="@this adminResetPassword adminResetPasswordConfirm"
-                                                 update="@form" styleClass="ui-button-success"/>
+                                                 update="@([id$=usersMainPanelId]) @([id$=messages]) @([id$=bulkActionsPanel])"
+                                                 styleClass="ui-button-success"/>
                                 <p:commandButton value="#{msg['cancelLabel']}" type="button" icon="pi pi-times"
                                                  onclick="PF('resetPasswordDialog').hide()" styleClass="ui-button-secondary"/>
                             </f:facet>
@@ -721,7 +722,8 @@
                             <f:facet name="footer">
                                 <p:commandButton value="#{msg['userAdminSendNotificationButtonLabel']}" icon="pi pi-send"
                                                  actionListener="#{userAdministrationBean.sendCustomNotificationToSelectedUser}"
-                                                 process="@this customNotificationMessage" update="@form"
+                                                 process="@this customNotificationMessage"
+                                                 update="@([id$=usersMainPanelId]) @([id$=messages]) @([id$=bulkActionsPanel])"
                                                  styleClass="ui-button-success"/>
                                 <p:commandButton value="#{msg['cancelLabel']}" type="button" icon="pi pi-times"
                                                  onclick="PF('customNotificationDialog').hide()" styleClass="ui-button-secondary"/>
@@ -755,7 +757,8 @@
                             <f:facet name="footer">
                                 <p:commandButton value="#{msg['userAdminSendPopupButtonLabel']}" icon="pi pi-megaphone"
                                                  actionListener="#{userAdministrationBean.sendCustomPopupToSelectedUser}"
-                                                 process="@this customPopupMessage" update="@form"
+                                                 process="@this customPopupMessage"
+                                                 update="@([id$=usersMainPanelId]) @([id$=messages]) @([id$=bulkActionsPanel])"
                                                  styleClass="ui-button-success"/>
                                 <p:commandButton value="#{msg['cancelLabel']}" type="button" icon="pi pi-times"
                                                  onclick="PF('customPopupDialog').hide()" styleClass="ui-button-secondary"/>
@@ -767,7 +770,8 @@
                                          severity="warn">
                             <p:commandButton value="#{msg['yesLabel']}" icon="pi pi-check"
                                              actionListener="#{userAdministrationBean.confirmDeleteCountry}"
-                                             update="@([id$=usersMainPanelId])"
+                                             process="@this"
+                                             update="@([id$=usersMainPanelId]) @([id$=messages]) @([id$=bulkActionsPanel])"
                                              oncomplete="PF('deleteCountDialog').hide()"
                                              styleClass="ui-button-danger"/>
                             <p:commandButton value="#{msg['noLabel']}" type="button" icon="pi pi-times"
@@ -794,7 +798,8 @@
                             </div>
                             <p:commandButton value="#{msg['yesLabel']}" icon="pi pi-check"
                                              actionListener="#{userAdministrationBean.confirmPendingAdminAction}"
-                                             update="@form"
+                                             process="@this"
+                                             update="@([id$=usersMainPanelId]) @([id$=messages]) @([id$=bulkActionsPanel])"
                                              oncomplete="PF('userAdminActionConfirmDialog').hide()"
                                              styleClass="ui-button-danger"/>
                             <p:commandButton value="#{msg['noLabel']}" type="button" icon="pi pi-times"

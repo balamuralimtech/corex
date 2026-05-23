@@ -61,6 +61,11 @@ public class PatientService implements IPatientService {
         return patientDAO.getPatientsByOrganizationId(organizationId);
     }
 
+    @Override
+    public List<Patient> getPatientsByOrganizationIds(List<Integer> organizationIds) {
+        return patientDAO.getPatientsByOrganizationIds(organizationIds);
+    }
+
     private void addUserActivity(UserActivityTO userActivityTO) {
         UserActivities userActivity = new UserActivities();
         userActivity.setUserId(userActivityTO.getUserId());

@@ -48,13 +48,15 @@ import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.sql.Date;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.spec.MGF1ParameterSpec;
-import java.util.HashMap;
-import java.util.Map;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Base64;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Named("loginBean")
 @Scope("session")
@@ -62,6 +64,43 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
 
     private static final long serialVersionUID = 13543439334535435L;
     private static final Logger logger = LoggerFactory.getLogger(LoginBean.class);
+    private static final int LOGIN_ENCRYPTION_KEY_SIZE = 2048;
+    private static final String LOGIN_RSA_TRANSFORMATION = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding";
+    private static final Object LOGIN_KEY_LOCK = new Object();
+    private static final String[] LOGIN_GREETING_NOTES = {
+            "A fresh start for strong work.",
+            "Small progress still moves everything forward.",
+            "One good session can shape the whole day.",
+            "Focus first. The rest will follow.",
+            "A productive step now creates momentum later.",
+            "Good work begins with a clear start.",
+            "Today is a good day to get meaningful work done.",
+            "Your workspace is ready for something great."
+    };
+    private static final String[] LOGIN_WELCOME_BACK_NOTES = {
+            "Good to see you back. Let the next step be a strong one.",
+            "Welcome back. Keep building on the progress you started.",
+            "Back again and ready to move things forward.",
+            "Welcome back. A focused return can change the rest of the day.",
+            "Glad to have you back. Keep the momentum steady."
+    };
+    private static final String[] CAREXAPP_GREETING_NOTES = {
+            "Every patient touchpoint matters. Let today flow smoothly.",
+            "Care starts with clarity. Wishing you a steady shift ahead.",
+            "Ready to support better care, one task at a time.",
+            "A well-run system helps every patient journey move better.",
+            "Here is to thoughtful care, smooth coordination, and a strong day ahead.",
+            "Each update you make helps care teams stay one step ahead."
+    };
+    private static final String[] CAREXAPP_WELCOME_BACK_NOTES = {
+            "Welcome back. Every smooth update supports better patient care.",
+            "Good to see you again. Care teams move better when systems stay sharp.",
+            "Welcome back. Each action you take helps the patient journey stay on track.",
+            "Back again. Here is to steady care, clear coordination, and good progress ahead.",
+            "Welcome back. Thoughtful work behind the scenes makes care smoother for everyone."
+    };
+    private static volatile KeyPair sharedLoginEncryptionKeyPair;
+    private static volatile String cachedServerHostName;
 
     private String username;
     private String password;
@@ -96,6 +135,7 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
 
         username = username == null ? null : username.trim();
         password = resolveSubmittedPassword();
+        RequestClientInfo requestClientInfo = RequestClientInfo.fromCurrentRequest();
 
         logger.debug("username : " + username);
 
@@ -115,9 +155,9 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
 
             UserActivities userActivities = new UserActivities();
             userActivities.setActivityType(UserActivityConstants.L0GIN.getValue());
-            userActivities.setIpAddress(getMachineIP());
-            userActivities.setDeviceInfo(getMachineName());
-            userActivities.setLocationInfo(getBrowserClientInfo());
+            userActivities.setIpAddress(requestClientInfo.getIpAddress());
+            userActivities.setDeviceInfo(requestClientInfo.getDeviceInfo());
+            userActivities.setLocationInfo(requestClientInfo.getBrowserInfo());
             userActivities.setCreatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
 
             if (isUserValid && userDetails != null) {
@@ -162,13 +202,14 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
                 userActivities.setUserId(userDetails.getUserId());
                 userActivities.setUserName(userDetails.getUserName());
                 userActivities.setActivityDescription(LoginConstants.SUCCESSFUL_LOGIN.getValue());
-                setSessionAttributes(userDetails);
+                setSessionAttributes(userDetails, requestClientInfo);
                 userActivities.setSessionId(getCurrentSessionId());
                 userActivityService.addUserActivity(userActivities);
                 userAdministrationService.markLoginSuccess(userDetails.getUserId(), getCurrentSessionId());
 
                 logger.info("User login successful: " + username);
                 FacesContext facesContext = FacesContext.getCurrentInstance();
+                addLoginWelcomeMessage(facesContext, userDetails);
                 String contextPath = facesContext.getExternalContext().getRequestContextPath();
                 facesContext.getExternalContext().redirect(contextPath + "/home");
                 facesContext.responseComplete();
@@ -219,7 +260,7 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
         if (loginEncryptionPrivateKey == null) {
             throw new IllegalStateException("Login encryption key is not initialized.");
         }
-        Cipher cipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
+        Cipher cipher = Cipher.getInstance(LOGIN_RSA_TRANSFORMATION);
         cipher.init(Cipher.DECRYPT_MODE, loginEncryptionPrivateKey, new OAEPParameterSpec(
                 "SHA-256",
                 "MGF1",
@@ -231,15 +272,29 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
 
     private void initializeLoginEncryption() {
         try {
-            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
-            keyPairGenerator.initialize(2048);
-            KeyPair keyPair = keyPairGenerator.generateKeyPair();
+            KeyPair keyPair = getSharedLoginEncryptionKeyPair();
             loginEncryptionPrivateKey = keyPair.getPrivate();
             loginEncryptionPublicKey = Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded());
         } catch (Exception exception) {
             loginEncryptionPrivateKey = null;
             loginEncryptionPublicKey = null;
             logger.error("Unable to initialize login encryption keys", exception);
+        }
+    }
+
+    private KeyPair getSharedLoginEncryptionKeyPair() throws Exception {
+        KeyPair currentKeyPair = sharedLoginEncryptionKeyPair;
+        if (currentKeyPair != null) {
+            return currentKeyPair;
+        }
+
+        synchronized (LOGIN_KEY_LOCK) {
+            if (sharedLoginEncryptionKeyPair == null) {
+                KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+                keyPairGenerator.initialize(LOGIN_ENCRYPTION_KEY_SIZE);
+                sharedLoginEncryptionKeyPair = keyPairGenerator.generateKeyPair();
+            }
+            return sharedLoginEncryptionKeyPair;
         }
     }
 
@@ -272,7 +327,11 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
             return "No license details found. Please contact admin for license registration.";
         }
 
-        if (!licenseService.isLicenseActiveForOrganization(userDetails.getOrganization().getId())) {
+        Date currentDate = new Date(System.currentTimeMillis());
+        if (license.getStartDate() == null
+                || license.getEndDate() == null
+                || currentDate.before(license.getStartDate())
+                || currentDate.after(license.getEndDate())) {
             return "Your license has expired. Please contact admin.";
         }
 
@@ -301,11 +360,17 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
     }
 
     public static String getMachineName() {
+        String currentHostName = cachedServerHostName;
+        if (StringUtils.isNotBlank(currentHostName)) {
+            return currentHostName;
+        }
+
         try {
             InetAddress inetAddress = InetAddress.getLocalHost();
-            return inetAddress.getHostName();
+            cachedServerHostName = inetAddress.getHostName();
+            return cachedServerHostName;
         } catch (UnknownHostException e) {
-            e.printStackTrace();
+            logger.warn("Unable to resolve server host name", e);
             return "Machine name not available";
         }
     }
@@ -342,7 +407,7 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
         return browser;
     }
 
-    private void setSessionAttributes(UserDetails userDetails) {
+    private void setSessionAttributes(UserDetails userDetails, RequestClientInfo requestClientInfo) {
         FacesContext facesContext = FacesContext.getCurrentInstance();
         HttpSession existingSession = (HttpSession) facesContext.getExternalContext().getSession(false);
         if (existingSession != null) {
@@ -371,9 +436,9 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
                 userDetails.getOrganization() == null ? null : userDetails.getOrganization().getId());
         session.setAttribute(SessionAttributes.ORGANIZATION_NAME.getName(),
                 userDetails.getOrganization() == null ? null : userDetails.getOrganization().getOrganizationName());
-        session.setAttribute(SessionAttributes.MACHINE_IP.getName(), getMachineIP());
-        session.setAttribute(SessionAttributes.MACHINE_NAME.getName(), getMachineName());
-        session.setAttribute(SessionAttributes.BROWSER_CLIENT_INFO.getName(), getBrowserClientInfo());
+        session.setAttribute(SessionAttributes.MACHINE_IP.getName(), requestClientInfo.getIpAddress());
+        session.setAttribute(SessionAttributes.MACHINE_NAME.getName(), requestClientInfo.getDeviceInfo());
+        session.setAttribute(SessionAttributes.BROWSER_CLIENT_INFO.getName(), requestClientInfo.getBrowserInfo());
         session.setAttribute(SessionAttributes.COUNTRY_ID.getName(),
                 userDetails.getCountry() == null ? null : userDetails.getCountry().getId());
         session.setAttribute(SessionAttributes.SESSION_AUDIT_COMPLETED.getName(), Boolean.FALSE);
@@ -449,7 +514,137 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
         return bootstrapRequired;
     }
 
+    private void addLoginWelcomeMessage(FacesContext facesContext, UserDetails userDetails) {
+        String displayName = StringUtils.isNotBlank(username)
+                ? username
+                : (userDetails == null ? "User" : userDetails.getUserName());
+        boolean firstLoginToday = isFirstLoginToday(userDetails);
+
+        String greetingPrefix = resolveDayGreeting();
+        String catchyLine = greetingPrefix + ". Welcome to " + getApplicationNameForGreeting()
+                + ". " + getRandomGreetingNote(firstLoginToday);
+        String summary = firstLoginToday ? "Welcome " + displayName : "Welcome back " + displayName;
+
+        facesContext.addMessage(null,
+                new FacesMessage(FacesMessage.SEVERITY_INFO,
+                        summary,
+                        catchyLine));
+        facesContext.getExternalContext().getFlash().setKeepMessages(true);
+    }
+
+    private String getApplicationNameForGreeting() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null) {
+            return "Application";
+        }
+
+        String applicationName = facesContext.getApplication()
+                .evaluateExpressionGet(facesContext, "#{appInfo.appName}", String.class);
+        return StringUtils.isNotBlank(applicationName) ? applicationName : "Application";
+    }
+
+    private String getRandomGreetingNote(boolean firstLoginToday) {
+        String[] greetingNotes;
+        if (isCareXAppGreeting()) {
+            greetingNotes = firstLoginToday ? CAREXAPP_GREETING_NOTES : CAREXAPP_WELCOME_BACK_NOTES;
+        } else {
+            greetingNotes = firstLoginToday ? LOGIN_GREETING_NOTES : LOGIN_WELCOME_BACK_NOTES;
+        }
+        int randomIndex = ThreadLocalRandom.current().nextInt(greetingNotes.length);
+        return greetingNotes[randomIndex];
+    }
+
+    private boolean isCareXAppGreeting() {
+        String applicationName = getApplicationNameForGreeting();
+        return "carexapp".equalsIgnoreCase(StringUtils.deleteWhitespace(applicationName));
+    }
+
+    private boolean isFirstLoginToday(UserDetails userDetails) {
+        if (userDetails == null || userDetails.getLastSuccessfulLogin() == null) {
+            return true;
+        }
+
+        LocalDate lastLoginDate = userDetails.getLastSuccessfulLogin().toLocalDateTime().toLocalDate();
+        return !LocalDate.now().equals(lastLoginDate);
+    }
+
+    private String resolveDayGreeting() {
+        LocalTime now = LocalTime.now();
+        if (now.isBefore(LocalTime.NOON)) {
+            return "Good morning";
+        }
+        if (now.isBefore(LocalTime.of(17, 0))) {
+            return "Good afternoon";
+        }
+        return "Good evening";
+    }
+
+    private static final class RequestClientInfo {
+        private final String ipAddress;
+        private final String deviceInfo;
+        private final String browserInfo;
+
+        private RequestClientInfo(String ipAddress, String deviceInfo, String browserInfo) {
+            this.ipAddress = ipAddress;
+            this.deviceInfo = deviceInfo;
+            this.browserInfo = browserInfo;
+        }
+
+        private static RequestClientInfo fromCurrentRequest() {
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            if (facesContext == null) {
+                return new RequestClientInfo("IP address not available", getMachineName(), "Unknown");
+            }
+
+            HttpServletRequest request = (HttpServletRequest) facesContext.getExternalContext().getRequest();
+            String forwardedFor = request.getHeader("X-Forwarded-For");
+            String ipAddress = StringUtils.isNotBlank(forwardedFor)
+                    ? forwardedFor.split(",")[0].trim()
+                    : request.getRemoteAddr();
+
+            String browserDetails = request.getHeader("User-Agent");
+            String browserInfo = resolveBrowserInfo(browserDetails);
+            String deviceInfo = StringUtils.defaultIfBlank(browserDetails, getMachineName());
+            return new RequestClientInfo(ipAddress, deviceInfo, browserInfo);
+        }
+
+        private static String resolveBrowserInfo(String browserDetails) {
+            if (StringUtils.isBlank(browserDetails)) {
+                return "Unknown";
+            }
+
+            String userAgent = browserDetails.toLowerCase();
+
+            if (userAgent.contains("msie") || userAgent.contains("trident")) {
+                return "IE";
+            } else if (userAgent.contains("edge")) {
+                return "Edge";
+            } else if (userAgent.contains("safari") && userAgent.contains("version")) {
+                return "Safari";
+            } else if (userAgent.contains("opr") || userAgent.contains("opera")) {
+                return "Opera";
+            } else if (userAgent.contains("chrome") && !userAgent.contains("edge")) {
+                return "Chrome";
+            } else if (userAgent.contains("firefox")) {
+                return "Firefox";
+            } else if ((userAgent.contains("mozilla/7.0")) || (userAgent.contains("netscape6")) || (userAgent.contains("mozilla/4.7")) || (userAgent.contains("mozilla/4.78")) || (userAgent.contains("mozilla/4.08")) || (userAgent.contains("mozilla/3"))) {
+                return "Netscape";
+            }
+
+            return "Unknown, More-Info: " + browserDetails;
+        }
+
+        private String getIpAddress() {
+            return ipAddress;
+        }
+
+        private String getDeviceInfo() {
+            return deviceInfo;
+        }
+
+        private String getBrowserInfo() {
+            return browserInfo;
+        }
+    }
+
 }
-
-
-

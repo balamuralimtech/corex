@@ -19,6 +19,7 @@ package com.web.coretix.general;
 import com.module.coretix.commonto.UserActivityTO;
 import com.module.coretix.coretix.IApplicationNotificationService;
 import com.module.coretix.coretix.IApplicationThemeService;
+import com.module.coretix.coretix.IUserChatService;
 import com.module.coretix.usermanagement.IRoleAdministrationService;
 import com.module.coretix.usermanagement.IUserActivityService;
 import com.module.coretix.usermanagement.IUserAdministrationService;
@@ -176,6 +177,9 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     @Inject
     private transient IApplicationNotificationService applicationNotificationService;
 
+    @Inject
+    private transient IUserChatService userChatService;
+
     private String growlMessage;
     private List<String> topbarMessages = new ArrayList<>();
     private int topbarUnreadMessageCount;
@@ -183,6 +187,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     private int applicationUnreadMessageCount;
     private int latestApplicationNotificationId;
     private boolean applicationNotificationTrackerInitialized;
+    private int topbarChatUnreadCount;
     private boolean pageAttributesInitialized;
     private int initializedPageAttributesUserId;
     private String initializedPageAttributesLanguage;
@@ -237,6 +242,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         List<ApplicationNotification> notifications = refreshPersistentNotifications(httpSession);
         updateApplicationNotificationTracker(notifications, false);
         syncTopbarMessagesFromSession(httpSession);
+        refreshTopbarChatUnreadCount();
         rememberPageAttributesState();
     }
 
@@ -845,6 +851,7 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         List<ApplicationNotification> notifications = refreshPersistentNotifications(session);
         updateApplicationNotificationTracker(notifications, true);
         syncTopbarMessagesFromSession(session);
+        refreshTopbarChatUnreadCount();
         growlMessage = (String) session.getAttribute(SessionAttributes.APPLICATION_NOTIFICATION_GROWL.getName());
         if (growlMessage != null) {
             PrimeFaces.current().executeScript(
@@ -878,6 +885,14 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
     }
 
     public void handleAdminForceLogout() {
+        HttpSession session = SessionUtils.getSession();
+        if (session != null) {
+            session.removeAttribute(SessionAttributes.ADMIN_FORCE_LOGOUT_PENDING.getName());
+        }
+        logoutAction();
+    }
+
+    public void handleIdleSessionTimeout() {
         logoutAction();
     }
 
@@ -920,6 +935,10 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
 
     public int getTopbarAlertCount() {
         return topbarUnreadMessageCount;
+    }
+
+    public int getTopbarChatCount() {
+        return topbarChatUnreadCount;
     }
 
     public String getTopbarEntryTitle(String message) {
@@ -1795,6 +1814,23 @@ public class GuestPreferences extends GenericManagedBean implements Serializable
         }
         if (applicationNotificationService == null) {
             applicationNotificationService = resolveSpringBean(IApplicationNotificationService.class);
+        }
+        if (userChatService == null) {
+            userChatService = resolveSpringBean(IUserChatService.class);
+        }
+    }
+
+    private void refreshTopbarChatUnreadCount() {
+        if (userId <= 0 || userChatService == null) {
+            topbarChatUnreadCount = 0;
+            return;
+        }
+
+        try {
+            topbarChatUnreadCount = userChatService.getUnreadMessageCount(userId);
+        } catch (Exception e) {
+            logger.error("Unable to load unread chat count for user {}", userId, e);
+            topbarChatUnreadCount = 0;
         }
     }
 }

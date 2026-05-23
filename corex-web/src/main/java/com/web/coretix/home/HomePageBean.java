@@ -46,6 +46,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.File;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.lang.management.ClassLoadingMXBean;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
@@ -413,6 +414,222 @@ public class HomePageBean extends GenericManagedBean implements Serializable {
                 getChangeShare());
     }
 
+    public String getCommandTreemapJson() {
+        if (coreDashboardTO == null) {
+            return "[]";
+        }
+        return String.format(Locale.US,
+                "[" +
+                        "{id:'structure',name:'Structure',color:'#1d4ed8'}," +
+                        "{id:'identity',name:'Identity',color:'#14b8a6'}," +
+                        "{id:'activity',name:'Activity',color:'#f97316'}," +
+                        "{id:'geography',name:'Geography',color:'#7c3aed'}," +
+                        "{name:'Organizations',parent:'structure',value:%d}," +
+                        "{name:'Branches',parent:'structure',value:%d}," +
+                        "{name:'Departments',parent:'structure',value:%d}," +
+                        "{name:'Designations',parent:'structure',value:%d}," +
+                        "{name:'Roles',parent:'identity',value:%d}," +
+                        "{name:'Users',parent:'identity',value:%d}," +
+                        "{name:'Activities',parent:'activity',value:%d}," +
+                        "{name:'Countries',parent:'geography',value:%d}," +
+                        "{name:'States',parent:'geography',value:%d}," +
+                        "{name:'Cities',parent:'geography',value:%d}" +
+                        "]",
+                coreDashboardTO.getOrganizationCount(),
+                coreDashboardTO.getBranchCount(),
+                coreDashboardTO.getDepartmentCount(),
+                coreDashboardTO.getDesignationCount(),
+                coreDashboardTO.getRoleCount(),
+                coreDashboardTO.getUserCount(),
+                coreDashboardTO.getUserActivityCount(),
+                coreDashboardTO.getCountryCount(),
+                coreDashboardTO.getStateCount(),
+                coreDashboardTO.getCityCount());
+    }
+
+    public String getAdminRiskHeatmapJson() {
+        return String.format(Locale.US,
+                "[[0,0,%.2f],[1,0,%.2f],[2,0,%.2f],[3,0,%.2f],[0,1,%.2f],[1,1,%.2f],[2,1,%.2f],[3,1,%.2f]]",
+                100.0 - getActiveUserRate(),
+                100.0 - getRoleUsageRate(),
+                getChangeShare(),
+                100.0 - getLicenseCoverageRate(),
+                getNeverLoggedInRate(),
+                getLoggedOutUserRate(),
+                getAuthenticationShare(),
+                percentage(getExpiringSoonLicenseCount(), Math.max(1, getLicensedOrganizationCount())));
+    }
+
+    public String getIdentityFunnelJson() {
+        if (coreDashboardTO == null) {
+            return "[]";
+        }
+        return String.format(Locale.US,
+                "[['Total Users', %d], ['Known Status', %d], ['Logged In', %d], ['Licensed Users', %d], ['Active Sessions', %d]]",
+                coreDashboardTO.getUserCount(),
+                getUserStatusTotal(),
+                coreDashboardTO.getUsersLoggedInCount(),
+                getLicensedUserCount(),
+                SessionListeners.getNoActiveSessions());
+    }
+
+    public String getActivityBattlecardJson() {
+        return String.format(Locale.US,
+                "[{name:'Authentication',data:[%d,%d,0,0,0],color:'#1d4ed8'},{name:'Changes',data:[0,0,%d,%d,%d],color:'#f97316'}]",
+                coreDashboardTO == null ? 0 : coreDashboardTO.getLoginCount(),
+                coreDashboardTO == null ? 0 : coreDashboardTO.getLogoutCount(),
+                coreDashboardTO == null ? 0 : coreDashboardTO.getAddCount(),
+                coreDashboardTO == null ? 0 : coreDashboardTO.getUpdateCount(),
+                coreDashboardTO == null ? 0 : coreDashboardTO.getDeleteCount());
+    }
+
+    public String getCoverageRingsJson() {
+        return String.format(Locale.US,
+                "[['Active Users', %.2f], ['Role Use', %.2f], ['License Coverage', %.2f], ['Change Share', %.2f]]",
+                getActiveUserRate(),
+                getRoleUsageRate(),
+                getLicenseCoverageRate(),
+                getChangeShare());
+    }
+
+    public double getSecurityExposureRate() {
+        if (coreDashboardTO == null) {
+            return 0;
+        }
+        long exposedUsers = coreDashboardTO.getDisabledUserCount()
+                + coreDashboardTO.getLockedUserCount()
+                + coreDashboardTO.getStalePasswordUserCount()
+                + coreDashboardTO.getInactiveUser30DaysCount();
+        return percentage(exposedUsers, Math.max(1, coreDashboardTO.getUserCount() * 4));
+    }
+
+    public double getDemoCompletionRate() {
+        return percentage(coreDashboardTO == null ? 0 : coreDashboardTO.getDemoRequestsCompletedCount(),
+                coreDashboardTO == null ? 0 : coreDashboardTO.getDemoRequestsTotalCount());
+    }
+
+    public double getNotificationReadRate() {
+        long seen = coreDashboardTO == null ? 0 : coreDashboardTO.getNotificationReceiptsTotalCount();
+        long unseen = coreDashboardTO == null ? 0 : coreDashboardTO.getNotificationUnseenTotalCount();
+        return percentage(seen, seen + unseen);
+    }
+
+    public double getRecentActivityCoverageRate() {
+        return percentage(coreDashboardTO == null ? 0 : coreDashboardTO.getUniqueActiveUsers30DaysCount(),
+                coreDashboardTO == null ? 0 : coreDashboardTO.getUserCount());
+    }
+
+    public double getReferralCommissionPaidRate() {
+        BigDecimal paid = coreDashboardTO == null ? BigDecimal.ZERO : coreDashboardTO.getReferralCommissionPaidAmount();
+        BigDecimal pending = coreDashboardTO == null ? BigDecimal.ZERO : coreDashboardTO.getReferralCommissionPendingAmount();
+        return percentage(paid.doubleValue(), paid.add(pending).doubleValue());
+    }
+
+    public String getAverageLicenseDaysRemainingLabel() {
+        return formatDecimal(coreDashboardTO == null ? BigDecimal.ZERO : coreDashboardTO.getAverageLicenseDaysRemaining());
+    }
+
+    public String getAverageDemoCompletionHoursLabel() {
+        return formatDecimal(coreDashboardTO == null ? BigDecimal.ZERO : coreDashboardTO.getAverageDemoCompletionHours());
+    }
+
+    public String getLatestNotificationAgeHoursLabel() {
+        return formatDecimal(coreDashboardTO == null ? BigDecimal.ZERO : coreDashboardTO.getLatestNotificationAgeHours());
+    }
+
+    public String getReferralSubscriptionAmountLabel() {
+        return formatAmount(coreDashboardTO == null ? BigDecimal.ZERO : coreDashboardTO.getReferralSubscriptionAmount());
+    }
+
+    public String getReferralCommissionPendingAmountLabel() {
+        return formatAmount(coreDashboardTO == null ? BigDecimal.ZERO : coreDashboardTO.getReferralCommissionPendingAmount());
+    }
+
+    public String getReferralCommissionPaidAmountLabel() {
+        return formatAmount(coreDashboardTO == null ? BigDecimal.ZERO : coreDashboardTO.getReferralCommissionPaidAmount());
+    }
+
+    public String getSecurityPostureJson() {
+        if (coreDashboardTO == null) {
+            return "[]";
+        }
+        return String.format(Locale.US,
+                "[['Disabled', %d], ['Locked', %d], ['Stale Password', %d], ['Inactive 30d', %d]]",
+                coreDashboardTO.getDisabledUserCount(),
+                coreDashboardTO.getLockedUserCount(),
+                coreDashboardTO.getStalePasswordUserCount(),
+                coreDashboardTO.getInactiveUser30DaysCount());
+    }
+
+    public String getActivityRecencyJson() {
+        if (coreDashboardTO == null) {
+            return "[]";
+        }
+        return String.format(Locale.US,
+                "[['7 Days', %d], ['30 Days', %d], ['Unique Users 30d', %d], ['All Activities', %d]]",
+                coreDashboardTO.getActivityLast7DaysCount(),
+                coreDashboardTO.getActivityLast30DaysCount(),
+                coreDashboardTO.getUniqueActiveUsers30DaysCount(),
+                coreDashboardTO.getUserActivityCount());
+    }
+
+    public String getLicenseRiskJson() {
+        if (coreDashboardTO == null) {
+            return "[]";
+        }
+        return String.format(Locale.US,
+                "[['7 Days', %d], ['15 Days', %d], ['30 Days', %d], ['Expired', %d]]",
+                coreDashboardTO.getLicensesExpiring7DaysCount(),
+                coreDashboardTO.getLicensesExpiring15DaysCount(),
+                coreDashboardTO.getLicensesExpiring30DaysCount(),
+                coreDashboardTO.getExpiredLicensesMetricCount());
+    }
+
+    public String getDemoFunnelJson() {
+        if (coreDashboardTO == null) {
+            return "[]";
+        }
+        return String.format(Locale.US,
+                "[['Total', %d], ['Pending', %d], ['Completed', %d]]",
+                coreDashboardTO.getDemoRequestsTotalCount(),
+                coreDashboardTO.getDemoRequestsPendingCount(),
+                coreDashboardTO.getDemoRequestsCompletedCount());
+    }
+
+    public String getNotificationReachJson() {
+        if (coreDashboardTO == null) {
+            return "[]";
+        }
+        return String.format(Locale.US,
+                "[['Notifications', %d], ['Seen', %d], ['Unseen', %d]]",
+                coreDashboardTO.getNotificationsTotalCount(),
+                coreDashboardTO.getNotificationReceiptsTotalCount(),
+                coreDashboardTO.getNotificationUnseenTotalCount());
+    }
+
+    public String getReferralRevenueJson() {
+        if (coreDashboardTO == null) {
+            return "[]";
+        }
+        return String.format(Locale.US,
+                "[['Subscription', %.2f], ['Pending Commission', %.2f], ['Paid Commission', %.2f]]",
+                coreDashboardTO.getReferralSubscriptionAmount().doubleValue(),
+                coreDashboardTO.getReferralCommissionPendingAmount().doubleValue(),
+                coreDashboardTO.getReferralCommissionPaidAmount().doubleValue());
+    }
+
+    public String getChatLoadJson() {
+        if (coreDashboardTO == null) {
+            return "[]";
+        }
+        return String.format(Locale.US,
+                "[['Conversations', %d], ['Messages 24h', %d], ['Messages 7d', %d], ['Active Users 7d', %d]]",
+                coreDashboardTO.getChatConversationsTotalCount(),
+                coreDashboardTO.getChatMessagesLast24HoursCount(),
+                coreDashboardTO.getChatMessagesLast7DaysCount(),
+                coreDashboardTO.getActiveChatUsers7DaysCount());
+    }
+
     public String getDashboardInsights() {
         String activeUserRate = String.format(Locale.US, "%.1f", getActiveUserRate());
         String roleUsageRate = String.format(Locale.US, "%.1f", getRoleUsageRate());
@@ -664,6 +881,12 @@ public class HomePageBean extends GenericManagedBean implements Serializable {
         List<UserActivities> scopedActivities = userActivityService.getUserActivitiesList().stream()
                 .filter(activity -> activity != null && scopedUserIds.contains(activity.getUserId()))
                 .collect(Collectors.toList());
+        List<Licenses> scopedLicenses = licenseService.getLicenseList().stream()
+                .filter(license -> license != null
+                        && license.getOrganization() != null
+                        && license.getOrganization().getId() == organizationId)
+                .collect(Collectors.toList());
+        CoreDashboardTO platformDashboard = coreDashboardService.fetchDashboardData();
 
         Set<Integer> scopedRoleIds = scopedUsers.stream()
                 .filter(user -> user.getRole() != null)
@@ -675,10 +898,10 @@ public class HomePageBean extends GenericManagedBean implements Serializable {
         scopedDashboard.setBranchCount(scopedBranches.size());
         scopedDashboard.setDepartmentCount(scopedDepartments.size());
         scopedDashboard.setDesignationCount(scopedDesignations.size());
-        scopedDashboard.setCountryCount(coreDashboardService.fetchDashboardData().getCountryCount());
-        scopedDashboard.setStateCount(coreDashboardService.fetchDashboardData().getStateCount());
-        scopedDashboard.setCityCount(coreDashboardService.fetchDashboardData().getCityCount());
-        scopedDashboard.setCurrencyCount(coreDashboardService.fetchDashboardData().getCurrencyCount());
+        scopedDashboard.setCountryCount(platformDashboard.getCountryCount());
+        scopedDashboard.setStateCount(platformDashboard.getStateCount());
+        scopedDashboard.setCityCount(platformDashboard.getCityCount());
+        scopedDashboard.setCurrencyCount(platformDashboard.getCurrencyCount());
         scopedDashboard.setRoleCount(scopedRoleIds.size());
         scopedDashboard.setUserCount(scopedUsers.size());
         scopedDashboard.setUserActivityCount(scopedActivities.size());
@@ -697,7 +920,100 @@ public class HomePageBean extends GenericManagedBean implements Serializable {
         scopedDashboard.setRolesNotUsedCount((int) allRoles.stream()
                 .filter(role -> role != null && !scopedRoleIds.contains(role.getId()))
                 .count());
+
+        long now = System.currentTimeMillis();
+        long stalePasswordCutoff = now - TimeUnit.DAYS.toMillis(90);
+        long inactiveCutoff = now - TimeUnit.DAYS.toMillis(30);
+        long activity7DayCutoff = now - TimeUnit.DAYS.toMillis(7);
+        long activity30DayCutoff = now - TimeUnit.DAYS.toMillis(30);
+
+        scopedDashboard.setDisabledUserCount(scopedUsers.stream().filter(UserDetails::isAccountDisabled).count());
+        scopedDashboard.setLockedUserCount(scopedUsers.stream().filter(UserDetails::isAccountLocked).count());
+        scopedDashboard.setStalePasswordUserCount(scopedUsers.stream()
+                .filter(user -> user.getLastPasswordChange() == null || user.getLastPasswordChange().getTime() < stalePasswordCutoff)
+                .count());
+        scopedDashboard.setInactiveUser30DaysCount(scopedUsers.stream()
+                .filter(user -> user.getLastSeenAt() == null || user.getLastSeenAt().getTime() < inactiveCutoff)
+                .count());
+        scopedDashboard.setActivityLast7DaysCount(scopedActivities.stream()
+                .filter(activity -> activity.getCreatedAt() != null && activity.getCreatedAt().getTime() >= activity7DayCutoff)
+                .count());
+        scopedDashboard.setActivityLast30DaysCount(scopedActivities.stream()
+                .filter(activity -> activity.getCreatedAt() != null && activity.getCreatedAt().getTime() >= activity30DayCutoff)
+                .count());
+        scopedDashboard.setUniqueActiveUsers30DaysCount(scopedActivities.stream()
+                .filter(activity -> activity.getCreatedAt() != null && activity.getCreatedAt().getTime() >= activity30DayCutoff)
+                .map(UserActivities::getUserId)
+                .distinct()
+                .count());
+
+        LicenseMetrics scopedLicenseMetrics = summarizeLicenses(scopedLicenses);
+        scopedDashboard.setLicensesExpiring7DaysCount(scopedLicenseMetrics.expiring7Days);
+        scopedDashboard.setLicensesExpiring15DaysCount(scopedLicenseMetrics.expiring15Days);
+        scopedDashboard.setLicensesExpiring30DaysCount(scopedLicenseMetrics.expiring30Days);
+        scopedDashboard.setExpiredLicensesMetricCount(scopedLicenseMetrics.expired);
+        scopedDashboard.setAverageLicenseDaysRemaining(scopedLicenseMetrics.averageDaysRemaining);
+
+        scopedDashboard.setDemoRequestsTotalCount(platformDashboard.getDemoRequestsTotalCount());
+        scopedDashboard.setDemoRequestsPendingCount(platformDashboard.getDemoRequestsPendingCount());
+        scopedDashboard.setDemoRequestsCompletedCount(platformDashboard.getDemoRequestsCompletedCount());
+        scopedDashboard.setAverageDemoCompletionHours(platformDashboard.getAverageDemoCompletionHours());
+        scopedDashboard.setNotificationsTotalCount(platformDashboard.getNotificationsTotalCount());
+        scopedDashboard.setNotificationReceiptsTotalCount(platformDashboard.getNotificationReceiptsTotalCount());
+        scopedDashboard.setNotificationUnseenTotalCount(platformDashboard.getNotificationUnseenTotalCount());
+        scopedDashboard.setLatestNotificationAgeHours(platformDashboard.getLatestNotificationAgeHours());
+        scopedDashboard.setActiveReferrersCount(platformDashboard.getActiveReferrersCount());
+        scopedDashboard.setReferralAttributionsTotalCount(platformDashboard.getReferralAttributionsTotalCount());
+        scopedDashboard.setReferralSubscriptionAmount(platformDashboard.getReferralSubscriptionAmount());
+        scopedDashboard.setReferralCommissionPendingAmount(platformDashboard.getReferralCommissionPendingAmount());
+        scopedDashboard.setReferralCommissionPaidAmount(platformDashboard.getReferralCommissionPaidAmount());
+        scopedDashboard.setChatConversationsTotalCount(platformDashboard.getChatConversationsTotalCount());
+        scopedDashboard.setChatMessagesLast24HoursCount(platformDashboard.getChatMessagesLast24HoursCount());
+        scopedDashboard.setChatMessagesLast7DaysCount(platformDashboard.getChatMessagesLast7DaysCount());
+        scopedDashboard.setActiveChatUsers7DaysCount(platformDashboard.getActiveChatUsers7DaysCount());
         return scopedDashboard;
+    }
+
+    private LicenseMetrics summarizeLicenses(List<Licenses> licenses) {
+        LicenseMetrics metrics = new LicenseMetrics();
+        Date today = new Date();
+        long totalRemainingDays = 0;
+        long activeOrFutureLicenseCount = 0;
+
+        for (Licenses license : licenses) {
+            if (license == null || license.getEndDate() == null) {
+                continue;
+            }
+            long daysRemaining = TimeUnit.MILLISECONDS.toDays(license.getEndDate().getTime() - today.getTime());
+            if (daysRemaining < 0) {
+                metrics.expired++;
+                continue;
+            }
+            activeOrFutureLicenseCount++;
+            totalRemainingDays += daysRemaining;
+            if (daysRemaining <= 7) {
+                metrics.expiring7Days++;
+            }
+            if (daysRemaining <= 15) {
+                metrics.expiring15Days++;
+            }
+            if (daysRemaining <= 30) {
+                metrics.expiring30Days++;
+            }
+        }
+
+        if (activeOrFutureLicenseCount > 0) {
+            metrics.averageDaysRemaining = BigDecimal.valueOf((double) totalRemainingDays / activeOrFutureLicenseCount);
+        }
+        return metrics;
+    }
+
+    private static class LicenseMetrics {
+        private long expiring7Days;
+        private long expiring15Days;
+        private long expiring30Days;
+        private long expired;
+        private BigDecimal averageDaysRemaining = BigDecimal.ZERO;
     }
 
     private int countActivities(List<UserActivities> activities, String type) {
@@ -824,9 +1140,16 @@ public class HomePageBean extends GenericManagedBean implements Serializable {
         return String.format(Locale.US, "%.1f%%", value);
     }
 
+    private String formatDecimal(BigDecimal value) {
+        return value == null ? "0.0" : String.format(Locale.US, "%.1f", value.doubleValue());
+    }
+
+    private String formatAmount(BigDecimal value) {
+        return value == null ? "0.00" : String.format(Locale.US, "%,.2f", value.doubleValue());
+    }
+
     // Getter for the memory data as JSON
 //    public String getMemoryJson() {
 //        return memoryJson;
 //    }
 }
-

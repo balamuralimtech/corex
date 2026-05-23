@@ -63,6 +63,7 @@
             }
 
             let roleUpdateCountdownInterval = null;
+            let idleWarningCountdownInterval = null;
 
             function showForcedRoleUpdateDialog(message, seconds)
             {
@@ -100,9 +101,14 @@
 
             window.corexSessionAudit = {
                 url: '#{request.contextPath}/session-audit',
-                heartbeatId: null,
                 logoutRequested: false,
-                navigationRequested: false
+                navigationRequested: false,
+                lastHeartbeatAt: 0,
+                lastActivityAt: Date.now(),
+                idleWarningShown: false,
+                idleWarningDelayMs: 30 * 60 * 1000,
+                idleWarningCountdownSeconds: 60,
+                idleMonitorId: null
             };
 
             function markSessionLogoutIntent() {
@@ -134,14 +140,89 @@
                 });
             }
 
-            function startSessionHeartbeat() {
-                if (window.corexSessionAudit.heartbeatId) {
-                    clearInterval(window.corexSessionAudit.heartbeatId);
+            function sendHeartbeatIfNeeded(forceSend) {
+                var now = Date.now();
+                if (!forceSend && (now - window.corexSessionAudit.lastHeartbeatAt) < 60000) {
+                    return;
+                }
+                postSessionAudit('heartbeat', false);
+                window.corexSessionAudit.lastHeartbeatAt = now;
+            }
+
+            function hideIdleWarningDialog() {
+                if (idleWarningCountdownInterval) {
+                    clearInterval(idleWarningCountdownInterval);
+                    idleWarningCountdownInterval = null;
+                }
+                if (window.PF && PF('idleSessionWarningDialog')) {
+                    PF('idleSessionWarningDialog').hide();
+                }
+                window.corexSessionAudit.idleWarningShown = false;
+            }
+
+            function continueIdleSession() {
+                hideIdleWarningDialog();
+                window.corexSessionAudit.lastActivityAt = Date.now();
+                sendHeartbeatIfNeeded(true);
+            }
+
+            function showIdleSessionWarningDialog(seconds) {
+                var countdownElement = document.getElementById('idle-session-warning-countdown');
+                var remaining = seconds || window.corexSessionAudit.idleWarningCountdownSeconds;
+
+                if (window.corexSessionAudit.idleWarningShown) {
+                    return;
                 }
 
-                window.corexSessionAudit.heartbeatId = window.setInterval(function() {
-                    postSessionAudit('heartbeat', false);
-                }, 60000);
+                window.corexSessionAudit.idleWarningShown = true;
+                if (countdownElement) {
+                    countdownElement.textContent = remaining;
+                }
+
+                PF('idleSessionWarningDialog').show();
+
+                if (idleWarningCountdownInterval) {
+                    clearInterval(idleWarningCountdownInterval);
+                }
+
+                idleWarningCountdownInterval = window.setInterval(function() {
+                    remaining -= 1;
+                    if (countdownElement) {
+                        countdownElement.textContent = Math.max(remaining, 0);
+                    }
+
+                    if (remaining <= 0) {
+                        clearInterval(idleWarningCountdownInterval);
+                        idleWarningCountdownInterval = null;
+                        window.corexSessionAudit.logoutRequested = true;
+                        idleSessionLogout();
+                    }
+                }, 1000);
+            }
+
+            function registerUserActivity() {
+                window.corexSessionAudit.lastActivityAt = Date.now();
+                if (window.corexSessionAudit.idleWarningShown) {
+                    return;
+                }
+                sendHeartbeatIfNeeded(false);
+            }
+
+            function startIdleMonitor() {
+                if (window.corexSessionAudit.idleMonitorId) {
+                    clearInterval(window.corexSessionAudit.idleMonitorId);
+                }
+
+                window.corexSessionAudit.idleMonitorId = window.setInterval(function() {
+                    if (window.corexSessionAudit.idleWarningShown) {
+                        return;
+                    }
+
+                    var idleDuration = Date.now() - window.corexSessionAudit.lastActivityAt;
+                    if (idleDuration >= window.corexSessionAudit.idleWarningDelayMs) {
+                        showIdleSessionWarningDialog(window.corexSessionAudit.idleWarningCountdownSeconds);
+                    }
+                }, 5000);
             }
 
             function applyStoredUiPreferences() {
@@ -166,8 +247,9 @@
 
             window.addEventListener('load', function() {
                 applyStoredUiPreferences();
-                startSessionHeartbeat();
+                startIdleMonitor();
                 window.corexSessionAudit.navigationRequested = false;
+                registerUserActivity();
             });
 
             window.addEventListener('pagehide', function() {
@@ -186,11 +268,17 @@
                 if (interactiveTarget) {
                     markSessionNavigationIntent();
                 }
+                registerUserActivity();
             }, true);
 
             document.addEventListener('submit', function() {
                 markSessionNavigationIntent();
+                registerUserActivity();
             }, true);
+
+            ['mousemove', 'keydown', 'mousedown', 'touchstart', 'scroll'].forEach(function(eventName) {
+                window.addEventListener(eventName, registerUserActivity, { passive: true });
+            });
 
             //]]>
         </script>
@@ -505,7 +593,7 @@
         <h:form>
             <p:growl id="growl" widgetVar="growlWidget" life="10000" />
             <p:poll interval="1" listener="#{guestPreferences.checkForGrowlMessage}"
-                    update="growl :topbar-items-form:messageUnreadCount :topbar-items-form:alertUnreadCount"
+                    update="growl :topbar-items-form:messageUnreadCount :topbar-items-form:alertUnreadCount :topbar-items-form:chatUnreadCount"
                     global="false"
                     onerror="handleGlobalPollError();"/>
             <p:remoteCommand name="roleUpdateForceLogout"
@@ -514,6 +602,9 @@
             <p:remoteCommand name="adminForceLogout"
                              actionListener="#{guestPreferences.handleAdminForceLogout}"
                              oncomplete="window.location='#{request.contextPath}/landing';" />
+            <p:remoteCommand name="idleSessionLogout"
+                             actionListener="#{guestPreferences.handleIdleSessionTimeout}"
+                             oncomplete="window.location='#{request.contextPath}/login';" />
         </h:form>
 
         <p:dialog header="Role Update Notification" widgetVar="forcedRoleUpdateDialog" modal="true"
@@ -534,6 +625,24 @@
                     Redirecting to login page in <span id="admin-force-logout-countdown">3</span> seconds.
                 </div>
             </div>
+        </p:dialog>
+
+        <p:dialog header="Session Timeout Warning" widgetVar="idleSessionWarningDialog" modal="true"
+                  closable="false" draggable="false" resizable="false" responsive="true" width="440">
+            <div style="line-height: 1.7;">
+                <div>You have been idle for 30 minutes.</div>
+                <div style="margin-top: .9rem;">
+                    Click <strong>Continue Work</strong> to keep working, or you will be redirected to login in
+                    <span id="idle-session-warning-countdown">60</span> seconds.
+                </div>
+            </div>
+            <f:facet name="footer">
+                <p:commandButton type="button" value="Continue Work" icon="pi pi-check"
+                                 onclick="continueIdleSession();" styleClass="ui-button-success"/>
+                <p:commandButton type="button" value="Login" icon="pi pi-sign-out"
+                                 onclick="window.corexSessionAudit.logoutRequested = true; idleSessionLogout();"
+                                 styleClass="ui-button-secondary"/>
+            </f:facet>
         </p:dialog>
 
         <h:outputScript target="body">

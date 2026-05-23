@@ -14,7 +14,7 @@ public class CommonMenuContributor implements MenuContributor {
                 "m_usermanagement",
                 "#{msg['userManagementLabel']}",
                 "pi pi-fw pi-users",
-                10,
+                20,
                 "#{guestPreferences.userManagementRendered}")
                 .addItem(new AppMenuItem("m_userprofile", "#{msg['userProfileLabel']}", "pi pi-fw pi-user",
                         "/user-profile", 10, "#{guestPreferences.userProfileRendered}"))
@@ -28,16 +28,13 @@ public class CommonMenuContributor implements MenuContributor {
                         "/change-password", 40, "#{guestPreferences.changePasswordRendered}"))
                 .addItem(new AppMenuItem("m_useradministration", "#{msg['userAdministrationLabel']}",
                         "pi pi-fw pi-id-card", "/manage-user", 50,
-                        "#{guestPreferences.userAdministrationRendered}"))
-                .addItem(new AppMenuItem("m_userchat", "Chat",
-                        "pi pi-fw pi-comments", "/chat", 60,
-                        "#{guestPreferences.chatRendered}"));
+                        "#{guestPreferences.userAdministrationRendered}"));
 
         AppMenuGroup systemManagement = new AppMenuGroup(
                 "m_systemmanagement",
                 "#{msg['systemManagementLabel']}",
                 "pi pi-fw pi-cog",
-                20,
+                30,
                 "#{guestPreferences.systemManagementRendered}")
                 .addItem(new AppMenuItem("m_organization", "#{msg['organizationLabel']}", "pi pi-fw pi-building",
                         "/organization", 10, "#{guestPreferences.organizationRendered}"))
@@ -63,38 +60,13 @@ public class CommonMenuContributor implements MenuContributor {
                         "/bank-details", 110, "#{guestPreferences.bankDetailsRendered}"))
                 .addItem(new AppMenuItem("m_notificationsettings", "#{msg['notificationSettingsLabel']}",
                         "pi pi-fw pi-at", "/notification-settings", 120,
-                        "#{guestPreferences.notificationSettingRendered}"))
-                .addItem(new AppMenuItem("m_applicationnotifications", "#{msg['applicationNotificationsLabel']}",
-                        "pi pi-fw pi-envelope", "/application-notifications", 130,
                         "#{guestPreferences.notificationSettingRendered}"));
-
-        AppMenuGroup license = new AppMenuGroup(
-                "m_license",
-                "#{msg['licenseLabel']}",
-                "pi pi-fw pi-ticket",
-                30,
-                "#{guestPreferences.licenseManagementRendered}")
-                .addItem(new AppMenuItem("m_licensepage", "#{msg['licenseLabel']}", "pi pi-fw pi-file-o",
-                        "/license", 10, "#{guestPreferences.licenseRendered}"));
-
-        AppMenuGroup serverLogs = new AppMenuGroup(
-                "m_serverlogs",
-                "#{msg['serverAndDBLabel']}",
-                "pi pi-fw pi-server",
-                40,
-                "#{guestPreferences.dbAndServerLogRendered}")
-                .addItem(new AppMenuItem("m_serverlogspage", "#{msg['serverLogsLabel']}", "pi pi-fw pi-server",
-                        "/server-logs", 10, "#{guestPreferences.serverLogRendered}"))
-                .addItem(new AppMenuItem("m_databasedetails", "#{msg['databaseLabel']}", "pi pi-fw pi-server",
-                        "/database-details", 20, "#{guestPreferences.dbDetailsRendered}"))
-                .addItem(new AppMenuItem("m_errorlogmonitor", "#{msg['errorLogMonitoringLabel']}", "pi pi-fw pi-bell",
-                        "/error-log-monitor", 30, "#{guestPreferences.errorLogMonitorRendered}"));
 
         AppMenuGroup applicationManagement = new AppMenuGroup(
                 "m_applicationmanagement",
                 "#{msg['applicationManagementLabel']}",
                 "pi pi-fw pi-briefcase",
-                25,
+                10,
                 "#{guestPreferences.applicationManagementRendered}")
                 .addItem(new AppMenuItem("m_demorequests", "#{msg['demoRequestsLabel']}", "pi pi-fw pi-inbox",
                         "/demo-requests", 10, "#{guestPreferences.demoRequestsRendered}"))
@@ -103,8 +75,21 @@ public class CommonMenuContributor implements MenuContributor {
                 .addItem(new AppMenuItem("m_referralmanagement", "#{msg['referralManagementLabel']}", "pi pi-fw pi-share-alt",
                         "/referral-management", 30, "#{guestPreferences.referralManagementRendered}"))
                 .addItem(new AppMenuItem("m_referraldashboard", "#{msg['referralDashboardLabel']}", "pi pi-fw pi-chart-line",
-                        "/referral-dashboard", 40, "#{guestPreferences.referralDashboardRendered}"));
+                        "/referral-dashboard", 40, "#{guestPreferences.referralDashboardRendered}"))
+                .addItem(new AppMenuItem("m_feedbackinbox", "Feedback Inbox", "pi pi-fw pi-comments",
+                        "/feedback-inbox", 42, "#{homePageBean.applicationAdmin}"))
+                .addItem(new AppMenuItem("m_applicationnotifications", "#{msg['applicationNotificationsLabel']}",
+                        "pi pi-fw pi-envelope", "/application-notifications", 45,
+                        "#{guestPreferences.notificationSettingRendered}"))
+                .addItem(new AppMenuItem("m_licensepage", "#{msg['licenseLabel']}", "pi pi-fw pi-ticket",
+                        "/license", 50, "#{guestPreferences.licenseRendered}"))
+                .addItem(new AppMenuItem("m_serverlogspage", "#{msg['serverLogsLabel']}", "pi pi-fw pi-server",
+                        "/server-logs", 60, "#{guestPreferences.serverLogRendered}"))
+                .addItem(new AppMenuItem("m_databasedetails", "#{msg['databaseLabel']}", "pi pi-fw pi-database",
+                        "/database-details", 70, "#{guestPreferences.dbDetailsRendered}"))
+                .addItem(new AppMenuItem("m_errorlogmonitor", "#{msg['errorLogMonitoringLabel']}", "pi pi-fw pi-bell",
+                        "/error-log-monitor", 80, "#{guestPreferences.errorLogMonitorRendered}"));
 
-        return Arrays.asList(userManagement, systemManagement, applicationManagement, license, serverLogs);
+        return Arrays.asList(userManagement, systemManagement, applicationManagement);
     }
 }

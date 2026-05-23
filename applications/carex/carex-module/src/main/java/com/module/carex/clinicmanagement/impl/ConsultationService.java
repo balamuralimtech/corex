@@ -62,6 +62,11 @@ public class ConsultationService implements IConsultationService {
     }
 
     @Override
+    public List<Consultation> getConsultationsByOrganizationIds(List<Integer> organizationIds) {
+        return consultationDAO.getConsultationsByOrganizationIds(organizationIds);
+    }
+
+    @Override
     public List<Consultation> getConsultationsByPatientId(Integer patientId) {
         return consultationDAO.getConsultationsByPatientId(patientId);
     }

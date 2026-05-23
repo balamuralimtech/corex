@@ -94,20 +94,11 @@ public class CarexDashboardBean extends CarexManagedBean implements Serializable
         }
 
         if (isAllOrganizationsSelected()) {
-            doctorList = new ArrayList<>();
-            patientList = new ArrayList<>();
-            medicineList = new ArrayList<>();
-            consultationList = new ArrayList<>();
-
-            for (Organizations organization : organizationList) {
-                if (organization == null) {
-                    continue;
-                }
-                doctorList.addAll(safeList(doctorService.getDoctorsByOrganizationId(organization.getId())));
-                patientList.addAll(safeList(patientService.getPatientsByOrganizationId(organization.getId())));
-                medicineList.addAll(safeList(medicineService.getMedicinesByOrganizationId(organization.getId())));
-                consultationList.addAll(safeList(consultationService.getConsultationsByOrganizationId(organization.getId())));
-            }
+            List<Integer> organizationIds = getAccessibleOrganizationIds();
+            doctorList = new ArrayList<>(safeList(doctorService.getDoctorsByOrganizationIds(organizationIds)));
+            patientList = new ArrayList<>(safeList(patientService.getPatientsByOrganizationIds(organizationIds)));
+            medicineList = new ArrayList<>(safeList(medicineService.getMedicinesByOrganizationIds(organizationIds)));
+            consultationList = new ArrayList<>(safeList(consultationService.getConsultationsByOrganizationIds(organizationIds)));
             clinicSettings = new ClinicSettings();
         } else {
             doctorList = new ArrayList<>(safeList(doctorService.getDoctorsByOrganizationId(selectedOrganizationId)));
@@ -522,6 +513,13 @@ public class CarexDashboardBean extends CarexManagedBean implements Serializable
 
     private boolean isAllOrganizationsSelected() {
         return isApplicationAdmin() && ALL_ORGANIZATIONS_ID.equals(selectedOrganizationId);
+    }
+
+    private List<Integer> getAccessibleOrganizationIds() {
+        return organizationList.stream()
+                .filter(organization -> organization != null)
+                .map(Organizations::getId)
+                .collect(Collectors.toList());
     }
 
     private String safeText(String value, String fallback) {

@@ -18,7 +18,7 @@ public class CarexMenuContributor implements MenuContributor {
                 "carex_clinic_management",
                 "#{i18n.app('clinicManagementLabel')}",
                 "pi pi-fw pi-briefcase",
-                100,
+                5,
                 "true")
                 .addItem(new AppMenuItem(
                         "carex_dashboard",

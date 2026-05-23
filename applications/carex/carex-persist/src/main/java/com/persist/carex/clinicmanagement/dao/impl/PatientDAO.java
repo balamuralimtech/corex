@@ -148,6 +148,28 @@ public class PatientDAO implements IPatientDAO {
         }
     }
 
+    @Override
+    public List<Patient> getPatientsByOrganizationIds(List<Integer> organizationIds) {
+        Session session = null;
+        try {
+            session = sessionFactory.openSession();
+            if (organizationIds == null || organizationIds.isEmpty()) {
+                return new ArrayList<>();
+            }
+            return session.createQuery(
+                    "SELECT DISTINCT p FROM Patient p " +
+                    "LEFT JOIN FETCH p.organization " +
+                    "WHERE p.organization.id in (:organizationIds) " +
+                    "ORDER BY p.organization.id, p.patientName", Patient.class)
+                    .setParameterList("organizationIds", organizationIds)
+                    .list();
+        } finally {
+            if (session != null) {
+                session.close();
+            }
+        }
+    }
+
     private Patient findByCode(Session session, String patientCode) {
         if (patientCode == null || patientCode.trim().isEmpty()) {
             return null;

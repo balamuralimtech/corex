@@ -3,6 +3,7 @@
   <component name="DataSourcePerFileMappings">
     <file url="file://$PROJECT_DIR$/applications/carex/carex-db/clinic-settings/clinic_settings_add_consultation_workflow.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
     <file url="file://$PROJECT_DIR$/applications/carex/carex-db/consultation/consultation_queue_fields.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
+    <file url="file://$PROJECT_DIR$/corex-db/applicationmanagement/application_feedback.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
     <file url="file://$PROJECT_DIR$/corex-db/applicationmanagement/application_pricing.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
     <file url="file://$PROJECT_DIR$/corex-db/applicationmanagement/referral_management.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />
     <file url="file://$PROJECT_DIR$/corex-db/applicationnotification/userchat.sql" value="b427f079-ecb4-4f75-acc1-d98292a82cf1" />

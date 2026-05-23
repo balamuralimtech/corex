@@ -25,7 +25,6 @@
         <f:event listener="#{homePageBean.initializePageAttributes}" type="preRenderComponent"/>
 
         <h:outputScript library="avalon-layout" name="highcharts/highcharts.js" target="head"/>
-        <h:outputScript library="avalon-layout" name="highcharts/highcharts-more.js" target="head"/>
 
         <h:outputStylesheet>
             .dashboard-shell { display:flex; flex-direction:column; gap:1.25rem; }
@@ -64,10 +63,79 @@
             .server-meter-foot { margin-top:.35rem; color:#475569; font-size:.88rem; }
             .server-progress { margin-top:.75rem; height:10px; border-radius:999px; background:#e2e8f0; overflow:hidden; }
             .server-progress-bar { height:100%; border-radius:999px; background:linear-gradient(90deg,#0f766e 0%,#14b8a6 100%); }
+            .dashboard-scroll-top {
+                position:fixed;
+                right:1.35rem;
+                bottom:1.35rem;
+                z-index:9990;
+                width:3.55rem;
+                height:3.55rem;
+                border:0;
+                border-radius:20px;
+                display:inline-flex;
+                align-items:center;
+                justify-content:center;
+                cursor:pointer;
+                color:#ffffff;
+                background:
+                    radial-gradient(circle at 28% 22%, rgba(255,255,255,.32) 0%, rgba(255,255,255,0) 34%),
+                    linear-gradient(135deg, var(--dashboard-hero-primary, #{guestPreferences.activeLayoutColor}) 0%, var(--dashboard-hero-secondary, #{guestPreferences.activeLayoutColor}) 100%);
+                box-shadow:0 18px 48px rgba(15,23,42,.24);
+                opacity:0;
+                visibility:hidden;
+                transform:translateY(18px) scale(.92) rotate(-8deg);
+                transition:opacity .22s ease, visibility .22s ease, transform .22s ease, box-shadow .22s ease;
+            }
+            .dashboard-scroll-top.is-visible {
+                opacity:1;
+                visibility:visible;
+                transform:translateY(0) scale(1) rotate(0deg);
+            }
+            .dashboard-scroll-top:hover,
+            .dashboard-scroll-top:focus {
+                box-shadow:0 24px 62px rgba(15,23,42,.32);
+                transform:translateY(-3px) scale(1.04);
+                outline:none;
+            }
+            .dashboard-scroll-top .pi {
+                font-size:1.35rem;
+                font-weight:700;
+            }
+            .dashboard-scroll-top:after {
+                content:'TOP';
+                position:absolute;
+                right:.15rem;
+                top:-.55rem;
+                padding:.18rem .42rem;
+                border-radius:999px;
+                background:#0f172a;
+                color:#f8fafc;
+                font-size:.62rem;
+                font-weight:800;
+                letter-spacing:.08em;
+                box-shadow:0 8px 22px rgba(15,23,42,.18);
+            }
+            @media (max-width: 768px) {
+                .dashboard-scroll-top {
+                    right:1rem;
+                    bottom:1rem;
+                    width:3.1rem;
+                    height:3.1rem;
+                    border-radius:18px;
+                }
+            }
         </h:outputStylesheet>
 
         <h:form id="dashboardFormId">
             <div class="dashboard-shell">
+                <button id="dashboardScrollTopButton"
+                        type="button"
+                        class="dashboard-scroll-top"
+                        aria-label="Scroll to top"
+                        onclick="scrollCoreDashboardToTop();">
+                    <i class="pi pi-angle-double-up"></i>
+                </button>
+
                 <div class="col-12">
                     <p:breadCrumb>
                         <p:menuitem url="#{request.contextPath}/home" icon="pi pi-home"/>
@@ -141,20 +209,12 @@
                             <span class="hero-chip-value">#{homePageBean.coreDashboardTO.userCount}</span>
                         </div>
                         <div class="hero-chip">
-                            <span class="hero-chip-label">#{msg['trackedActivitiesLabel']}</span>
-                            <span class="hero-chip-value">#{homePageBean.totalTrackedActivities}</span>
+                            <span class="hero-chip-label">30d Active Users</span>
+                            <span class="hero-chip-value">#{homePageBean.coreDashboardTO.uniqueActiveUsers30DaysCount}</span>
                         </div>
                         <div class="hero-chip">
-                            <span class="hero-chip-label">#{msg['roleUtilizationLabel']}</span>
-                            <span class="hero-chip-value">#{homePageBean.roleUsageRate}%</span>
-                        </div>
-                        <div class="hero-chip">
-                            <span class="hero-chip-label">#{msg['activeUserRateLabel']}</span>
-                            <span class="hero-chip-value">#{homePageBean.activeUserRate}%</span>
-                        </div>
-                        <div class="hero-chip">
-                            <span class="hero-chip-label">#{msg['licensedOrgsLabel']}</span>
-                            <span class="hero-chip-value">#{homePageBean.licensedOrganizationCount}</span>
+                            <span class="hero-chip-label">7d Activities</span>
+                            <span class="hero-chip-value">#{homePageBean.coreDashboardTO.activityLast7DaysCount}</span>
                         </div>
                         <div class="hero-chip">
                             <span class="hero-chip-label">#{msg['expiringLicensesLabel']}</span>
@@ -165,17 +225,9 @@
 
                 <div class="grid">
                     <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">#{msg['organizationsLabel']}</span><div class="metric-card-value">#{homePageBean.coreDashboardTO.organizationCount}</div><div class="metric-card-foot">#{homePageBean.averageBranchesPerOrganization} #{msg['branchesPerOrganizationLabel']}</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">#{msg['usersLabel']}</span><div class="metric-card-value">#{homePageBean.coreDashboardTO.userCount}</div><div class="metric-card-foot">#{homePageBean.averageUsersPerRole} #{msg['usersPerRoleLabel']}</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">#{msg['rolesLabel']}</span><div class="metric-card-value">#{homePageBean.coreDashboardTO.roleCount}</div><div class="metric-card-foot">#{homePageBean.coreDashboardTO.rolesUsedCount} #{msg['inActiveUseLabel']}</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">#{msg['userActivitiesLabel']}</span><div class="metric-card-value">#{homePageBean.coreDashboardTO.userActivityCount}</div><div class="metric-card-foot">#{homePageBean.averageActivitiesPerUser} #{msg['activitiesPerUserLabel']}</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">#{msg['geographyFootprintLabel']}</span><div class="metric-card-value">#{homePageBean.totalGeographyCount}</div><div class="metric-card-foot">#{homePageBean.averageCitiesPerState} #{msg['citiesPerStateLabel']}</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">#{msg['structureInventoryLabel']}</span><div class="metric-card-value">#{homePageBean.totalStructureCount}</div><div class="metric-card-foot">#{homePageBean.averageDepartmentsPerOrganization} #{msg['departmentsPerOrganizationLabel']}</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">#{msg['authenticationShareLabel']}</span><div class="metric-card-value">#{homePageBean.authenticationShare}%</div><div class="metric-card-foot">#{msg['authenticationShareSummaryLabel']}</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">#{msg['changeShareLabel']}</span><div class="metric-card-value">#{homePageBean.changeShare}%</div><div class="metric-card-foot">#{msg['changeShareSummaryLabel']}</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">#{msg['licensedUsersLabel']}</span><div class="metric-card-value">#{homePageBean.licensedUserCount}</div><div class="metric-card-foot">#{msg['licensedUsersSummaryLabel']}</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">#{msg['activeLicensesLabel']}</span><div class="metric-card-value">#{homePageBean.activeLicenseCount}</div><div class="metric-card-foot">#{homePageBean.expiredLicenseCount} #{msg['expiredAndLabel']} #{homePageBean.expiringSoonLicenseCount} #{msg['nearingRenewalLabel']}</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">#{msg['licenseCoverageLabel']}</span><div class="metric-card-value">#{homePageBean.licenseCoverageRate}%</div><div class="metric-card-foot">#{msg['licenseCoverageSummaryLabel']}</div></div></div>
-                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">#{msg['unlicensedOrgsLabel']}</span><div class="metric-card-value">#{homePageBean.unlicensedOrganizationCount}</div><div class="metric-card-foot">#{msg['unlicensedOrgsSummaryLabel']}</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">#{msg['usersLabel']}</span><div class="metric-card-value">#{homePageBean.coreDashboardTO.userCount}</div><div class="metric-card-foot">#{homePageBean.recentActivityCoverageRate}% active in the last 30 days.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">Security Exposure</span><div class="metric-card-value">#{homePageBean.securityExposureRate}%</div><div class="metric-card-foot">Disabled, locked, stale-password, and inactive users.</div></div></div>
+                    <div class="col-12 md:col-6 xl:col-3"><div class="metric-card"><span class="metric-card-muted">#{msg['licenseCoverageLabel']}</span><div class="metric-card-value">#{homePageBean.licenseCoverageRate}%</div><div class="metric-card-foot">#{homePageBean.expiringSoonLicenseCount} licenses need attention soon.</div></div></div>
                 </div>
 
                 <div class="grid">
@@ -191,49 +243,45 @@
                             <div id="userStateChart" class="dashboard-chart-sm"></div>
                         </div>
                     </div>
-                    <div class="col-12 xl:col-4">
-                        <div class="dashboard-panel">
-                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">#{msg['roleUtilizationLabel']}</h3><div class="dashboard-panel-subtitle">#{msg['roleUtilizationSummaryLabel']}</div></div></div>
-                            <div id="roleUsageChart" class="dashboard-chart-sm"></div>
-                        </div>
-                    </div>
-                    <div class="col-12 xl:col-4">
+                    <div class="col-12 xl:col-6">
                         <div class="dashboard-panel">
                             <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">#{msg['activityMixLabel']}</h3><div class="dashboard-panel-subtitle">#{msg['activityMixSummaryLabel']}</div></div></div>
                             <div id="activityMixChart" class="dashboard-chart-sm"></div>
                         </div>
                     </div>
-                    <div class="col-12 xl:col-4">
+                    <div class="col-12 xl:col-6">
                         <div class="dashboard-panel">
-                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">#{msg['portfolioMixLabel']}</h3><div class="dashboard-panel-subtitle">#{msg['portfolioMixSummaryLabel']}</div></div></div>
-                            <div id="portfolioMixChart" class="dashboard-chart-sm"></div>
+                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">Security Posture</h3><div class="dashboard-panel-subtitle">Risk-oriented user account controls and stale access signals.</div></div></div>
+                            <div id="securityPostureChart" class="dashboard-chart-sm"></div>
                         </div>
                     </div>
                     <div class="col-12 xl:col-6">
                         <div class="dashboard-panel">
-                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">#{msg['operationalRatiosLabel']}</h3><div class="dashboard-panel-subtitle">#{msg['operationalRatiosSummaryLabel']}</div></div></div>
-                            <div id="operationsPulseChart" class="dashboard-chart-sm"></div>
+                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">License Risk Windows</h3><div class="dashboard-panel-subtitle">Upcoming renewal pressure by 7, 15, and 30 day windows.</div></div></div>
+                            <div id="licenseRiskChart" class="dashboard-chart-sm"></div>
                         </div>
                     </div>
                     <div class="col-12 xl:col-6">
                         <div class="dashboard-panel">
-                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">#{msg['efficiencyRadarLabel']}</h3><div class="dashboard-panel-subtitle">#{msg['efficiencyRadarSummaryLabel']}</div></div></div>
-                            <div id="efficiencyRadarChart" class="dashboard-chart-sm"></div>
+                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">Priority Focus</h3><div class="dashboard-panel-subtitle">The few admin signals worth checking first.</div></div></div>
+                            <div class="dashboard-stat-list">
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Unlicensed organizations</span><span class="dashboard-stat-value">#{homePageBean.unlicensedOrganizationCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Demo requests pending</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.demoRequestsPendingCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Notification read rate</span><span class="dashboard-stat-value">#{homePageBean.notificationReadRate}%</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Chat messages in 24h</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.chatMessagesLast24HoursCount}</span></div>
+                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">Avg license days remaining</span><span class="dashboard-stat-value">#{homePageBean.averageLicenseDaysRemainingLabel}</span></div>
+                            </div>
                         </div>
                     </div>
                     <div class="col-12 xl:col-6">
                         <div class="dashboard-panel">
-                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">#{msg['densityStatisticsLabel']}</h3><div class="dashboard-panel-subtitle">#{msg['densityStatisticsSummaryLabel']}</div></div></div>
+                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">Operational Ratios</h3><div class="dashboard-panel-subtitle">Density stats that are still useful without turning into noise.</div></div></div>
                             <div class="dashboard-stat-list">
                                 <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['branchesPerOrganizationStatLabel']}</span><span class="dashboard-stat-value">#{homePageBean.averageBranchesPerOrganization}</span></div>
                                 <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['departmentsPerOrganizationStatLabel']}</span><span class="dashboard-stat-value">#{homePageBean.averageDepartmentsPerOrganization}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['designationsPerDepartmentLabel']}</span><span class="dashboard-stat-value">#{homePageBean.averageDesignationsPerDepartment}</span></div>
                                 <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['usersPerOrganizationLabel']}</span><span class="dashboard-stat-value">#{homePageBean.averageUsersPerOrganization}</span></div>
                                 <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['usersPerRoleStatLabel']}</span><span class="dashboard-stat-value">#{homePageBean.averageUsersPerRole}</span></div>
                                 <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['activitiesPerUserStatLabel']}</span><span class="dashboard-stat-value">#{homePageBean.averageActivitiesPerUser}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['statesPerCountryLabel']}</span><span class="dashboard-stat-value">#{homePageBean.averageStatesPerCountry}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['citiesPerStateStatLabel']}</span><span class="dashboard-stat-value">#{homePageBean.averageCitiesPerState}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['activitiesPerRoleLabel']}</span><span class="dashboard-stat-value">#{homePageBean.averageActivitiesPerRole}</span></div>
                             </div>
                         </div>
                     </div>
@@ -248,23 +296,6 @@
                                 <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['unlicensedOrganizationsStatLabel']}</span><span class="dashboard-stat-value">#{homePageBean.unlicensedOrganizationCount}</span></div>
                             </div>
                             <div class="dashboard-panel-subtitle">#{homePageBean.licenseSummary}</div>
-                        </div>
-                    </div>
-                    <div class="col-12 xl:col-6">
-                        <div class="dashboard-panel">
-                            <div class="dashboard-panel-header"><div><h3 class="dashboard-panel-title">#{msg['coverageSummaryLabel']}</h3><div class="dashboard-panel-subtitle">#{msg['coverageSummarySubtitleLabel']}</div></div></div>
-                            <div class="dashboard-stat-list">
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['organizationsLabel']}</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.organizationCount}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['branchesLabel']}</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.branchCount}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['departmentsLabel']}</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.departmentCount}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['designationsLabel']}</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.designationCount}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['countriesStatesCitiesLabel']}</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.countryCount} / #{homePageBean.coreDashboardTO.stateCount} / #{homePageBean.coreDashboardTO.cityCount}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['currenciesLabel']}</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.currencyCount}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['rolesUsedUnusedLabel']}</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.rolesUsedCount} / #{homePageBean.coreDashboardTO.rolesNotUsedCount}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['usersLoggedInOutNeverLabel']}</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.usersLoggedInCount} / #{homePageBean.coreDashboardTO.usersLoggedOutCount} / #{homePageBean.coreDashboardTO.usersNeverLoggedinCount}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['loginLogoutEventsLabel']}</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.loginCount} / #{homePageBean.coreDashboardTO.logoutCount}</span></div>
-                                <div class="dashboard-stat-row"><span class="dashboard-stat-name">#{msg['addUpdateDeleteEventsLabel']}</span><span class="dashboard-stat-value">#{homePageBean.coreDashboardTO.addCount} / #{homePageBean.coreDashboardTO.updateCount} / #{homePageBean.coreDashboardTO.deleteCount}</span></div>
-                            </div>
                         </div>
                     </div>
                     <h:panelGroup rendered="#{homePageBean.serverMetricsVisible}" layout="block" styleClass="col-12">
@@ -488,6 +519,24 @@
                         }
                     }
 
+                    function updateDashboardScrollTopButton() {
+                        var button = document.getElementById('dashboardScrollTopButton');
+                        if (!button) {
+                            return;
+                        }
+
+                        var scrolled = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+                        if (scrolled > 420) {
+                            button.classList.add('is-visible');
+                        } else {
+                            button.classList.remove('is-visible');
+                        }
+                    }
+
+                    function scrollCoreDashboardToTop() {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+
                     function renderDashboardCharts() {
                         Highcharts.setOptions({
                             lang: { thousandsSep: ',' },
@@ -495,7 +544,13 @@
                             colors: ['#1d4ed8', '#f97316', '#14b8a6', '#7c3aed', '#ef4444', '#0f766e', '#f59e0b', '#334155']
                         });
 
-                        Highcharts.chart('entityFootprintChart', {
+                        function renderChart(chartId, options) {
+                            if (document.getElementById(chartId)) {
+                                Highcharts.chart(chartId, options);
+                            }
+                        }
+
+                        renderChart('entityFootprintChart', {
                             chart: { type: 'column', backgroundColor: 'transparent' },
                             title: { text: null },
                             xAxis: { type: 'category', crosshair: true },
@@ -506,7 +561,7 @@
                             series: [{ name: '#{homePageBean.js("chartEntitiesSeriesLabel")}', data: #{homePageBean.entityDistributionJson} }]
                         });
 
-                        Highcharts.chart('userStateChart', {
+                        renderChart('userStateChart', {
                             chart: { type: 'pie', backgroundColor: 'transparent' },
                             title: { text: null },
                             tooltip: { pointFormat: '<b>{point.y}</b> #{homePageBean.js("usersLabel")} ({point.percentage:.1f}%)' },
@@ -514,15 +569,7 @@
                             series: [{ name: '#{homePageBean.js("usersLabel")}', data: #{homePageBean.userStatusJson} }]
                         });
 
-                        Highcharts.chart('roleUsageChart', {
-                            chart: { type: 'pie', backgroundColor: 'transparent' },
-                            title: { text: null },
-                            tooltip: { pointFormat: '<b>{point.y}</b> #{homePageBean.js("rolesLabel")} ({point.percentage:.1f}%)' },
-                            plotOptions: { pie: { innerSize: '68%', startAngle: -90, endAngle: 270, dataLabels: { enabled: true, distance: 12, format: '{point.name}: {point.y}' } } },
-                            series: [{ name: '#{homePageBean.js("rolesLabel")}', data: #{homePageBean.roleUsageJson} }]
-                        });
-
-                        Highcharts.chart('activityMixChart', {
+                        renderChart('activityMixChart', {
                             chart: { type: 'bar', backgroundColor: 'transparent' },
                             title: { text: null },
                             xAxis: { type: 'category' },
@@ -532,34 +579,26 @@
                             series: [{ name: '#{homePageBean.js("activitiesLabel")}', data: #{homePageBean.activityMixJson} }]
                         });
 
-                        Highcharts.chart('portfolioMixChart', {
-                            chart: { type: 'pie', backgroundColor: 'transparent' },
-                            title: { text: null },
-                            tooltip: { pointFormat: '<b>{point.y}</b> #{homePageBean.js("chartTotalObjectsLabel")}' },
-                            plotOptions: { pie: { dataLabels: { enabled: true, format: '{point.name}: {point.y}' } } },
-                            series: [{ name: '#{homePageBean.js("chartPortfolioSeriesLabel")}', data: #{homePageBean.portfolioMixJson} }]
-                        });
-
-                        Highcharts.chart('operationsPulseChart', {
+                        renderChart('securityPostureChart', {
                             chart: { type: 'column', backgroundColor: 'transparent' },
                             title: { text: null },
-                            xAxis: { categories: ['#{homePageBean.js("activeUsersLabel")}', '#{homePageBean.js("roleUtilizationLabel")}', '#{homePageBean.js("authenticationShareLabel")}', '#{homePageBean.js("changeShareLabel")}'] },
-                            yAxis: { max: 100, min: 0, title: { text: '#{homePageBean.js("chartPercentLabel")}' } },
+                            xAxis: { type: 'category' },
+                            yAxis: { min: 0, title: { text: 'Users' } },
                             legend: { enabled: false },
-                            tooltip: { pointFormat: '<b>{point.y:.2f}%</b>' },
-                            plotOptions: { column: { borderRadius: 8, colorByPoint: true } },
-                            series: [{ name: '#{homePageBean.js("chartPercentLabel")}', data: #{homePageBean.operationsPulseJson} }]
+                            tooltip: { pointFormat: '<b>{point.y}</b> users' },
+                            plotOptions: { column: { borderRadius: 8, colorByPoint: true, dataLabels: { enabled: true } } },
+                            series: [{ name: 'Security Signals', data: #{homePageBean.securityPostureJson} }]
                         });
 
-                        Highcharts.chart('efficiencyRadarChart', {
-                            chart: { polar: true, type: 'line', backgroundColor: 'transparent' },
+                        renderChart('licenseRiskChart', {
+                            chart: { type: 'column', backgroundColor: 'transparent' },
                             title: { text: null },
-                            pane: { size: '80%' },
-                            xAxis: { categories: ['#{homePageBean.js("branchesPerOrganizationLabel")}', '#{homePageBean.js("departmentsPerOrganizationLabel")}', '#{homePageBean.js("usersPerOrganizationLabel")}', '#{homePageBean.js("usersPerRoleLabel")}', '#{homePageBean.js("statesPerCountryLabel")}', '#{homePageBean.js("citiesPerStateLabel")}'], tickmarkPlacement: 'on', lineWidth: 0 },
-                            yAxis: { gridLineInterpolation: 'polygon', lineWidth: 0, min: 0 },
-                            tooltip: { shared: true, pointFormat: '<span style="color:{series.color}">{point.category}: <b>{point.y:.2f}</b><br/></span>' },
+                            xAxis: { type: 'category' },
+                            yAxis: { min: 0, title: { text: 'Licenses' } },
                             legend: { enabled: false },
-                            series: [{ name: '#{homePageBean.js("chartDensityLabel")}', data: #{homePageBean.efficiencyRadarJson}, pointPlacement: 'on', lineWidth: 3, marker: { radius: 4 } }]
+                            tooltip: { pointFormat: '<b>{point.y}</b> licenses' },
+                            plotOptions: { column: { borderRadius: 8, colorByPoint: true, dataLabels: { enabled: true } } },
+                            series: [{ name: 'License Risk', data: #{homePageBean.licenseRiskJson} }]
                         });
                     }
 
@@ -571,7 +610,9 @@
                         wireDashboardThemeSync();
                         renderDashboardCharts();
                         applyDashboardAutoRefreshState(#{homePageBean.timerEnabled});
+                        updateDashboardScrollTopButton();
                     });
+                    window.addEventListener('scroll', updateDashboardScrollTopButton, { passive: true });
                     //]]>
                 </h:outputScript>
             </div>

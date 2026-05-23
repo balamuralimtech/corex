@@ -1390,6 +1390,7 @@ public class UserAdministrationBean extends GenericManagedBean implements Serial
 
         targetSession.setAttribute(SessionAttributes.ADMIN_FORCE_LOGOUT_NOTIFICATION.getName(),
                 getMessage("userAdminForcedLogoutDialogMessageLabel"));
+        targetSession.setAttribute(SessionAttributes.ADMIN_FORCE_LOGOUT_PENDING.getName(), Boolean.TRUE);
         return true;
     }
 

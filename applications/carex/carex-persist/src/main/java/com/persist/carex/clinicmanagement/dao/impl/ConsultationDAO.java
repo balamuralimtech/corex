@@ -172,6 +172,33 @@ public class ConsultationDAO implements IConsultationDAO {
     }
 
     @Override
+    public List<Consultation> getConsultationsByOrganizationIds(List<Integer> organizationIds) {
+        Session session = null;
+        try {
+            session = sessionFactory.openSession();
+            if (organizationIds == null || organizationIds.isEmpty()) {
+                return new ArrayList<>();
+            }
+            return session.createQuery(
+                            "SELECT DISTINCT c FROM Consultation c " +
+                                    "LEFT JOIN FETCH c.organization " +
+                                    "LEFT JOIN FETCH c.doctor d " +
+                                    "LEFT JOIN FETCH d.userDetail " +
+                                    "LEFT JOIN FETCH c.patient " +
+                                    "LEFT JOIN FETCH c.consultationMedicines " +
+                                    "WHERE c.organization.id in (:organizationIds) " +
+                                    "ORDER BY c.consultationDate DESC, c.id DESC",
+                            Consultation.class)
+                    .setParameterList("organizationIds", organizationIds)
+                    .list();
+        } finally {
+            if (session != null) {
+                session.close();
+            }
+        }
+    }
+
+    @Override
     public List<Consultation> getConsultationsByPatientId(Integer patientId) {
         Session session = null;
         try {

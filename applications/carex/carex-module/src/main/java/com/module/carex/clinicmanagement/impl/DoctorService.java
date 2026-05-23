@@ -58,6 +58,11 @@ public class DoctorService implements IDoctorService {
         return doctorDAO.getDoctorsByOrganizationId(organizationId);
     }
 
+    @Override
+    public List<Doctor> getDoctorsByOrganizationIds(List<Integer> organizationIds) {
+        return doctorDAO.getDoctorsByOrganizationIds(organizationIds);
+    }
+
     private void addUserActivity(UserActivityTO userActivityTO) {
         UserActivities userActivity = new UserActivities();
         userActivity.setUserId(userActivityTO.getUserId());

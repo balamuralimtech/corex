@@ -76,6 +76,7 @@
                                 <!-- Coretix app  Declaration for future use -->
                 <value>com.persist.coretix.modal.coretix.ApplicationTheme</value>
                 <value>com.persist.coretix.modal.coretix.ApplicationNotification</value>
+                <value>com.persist.coretix.modal.coretix.ApplicationFeedback</value>
                 <value>com.persist.coretix.modal.coretix.UserNotificationReceipt</value>
                 <value>com.persist.coretix.modal.coretix.ChatConversation</value>
                 <value>com.persist.coretix.modal.coretix.ChatConversationParticipant</value>

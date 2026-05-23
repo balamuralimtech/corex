@@ -161,6 +161,14 @@ public class UserChatService implements IUserChatService {
         return userChatDAO.markConversationAsRead(conversationId, currentUserId);
     }
 
+    @Override
+    public int getUnreadMessageCount(int currentUserId) {
+        if (currentUserId <= 0) {
+            return 0;
+        }
+        return userChatDAO.getUnreadMessageCount(currentUserId);
+    }
+
     private boolean isApplicationAdmin(String userType) {
         return userType != null && APPLICATION_ADMIN.equalsIgnoreCase(userType.trim());
     }

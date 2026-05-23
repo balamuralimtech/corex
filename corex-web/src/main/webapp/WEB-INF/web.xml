@@ -18,7 +18,7 @@
         <load-on-startup>1</load-on-startup>
     </servlet>
     <session-config>
-        <session-timeout>30</session-timeout> <!-- Session timeout in minutes -->
+        <session-timeout>32</session-timeout> <!-- Session timeout in minutes -->
     </session-config>
     <!-- The Bootstrap listener to start up and shut down Spring's root WebApplicationContext.
     It is registered to Servlet Container -->

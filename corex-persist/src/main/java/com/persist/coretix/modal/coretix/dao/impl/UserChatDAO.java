@@ -442,6 +442,34 @@ public class UserChatDAO implements IUserChatDAO {
         }
     }
 
+    @Override
+    public int getUnreadMessageCount(int userId) {
+        Session session = null;
+        Transaction trans = null;
+        try {
+            session = sessionFactory.openSession();
+            trans = session.beginTransaction();
+            Long unreadCount = session.createQuery(
+                            "select count(m.id) " +
+                                    "from ChatConversationParticipant p, ChatMessage m " +
+                                    "where p.user.userId = :userId " +
+                                    "and m.conversation.id = p.conversation.id " +
+                                    "and m.sender.userId <> :userId " +
+                                    "and (p.lastReadAt is null or m.createdAt > p.lastReadAt)",
+                            Long.class)
+                    .setParameter("userId", userId)
+                    .uniqueResult();
+            trans.commit();
+            return unreadCount == null ? 0 : unreadCount.intValue();
+        } catch (Exception e) {
+            rollback(trans);
+            logger.error("Unable to fetch unread chat message count for user {}", userId, e);
+            return 0;
+        } finally {
+            close(session);
+        }
+    }
+
     private void rollback(Transaction trans) {
         if (trans != null) {
             trans.rollback();

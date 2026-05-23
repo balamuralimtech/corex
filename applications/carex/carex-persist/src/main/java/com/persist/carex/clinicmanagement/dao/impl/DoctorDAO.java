@@ -174,6 +174,32 @@ public class DoctorDAO implements IDoctorDAO {
         }
     }
 
+    @Override
+    public List<Doctor> getDoctorsByOrganizationIds(List<Integer> organizationIds) {
+        Session session = null;
+        try {
+            session = sessionFactory.openSession();
+            if (organizationIds == null || organizationIds.isEmpty()) {
+                return Collections.emptyList();
+            }
+            @SuppressWarnings("unchecked")
+            List<Doctor> doctors = session.createQuery(
+                    "SELECT DISTINCT d FROM Doctor d " +
+                    "LEFT JOIN FETCH d.organization " +
+                    "LEFT JOIN FETCH d.userDetail ud " +
+                    "LEFT JOIN FETCH ud.role " +
+                    "WHERE d.organization.id in (:organizationIds) " +
+                    "ORDER BY d.organization.id, d.doctorName")
+                    .setParameterList("organizationIds", organizationIds)
+                    .list();
+            return doctors;
+        } finally {
+            if (session != null) {
+                session.close();
+            }
+        }
+    }
+
     private Doctor findByCode(Session session, String doctorCode) {
         if (doctorCode == null || doctorCode.trim().isEmpty()) {
             return null;

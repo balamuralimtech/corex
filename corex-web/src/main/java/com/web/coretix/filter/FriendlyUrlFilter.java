@@ -150,6 +150,7 @@ public class FriendlyUrlFilter implements Filter {
         paths.put("/change-password", "/pages/usermanagement/changePassword.xhtml");
         paths.put("/manage-user", "/pages/usermanagement/useradministration.xhtml");
         paths.put("/chat", "/pages/usermanagement/chat.xhtml");
+        paths.put("/feedback", "/pages/applicationmanagement/feedback.xhtml");
 
         paths.put("/organization", "/pages/systemmanagement/organization.xhtml");
         paths.put("/branch", "/pages/systemmanagement/branch.xhtml");
@@ -168,6 +169,7 @@ public class FriendlyUrlFilter implements Filter {
         paths.put("/application-pricing", "/pages/applicationmanagement/applicationpricing.xhtml");
         paths.put("/referral-management", "/pages/applicationmanagement/referralmanagement.xhtml");
         paths.put("/referral-dashboard", "/pages/applicationmanagement/referraldashboard.xhtml");
+        paths.put("/feedback-inbox", "/pages/applicationmanagement/feedbackInbox.xhtml");
 
         paths.put("/license", "/pages/license/license.xhtml");
         paths.put("/server-logs", "/pages/serverlogs/serverlogs.xhtml");

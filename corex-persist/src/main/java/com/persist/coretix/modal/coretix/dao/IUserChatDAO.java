@@ -37,4 +37,6 @@ public interface IUserChatDAO {
     GeneralConstants addMessage(int conversationId, int senderUserId, String message);
 
     GeneralConstants markConversationAsRead(int conversationId, int userId);
+
+    int getUnreadMessageCount(int userId);
 }

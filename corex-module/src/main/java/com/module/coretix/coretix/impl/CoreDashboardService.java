@@ -29,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.math.BigDecimal;
 import java.util.Map;
 
 @Named
@@ -51,17 +52,49 @@ public class CoreDashboardService implements ICoreDashboardService {
     public CoreDashboardTO fetchDashboardData() {
         CoreDashboardTO coreDashboardTO = new CoreDashboardTO();
 
-        coreDashboardTO.setOrganizationCount(coreDashboardDAO.fetchOrganizationCount());
-        coreDashboardTO.setBranchCount(coreDashboardDAO.fetchBranchCount());
-        coreDashboardTO.setCountryCount(coreDashboardDAO.fetchCountryCount());
-        coreDashboardTO.setStateCount(coreDashboardDAO.fetchStateCount());
-        coreDashboardTO.setCityCount(coreDashboardDAO.fetchCityCount());
-        coreDashboardTO.setCurrencyCount(coreDashboardDAO.fetchCurrencyCount());
-        coreDashboardTO.setDepartmentCount(coreDashboardDAO.fetchDepartmentCount());
-        coreDashboardTO.setDesignationCount(coreDashboardDAO.fetchDesignationCount());
-        coreDashboardTO.setRoleCount(coreDashboardDAO.fetchRoleCount());
-        coreDashboardTO.setUserCount(coreDashboardDAO.fetchUserCount());
-        coreDashboardTO.setUserActivityCount(coreDashboardDAO.fetchUserActivityCount());
+        Map<String, Long> entityCounts = coreDashboardDAO.fetchDashboardEntityCounts();
+        coreDashboardTO.setOrganizationCount(getLongCount(entityCounts, "organizations"));
+        coreDashboardTO.setBranchCount(getLongCount(entityCounts, "branches"));
+        coreDashboardTO.setCountryCount(getLongCount(entityCounts, "countries"));
+        coreDashboardTO.setStateCount(getLongCount(entityCounts, "states"));
+        coreDashboardTO.setCityCount(getLongCount(entityCounts, "cities"));
+        coreDashboardTO.setCurrencyCount(getLongCount(entityCounts, "currencies"));
+        coreDashboardTO.setDepartmentCount(getLongCount(entityCounts, "departments"));
+        coreDashboardTO.setDesignationCount(getLongCount(entityCounts, "designations"));
+        coreDashboardTO.setRoleCount(getLongCount(entityCounts, "roles"));
+        coreDashboardTO.setUserCount(getLongCount(entityCounts, "users"));
+        coreDashboardTO.setUserActivityCount(getLongCount(entityCounts, "userActivities"));
+
+        Map<String, BigDecimal> operationalMetrics = coreDashboardDAO.fetchDashboardOperationalMetrics();
+        coreDashboardTO.setDisabledUserCount(getLongMetric(operationalMetrics, "disabledUsers"));
+        coreDashboardTO.setLockedUserCount(getLongMetric(operationalMetrics, "lockedUsers"));
+        coreDashboardTO.setStalePasswordUserCount(getLongMetric(operationalMetrics, "stalePasswordUsers"));
+        coreDashboardTO.setInactiveUser30DaysCount(getLongMetric(operationalMetrics, "inactiveUsers30Days"));
+        coreDashboardTO.setActivityLast7DaysCount(getLongMetric(operationalMetrics, "activityLast7Days"));
+        coreDashboardTO.setActivityLast30DaysCount(getLongMetric(operationalMetrics, "activityLast30Days"));
+        coreDashboardTO.setUniqueActiveUsers30DaysCount(getLongMetric(operationalMetrics, "uniqueActiveUsers30Days"));
+        coreDashboardTO.setLicensesExpiring7DaysCount(getLongMetric(operationalMetrics, "licensesExpiring7Days"));
+        coreDashboardTO.setLicensesExpiring15DaysCount(getLongMetric(operationalMetrics, "licensesExpiring15Days"));
+        coreDashboardTO.setLicensesExpiring30DaysCount(getLongMetric(operationalMetrics, "licensesExpiring30Days"));
+        coreDashboardTO.setExpiredLicensesMetricCount(getLongMetric(operationalMetrics, "expiredLicenses"));
+        coreDashboardTO.setAverageLicenseDaysRemaining(getDecimalMetric(operationalMetrics, "avgLicenseDaysRemaining"));
+        coreDashboardTO.setDemoRequestsTotalCount(getLongMetric(operationalMetrics, "demoRequestsTotal"));
+        coreDashboardTO.setDemoRequestsPendingCount(getLongMetric(operationalMetrics, "demoRequestsPending"));
+        coreDashboardTO.setDemoRequestsCompletedCount(getLongMetric(operationalMetrics, "demoRequestsCompleted"));
+        coreDashboardTO.setAverageDemoCompletionHours(getDecimalMetric(operationalMetrics, "avgDemoCompletionHours"));
+        coreDashboardTO.setNotificationsTotalCount(getLongMetric(operationalMetrics, "notificationsTotal"));
+        coreDashboardTO.setNotificationReceiptsTotalCount(getLongMetric(operationalMetrics, "notificationReceiptsTotal"));
+        coreDashboardTO.setNotificationUnseenTotalCount(getLongMetric(operationalMetrics, "notificationUnseenTotal"));
+        coreDashboardTO.setLatestNotificationAgeHours(getDecimalMetric(operationalMetrics, "latestNotificationAgeHours"));
+        coreDashboardTO.setActiveReferrersCount(getLongMetric(operationalMetrics, "activeReferrers"));
+        coreDashboardTO.setReferralAttributionsTotalCount(getLongMetric(operationalMetrics, "referralAttributionsTotal"));
+        coreDashboardTO.setReferralSubscriptionAmount(getDecimalMetric(operationalMetrics, "referralSubscriptionAmount"));
+        coreDashboardTO.setReferralCommissionPendingAmount(getDecimalMetric(operationalMetrics, "referralCommissionPendingAmount"));
+        coreDashboardTO.setReferralCommissionPaidAmount(getDecimalMetric(operationalMetrics, "referralCommissionPaidAmount"));
+        coreDashboardTO.setChatConversationsTotalCount(getLongMetric(operationalMetrics, "chatConversationsTotal"));
+        coreDashboardTO.setChatMessagesLast24HoursCount(getLongMetric(operationalMetrics, "chatMessagesLast24Hours"));
+        coreDashboardTO.setChatMessagesLast7DaysCount(getLongMetric(operationalMetrics, "chatMessagesLast7Days"));
+        coreDashboardTO.setActiveChatUsers7DaysCount(getLongMetric(operationalMetrics, "activeChatUsers7Days"));
 
         Map<String, Integer> activityTypeCounts = getUserActivityDAO().getActivityTypeCounts();
         coreDashboardTO.setLoginCount(getCount(activityTypeCounts, "login"));
@@ -88,6 +121,26 @@ public class CoreDashboardService implements ICoreDashboardService {
         }
         Integer value = counts.get(key);
         return value == null ? 0 : value;
+    }
+
+    private long getLongCount(Map<String, Long> counts, String key) {
+        if (counts == null) {
+            return 0L;
+        }
+        Long value = counts.get(key);
+        return value == null ? 0L : value;
+    }
+
+    private long getLongMetric(Map<String, BigDecimal> metrics, String key) {
+        return getDecimalMetric(metrics, key).longValue();
+    }
+
+    private BigDecimal getDecimalMetric(Map<String, BigDecimal> metrics, String key) {
+        if (metrics == null) {
+            return BigDecimal.ZERO;
+        }
+        BigDecimal value = metrics.get(key);
+        return value == null ? BigDecimal.ZERO : value;
     }
 
     public ICoreDashboardDAO getCoreDashboardDAO() {
@@ -120,7 +173,5 @@ public class CoreDashboardService implements ICoreDashboardService {
 
 
 }
-
-
 
 

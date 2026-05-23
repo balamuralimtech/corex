@@ -32,4 +32,6 @@ public interface IUserChatService {
     GeneralConstants sendMessage(UserActivityTO userActivityTO, int currentUserId, int conversationId, String message);
 
     GeneralConstants markConversationAsRead(int currentUserId, int conversationId);
+
+    int getUnreadMessageCount(int currentUserId);
 }

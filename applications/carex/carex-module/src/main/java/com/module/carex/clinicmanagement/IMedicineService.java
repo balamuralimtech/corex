@@ -12,4 +12,5 @@ public interface IMedicineService {
     GeneralConstants deleteMedicine(UserActivityTO userActivityTO, Medicine medicine);
     Medicine getMedicineById(Integer medicineId);
     List<Medicine> getMedicinesByOrganizationId(Integer organizationId);
+    List<Medicine> getMedicinesByOrganizationIds(List<Integer> organizationIds);
 }

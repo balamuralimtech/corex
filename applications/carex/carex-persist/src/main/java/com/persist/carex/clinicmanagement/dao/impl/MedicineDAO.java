@@ -136,6 +136,28 @@ public class MedicineDAO implements IMedicineDAO {
         }
     }
 
+    @Override
+    public List<Medicine> getMedicinesByOrganizationIds(List<Integer> organizationIds) {
+        Session session = null;
+        try {
+            session = sessionFactory.openSession();
+            if (organizationIds == null || organizationIds.isEmpty()) {
+                return new ArrayList<>();
+            }
+            return session.createQuery(
+                            "from Medicine m " +
+                                    "where m.organization.id in (:organizationIds) " +
+                                    "order by m.organization.id, m.medicineName",
+                            Medicine.class)
+                    .setParameterList("organizationIds", organizationIds)
+                    .list();
+        } finally {
+            if (session != null) {
+                session.close();
+            }
+        }
+    }
+
     private Medicine findByCode(Session session, String medicineCode) {
         if (medicineCode == null || medicineCode.trim().isEmpty()) {
             return null;

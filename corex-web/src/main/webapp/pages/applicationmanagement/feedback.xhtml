@@ -1,0 +1,239 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="head">
+        <style type="text/css">
+            .feedback-shell {
+                display: grid;
+                gap: 1.2rem;
+            }
+            .feedback-hero {
+                padding: 1.7rem 1.8rem;
+                border-radius: 26px;
+                color: #f8fafc;
+                background:
+                    radial-gradient(circle at top right, rgba(255,255,255,.22), transparent 28%),
+                    linear-gradient(135deg, color-mix(in srgb, #{guestPreferences.activeLayoutColor} 84%, #0f172a) 0%, #{guestPreferences.activeLayoutColor} 100%);
+                box-shadow: 0 24px 54px rgba(15,23,42,.18);
+            }
+            .feedback-hero-title {
+                margin: 0;
+                font-size: 2rem;
+                font-weight: 800;
+                letter-spacing: -.03em;
+            }
+            .feedback-hero-copy {
+                margin-top: .7rem;
+                max-width: 760px;
+                color: rgba(241,245,249,.88);
+                line-height: 1.65;
+            }
+            .feedback-layout {
+                display: grid;
+                grid-template-columns: minmax(0, 1.6fr) minmax(280px, .9fr);
+                gap: 1rem;
+            }
+            .feedback-card {
+                padding: 1.35rem;
+                border-radius: 24px;
+                background: rgba(255,255,255,.98);
+                border: 1px solid rgba(226,232,240,.95);
+                box-shadow: 0 18px 45px rgba(15,23,42,.08);
+            }
+            .feedback-card-title {
+                margin: 0;
+                font-size: 1.1rem;
+                font-weight: 800;
+                color: #0f172a;
+            }
+            .feedback-card-copy {
+                margin-top: .3rem;
+                color: #64748b;
+                line-height: 1.6;
+                font-size: .92rem;
+            }
+            .feedback-field {
+                margin-top: 1rem;
+            }
+            .feedback-label {
+                display: block;
+                margin-bottom: .45rem;
+                font-size: .88rem;
+                font-weight: 700;
+                color: #334155;
+            }
+            .feedback-input .ui-inputfield,
+            .feedback-message .ui-inputfield {
+                width: 100%;
+                border-radius: 16px !important;
+                border: 1px solid rgba(203,213,225,.95) !important;
+                background: #f8fafc !important;
+                box-shadow: none !important;
+            }
+            .feedback-input,
+            .feedback-message {
+                display: block;
+                width: 100%;
+            }
+            .feedback-input .ui-inputfield {
+                min-height: 3rem;
+                padding: 0 .95rem !important;
+            }
+            .feedback-message .ui-inputfield {
+                min-height: 16rem;
+                padding: .95rem 1rem !important;
+                resize: vertical;
+            }
+            .feedback-input .ui-inputfield:focus,
+            .feedback-message .ui-inputfield:focus {
+                border-color: #{guestPreferences.activeLayoutColor} !important;
+                background: #fff !important;
+            }
+            .feedback-actions {
+                display: flex;
+                gap: .7rem;
+                flex-wrap: wrap;
+                margin-top: 1.15rem;
+            }
+            .feedback-send.ui-button,
+            .feedback-reset.ui-button {
+                border-radius: 999px !important;
+                box-shadow: none !important;
+            }
+            .feedback-send.ui-button {
+                border: none !important;
+                background: linear-gradient(135deg, #{guestPreferences.activeLayoutColor} 0%, color-mix(in srgb, #{guestPreferences.activeLayoutColor} 76%, #0f172a) 100%) !important;
+            }
+            .feedback-send.ui-button .ui-button-text,
+            .feedback-reset.ui-button .ui-button-text {
+                font-weight: 700;
+                padding: .82rem 1.25rem !important;
+            }
+            .feedback-reset.ui-button {
+                border: 1px solid rgba(203,213,225,.95) !important;
+                background: #fff !important;
+                color: #334155 !important;
+            }
+            .feedback-tip-list {
+                display: grid;
+                gap: .8rem;
+                margin-top: 1rem;
+            }
+            .feedback-tip {
+                padding: .95rem 1rem;
+                border-radius: 18px;
+                background: linear-gradient(180deg, rgba(248,250,252,.96), rgba(255,255,255,.98));
+                border: 1px solid rgba(226,232,240,.95);
+            }
+            .feedback-tip-title {
+                font-size: .84rem;
+                font-weight: 800;
+                text-transform: uppercase;
+                letter-spacing: .06em;
+                color: #0f172a;
+            }
+            .feedback-tip-copy {
+                margin-top: .3rem;
+                color: #64748b;
+                line-height: 1.55;
+                font-size: .88rem;
+            }
+            @media (max-width: 992px) {
+                .feedback-layout {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+    </ui:define>
+
+    <ui:define name="content">
+        <f:event listener="#{applicationFeedbackBean.initializePageAttributes}" type="preRenderComponent"/>
+
+        <h:form id="form">
+            <div class="feedback-shell">
+                <div class="col-12">
+                    <p:breadCrumb>
+                        <p:menuitem url="#{request.contextPath}/home" icon="pi pi-home"/>
+                        <p:menuitem value="Feedback"/>
+                    </p:breadCrumb>
+                </div>
+
+                <div class="feedback-hero">
+                    <h1 class="feedback-hero-title">Feedback for Application Admin</h1>
+                    <div class="feedback-hero-copy">
+                        Share ideas, rough edges, workflow blockers, or improvement requests. Your note will be sent privately to the application admin so the product can keep getting better.
+                    </div>
+                </div>
+
+                <p:growl id="messages" showDetail="true"/>
+
+                <div class="feedback-layout">
+                    <div class="feedback-card">
+                        <h2 class="feedback-card-title">Send Feedback</h2>
+                        <div class="feedback-card-copy">
+                            Keep it specific. Mention the screen, the problem, and the improvement you want.
+                        </div>
+
+                        <div class="feedback-field">
+                            <label class="feedback-label" for="form:subject">Subject</label>
+                            <p:inputText id="subject"
+                                         value="#{applicationFeedbackBean.subject}"
+                                         maxlength="140"
+                                         placeholder="Example: Appointment screen needs faster search"
+                                         styleClass="feedback-input"
+                                         style="width:100%;"/>
+                        </div>
+
+                        <div class="feedback-field">
+                            <label class="feedback-label" for="form:feedbackMessage">Feedback</label>
+                            <p:inputTextarea id="feedbackMessage"
+                                             value="#{applicationFeedbackBean.feedbackMessage}"
+                                             maxlength="4000"
+                                             autoResize="false"
+                                             placeholder="Describe what should improve, what slows you down, or what would make the workflow easier."
+                                             styleClass="feedback-message"
+                                             style="width:100%;"/>
+                        </div>
+
+                        <div class="feedback-actions">
+                            <p:commandButton value="Send Feedback"
+                                             actionListener="#{applicationFeedbackBean.sendFeedback}"
+                                             update="@form"
+                                             styleClass="feedback-send"/>
+                            <p:commandButton value="Clear"
+                                             actionListener="#{applicationFeedbackBean.resetForm}"
+                                             update="@form"
+                                             styleClass="feedback-reset"/>
+                        </div>
+                    </div>
+
+                    <div class="feedback-card">
+                        <h2 class="feedback-card-title">Helpful Tips</h2>
+                        <div class="feedback-card-copy">
+                            Strong feedback is easier to act on and quicker to fix.
+                        </div>
+
+                        <div class="feedback-tip-list">
+                            <div class="feedback-tip">
+                                <div class="feedback-tip-title">Mention the page</div>
+                                <div class="feedback-tip-copy">Say which page, flow, or step needs attention.</div>
+                            </div>
+                            <div class="feedback-tip">
+                                <div class="feedback-tip-title">Describe the friction</div>
+                                <div class="feedback-tip-copy">Explain what feels slow, confusing, repetitive, or missing.</div>
+                            </div>
+                            <div class="feedback-tip">
+                                <div class="feedback-tip-title">Suggest the better path</div>
+                                <div class="feedback-tip-copy">If you know the improvement you want, write it directly.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

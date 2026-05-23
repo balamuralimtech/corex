@@ -12,4 +12,5 @@ public interface IDoctorDAO {
     Doctor getDoctorById(Integer doctorId);
     Doctor getDoctorByCode(String doctorCode);
     List<Doctor> getDoctorsByOrganizationId(Integer organizationId);
+    List<Doctor> getDoctorsByOrganizationIds(List<Integer> organizationIds);
 }
