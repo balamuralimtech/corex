@@ -20,6 +20,7 @@ import com.persist.coretix.modal.constants.GeneralConstants;
 import com.persist.coretix.modal.license.Licenses;
 import com.persist.coretix.modal.license.dao.ILicenseDAO;
 import com.persist.coretix.modal.systemmanagement.Organizations;
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.exception.ConstraintViolationException;
@@ -31,6 +32,7 @@ import javax.inject.Named;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.function.Function;
 
 @Named
 public class LicenseDAO implements ILicenseDAO {
@@ -132,51 +134,65 @@ public class LicenseDAO implements ILicenseDAO {
     }
 
     public Licenses getLicense(int id) {
-        Session session = sessionFactory.getCurrentSession();
-        @SuppressWarnings("unchecked")
-        List<Licenses> list = session.createQuery(
-                "SELECT DISTINCT l FROM Licenses l " +
-                "LEFT JOIN FETCH l.organization " +
-                "WHERE l.id = :id")
-                .setParameter("id", id)
-                .list();
-        return list.isEmpty() ? null : list.get(0);
+        return executeRead(session -> {
+            @SuppressWarnings("unchecked")
+            List<Licenses> list = session.createQuery(
+                    "SELECT DISTINCT l FROM Licenses l " +
+                    "LEFT JOIN FETCH l.organization " +
+                    "WHERE l.id = :id")
+                    .setParameter("id", id)
+                    .list();
+            return list.isEmpty() ? null : list.get(0);
+        });
     }
 
     public Licenses getLicenseByOrganizationId(int organizationId) {
-        Session session = sessionFactory.getCurrentSession();
-        @SuppressWarnings("unchecked")
-        List<Licenses> list = session.createQuery(
-                        "SELECT DISTINCT l FROM Licenses l " +
-                        "LEFT JOIN FETCH l.organization " +
-                        "WHERE l.organization.id = :organizationId")
-                .setParameter("organizationId", organizationId)
-                .list();
-        return list.isEmpty() ? null : list.get(0);
+        return executeRead(session -> {
+            @SuppressWarnings("unchecked")
+            List<Licenses> list = session.createQuery(
+                            "SELECT DISTINCT l FROM Licenses l " +
+                            "LEFT JOIN FETCH l.organization " +
+                            "WHERE l.organization.id = :organizationId")
+                    .setParameter("organizationId", organizationId)
+                    .list();
+            return list.isEmpty() ? null : list.get(0);
+        });
     }
 
     public List<Licenses> getLicenseList() {
-        Session session = sessionFactory.getCurrentSession();
-        @SuppressWarnings("unchecked")
-        List<Licenses> list = session.createQuery(
-                "SELECT DISTINCT l FROM Licenses l " +
-                "LEFT JOIN FETCH l.organization " +
-                "ORDER BY l.id DESC").list();
-        return list;
+        return executeRead(session -> {
+            @SuppressWarnings("unchecked")
+            List<Licenses> list = session.createQuery(
+                    "SELECT DISTINCT l FROM Licenses l " +
+                    "LEFT JOIN FETCH l.organization " +
+                    "ORDER BY l.id DESC").list();
+            return list;
+        });
     }
 
     public boolean isLicenseActiveForOrganization(int organizationId) {
-        Session session = sessionFactory.getCurrentSession();
-        Date currentDate = new Date(System.currentTimeMillis());
-        Long count = (Long) session.createQuery(
-                        "select count(l) from Licenses l where l.organization.id = :organizationId and :currentDate between l.startDate and l.endDate")
-                .setParameter("organizationId", organizationId)
-                .setParameter("currentDate", currentDate)
-                .uniqueResult();
-        return count != null && count > 0;
+        return executeRead(session -> {
+            Date currentDate = new Date(System.currentTimeMillis());
+            Long count = (Long) session.createQuery(
+                            "select count(l) from Licenses l where l.organization.id = :organizationId and :currentDate between l.startDate and l.endDate")
+                    .setParameter("organizationId", organizationId)
+                    .setParameter("currentDate", currentDate)
+                    .uniqueResult();
+            return count != null && count > 0;
+        });
+    }
+
+    private <T> T executeRead(Function<Session, T> operation) {
+        try {
+            return operation.apply(sessionFactory.getCurrentSession());
+        } catch (HibernateException exception) {
+            logger.warn("Falling back to a temporary session for license read operation", exception);
+            try (Session session = sessionFactory.openSession()) {
+                return operation.apply(session);
+            }
+        }
     }
 }
-
 
 
 

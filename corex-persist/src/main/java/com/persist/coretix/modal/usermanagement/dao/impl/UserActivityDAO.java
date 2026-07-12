@@ -25,10 +25,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.hibernate.HibernateException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 
 /**
  *
@@ -53,8 +55,7 @@ public class UserActivityDAO implements IUserActivityDAO
 
     public void addUserActivity(UserActivities useractivity) {
         logger.debug("inside dao save useractivity !!");
-        Session session = getSessionFactory().getCurrentSession();
-        session.save(useractivity);
+        executeWrite(session -> session.save(useractivity));
     }
 
 
@@ -94,10 +95,34 @@ public class UserActivityDAO implements IUserActivityDAO
         List<UserActivities> list = (List<UserActivities>) session.createQuery("from UserActivities order by createdAt desc").list();
         return list;
     }
+
+    private void executeWrite(SessionOperation operation) {
+        Session session = getSessionFactory().getCurrentSession();
+        Transaction transaction = session.getTransaction();
+        boolean startedTransaction = transaction == null || !transaction.isActive();
+
+        try {
+            if (startedTransaction) {
+                transaction = session.beginTransaction();
+            }
+            operation.accept(session);
+            if (startedTransaction && transaction != null && transaction.isActive()) {
+                transaction.commit();
+            }
+        } catch (RuntimeException exception) {
+            if (startedTransaction && transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw exception;
+        }
+    }
+
+    @FunctionalInterface
+    private interface SessionOperation {
+        void accept(Session session);
+    }
     
 }
-
-
 
 
 
