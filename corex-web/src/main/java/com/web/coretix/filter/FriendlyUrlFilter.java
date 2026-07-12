@@ -18,6 +18,7 @@ package com.web.coretix.filter;
 
 import com.web.coretix.constants.SessionAttributes;
 import com.web.coretix.constants.UserTypeConstants;
+import com.web.coretix.applicationstartup.ApplicationStartupServlet;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,6 +26,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -104,6 +106,11 @@ public class FriendlyUrlFilter implements Filter {
 
         if ("/home".equals(path)) {
             httpResponse.sendRedirect(contextPath + resolveHomeTarget(httpRequest));
+            return;
+        }
+
+        if ("/referraldashboard".equals(path)) {
+            httpResponse.sendRedirect(contextPath + "/home");
             return;
         }
 
@@ -271,6 +278,15 @@ public class FriendlyUrlFilter implements Filter {
     }
 
     private String resolveHomeTarget(HttpServletRequest request) {
+        String configuredHomePath = resolveConfiguredHomePath(request);
+        if (isApplicationContext(request) && configuredHomePath != null) {
+            return configuredHomePath;
+        }
+
+        if (isApplicationContext(request) && primaryApplicationDashboardPath != null) {
+            return primaryApplicationDashboardPath;
+        }
+
         if (!isApplicationAdmin(request)) {
             return primaryApplicationDashboardPath == null ? CORE_DASHBOARD_FRIENDLY_PATH : primaryApplicationDashboardPath;
         }
@@ -308,12 +324,44 @@ public class FriendlyUrlFilter implements Filter {
                 && UserTypeConstants.APPLICATION_ADMIN == UserTypeConstants.fromValue((String) userType);
     }
 
+    private boolean isApplicationContext(HttpServletRequest request) {
+        String contextPath = request.getContextPath();
+        if (contextPath == null || contextPath.trim().isEmpty() || "/".equals(contextPath.trim())) {
+            return false;
+        }
+
+        String normalizedContextPath = contextPath.trim();
+        if (normalizedContextPath.startsWith("/")) {
+            normalizedContextPath = normalizedContextPath.substring(1);
+        }
+        return !"corex".equalsIgnoreCase(normalizedContextPath);
+    }
+
+    private String resolveConfiguredHomePath(HttpServletRequest request) {
+        Object propertiesObject = request.getServletContext()
+                .getAttribute(ApplicationStartupServlet.APPLICATION_PROPERTIES_ATTRIBUTE);
+        if (!(propertiesObject instanceof Properties)) {
+            return null;
+        }
+
+        String configuredHomePath = ((Properties) propertiesObject).getProperty("app.home.path");
+        if (configuredHomePath == null || configuredHomePath.trim().isEmpty()) {
+            return null;
+        }
+
+        configuredHomePath = configuredHomePath.trim();
+        return configuredHomePath.startsWith("/") ? configuredHomePath : "/" + configuredHomePath;
+    }
+
     private List<String> discoverApplicationDashboardPaths(ServletContext servletContext) {
         Set<String> pageResources = new HashSet<>();
         collectPageResources(servletContext, "/pages/", pageResources);
 
         List<String> dashboardPaths = new ArrayList<>();
         for (String internalPath : pageResources) {
+            if (!isApplicationPage(internalPath)) {
+                continue;
+            }
             if (!isDashboardPage(internalPath)) {
                 continue;
             }

@@ -38,6 +38,7 @@ public class ApplicationStartupServlet extends HttpServlet
     private static final Logger logger = LoggerFactory.getLogger(ApplicationStartupServlet.class);
     public static final String APPLICATION_FILE_PATH = "application.properties";
     public static final String APPLICATION_OVERRIDE_PREFIX = "application-";
+    public static final String APPLICATION_PROPERTIES_ATTRIBUTE = "corex.application.properties";
     private String realPath;
 
     @Override
@@ -100,6 +101,7 @@ public class ApplicationStartupServlet extends HttpServlet
 
         appProperties.setProperty("webclient.path", realPath);
         appProperties.setProperty("app.context", contextName);
+        getServletContext().setAttribute(APPLICATION_PROPERTIES_ATTRIBUTE, appProperties);
         propertyUtils.setSystemProperties(appProperties);
 
         logger.info("-----------------------------");

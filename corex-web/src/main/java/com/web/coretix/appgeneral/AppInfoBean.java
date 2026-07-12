@@ -16,7 +16,11 @@
  */
 package com.web.coretix.appgeneral;
 
+import com.web.coretix.applicationstartup.ApplicationStartupServlet;
 import javax.inject.Named;
+import javax.faces.context.FacesContext;
+import javax.servlet.ServletContext;
+import java.util.Properties;
 
 @Named("appInfo")
 public class AppInfoBean {
@@ -31,50 +35,61 @@ public class AppInfoBean {
     private static final String DEFAULT_LOGIN_VIDEO = "/resources/avalon-layout/videos/home.mp4";
 
     public String getAppName() {
-        String appName = System.getProperty("app.name");
-        return appName == null || appName.trim().isEmpty() ? DEFAULT_APP_NAME : appName;
+        return getConfiguredValue("app.name", DEFAULT_APP_NAME);
     }
 
     public String getBrandIconResource() {
-        String brandIconResource = System.getProperty("app.brand.icon");
-        return brandIconResource == null || brandIconResource.trim().isEmpty()
-                ? DEFAULT_BRAND_ICON_RESOURCE
-                : brandIconResource;
+        return getConfiguredValue("app.brand.icon", DEFAULT_BRAND_ICON_RESOURCE);
     }
 
     public String getCompanyName() {
-        String companyName = System.getProperty("company.name");
-        return companyName == null || companyName.trim().isEmpty()
-                ? DEFAULT_COMPANY_NAME
-                : companyName;
+        return getConfiguredValue("company.name", DEFAULT_COMPANY_NAME);
     }
 
     public String getLoginHeadline() {
-        String loginHeadline = System.getProperty("app.login.headline");
-        return loginHeadline == null || loginHeadline.trim().isEmpty()
-                ? DEFAULT_LOGIN_HEADLINE
-                : loginHeadline;
+        return getConfiguredValue("app.login.headline", DEFAULT_LOGIN_HEADLINE);
     }
 
     public String getLoginDescription() {
-        String loginDescription = System.getProperty("app.login.description");
-        return loginDescription == null || loginDescription.trim().isEmpty()
-                ? DEFAULT_LOGIN_DESCRIPTION
-                : loginDescription;
+        return getConfiguredValue("app.login.description", DEFAULT_LOGIN_DESCRIPTION);
     }
 
     public String getLoginCta() {
-        String loginCta = System.getProperty("app.login.cta");
-        return loginCta == null || loginCta.trim().isEmpty()
-                ? DEFAULT_LOGIN_CTA
-                : loginCta;
+        return getConfiguredValue("app.login.cta", DEFAULT_LOGIN_CTA);
     }
 
     public String getLoginVideo() {
-        String loginVideo = System.getProperty("app.login.video");
-        return loginVideo == null || loginVideo.trim().isEmpty()
-                ? DEFAULT_LOGIN_VIDEO
-                : loginVideo;
+        return getConfiguredValue("app.login.video", DEFAULT_LOGIN_VIDEO);
+    }
+
+    private String getConfiguredValue(String key, String defaultValue) {
+        String contextValue = getContextProperty(key);
+        if (contextValue != null && !contextValue.trim().isEmpty()) {
+            return contextValue;
+        }
+
+        String systemValue = System.getProperty(key);
+        return systemValue == null || systemValue.trim().isEmpty() ? defaultValue : systemValue;
+    }
+
+    private String getContextProperty(String key) {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        if (facesContext == null) {
+            return null;
+        }
+
+        Object context = facesContext.getExternalContext().getContext();
+        if (!(context instanceof ServletContext)) {
+            return null;
+        }
+
+        Object propertiesObject = ((ServletContext) context)
+                .getAttribute(ApplicationStartupServlet.APPLICATION_PROPERTIES_ATTRIBUTE);
+        if (!(propertiesObject instanceof Properties)) {
+            return null;
+        }
+
+        return ((Properties) propertiesObject).getProperty(key);
     }
 }
 

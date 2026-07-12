@@ -67,9 +67,7 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
     private static final int LOGIN_ENCRYPTION_KEY_SIZE = 2048;
     private static final String LOGIN_RSA_TRANSFORMATION = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding";
     private static final Object LOGIN_KEY_LOCK = new Object();
-    private static final String SHIPX_APP_NAME = "shipx";
     private static final String DEFAULT_POST_LOGIN_PATH = "/home";
-    private static final String ADMIN_DASHBOARD_PATH = "/core-dashboard";
     private static final String[] LOGIN_GREETING_NOTES = {
             "A fresh start for strong work.",
             "Small progress still moves everything forward.",
@@ -316,17 +314,7 @@ public class LoginBean extends GenericManagedBean implements Serializable  {
     }
 
     private String resolvePostLoginPath(UserDetails userDetails) {
-        if (userDetails != null
-                && UserTypeConstants.APPLICATION_ADMIN == UserTypeConstants.fromValue(userDetails.getUserType())
-                && SHIPX_APP_NAME.equalsIgnoreCase(resolveConfiguredAppName())) {
-            return ADMIN_DASHBOARD_PATH;
-        }
         return DEFAULT_POST_LOGIN_PATH;
-    }
-
-    private String resolveConfiguredAppName() {
-        String appName = System.getProperty("app.name");
-        return appName == null ? "" : appName.trim();
     }
 
     private String getLicenseValidationMessage(UserDetails userDetails) {

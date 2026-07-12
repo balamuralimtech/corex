@@ -3,13 +3,13 @@ package com.web.shipx.menu;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Named;
 
 import com.web.coretix.menu.AppMenuGroup;
 import com.web.coretix.menu.AppMenuItem;
 import com.web.coretix.menu.MenuContributor;
 
-@ApplicationScoped
+@Named
 public class ShipxMenuContributor implements MenuContributor {
 
     @Override
