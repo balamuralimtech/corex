@@ -3,6 +3,7 @@
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/applications/carex/carex-common/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/applications/carex/carex-common/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/carex/carex-db" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/applications/carex/carex-db/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/applications/carex/carex-db/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/applications/carex/carex-module/src/main/java" charset="UTF-8" />
@@ -15,6 +16,7 @@
     <file url="file://$PROJECT_DIR$/applications/carex/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/applications/payrollx/payrollx-common/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/applications/payrollx/payrollx-common/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/payrollx/payrollx-db" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/applications/payrollx/payrollx-db/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/applications/payrollx/payrollx-db/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/applications/payrollx/payrollx-module/src/main/java" charset="UTF-8" />
@@ -27,6 +29,7 @@
     <file url="file://$PROJECT_DIR$/applications/payrollx/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/applications/shipx/shipx-common/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/applications/shipx/shipx-common/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/applications/shipx/shipx-db" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/applications/shipx/shipx-db/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/applications/shipx/shipx-db/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/applications/shipx/shipx-module/src/main/java" charset="UTF-8" />
@@ -39,6 +42,13 @@
     <file url="file://$PROJECT_DIR$/applications/shipx/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/corex-common/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/corex-common/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/corex-db" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/corex-installer/${project.parent.basedir}/applications/carex/carex-db" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/corex-installer/${project.parent.basedir}/applications/payrollx/payrollx-db" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/corex-installer/${project.parent.basedir}/applications/shipx/shipx-db" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/corex-installer/${project.parent.basedir}/corex-db" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/corex-installer/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/corex-installer/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/corex-main/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/corex-main/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/corex-module/src/main/java" charset="UTF-8" />

@@ -16,6 +16,7 @@
 		<module>corex-persist</module>
 		<module>corex-module</module>
 		<module>corex-web</module>
+		<module>corex-installer</module>
 		<module>applications/shipx</module>
 		<module>applications/carex</module>
 		<module>applications/payrollx</module>

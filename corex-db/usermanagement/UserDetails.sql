@@ -50,37 +50,28 @@ INSERT INTO UserDetails (
     address,
     access_right_id,
     status_id,
-    last_password_change,
-    last_successful_login,
-    last_seen_at,
-    last_logout_at,
-    last_session_id,
-    profile_image,
-    profile_image_content_type
+    created_at,
+    updated_at
 )
-VALUES
-    ('admin', '$2a$12$vBIeMT2se0g.YOjyhMtwfuMihq3pEYy5Dj0kLXv/F6FgSweP0S9M.', 'alice.johnson@example.com', 'GENERAL_USER', '1234567890', 4, 1, 1, 101, 201, 301, '123 Elm Street', 1, 1, '2024-10-01 09:00:00', '2024-11-01 12:00:00', NULL, NULL, NULL, NULL, NULL),
-    ('Bob Smith', '$2a$12$DV79Jsq6.IK6oIHFPvDapOYIj66IZe6S0Ku24fZ52NE/DCyUP/FMS', 'bob.smith@example.com', 'GENERAL_USER', '0987654321', 3, 1, 2, 102, 202, 302, '456 Oak Avenue', 2, 1, '2024-10-05 10:00:00', '2024-11-02 15:30:00', NULL, NULL, NULL, NULL, NULL);
-
-
-ALTER TABLE UserDetails ADD COLUMN profile_image LONGBLOB NULL;
-
-ALTER TABLE UserDetails ADD COLUMN profile_image_content_type VARCHAR(100) NULL;
-
-ALTER TABLE UserDetails
-    ADD COLUMN user_type VARCHAR(32) NOT NULL DEFAULT 'GENERAL_USER' AFTER email_id;
-
-ALTER TABLE UserDetails
-    ADD COLUMN account_disabled BOOLEAN NOT NULL DEFAULT FALSE AFTER status_id;
-
-ALTER TABLE UserDetails
-    ADD COLUMN account_locked BOOLEAN NOT NULL DEFAULT FALSE AFTER account_disabled;
-
-UPDATE UserDetails
-SET user_type = 'GENERAL_USER'
-WHERE user_type IS NULL OR TRIM(user_type) = '';
-
-
+SELECT
+    'admin',
+    '$2a$12$vBIeMT2se0g.YOjyhMtwfuMihq3pEYy5Dj0kLXv/F6FgSweP0S9M.',
+    'admin@corex.local',
+    'GENERAL_USER',
+    '1234567890',
+    r.id,
+    1,
+    1,
+    101,
+    201,
+    301,
+    '123 Elm Street',
+    1,
+    1,
+    CURRENT_TIMESTAMP,
+    CURRENT_TIMESTAMP
+FROM Roles r
+WHERE r.role_name = 'Admin';
 
 INSERT INTO Roles (role_name, created_at, updated_at)
 SELECT 'Application Admin', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
@@ -125,4 +116,3 @@ SELECT
     CURRENT_TIMESTAMP
 FROM Roles r
 WHERE r.role_name = 'Application Admin';
-#Admin@123

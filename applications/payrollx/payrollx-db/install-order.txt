@@ -1,0 +1,2 @@
+# PayrollX schema
+# Add PayrollX SQL files here as the module evolves.

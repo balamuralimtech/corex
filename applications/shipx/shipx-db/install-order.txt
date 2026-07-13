@@ -1,0 +1,3 @@
+# ShipX schema
+customer-request/customer_request.sql
+quotation/shipx_quotation.sql

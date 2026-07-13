@@ -12,5 +12,3 @@ CREATE TABLE IF NOT EXISTS demo_request (
     KEY idx_demo_request_work_email (work_email),
     KEY idx_demo_request_demo_done (demo_done)
 );
-
-CREATE INDEX idx_demo_request_demo_done ON demo_request (demo_done);

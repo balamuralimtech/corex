@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.coretix</groupId>
+        <artifactId>corex</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>corex-installer</artifactId>
+    <packaging>jar</packaging>
+    <name>CoreX Standalone Installer</name>
+
+    <properties>
+        <maven.jar.plugin.version>3.4.2</maven.jar.plugin.version>
+        <maven.assembly.plugin.version>3.7.1</maven.assembly.plugin.version>
+    </properties>
+
+    <build>
+        <finalName>corex-installer</finalName>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>${maven.multiModuleProjectDirectory}/corex-db</directory>
+                <includes>
+                    <include>install-order.txt</include>
+                    <include>**/*.sql</include>
+                </includes>
+                <targetPath>db/corex-db</targetPath>
+            </resource>
+            <resource>
+                <directory>${maven.multiModuleProjectDirectory}/applications/shipx/shipx-db</directory>
+                <includes>
+                    <include>install-order.txt</include>
+                    <include>**/*.sql</include>
+                </includes>
+                <targetPath>db/applications/shipx/shipx-db</targetPath>
+            </resource>
+            <resource>
+                <directory>${maven.multiModuleProjectDirectory}/applications/carex/carex-db</directory>
+                <includes>
+                    <include>install-order.txt</include>
+                    <include>**/*.sql</include>
+                </includes>
+                <targetPath>db/applications/carex/carex-db</targetPath>
+            </resource>
+            <resource>
+                <directory>${maven.multiModuleProjectDirectory}/applications/payrollx/payrollx-db</directory>
+                <includes>
+                    <include>install-order.txt</include>
+                    <include>**/*.sql</include>
+                </includes>
+                <targetPath>db/applications/payrollx/payrollx-db</targetPath>
+            </resource>
+        </resources>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${maven.jar.plugin.version}</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.coretix.installer.InstallerApplication</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>${maven.assembly.plugin.version}</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.coretix.installer.InstallerApplication</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-installer-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

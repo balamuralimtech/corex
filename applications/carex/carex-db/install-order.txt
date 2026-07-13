@@ -1,0 +1,12 @@
+# CareX schema
+clinic-settings/clinic_settings.sql
+clinic-settings/clinic_settings_add_consultation_workflow.sql
+clinic-settings/clinic_settings_add_official_seal.sql
+doctor/doctor.sql
+patient/patient.sql
+medicine/medicine.sql
+consultation/consultation.sql
+consultation/consultation_queue_fields.sql
+invoice-settings/invoice_settings.sql
+medical-certificate-settings/medical_certificate_settings.sql
+prescription-settings/prescription_settings.sql

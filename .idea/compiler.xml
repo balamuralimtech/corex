@@ -6,26 +6,27 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="payrollx-module" />
         <module name="corex-module" />
         <module name="carex-common" />
-      <module name="payrollx-web" />
+        <module name="payrollx-persist" />
+        <module name="payrollx-web" />
         <module name="corex-web" />
         <module name="corex-common" />
-      <module name="payrollx-common" />
         <module name="carex-persist" />
         <module name="shipx-module" />
         <module name="carex-module" />
         <module name="shipx-persist" />
-      <module name="payrollx-module" />
+        <module name="payrollx-db" />
         <module name="shipx-db" />
         <module name="carex-web" />
-      <module name="payrollx-persist" />
         <module name="shipx-web" />
         <module name="shipx-common" />
         <module name="carex-db" />
         <module name="corex-persist" />
-      <module name="payrollx-db" />
         <module name="corex-base" />
+        <module name="payrollx-common" />
+        <module name="corex-installer" />
       </profile>
     </annotationProcessing>
   </component>

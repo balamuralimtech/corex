@@ -1,0 +1,23 @@
+# Shared CoreX schema for fresh database installs
+systemmanagement/world.sql
+systemmanagement/Currency Details.sql
+systemmanagement/organization.sql
+systemmanagement/organization_add_referral_code.sql
+systemmanagement/bankdetails.sql
+systemmanagement/branches.sql
+systemmanagement/departments.sql
+systemmanagement/designations.sql
+systemmanagement/notificationsettings.sql
+usermanagement/roleadministration.sql
+usermanagement/UserDetails.sql
+usermanagement/moduleprivileges.sql
+usermanagement/useractivities.sql
+applicationmanagement/application_pricing.sql
+applicationmanagement/application_feedback.sql
+applicationmanagement/demo_request.sql
+applicationmanagement/referral_management.sql
+applicationnotification/applicationnotification.sql
+applicationnotification/userchat.sql
+applicationnotification/userchat_performance_indexes.sql
+applicationtheme/applicationtheme.sql
+licensemanagement/license.sql
