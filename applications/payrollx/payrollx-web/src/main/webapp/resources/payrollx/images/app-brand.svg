@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title>PayrollXApp brand mark</title>
+  <defs>
+    <linearGradient id="payrollxBrand" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#34d399"/>
+      <stop offset="1" stop-color="#0f766e"/>
+    </linearGradient>
+  </defs>
+  <rect x="6" y="6" width="52" height="52" rx="16" fill="#ffffff" fill-opacity="0.14"/>
+  <rect x="18" y="14" width="28" height="38" rx="5" fill="#ffffff" fill-opacity="0.94"/>
+  <path d="M24 24h16M24 32h16M24 40h10" stroke="#0f766e" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="32" cy="16" r="7" fill="url(#payrollxBrand)"/>
+  <path d="M28.5 16.4c1.1 2 5.8 2 7 0M28.5 14.1c1-2.1 5.9-2.1 7 0" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M42 41c4.6 0 8 2.8 8 6.3V52H34v-4.7c0-3.5 3.4-6.3 8-6.3Z" fill="url(#payrollxBrand)"/>
+  <circle cx="42" cy="35" r="5" fill="url(#payrollxBrand)"/>
+</svg>

@@ -1,0 +1,306 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+    <ui:define name="head">
+        <style type="text/css">
+            .profile-template{padding-top:.5rem}
+            .profile-layout{display:grid;grid-template-columns:340px minmax(0,1fr);gap:1.25rem;align-items:start}
+            .profile-panel{background:#fff;border:1px solid #dbe6f3;border-radius:20px;box-shadow:0 18px 36px rgba(15,23,42,.07);overflow:hidden}
+            .profile-summary{padding:2rem 1.5rem 1.75rem;text-align:center}
+            .profile-avatar-shell{width:146px;height:146px;margin:0 auto 1rem;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,#dbeafe,#bfdbfe);box-shadow:0 16px 30px rgba(59,130,246,.18)}
+            .profile-avatar-shell img{width:100%;height:100%;object-fit:cover}
+            .profile-avatar-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#2563eb;font-size:3rem}
+            .profile-name{margin:0;color:#1e3a5f;font-size:2rem;font-weight:500}
+            .profile-role{margin:.3rem 0 0;color:#8a97a8;font-size:1.05rem;line-height:1.55}
+            .profile-stats{display:flex;justify-content:center;gap:2rem;margin-top:1.35rem;color:#1e3a5f}
+            .profile-stat{display:flex;align-items:center;gap:.45rem;font-size:1.2rem}
+            .profile-stat span{font-size:1.2rem;font-weight:500}
+            .profile-divider{height:1px;background:#e7eef7}
+            .profile-contact{padding:1.5rem}
+            .contact-block{margin-bottom:1.35rem}
+            .contact-label{display:block;margin-bottom:.25rem;color:#99a7b7;font-size:.95rem}
+            .contact-value{color:#284567;font-size:1.2rem;font-weight:600;line-height:1.5;word-break:break-word}
+            .contact-value.compact{font-size:1.05rem}
+            .timeline-panel{padding:0}
+            .profile-tabs.ui-tabs.ui-tabs-top>.ui-tabs-nav{padding:0 1rem;border:none;background:#fff;border-bottom:1px solid #e7eef7}
+            .profile-tabs.ui-tabs .ui-tabs-nav li{margin:0 .5rem 0 0}
+            .profile-tabs.ui-tabs .ui-tabs-nav li a{padding:1rem .35rem;color:#6f85a0;font-weight:500}
+            .profile-tabs.ui-tabs .ui-tabs-nav li.ui-tabs-selected a{color:#3b82f6}
+            .profile-tabs .ui-tabs-panels{padding:1.5rem;background:#fff}
+            .feed-list{display:flex;flex-direction:column;gap:1.25rem}
+            .feed-item{position:relative;padding:0 0 1.25rem 3.8rem;border-bottom:1px solid #e7eef7}
+            .feed-item:last-child{border-bottom:none;padding-bottom:0}
+            .feed-item:before{content:"";position:absolute;left:1.6rem;top:2.6rem;bottom:-1.25rem;width:1px;background:#e1e8f0}
+            .feed-item:last-child:before{display:none}
+            .feed-avatar{position:absolute;left:0;top:0;width:3rem;height:3rem;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#e2e8f0}
+            .feed-avatar img{width:100%;height:100%;object-fit:cover}
+            .feed-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#2563eb}
+            .feed-header{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start;margin-bottom:.55rem}
+            .feed-user{color:#284567;font-weight:600}
+            .feed-time{color:#93a3b8;font-size:.95rem;white-space:nowrap}
+            .feed-title{margin:0 0 .45rem;color:#1e3a5f;font-size:1.08rem;font-weight:600}
+            .feed-message{margin:0;color:#64748b;font-size:1rem;line-height:1.65}
+            .empty-tab{text-align:center;padding:2.5rem 1rem;color:#64748b}
+            .empty-tab i{font-size:2.2rem;color:#94a3b8}
+            .empty-tab h3{margin:1rem 0 .35rem;color:#0f172a;font-size:1.05rem}
+            .profile-form-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1.15rem 2rem}
+            .profile-field{display:grid;grid-template-columns:180px minmax(0,1fr);gap:1rem;align-items:start}
+            .profile-field.full{grid-column:1 / -1}
+            .field-label{padding-top:.7rem;color:#3f5166;font-size:1rem;font-weight:500}
+            .field-value{min-height:48px;padding:.75rem .95rem;border:1px solid #d5dfeb;border-radius:6px;background:#fff;color:#43576f;line-height:1.45;word-break:break-word}
+            .field-value.muted{color:#94a3b8}
+            .profile-preview{display:flex;align-items:flex-start;gap:1rem}
+            .profile-preview-card{width:126px}
+            .profile-preview-image{width:90px;height:90px;border-radius:16px;overflow:hidden;border:1px solid #dbe6f3;background:#eff6ff;display:flex;align-items:center;justify-content:center}
+            .profile-preview-image img{width:100%;height:100%;object-fit:cover}
+            .profile-preview-note{margin-top:.6rem;color:#94a3b8;font-size:.92rem;line-height:1.5}
+            @media (max-width: 991px){
+                .profile-layout{grid-template-columns:1fr}
+                .profile-form-grid{grid-template-columns:1fr}
+            }
+            @media (max-width: 767px){
+                .profile-summary,.profile-contact,.profile-tabs .ui-tabs-panels{padding:1.1rem}
+                .profile-name{font-size:1.7rem}
+                .feed-item{padding-left:0}
+                .feed-item:before,.feed-avatar{display:none}
+                .profile-field{grid-template-columns:1fr}
+                .field-label{padding-top:0}
+            }
+        </style>
+    </ui:define>
+
+    <ui:define name="content">
+        <f:event listener="#{payrollxEmployeeProfileBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:form id="userform">
+            <div class="col-12">
+                <p:breadCrumb>
+                    <p:menuitem url="#{request.contextPath}/home" icon="pi pi-home"/>
+                    <p:menuitem value="Employee Management" url="#"/>
+                    <p:menuitem value="Employee Profile"/>
+                </p:breadCrumb>
+            </div>
+
+            <div class="profile-template">
+                <p:outputPanel rendered="#{not empty payrollxEmployeeProfileBean.userDetails}">
+                    <div class="profile-layout">
+                        <section class="profile-panel">
+                            <div class="profile-summary">
+                                <div class="profile-avatar-shell">
+                                    <h:graphicImage value="#{payrollxEmployeeProfileBean.profileImageSrc}" rendered="#{not empty payrollxEmployeeProfileBean.profileImageSrc}"/>
+                                    <h:panelGroup layout="block" styleClass="profile-avatar-fallback" rendered="#{empty payrollxEmployeeProfileBean.profileImageSrc}">
+                                        <i class="pi pi-user"></i>
+                                    </h:panelGroup>
+                                </div>
+
+                                <h1 class="profile-name">#{payrollxEmployeeProfileBean.userDetails.userName}</h1>
+                                <p class="profile-role">
+                                    #{payrollxEmployeeProfileBean.userDetails.role.roleName}
+                                    <ui:fragment rendered="#{not empty payrollxEmployeeProfileBean.userDetails.organization}">
+                                        #{' '}#{payrollxEmployeeProfileBean.userDetails.organization.organizationName}
+                                    </ui:fragment>
+                                </p>
+
+                                <div class="profile-stats">
+                                    <div class="profile-stat">
+                                        <i class="pi pi-users"></i>
+                                        <span>#{payrollxEmployeeProfileBean.userDetails.userId}</span>
+                                    </div>
+                                    <div class="profile-stat">
+                                        <i class="pi pi-shield"></i>
+                                        <span>#{payrollxEmployeeProfileBean.accessRight}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="profile-divider"></div>
+
+                            <div class="profile-contact">
+                                <div class="contact-block">
+                                    <span class="contact-label">#{msg['emailAddressLabel']}</span>
+                                    <div class="contact-value compact">#{payrollxEmployeeProfileBean.userDetails.emailId}</div>
+                                </div>
+
+                                <div class="contact-block">
+                                    <span class="contact-label">#{msg['phoneLabel']}</span>
+                                    <div class="contact-value compact">#{payrollxEmployeeProfileBean.contactValue}</div>
+                                </div>
+
+                                <div class="contact-block">
+                                    <span class="contact-label">#{msg['organizationLabel']}</span>
+                                    <div class="contact-value compact">#{payrollxEmployeeProfileBean.organizationName}</div>
+                                </div>
+
+                                <div class="contact-block">
+                                    <span class="contact-label">#{msg['addressLabel']}</span>
+                                    <div class="contact-value compact">#{payrollxEmployeeProfileBean.addressSummary}</div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="profile-panel timeline-panel">
+                            <p:tabView styleClass="profile-tabs">
+                                <p:tab title="#{msg['profileLabel']}">
+                                    <div class="profile-form-grid">
+                                        <div class="profile-field">
+                                            <div class="field-label">#{msg['branchRequiredLabel']}</div>
+                                            <div class="field-value">#{payrollxEmployeeProfileBean.branchName}</div>
+                                        </div>
+
+                                        <div class="profile-field">
+                                            <div class="field-label">#{msg['roleRequiredLabel']}</div>
+                                            <div class="field-value">#{payrollxEmployeeProfileBean.userDetails.role.roleName}</div>
+                                        </div>
+
+                                        <div class="profile-field">
+                                            <div class="field-label">#{msg['countryRequiredLabel']}</div>
+                                            <div class="field-value">#{not empty payrollxEmployeeProfileBean.userDetails.country ? payrollxEmployeeProfileBean.userDetails.country.name : ''}</div>
+                                        </div>
+
+                                        <div class="profile-field">
+                                            <div class="field-label">#{msg['stateRequiredLabel']}</div>
+                                            <div class="field-value">#{not empty payrollxEmployeeProfileBean.userDetails.state ? payrollxEmployeeProfileBean.userDetails.state.name : ''}</div>
+                                        </div>
+
+                                        <div class="profile-field">
+                                            <div class="field-label">#{msg['cityRequiredLabel']}</div>
+                                            <div class="field-value">#{not empty payrollxEmployeeProfileBean.userDetails.city ? payrollxEmployeeProfileBean.userDetails.city.name : ''}</div>
+                                        </div>
+
+                                        <div class="profile-field">
+                                            <div class="field-label">#{msg['addressRequiredLabel']}</div>
+                                            <div class="field-value">#{payrollxEmployeeProfileBean.userDetails.address}</div>
+                                        </div>
+
+                                        <div class="profile-field">
+                                            <div class="field-label">#{msg['sessionIdLabel']}</div>
+                                            <div class="field-value">#{payrollxEmployeeProfileBean.userDetails.lastSessionId}</div>
+                                        </div>
+
+                                        <div class="profile-field">
+                                            <div class="field-label">#{msg['lastSuccessfulLoginLabel']}</div>
+                                            <div class="field-value">
+                                                <h:outputText value="#{payrollxEmployeeProfileBean.userDetails.lastSuccessfulLogin}">
+                                                    <f:convertDateTime pattern="dd MMM yyyy, hh:mm a"/>
+                                                </h:outputText>
+                                            </div>
+                                        </div>
+
+                                        <div class="profile-field">
+                                            <div class="field-label">#{msg['lastSeenLabel']}</div>
+                                            <div class="field-value">
+                                                <h:outputText value="#{payrollxEmployeeProfileBean.userDetails.lastSeenAt}">
+                                                    <f:convertDateTime pattern="dd MMM yyyy, hh:mm a"/>
+                                                </h:outputText>
+                                            </div>
+                                        </div>
+
+                                        <div class="profile-field">
+                                            <div class="field-label">#{msg['lastLogoutLabel']}</div>
+                                            <div class="field-value">
+                                                <h:outputText value="#{payrollxEmployeeProfileBean.userDetails.lastLogoutAt}">
+                                                    <f:convertDateTime pattern="dd MMM yyyy, hh:mm a"/>
+                                                </h:outputText>
+                                            </div>
+                                        </div>
+
+                                        <div class="profile-field">
+                                            <div class="field-label">#{msg['lastPasswordChangeLabel']}</div>
+                                            <div class="field-value">
+                                                <h:outputText value="#{payrollxEmployeeProfileBean.userDetails.lastPasswordChange}">
+                                                    <f:convertDateTime pattern="dd MMM yyyy, hh:mm a"/>
+                                                </h:outputText>
+                                            </div>
+                                        </div>
+
+                                        <div class="profile-field">
+                                            <div class="field-label">#{msg['createdAtLabel']}</div>
+                                            <div class="field-value">
+                                                <h:outputText value="#{payrollxEmployeeProfileBean.userDetails.createdAt}">
+                                                    <f:convertDateTime pattern="dd MMM yyyy, hh:mm a"/>
+                                                </h:outputText>
+                                            </div>
+                                        </div>
+
+                                        <div class="profile-field">
+                                            <div class="field-label">#{msg['updatedAtLabel']}</div>
+                                            <div class="field-value">
+                                                <h:outputText value="#{payrollxEmployeeProfileBean.userDetails.updatedAt}">
+                                                    <f:convertDateTime pattern="dd MMM yyyy, hh:mm a"/>
+                                                </h:outputText>
+                                            </div>
+                                        </div>
+
+                                        <div class="profile-field full">
+                                            <div class="field-label">#{msg['profileImageLabel']}</div>
+                                            <div class="field-value">
+                                                <div class="profile-preview">
+                                                    <div class="profile-preview-card">
+                                                        <div class="profile-preview-image">
+                                                            <h:graphicImage value="#{payrollxEmployeeProfileBean.profileImageSrc}" rendered="#{not empty payrollxEmployeeProfileBean.profileImageSrc}"/>
+                                                            <h:panelGroup layout="block" styleClass="profile-avatar-fallback" rendered="#{empty payrollxEmployeeProfileBean.profileImageSrc}">
+                                                                <i class="pi pi-user"></i>
+                                                            </h:panelGroup>
+                                                        </div>
+                                                        <div class="profile-preview-note">
+                                                            #{msg['currentSavedProfilePictureLabel']}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </p:tab>
+
+                                <p:tab title="#{msg['timelineLabel']}">
+                                    <p:outputPanel rendered="#{not empty payrollxEmployeeProfileBean.profileActivities}">
+                                        <div class="feed-list">
+                                            <ui:repeat value="#{payrollxEmployeeProfileBean.profileActivities}" var="activity">
+                                                <article class="feed-item">
+                                                    <div class="feed-avatar">
+                                                        <h:graphicImage value="#{payrollxEmployeeProfileBean.profileImageSrc}" rendered="#{not empty payrollxEmployeeProfileBean.profileImageSrc}"/>
+                                                        <h:panelGroup layout="block" styleClass="feed-fallback" rendered="#{empty payrollxEmployeeProfileBean.profileImageSrc}">
+                                                            <i class="#{payrollxEmployeeProfileBean.activityIcon(activity.activityType)}"></i>
+                                                        </h:panelGroup>
+                                                    </div>
+                                                    <div class="feed-header">
+                                                        <span class="feed-user">#{activity.userName}</span>
+                                                        <span class="feed-time">
+                                                            <h:outputText value="#{activity.createdAt}">
+                                                                <f:convertDateTime pattern="dd MMM yyyy, hh:mm a"/>
+                                                            </h:outputText>
+                                                        </span>
+                                                    </div>
+                                                    <h3 class="feed-title">#{payrollxEmployeeProfileBean.activityTitle(activity)}</h3>
+                                                    <p class="feed-message">#{payrollxEmployeeProfileBean.activitySummary(activity)}</p>
+                                                </article>
+                                            </ui:repeat>
+                                        </div>
+                                    </p:outputPanel>
+
+                                    <p:outputPanel rendered="#{empty payrollxEmployeeProfileBean.profileActivities}">
+                                        <div class="empty-tab">
+                                            <i class="pi pi-history"></i>
+                                            <h3>No employee activity found</h3>
+                                            <p>#{msg['profileNoActivityEntriesLabel']}</p>
+                                        </div>
+                                    </p:outputPanel>
+                                </p:tab>
+                            </p:tabView>
+                        </section>
+                    </div>
+                </p:outputPanel>
+
+                <p:outputPanel rendered="#{empty payrollxEmployeeProfileBean.userDetails}">
+                    <section class="profile-panel empty-tab">
+                        <i class="pi pi-exclamation-circle"></i>
+                        <h3>#{msg['profileDetailsUnavailableLabel']}</h3>
+                        <p>#{msg['profileDetailsUnavailableSummaryLabel']}</p>
+                    </section>
+                </p:outputPanel>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>

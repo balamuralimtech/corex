@@ -1,0 +1,557 @@
+<!--
+  Copyright (c) 2026 company.name. All rights reserved.
+
+  This file and its associated content are proprietary to company.name.
+  Unauthorized copying, distribution, modification, or use of this file,
+  via any medium, is strictly prohibited without prior written permission.
+
+  This software is provided "as is", without warranty of any kind, express or implied,
+  including but not limited to the warranties of merchantability, fitness for a
+  particular purpose, and noninfringement. In no event shall the authors or copyright
+  holders be liable for any claim, damages, or other liability arising from the use
+  of this software.
+
+  Author: Balamurali
+  Project: 'app.name'
+-->
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:h="http://java.sun.com/jsf/html"
+                xmlns:f="http://java.sun.com/jsf/core"
+                xmlns:ui="http://java.sun.com/jsf/facelets"
+                xmlns:p="http://primefaces.org/ui"
+                template="/WEB-INF/template.xhtml">
+
+    <ui:define name="head">
+        <h:outputStylesheet name="css/flags/flags.css" library="demo"/>
+        <style type="text/css">
+            .user-admin-shell { --ua-night:#07111f; --ua-night-soft:#10233f; --ua-panel:#ffffff; --ua-blue:#38bdf8; --ua-green:#22c55e; --ua-amber:#f59e0b; --ua-red:#ef4444; }
+            .user-admin-hero { position:relative; overflow:hidden; padding:2rem; border-radius:28px; color:#f8fafc; background:radial-gradient(circle at top right, rgba(56,189,248,.24), transparent 28%), linear-gradient(135deg, #07111f 0%, #10233f 48%, #0f5f73 100%); box-shadow:0 26px 72px rgba(2,6,23,.24); }
+            .user-admin-hero:before { content:''; position:absolute; inset:auto -10% -30% auto; width:340px; height:340px; border-radius:50%; background:radial-gradient(circle, rgba(34,197,94,.18), rgba(34,197,94,0)); }
+            .user-admin-title { margin:0; font-size:2rem; font-weight:700; letter-spacing:-.03em; }
+            .user-admin-copy { margin-top:.8rem; max-width:880px; color:rgba(226,232,240,.84); line-height:1.75; }
+            .user-admin-strip { display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:1rem; margin-top:1.45rem; }
+            .user-admin-chip { padding:1rem 1.1rem; border-radius:18px; background:rgba(15,23,42,.34); border:1px solid rgba(148,163,184,.16); backdrop-filter:blur(10px); }
+            .user-admin-chip-label { display:block; font-size:.76rem; text-transform:uppercase; letter-spacing:.08em; color:rgba(191,219,254,.78); }
+            .user-admin-chip-value { display:block; margin-top:.35rem; color:#fff; font-size:1.22rem; font-weight:700; word-break:break-word; }
+            .user-admin-panel { height:100%; padding:1.15rem; border-radius:24px; background:#fff; border:1px solid rgba(203,213,225,.82); box-shadow:0 16px 44px rgba(15,23,42,.08); }
+            .user-admin-head { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:1rem; }
+            .user-admin-head-title { margin:0; font-size:1.08rem; font-weight:700; color:#0f172a; }
+            .user-admin-head-copy { margin-top:.2rem; font-size:.92rem; color:#64748b; line-height:1.55; }
+            .user-admin-actions { display:flex; flex-wrap:wrap; gap:.75rem; }
+            .user-admin-filter-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:1rem; margin-bottom:1rem; }
+            .user-admin-filter-box { padding:1rem; border-radius:18px; border:1px solid rgba(203,213,225,.82); background:#f8fafc; }
+            .user-admin-filter-label { display:block; margin-bottom:.45rem; color:#475569; font-size:.78rem; text-transform:uppercase; letter-spacing:.08em; font-weight:700; }
+            .user-admin-filter-static { padding:.82rem 1rem; border-radius:14px; background:#fff; border:1px solid #dbe2ea; font-weight:700; color:#0f172a; }
+            .user-admin-stat { height:100%; padding:1.1rem; border-radius:20px; border:1px solid rgba(203,213,225,.82); box-shadow:0 12px 36px rgba(15,23,42,.06); }
+            .user-admin-stat-kicker { display:block; color:#64748b; font-size:.78rem; text-transform:uppercase; letter-spacing:.08em; }
+            .user-admin-stat-value { display:block; margin-top:.5rem; font-size:1.85rem; font-weight:700; color:#0f172a; line-height:1.1; }
+            .user-admin-stat-copy { display:block; margin-top:.65rem; color:#475569; line-height:1.55; }
+            .user-admin-stat-blue { background:linear-gradient(180deg, #fff 0%, #eff6ff 100%); }
+            .user-admin-stat-green { background:linear-gradient(180deg, #fff 0%, #ecfdf5 100%); }
+            .user-admin-stat-amber { background:linear-gradient(180deg, #fff 0%, #fffbeb 100%); }
+            .user-admin-stat-red { background:linear-gradient(180deg, #fff 0%, #fef2f2 100%); }
+            .user-admin-chart { min-height:320px; }
+            .user-admin-table .ui-datatable-tablewrapper { border-radius:18px; overflow:hidden; }
+            .user-admin-table .ui-datatable thead th { background:#f8fafc; color:#334155; border-color:#e2e8f0; }
+            .user-admin-table .ui-datatable tbody td { vertical-align:top; border-color:#eef2f7; }
+            .user-admin-search { display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap; }
+            .user-admin-search-title { font-weight:700; color:#0f172a; }
+            .user-admin-search-left { display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; }
+            .user-admin-icon-actions { display:flex; align-items:center; gap:.45rem; flex-wrap:wrap; }
+            .user-admin-icon-actions .ui-button { margin:0; }
+            .user-admin-selection-meta { color:#64748b; font-size:.9rem; font-weight:600; }
+            .user-row-actions { display:flex; flex-wrap:wrap; gap:.45rem; }
+            .user-row-actions .ui-button { margin:0; }
+            .user-dialog .ui-dialog-content { max-height: 76vh; overflow-y: auto; }
+            .user-form-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:1rem 1.25rem; }
+            .user-form-field { display:flex; flex-direction:column; gap:.45rem; }
+            .user-form-field label { font-size:.84rem; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:.06em; }
+            .user-avatar-layout { display:grid; grid-template-columns:minmax(0, 1.1fr) minmax(260px, .9fr); gap:1.25rem; padding:1rem; border-radius:20px; background:#f8fafc; border:1px solid #e2e8f0; }
+            .user-avatar-zone { display:flex; flex-direction:column; gap:.9rem; }
+            .user-avatar-stage { display:grid; gap:.85rem; }
+            .user-avatar-help { color:#64748b; font-size:.85rem; line-height:1.6; }
+            .user-avatar-cropper { max-width:min(100%, 340px); overflow:hidden; border:1px solid #dbe2ea; border-radius:14px; background:#fff; padding:.5rem; }
+            .user-avatar-preview-card { padding:1rem; border-radius:18px; background:#fff; border:1px solid #dbe2ea; display:flex; flex-direction:column; align-items:center; gap:.85rem; }
+            .user-avatar-preview { width:120px; height:120px; border-radius:28px; object-fit:cover; border:1px solid #dbe2ea; }
+            .user-avatar-empty { width:120px; height:120px; border-radius:28px; border:1px dashed #cbd5e1; background:#f8fafc; color:#64748b; display:flex; align-items:center; justify-content:center; }
+            .user-avatar-steps { display:grid; gap:.7rem; }
+            .user-avatar-step { padding:.9rem 1rem; border-radius:16px; background:#fff; border:1px solid #dbe2ea; }
+            .user-avatar-step-title { font-weight:700; color:#0f172a; }
+            .user-avatar-step-copy { margin-top:.25rem; color:#64748b; line-height:1.55; }
+            .user-dialog-footer { display:flex; justify-content:center; gap:.75rem; flex-wrap:wrap; }
+            @media (max-width: 991px) {
+                .user-form-grid { grid-template-columns:1fr; }
+                .user-avatar-layout { grid-template-columns:1fr; }
+            }
+        </style>
+    </ui:define>
+
+    <ui:define name="content">
+        <f:event listener="#{payrollxEmployeeDirectoryBean.initializePageAttributes}" type="preRenderComponent"/>
+        <h:form id="userform" enctype="multipart/form-data">
+            <div class="grid crud-demo user-admin-shell">
+                <div class="col-12">
+                    <p:breadCrumb>
+                        <p:menuitem url="#{request.contextPath}/home" icon="pi pi-home"/>
+                        <p:menuitem value="Employee Management" url="#"/>
+                        <p:menuitem value="Employee Directory"/>
+                    </p:breadCrumb>
+                </div>
+
+                <div class="col-12">
+                    <p:outputPanel id="usersMainPanelId">
+                        <div class="user-admin-hero">
+                            <h2 class="user-admin-title">Employee Directory Command Center</h2>
+                            <div class="user-admin-copy">
+                            Manage employee access records, profile details, organization scope, and account status using the employee administration dataset.
+                            </div>
+                            <div class="user-admin-strip">
+                                <div class="user-admin-chip">
+                                    <span class="user-admin-chip-label">#{msg['recordsLoadedLabel']}</span>
+                                    <span class="user-admin-chip-value">#{payrollxEmployeeDirectoryBean.recordsCount}</span>
+                                </div>
+                                <div class="user-admin-chip">
+                                    <span class="user-admin-chip-label">#{msg['loggedInLabel']}</span>
+                                    <span class="user-admin-chip-value">#{payrollxEmployeeDirectoryBean.usersLoggedInCount}</span>
+                                </div>
+                                <div class="user-admin-chip">
+                                    <span class="user-admin-chip-label">#{msg['loggedOutLabel']}</span>
+                                    <span class="user-admin-chip-value">#{payrollxEmployeeDirectoryBean.usersLoggedOutCount}</span>
+                                </div>
+                                <div class="user-admin-chip">
+                                    <span class="user-admin-chip-label">#{msg['neverLoggedInLabel']}</span>
+                                    <span class="user-admin-chip-value">#{payrollxEmployeeDirectoryBean.usersNeverLoggedinCount}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p:growl id="messages" showDetail="true"/>
+
+                        <div class="grid">
+                            <div class="col-12">
+                                <div class="user-admin-panel">
+                                    <div class="user-admin-head">
+                                        <div>
+                                            <h3 class="user-admin-head-title">#{msg['actionsLabel']}</h3>
+                                                <div class="user-admin-head-copy">Create, find, export, and maintain employee records mapped from employee administration data.</div>
+                                        </div>
+                                    </div>
+                                    <div class="user-admin-filter-grid" rendered="#{payrollxEmployeeDirectoryBean.datatableRendered}">
+                                        <p:outputPanel styleClass="user-admin-filter-box" rendered="#{payrollxEmployeeDirectoryBean.applicationAdmin}">
+                                            <span class="user-admin-filter-label">#{msg['organizationScopeLabel']}</span>
+                                            <p:selectOneMenu value="#{payrollxEmployeeDirectoryBean.selectedOrganizationFilter}" style="width:100%">
+                                                <f:selectItem itemLabel="#{msg['allOrganizationsLabel']}" itemValue="__ALL_ORGANIZATIONS__"/>
+                                                <f:selectItems value="#{payrollxEmployeeDirectoryBean.organizationFilterOptions}"/>
+                                                <p:ajax listener="#{payrollxEmployeeDirectoryBean.onOrganizationFilterChange}" process="@this" update="@([id$=usersMainPanelId])"/>
+                                            </p:selectOneMenu>
+                                        </p:outputPanel>
+                                        <p:outputPanel styleClass="user-admin-filter-box" rendered="#{not payrollxEmployeeDirectoryBean.applicationAdmin}">
+                                            <span class="user-admin-filter-label">#{msg['organizationScopeLabel']}</span>
+                                            <div class="user-admin-filter-static">#{payrollxEmployeeDirectoryBean.selectedOrganizationFilterLabel}</div>
+                                        </p:outputPanel>
+                                        <div class="user-admin-filter-box">
+                                            <span class="user-admin-filter-label">Employee Scope</span>
+                                            <p:selectOneMenu value="#{payrollxEmployeeDirectoryBean.selectedUserFilter}" style="width:100%">
+                                                <f:selectItem itemLabel="All Employees" itemValue="__ALL_USERS__"/>
+                                                <f:selectItems value="#{payrollxEmployeeDirectoryBean.userFilterOptions}"/>
+                                                <p:ajax listener="#{payrollxEmployeeDirectoryBean.onUserFilterChange}" process="@this" update="@([id$=usersMainPanelId])"/>
+                                            </p:selectOneMenu>
+                                        </div>
+                                    </div>
+                                    <div class="user-admin-actions">
+                                        <p:commandButton value="New Employee" icon="pi pi-plus"
+                                                         actionListener="#{payrollxEmployeeDirectoryBean.addButtonAction}"
+                                                         update="@([id$=addEditCountPanelId])"
+                                                         process="@([id$=addEditCountPanelId]) @this"
+                                                         oncomplete="PF('ManageUserDialog').show()"
+                                                         styleClass="ui-button-success"/>
+                                        <p:commandButton value="Fetch Employees" icon="pi pi-search"
+                                                         action="#{payrollxEmployeeDirectoryBean.searchButtonAction}"
+                                                         update="@([id$=usersMainPanelId])" process="@this"
+                                                         styleClass="ui-button-info"/>
+                                        <p:commandButton value="#{msg['exportPdfLabel']}" icon="pi pi-upload" styleClass="ui-button-help"
+                                                         rendered="#{payrollxEmployeeDirectoryBean.datatableRendered}">
+                                            <p:dataExporter type="pdf" target="usersDataTableId" fileName="Employees"/>
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p:outputPanel styleClass="col-12 lg:col-6" rendered="#{payrollxEmployeeDirectoryBean.datatableRendered}">
+                                <div class="user-admin-panel">
+                                    <div class="user-admin-head">
+                                        <div>
+                                            <h3 class="user-admin-head-title">#{msg['statusShareLabel']}</h3>
+                                            <div class="user-admin-head-copy">#{msg['statusShareSummaryLabel']}</div>
+                                        </div>
+                                    </div>
+                                    <figure class="highcharts-figure">
+                                        <div id="userStatusDonut" class="user-admin-chart"></div>
+                                    </figure>
+                                    <h:outputScript>
+                                        Highcharts.chart('userStatusDonut', {
+                                            chart: {
+                                                type: 'pie'
+                                            },
+                                            title: {
+                                                text: "Employee Status Share",
+                                                align: 'left'
+                                            },
+                                            subtitle: {
+                                                text: "#{msg['liveAccountSplitLabel']}",
+                                                align: 'left'
+                                            },
+                                            tooltip: {
+                                                pointFormat: "<b>{point.y}</b> Employees"
+                                            },
+                                            plotOptions: {
+                                                pie: {
+                                                    innerSize: '58%',
+                                                    depth: 35,
+                                                    dataLabels: {
+                                                        enabled: true,
+                                                        format: '{point.name}: {point.y}'
+                                                    }
+                                                }
+                                            },
+                                            series: [{
+                                                name: "Employees",
+                                                colorByPoint: true,
+                                                data: [{
+                                                    name: "#{msg['loggedInLabel']}",
+                                                    y: #{payrollxEmployeeDirectoryBean.usersLoggedInCount}
+                                                }, {
+                                                    name: "#{msg['loggedOutLabel']}",
+                                                    y: #{payrollxEmployeeDirectoryBean.usersLoggedOutCount}
+                                                }, {
+                                                    name: "#{msg['neverLoggedInLabel']}",
+                                                    y: #{payrollxEmployeeDirectoryBean.usersNeverLoggedinCount}
+                                                }]
+                                            }]
+                                        });
+                                    </h:outputScript>
+                                </div>
+                            </p:outputPanel>
+
+                            <p:outputPanel styleClass="col-12 lg:col-6" rendered="#{payrollxEmployeeDirectoryBean.datatableRendered}">
+                                <div class="user-admin-panel">
+                                    <div class="user-admin-head">
+                                        <div>
+                                            <h3 class="user-admin-head-title">#{msg['statusComparisonLabel']}</h3>
+                                            <div class="user-admin-head-copy">#{msg['statusComparisonSummaryLabel']}</div>
+                                        </div>
+                                    </div>
+                                    <figure class="highcharts-figure">
+                                        <div id="userStatusColumn" class="user-admin-chart"></div>
+                                    </figure>
+                                    <h:outputScript>
+                                        Highcharts.chart('userStatusColumn', {
+                                            chart: {
+                                                type: 'column'
+                                            },
+                                            title: {
+                                                text: "Employee Status Comparison",
+                                                align: 'left'
+                                            },
+                                            subtitle: {
+                                                text: "#{msg['accountLifecycleStatusLabel']}",
+                                                align: 'left'
+                                            },
+                                            xAxis: {
+                                                categories: ["#{msg['loggedInLabel']}", "#{msg['loggedOutLabel']}", "#{msg['neverLoggedInLabel']}"]
+                                            },
+                                            yAxis: {
+                                                min: 0,
+                                                title: {
+                                                    text: "Employees"
+                                                }
+                                            },
+                                            legend: {
+                                                enabled: false
+                                            },
+                                            series: [{
+                                                name: "Employees",
+                                                colorByPoint: true,
+                                                data: [
+                                                    #{payrollxEmployeeDirectoryBean.usersLoggedInCount},
+                                                    #{payrollxEmployeeDirectoryBean.usersLoggedOutCount},
+                                                    #{payrollxEmployeeDirectoryBean.usersNeverLoggedinCount}
+                                                ]
+                                            }]
+                                        });
+                                    </h:outputScript>
+                                </div>
+                            </p:outputPanel>
+
+                            <p:outputPanel styleClass="col-12" rendered="#{payrollxEmployeeDirectoryBean.datatableRendered}">
+                                <div class="user-admin-panel">
+                                    <div class="user-admin-head">
+                                        <div>
+                                            <h3 class="user-admin-head-title">Employee Grid</h3>
+                                                <div class="user-admin-head-copy">Employee records mapped from employee administration, including role, access status, organization, and location.</div>
+                                        </div>
+                                    </div>
+
+                                    <p:dataTable id="usersDataTableId" widgetVar="countDataTable" var="user"
+                                                 value="#{payrollxEmployeeDirectoryBean.usersList}"
+                                                 reflow="true" rowHover="true" styleClass="user-admin-table"
+                                                 rowKey="#{user.userId}" paginator="true" rows="10" paginatorPosition="bottom">
+                                        <f:facet name="header">
+                                            <div class="user-admin-search">
+                                                <div class="user-admin-search-left">
+                                                    <span class="user-admin-search-title">Search Employees</span>
+                                                </div>
+                                                <span class="filter-container ui-input-icon-left">
+                                                    <i class="pi pi-search"></i>
+                                                    <p:inputText id="globalFilter" onkeyup="PF('countDataTable').filter()"
+                                                                 placeholder="#{msg['searchLabel']}"/>
+                                                </span>
+                                            </div>
+                                        </f:facet>
+
+                                        <p:column headerText="First Name" sortBy="#{payrollxEmployeeDirectoryBean.employeeFirstName(user)}" filterBy="#{payrollxEmployeeDirectoryBean.employeeFirstName(user)}">
+                                            <h:outputText value="#{payrollxEmployeeDirectoryBean.employeeFirstName(user)}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Last Name" sortBy="#{payrollxEmployeeDirectoryBean.employeeLastName(user)}" filterBy="#{payrollxEmployeeDirectoryBean.employeeLastName(user)}">
+                                            <h:outputText value="#{payrollxEmployeeDirectoryBean.employeeLastName(user)}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Username" sortBy="#{user.userName}" filterBy="#{user.userName}">
+                                            <h:outputText value="#{user.userName}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Email" sortBy="#{user.emailId}" filterBy="#{user.emailId}">
+                                            <h:outputText value="#{user.emailId}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Contact" sortBy="#{user.contact}" filterBy="#{user.contact}">
+                                            <h:outputText value="#{empty user.contact ? '-' : user.contact}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Designation" sortBy="#{payrollxEmployeeDirectoryBean.employeeDesignation(user)}" filterBy="#{payrollxEmployeeDirectoryBean.employeeDesignation(user)}">
+                                            <h:outputText value="#{payrollxEmployeeDirectoryBean.employeeDesignation(user)}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Role" sortBy="#{payrollxEmployeeDirectoryBean.employeeRole(user)}" filterBy="#{payrollxEmployeeDirectoryBean.employeeRole(user)}">
+                                            <h:outputText value="#{payrollxEmployeeDirectoryBean.employeeRole(user)}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Department" sortBy="#{payrollxEmployeeDirectoryBean.employeeDepartment(user)}" filterBy="#{payrollxEmployeeDirectoryBean.employeeDepartment(user)}">
+                                            <h:outputText value="#{payrollxEmployeeDirectoryBean.employeeDepartment(user)}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Company" sortBy="#{payrollxEmployeeDirectoryBean.employeeCompany(user)}" filterBy="#{payrollxEmployeeDirectoryBean.employeeCompany(user)}">
+                                            <h:outputText value="#{payrollxEmployeeDirectoryBean.employeeCompany(user)}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Country" sortBy="#{payrollxEmployeeDirectoryBean.employeeCountry(user)}" filterBy="#{payrollxEmployeeDirectoryBean.employeeCountry(user)}">
+                                            <h:outputText value="#{payrollxEmployeeDirectoryBean.employeeCountry(user)}"/>
+                                        </p:column>
+
+                                        <p:column headerText="Status">
+                                            <p:tag value="#{user.status == 1 ? msg['loggedInLabel'] : user.status == 6 ? msg['loggedOutLabel'] : user.status == 3 ? msg['neverLoggedInLabel'] : msg['unknownLabel']}"
+                                                   rounded="true" severity="#{user.status == 1 ? 'success' : user.status == 6 ? 'danger' : user.status == 3 ? 'warning' : 'info'}"/>
+                                        </p:column>
+
+                                        <p:column exportable="false" style="width:80px;" headerText="#{msg['actionsLabel']}">
+                                            <div class="user-row-actions">
+                                                <p:commandButton icon="pi pi-pencil" update="@([id$=usersMainPanelId])"
+                                                                 oncomplete="PF('ManageUserDialog').show()"
+                                                                 action="#{payrollxEmployeeDirectoryBean.confirmEditButtonAction(user)}"
+                                                                 title="Edit employee"
+                                                                 styleClass="edit-button rounded-button ui-button-success"
+                                                                 process="@this"/>
+                                            </div>
+                                        </p:column>
+                                    </p:dataTable>
+                                </div>
+                            </p:outputPanel>
+                        </div>
+
+                        <p:dialog header="Employee Details"
+                                  showEffect="fade"
+                                  modal="true"
+                                  widgetVar="ManageUserDialog"
+                                  responsive="true"
+                                  fitViewport="true"
+                                  styleClass="user-dialog"
+                                  width="82vw">
+                            <p:outputPanel id="addEditCountPanelId">
+                                <div class="grid">
+                                    <div class="col-12">
+                                        <p:outputPanel id="userDetailsPanel">
+                                        <div class="user-admin-panel">
+                                            <div class="user-admin-head">
+                                                <div>
+                                                    <h3 class="user-admin-head-title">Employee Identity and Access</h3>
+                                                    <div class="user-admin-head-copy">Maintain employee login identity, role, access right, organization, branch, and location details.</div>
+                                                </div>
+                                                <p:tag value="#{payrollxEmployeeDirectoryBean.employeeScopeViewLabel}"
+                                                       severity="#{payrollxEmployeeDirectoryBean.applicationAdmin ? 'info' : 'success'}" rounded="true"/>
+                                            </div>
+
+                                            <div class="user-form-grid">
+                                                <div class="user-form-field">
+                                                    <label for="userName">Employee Name</label>
+                                                    <p:inputText id="userName" value="#{payrollxEmployeeDirectoryBean.userName}" maxlength="100" required="true"/>
+                                                </div>
+                                                <div class="user-form-field">
+                                                    <label for="password">#{msg['passwordLabel']}</label>
+                                                    <p:password id="password" value="#{payrollxEmployeeDirectoryBean.password}" feedback="true" toggleMask="true"
+                                                                redisplay="true" autocomplete="new-password"/>
+                                                </div>
+                                                <div class="user-form-field">
+                                                    <label for="emailId">#{msg['emailLabel']}</label>
+                                                    <p:inputText id="emailId" value="#{payrollxEmployeeDirectoryBean.emailId}" maxlength="150"/>
+                                                </div>
+                                                <div class="user-form-field">
+                                                    <label for="contact">#{msg['contactLabel']}</label>
+                                                    <p:inputText id="contact" value="#{payrollxEmployeeDirectoryBean.contact}" maxlength="25"/>
+                                                </div>
+                                                <div class="user-form-field">
+                                                    <label for="role">#{msg['roleLabel']}</label>
+                                                    <p:autoComplete id="role" value="#{payrollxEmployeeDirectoryBean.role}"
+                                                                    completeMethod="#{payrollxEmployeeDirectoryBean.completeRole}"
+                                                                    dropdown="true" forceSelection="true" scrollHeight="240"/>
+                                                </div>
+                                                <div class="user-form-field">
+                                                    <label for="accessRight">#{msg['accessRightLabel']}</label>
+                                                    <p:autoComplete id="accessRight" value="#{payrollxEmployeeDirectoryBean.accessRight}"
+                                                                    completeMethod="#{payrollxEmployeeDirectoryBean.completeAccessRight}"
+                                                                    dropdown="true" forceSelection="true" scrollHeight="240"/>
+                                                </div>
+                                                <p:outputPanel styleClass="user-form-field" rendered="#{payrollxEmployeeDirectoryBean.applicationAdmin}">
+                                                    <label for="organization">#{msg['organizationLabel']}</label>
+                                                    <p:autoComplete id="organization" value="#{payrollxEmployeeDirectoryBean.organization}"
+                                                                    completeMethod="#{payrollxEmployeeDirectoryBean.completeOrganization}"
+                                                                    dropdown="true" forceSelection="true" scrollHeight="240">
+                                                        <p:ajax event="itemSelect" listener="#{payrollxEmployeeDirectoryBean.onOrgSelect}" update="branch"/>
+                                                    </p:autoComplete>
+                                                </p:outputPanel>
+                                                <p:outputPanel styleClass="user-form-field" rendered="#{not payrollxEmployeeDirectoryBean.applicationAdmin}">
+                                                    <label>#{msg['organizationLabel']}</label>
+                                                    <div style="padding:.8rem 1rem;border:1px solid #dbe2ea;border-radius:14px;background:#f8fafc;font-weight:700;color:#0f172a;">
+                                                        #{payrollxEmployeeDirectoryBean.currentOrganizationName}
+                                                    </div>
+                                                    <h:inputHidden id="organizationHidden" value="#{payrollxEmployeeDirectoryBean.organization}"/>
+                                                </p:outputPanel>
+                                                <div class="user-form-field">
+                                                    <label for="branch">#{msg['branchLabel']}</label>
+                                                    <p:autoComplete id="branch" value="#{payrollxEmployeeDirectoryBean.branch}"
+                                                                    completeMethod="#{payrollxEmployeeDirectoryBean.completeBranch}"
+                                                                    dropdown="true" forceSelection="true" scrollHeight="240"/>
+                                                </div>
+                                                <div class="user-form-field">
+                                                    <label for="country">#{msg['countryLabel']}</label>
+                                                    <p:autoComplete id="country" value="#{payrollxEmployeeDirectoryBean.country}"
+                                                                    completeMethod="#{payrollxEmployeeDirectoryBean.completeCountry}"
+                                                                    dropdown="true" forceSelection="true" scrollHeight="240"/>
+                                                </div>
+                                                <div class="user-form-field">
+                                                    <label for="state">#{msg['stateLabel']}</label>
+                                                    <p:autoComplete id="state" value="#{payrollxEmployeeDirectoryBean.state}"
+                                                                    completeMethod="#{payrollxEmployeeDirectoryBean.completeState}"
+                                                                    dropdown="true" forceSelection="true" scrollHeight="240">
+                                                        <p:ajax event="itemSelect" listener="#{payrollxEmployeeDirectoryBean.onStateSelect}" update="city"/>
+                                                    </p:autoComplete>
+                                                </div>
+                                                <div class="user-form-field">
+                                                    <label for="city">#{msg['cityLabel']}</label>
+                                                    <p:autoComplete id="city" value="#{payrollxEmployeeDirectoryBean.city}"
+                                                                    completeMethod="#{payrollxEmployeeDirectoryBean.completeCity}"
+                                                                    dropdown="true" forceSelection="true" scrollHeight="240"/>
+                                                </div>
+                                                <div class="user-form-field" style="grid-column:1 / -1;">
+                                                    <label for="address">#{msg['addressLabel']}</label>
+                                                    <p:inputTextarea id="address" value="#{payrollxEmployeeDirectoryBean.address}" rows="3" autoResize="false"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        </p:outputPanel>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <div class="user-admin-panel">
+                                            <div class="user-admin-head">
+                                                <div>
+                                                    <h3 class="user-admin-head-title">Employee Profile Image Studio</h3>
+                                                    <div class="user-admin-head-copy">Upload and preview the employee profile image used across PayrollX.</div>
+                                                </div>
+                                            </div>
+                                            <div class="user-avatar-layout">
+                                                <div class="user-avatar-zone">
+                                                    <div class="user-avatar-steps">
+                                                        <div class="user-avatar-step">
+                                                            <div class="user-avatar-step-title">Choose employee image</div>
+                                                            <div class="user-avatar-step-copy">Select a clear employee photo in PNG or JPG format.</div>
+                                                        </div>
+                                                        <div class="user-avatar-step">
+                                                            <div class="user-avatar-step-title">Review employee image</div>
+                                                            <div class="user-avatar-step-copy">Check how the employee photo will appear in profile views.</div>
+                                                        </div>
+                                                        <div class="user-avatar-step">
+                                                            <div class="user-avatar-step-title">Save employee image</div>
+                                                            <div class="user-avatar-step-copy">Save the employee record to persist the profile image.</div>
+                                                        </div>
+                                                    </div>
+
+                                                    <p:fileUpload id="profileImage" mode="advanced" auto="true" dragDropSupport="false"
+                                                                  update="messages cropperPanel imagePreviewPanel"
+                                                                  listener="#{payrollxEmployeeDirectoryBean.handleProfileImageUpload}"
+                                                                  sizeLimit="2097152" multiple="false"
+                                                                  allowTypes="/(\.|\/)(png|jpe?g)$/"
+                                                                  label="Select Employee Image"
+                                                                  chooseIcon="pi pi-image"
+                                                                  uploadIcon="pi pi-upload"
+                                                                  cancelIcon="pi pi-times"/>
+
+                                                    <p:outputPanel id="cropperPanel">
+                                                        <div class="user-avatar-help">
+                                                            #{payrollxEmployeeDirectoryBean.profileImageResizeHelpText}
+                                                        </div>
+                                                    </p:outputPanel>
+                                                </div>
+
+                                                <div class="user-avatar-zone">
+                                                    <p:outputPanel id="imagePreviewPanel">
+                                                        <div class="user-avatar-preview-card">
+                                                            <div class="user-avatar-help" style="margin:0;">Final employee image preview</div>
+                                                            <h:graphicImage value="#{payrollxEmployeeDirectoryBean.selectedProfileImageDataUrl}"
+                                                                            rendered="#{not empty payrollxEmployeeDirectoryBean.selectedProfileImageDataUrl}"
+                                                                            styleClass="user-avatar-preview"/>
+                                                            <p:outputPanel styleClass="user-avatar-empty" rendered="#{empty payrollxEmployeeDirectoryBean.selectedProfileImageDataUrl}">
+                                                                <i class="pi pi-user" style="font-size:1.5rem;"></i>
+                                                            </p:outputPanel>
+                                                            <p:selectBooleanCheckbox id="removeImage" value="#{payrollxEmployeeDirectoryBean.removeProfileImage}"
+                                                                                     itemLabel="Remove current employee image">
+                                                                <p:ajax update="imagePreviewPanel cropperPanel"/>
+                                                            </p:selectBooleanCheckbox>
+                                                        </div>
+                                                    </p:outputPanel>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <div class="user-dialog-footer">
+                                            <p:commandButton value="Save Employee" icon="pi pi-check"
+                                                             actionListener="#{payrollxEmployeeDirectoryBean.saveUserDetails}"
+                                                             update="@([id$=usersMainPanelId]) @([id$=addEditCountPanelId])"
+                                                             process="@this userDetailsPanel imagePreviewPanel"
+                                                             styleClass="ui-button-success"/>
+                                            <p:commandButton value="#{msg['cancelLabel']}" type="button" icon="pi pi-times"
+                                                             onclick="PF('ManageUserDialog').hide()" styleClass="ui-button-secondary"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </p:outputPanel>
+                        </p:dialog>
+
+                    </p:outputPanel>
+                </div>
+            </div>
+        </h:form>
+    </ui:define>
+</ui:composition>
